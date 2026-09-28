@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Meesho link test</title>
+<style>
+  body { margin: 0; padding: 24px 16px; background: #F5EFE6; color: #6B4F43; font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 28rem; margin: 0 auto; }
+  h1 { font-size: 1.25rem; margin: 0 0 4px; }
+  a.btn { display: block; margin: 16px 0 4px; padding: 16px; border-radius: 14px; background: #6B4F43; color: #FBF6EF; text-align: center; text-decoration: none; font-weight: 600; }
+  p.hint { margin: 0 0 8px; font-size: .875rem; }
+  code { display: block; margin-top: 24px; padding: 12px; background: #FBF6EF; border-radius: 10px; font-size: .75rem; word-break: break-all; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Meesho link test</h1>
+  <p class="hint">Try each button from Instagram and from Chrome. Note which ones open the Meesho app on the SSCreator store page.</p>
+
+  <a class="btn" href="https://www.meesho.com/SSCreator">A · Normal link</a>
+  <p class="hint">What the live page uses today.</p>
+
+  <a class="btn" href="intent://www.meesho.com/SSCreator#Intent;scheme=https;package=com.meesho.supply;S.browser_fallback_url=https%3A%2F%2Fwww.meesho.com%2FSSCreator;end">B · Android: open in Meesho app</a>
+  <p class="hint">Android only. Should open the app, or the website if the app isn't installed.</p>
+
+  <a class="btn" href="intent://www.meesho.com/SSCreator#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=https%3A%2F%2Fwww.meesho.com%2FSSCreator;end">C · Android: let the phone choose</a>
+  <p class="hint">Android only. Hands the link to the phone, which may ask which app to use.</p>
+
+  <code id="ua"></code>
+</main>
+<script>document.getElementById('ua').textContent = navigator.userAgent;</script>
+</body>
+</html>
