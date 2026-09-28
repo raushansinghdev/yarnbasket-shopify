@@ -38,6 +38,24 @@
 }
 </script>
 
+<script>
+  // Skip the intro on back/forward visits, and let a tap or key press fast-forward it.
+  (function () {
+    try {
+      var nav = performance.getEntriesByType('navigation')[0];
+      if (nav && nav.type === 'back_forward') document.documentElement.classList.add('no-intro');
+    } catch (e) {}
+    function skip() {
+      if (!document.getAnimations) return;
+      document.getAnimations().forEach(function (a) {
+        try { if (a.effect.getComputedTiming().endTime !== Infinity) a.finish(); } catch (e) {}
+      });
+    }
+    addEventListener('pointerdown', skip, { once: true });
+    addEventListener('keydown', skip, { once: true });
+  })();
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=Jost:wght@400;500&display=swap">
@@ -163,8 +181,11 @@
   }
   footer p { margin: 0; text-wrap: balance; }
 
-  /* Content arrives while the logo finishes drawing itself */
-  .reveal { animation: rise .9s var(--ease-out) var(--d, 1s) both; }
+  /* Content follows once the logo has drawn itself and its name has settled in */
+  .reveal { animation: rise .8s var(--ease-out) var(--d, 1s) both; }
+
+  /* Coming back (e.g. from Meesho) shows the finished page straight away */
+  html.no-intro .reveal, html.no-intro .yb-logo, html.no-intro .yb-logo * { animation: none !important; }
   @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
   /* Floating crochet flowers, echoing the brand banner */
@@ -192,7 +213,7 @@
   }
 
   /* Brand kit logo animation (Brand Kit/5-animation/website-splash-snippet.html) */
-  .yb-logo { --yb-t0: .15s; --l: #6B4F43; --f1: #F2D4CC; --f6: #F2D4CC; --f3: #A9B8A0; --bk: #FBF6EF; --ink: #6B4F43; --sub: #8E7468;
+  .yb-logo { --yb-t0: 0s; --l: #6B4F43; --f1: #F2D4CC; --f6: #F2D4CC; --f3: #A9B8A0; --bk: #FBF6EF; --ink: #6B4F43; --sub: #8E7468;
   display: block; width: 100%; height: auto; overflow: visible; }
 .yb-on-blush .yb-logo { --f1: #E3A69C; --f6: #FBF6EF; }
 .yb-ball, .yb-hook, .yb-leaf, .yb-bloom, .yb-centre, .yb-ltr, .yb-tag, .yb-all { transform-box: fill-box; }
@@ -315,16 +336,16 @@
   </g>
   </g>
 </svg></h1>
-    <p class="eyebrow reveal" style="--d:1.05s">Stay tuned</p>
-    <h2 class="headline reveal" style="--d:1.17s">Something cool is coming soon.</h2>
-    <p class="lede reveal" style="--d:1.29s">We’re crocheting a brand-new home for Yarn Basket. Until it’s ready, our handmade bouquets, keychains, hair clips and bag charms are waiting for you on Meesho.</p>
-    <a class="cta reveal" style="--d:1.41s" href="https://www.meesho.com/SSCreator">
+    <p class="eyebrow reveal" style="--d:2.65s">Stay tuned</p>
+    <h2 class="headline reveal" style="--d:2.8s">Something cool is coming soon.</h2>
+    <p class="lede reveal" style="--d:2.95s">We’re crocheting a brand-new home for Yarn Basket. Until it’s ready, our handmade bouquets, keychains, hair clips and bag charms are waiting for you on Meesho.</p>
+    <a class="cta reveal" style="--d:3.1s" href="https://www.meesho.com/SSCreator">
       Shop on Meesho
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </a>
   </main>
 
-  <footer>
+  <footer class="reveal" style="--d:3.3s">
     <p>© 2026 Yarn Basket · Handmade in India</p>
   </footer>
 </body>
