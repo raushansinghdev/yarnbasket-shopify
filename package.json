@@ -1,0 +1,14 @@
+{
+  "name": "yarn-basket-theme-tools",
+  "private": true,
+  "description": "Dev-only checks for the Yarn Basket Shopify theme (speed, motion, accessibility). Not part of the theme.",
+  "type": "module",
+  "scripts": {
+    "check": "node tools/check.mjs",
+    "check:quick": "node tools/check.mjs --quick"
+  },
+  "devDependencies": {
+    "axe-core": "4.10.2",
+    "playwright": "1.63.0"
+  }
+}

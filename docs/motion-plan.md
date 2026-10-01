@@ -1,6 +1,8 @@
 # Motion and performance plan: smooth, fluid, lightweight
 
-Status: **proposed, 2026-10-02.** Nothing below is built until Raushan says go. Phase 0 is ready to start.
+Status: **Phase 0 done (2026-10-02).** Raushan approved the plan with all recommendations: lite mode yes, card → product
+photo morph yes (built with the product page), quick add yes (details decided with the collection page). Phases 1–6
+follow the pages as we build them. Run the checks with `npm run check` (section 6).
 
 The goal is a store that feels light in the hand on a mid-range Android over 4G, and premium on an iPhone. Pages
 should appear almost instantly, every touch should get an answer, and motion should explain what happened rather
@@ -226,6 +228,26 @@ Each pattern is built once, as a snippet or a small module in `theme.js`, and re
 
 ---
 
+## 6b. Phase 0 results (2026-10-02)
+
+- **`data-arrive` API live:** home sections migrated (no visual change). Section-specific touches (craft ring,
+  promise icons, footer rule) moved into their sections. `window.ybArrive(el)` is ready for injected content, and
+  theme-editor re-renders are rescanned.
+- **Tokens:** `--stagger` (90ms), `--rise` (24px) and `--ease-exit` added and used by the arrivals.
+- **Fonts:** metric-matched fallbacks ("Cormorant Fallback" on Georgia Italic at 79.82%; "Jost Fallback" on Arial at
+  96.39%; values measured from the font files). The font-swap layout shift with fonts delayed 1.5s went from 0.0017 to 0.
+- **Lite mode:** decided before first paint (data saver, 2G, ≤ 2 GB memory). It skips the floating flowers, the logo
+  intro, the photo fade-ins and the hero autoplay (the play button still works).
+- **Hero on phones loads one photo ahead** instead of all four: about 216 KB less on first load (phone images
+  880 → 664 KB). Verified in Pixel 7 and iPhone WebKit: the next photo is always ready before the swipe.
+- **Firefox gets a prefetch** when the pointer rests on a link (80ms) or a finger lands on it. Chrome and Edge keep the
+  hover prerender. Safari supports neither (skipped).
+- **`scrollbar-gutter: stable`**, a shared `.tap` press, and a press on the FAQ toggle.
+- **`npm run check`** (`tools/check.mjs`, Playwright 1.63 + axe-core 4.10.2, dev-only, outside `theme/`): 25 checks
+  across Chrome desktop and phone, iPhone WebKit and Firefox. Covers arrivals, photos, sideways scroll, JS errors,
+  slow frames at 4x CPU, LCP, phone image weight, our JS size, axe on phone and desktop, reduced motion and lite
+  mode. First run: **25/25**. LCP 804ms on the hero photo, 0 slow frames, axe 0, theme.js 14.3 KB.
+
 ## 7. Allowed non-GPU animations (kept small on purpose)
 
 | What | Property | Why it's fine |
@@ -254,7 +276,7 @@ Anything else that isn't GPU-friendly needs a decision entry.
 
 | Phase | What | When |
 |---|---|---|
-| **0. Foundations** (home page, now) | Tokens completed (3.1), `data-arrive` API and home migration (3.2), prefetch on tap for Safari and Firefox (3.3), font metric fallbacks and scrollbar gutter (3.4), shared `.tap` (3.5), lite mode (3.7), test harness into `tools/` (6). | 1 session, after go |
+| **0. Foundations** ✅ done 2026-10-02 | Tokens completed (3.1), `data-arrive` API and home migration (3.2), prefetch on tap for Safari and Firefox (3.3), font metric fallbacks and scrollbar gutter (3.4), shared `.tap` (3.5), lite mode (3.7), test harness into `tools/` (6). | 1 session, after go |
 | **1. Shared patterns** | Drawer, swap, collapse, count change, toast as reusable code (4), built against the existing menu drawer | With the first new page |
 | **2. Collection page** | Section 5 plus grid reflow and load more | When we build it |
 | **3. Product page** | Gallery, variants, add to cart, sticky buy bar, card → product morph | When we build it |
@@ -264,11 +286,13 @@ Anything else that isn't GPU-friendly needs a decision entry.
 
 ---
 
-## 10. Decisions needed from Raushan
+## 10. Decisions (answered 2026-10-02: all recommendations accepted)
+
+Kept for the record:
 
 1. **Lite mode:** on low-end phones and data saver, stop the floating flowers and the hero autoplay. *Recommended: yes.*
 2. **Shared-element morph** (card photo → product page photo): Chrome and Safari 18.2+ only; Firefox navigates
    normally. *Recommended: yes.*
 3. **Quick add on collection cards:** faster buying, but one more thing on each card. *Recommended: yes, as a
    small "+" button on phones and a hover button on desktop; decide when we build the collection page.*
-4. **Phase 0 go-ahead.**
+4. **Phase 0 go-ahead.** *Given; done.*
