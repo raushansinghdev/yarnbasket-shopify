@@ -1,6 +1,6 @@
 {%- assign s = section.settings -%}
 
-<footer class="section footer scheme-soft">
+<footer class="section footer scheme-{{ section.settings.scheme | default: 'blush' }}">
   <div class="footer__grid">
     <div class="footer__brand">
       <a href="{{ routes.root_url }}" class="footer__name">{{ shop.name }}</a>
@@ -66,6 +66,8 @@
 
 {% stylesheet %}
   .footer { padding-bottom: max(var(--space-6), env(safe-area-inset-bottom)); }
+  /* The page ends on the brand colour. A thin line keeps it apart from a Blush newsletter just above it. */
+  .footer.scheme-blush { border-top: 1px solid var(--color-line-strong); }
   .footer a { color: inherit; text-decoration: none; }
   .footer__grid {
     display: grid;
@@ -133,7 +135,17 @@
     },
     { "type": "link_list", "id": "menu_shop", "label": "First menu", "default": "footer" },
     { "type": "link_list", "id": "menu_help", "label": "Second menu" },
-    { "type": "checkbox", "id": "show_payment_icons", "label": "Show payment icons", "default": true }
+    { "type": "checkbox", "id": "show_payment_icons", "label": "Show payment icons", "default": true },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "blush", "label": "Blush (brand colour)" },
+        { "value": "soft", "label": "Soft blush" }
+      ],
+      "default": "blush"
+    }
   ]
 }
 {% endschema %}

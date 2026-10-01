@@ -22,7 +22,7 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   - **Story ("One stitch at a time")** sits on a rounded Blush panel. The yarn strand is drawn on top of the panel, so it still runs across the section like the kit's banner.
   - **Our promise** is a Blush card with the dashed stitch border sewn 12px inside its edge, the same as the brand's Instagram covers.
   - **Accents:** Blush product badges ("Bestseller", "New"); a Blush hover on the gift-occasion buttons (instead of a dark Cocoa fill); Blush behind product and craft photos while they load.
-  - **Newsletter** stays the one full-width Blush band.
+  - **Newsletter** stays a full-width Blush band, and the **footer is now Blush too** (Claude's recommendation, which Raushan left to Claude). The bottom of the page no longer goes light → Blush → light, which looked like an alternating stripe. The page now ends on one solid brand-colour block, like a sign-off, and every page gets the brand colour at its foot. A thin line separates the newsletter from the footer. The footer has a "Background" setting (Blush / Soft blush).
   - **Rule C, refined:** the page ground stays Soft blush. Blush panels are kept for brand moments (how it's made, what we promise). Shopping rows (craft circles, bestsellers, reviews) stay on the calm ground so the photos lead. Each panel has an on/off "Blush panel" setting in the theme editor.
   - Contrast on Blush: Cocoa 5.33:1, Taupe Ink 4.56:1, Cocoa deep 7.63:1, all AA.
 - Axe after round 3: 0 violations on mobile and desktop.
