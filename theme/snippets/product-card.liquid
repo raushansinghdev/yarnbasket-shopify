@@ -72,8 +72,8 @@
       if demo == blank
         assign n = n | modulo: 8 | plus: 1
       endif
-      assign d_compare = blank
-      assign d_badge = blank
+      assign d_compare = nil
+      assign d_badge = nil
       case n
         when 1
           assign d_title = 'Sunflower Trio Crochet Bouquet'
@@ -155,13 +155,14 @@
     -webkit-touch-callout: none;
   }
   .card__media { --ratio: 4 / 5; border-radius: var(--radius-md); background: var(--blush); }
-  .card__img {
-    transition: opacity 500ms var(--ease-out), transform 900ms var(--ease-out);
-  }
-  .card__img--alt { opacity: 0; }
+  /* Hover (desktop): the second photo slowly crossfades in while both drift a little closer, in the site's even
+     ease-in-out rhythm, never a quick swap. A short pause before the fade means sweeping the pointer across the
+     grid doesn't flicker photos. Leaving eases back at about 70% of the entry time, like every exit on the site. */
+  .card__img { transition: transform 900ms var(--ease-in-out); }
+  .card__img--alt { opacity: 0; transition: opacity 450ms var(--ease-in-out), transform 900ms var(--ease-in-out); }
   @media (hover: hover) {
-    .card__link:hover .card__img { transform: scale(1.035); }
-    .card__link:hover .card__img--alt { opacity: 1; }
+    .card__link:hover .card__img { transform: scale(1.02); transition-duration: 1400ms; }
+    .card__link:hover .card__img--alt { opacity: 1; transition: opacity 700ms var(--ease-in-out) 120ms, transform 1400ms var(--ease-in-out); }
   }
   .card__link:active .card__media { transform: scale(.985); transition: transform var(--dur-press) ease; }
   .card__media { transition: transform var(--dur-panel) var(--ease-out); }

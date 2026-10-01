@@ -177,7 +177,12 @@ Each pattern is built once, as a snippet or a small module in `theme.js`, and re
 - Filters and sort: a drawer on phones, a sticky bar on desktop. Results update with the **Section Rendering API**
   (no page reload) and a **grid reflow** transition. The URL updates so back/forward and sharing work.
 - **"Load more"** button, not infinite scroll (better for SEO, the footer and focus); new cards stagger in.
-- Cards: hover second photo (exists); optional **quick add** that opens a small variant sheet.
+- Cards: hover second photo (desktop only). Built 2026-10-02 as a calm crossfade after Raushan found the first version fast and bouncy:
+  - the second photo fades in over 700ms after a 120ms pause (so sweeping the pointer across the grid doesn't flicker)
+  - both photos drift to 2% bigger over 1.4s
+  - everything uses `--ease-in-out`, and leaving eases back over about 450ms
+  - never use a spring or a fast ease-out here
+- Optional **quick add** that opens a small variant sheet (later, with the cart drawer).
 
 ### Product page
 - Gallery pattern (swipe on phones, thumbnails and lightbox on desktop); the first photo morphs from the card tapped.
