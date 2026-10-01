@@ -1,0 +1,24 @@
+{%- doc -%}
+  Renders the brand icon that matches a menu link (Bouquets, Keychains, Hair clips, Bag charms), or nothing.
+
+  @param {object} link - A menu link
+
+  @example
+  {% render 'menu-link-icon', link: child %}
+{%- enddoc -%}
+{%- liquid
+  assign handle = link.handle
+  assign icon = blank
+  if handle contains 'bouquet'
+    assign icon = 'bouquets'
+  elsif handle contains 'keychain' or handle contains 'key-chain'
+    assign icon = 'keychains'
+  elsif handle contains 'hair' or handle contains 'clip'
+    assign icon = 'hair-clips'
+  elsif handle contains 'charm'
+    assign icon = 'bagcharm'
+  endif
+  if icon != blank
+    render 'icon', icon: icon
+  endif
+-%}

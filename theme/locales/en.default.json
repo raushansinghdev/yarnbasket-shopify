@@ -68,6 +68,7 @@
     "close_menu": "Close menu",
     "search": "Search",
     "account": "Account",
+    "shop_all": "Shop all",
     "cart_count": {
       "zero": "Cart, empty",
       "one": "Cart, 1 item",

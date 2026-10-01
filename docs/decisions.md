@@ -2,6 +2,17 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-01 (header and navigation)
+
+- **Stitch mark instead of a plain underline.** On desktop a short dashed run of "stitches" sits under the current page. On hover or keyboard focus it leaves toward the next link, and the next one draws in from that side. When the pointer or focus leaves the menu, it returns to the current page. It works without JS (it just sits under the current page), and it carries a view-transition name, so it holds steady while the page cross-fades on navigation. Links that aren't current are Cocoa, and the current/active link is Cocoa Deep.
+- **Current page vs hover look different (Raushan).** The current page always keeps a thin **solid** line (1.5px, its own colour). The dashed stitch mark is now only for hover and keyboard focus, and it doesn't appear on the current page's link, so the two never overlap. "Where I am" and "where I'm pointing" are never confused.
+- **Sub-menus are supported.** Any main-menu link with child links (Shopify admin → Content → Menus) becomes:
+  - on desktop, a disclosure dropdown (a button with `aria-expanded`, not an ARIA menu, so Tab works normally). It opens on hover with a short delay or on click, and closes on Esc (focus returns to the button), on a click outside, on leaving it, or when the header scrolls away. It ends with a "Shop all" link to the parent.
+  - in the phone drawer, a native `<details>` accordion, already open when you're inside that section.
+  - Children named like bouquets, keychains, hair clips or bag charms get the matching brand icon (`snippets/menu-link-icon.liquid`).
+- **Drawer closes with an animation in every browser** (slides out, then `close()`), including Esc and taps on the backdrop. You can **swipe it left to close**: the panel follows your finger and springs back on a short swipe. Following a link still closes it instantly.
+- **Small things:** a soft shadow when the header is scrolled, quiet icon gestures on hover (search tilts, basket tips, logo nods), and the close X turns. The cart's screen-reader label now updates when the count changes (it used to stay at the page-load number), and the visible badge is hidden from screen readers so the count isn't read twice. All of this respects reduced motion. axe shows 0 violations with the dropdown open (desktop) and with the drawer and accordion open (phone).
+
 ## 2026-10-01 (home page, round 3)
 
 - **Usability and accessibility come before looks.** Raushan: "user experience, accessibility should be our top priority rather than just making UI looks better. The important thing is user should be able to see what we are offering them, rather than just too colors and texts." Every later design choice is checked against this: can a shopper on a phone see the products quickly, and can everyone use it?
