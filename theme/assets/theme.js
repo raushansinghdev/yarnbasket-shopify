@@ -7,6 +7,16 @@
 const root = document.documentElement;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
+/* ---------- Photos fade in as they arrive ----------
+   Only images still loading are held back; ones already painted (and the hero's main photo) are left alone.
+   If this script never runs, every image simply shows as normal. */
+document.querySelectorAll('.media img:not([fetchpriority="high"])').forEach((img) => {
+  if (img.complete) return;
+  img.classList.add('img-wait');
+  img.addEventListener('load', () => { img.classList.remove('img-wait'); img.classList.add('img-in'); }, { once: true });
+  img.addEventListener('error', () => img.classList.remove('img-wait'), { once: true });
+});
+
 /* ---------- Header: hide while scrolling down, return on scroll up ---------- */
 {
   let lastY = scrollY;

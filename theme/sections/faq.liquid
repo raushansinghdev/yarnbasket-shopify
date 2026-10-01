@@ -86,6 +86,11 @@
     transition: block-size var(--dur-panel) var(--ease-out), content-visibility var(--dur-panel) allow-discrete;
   }
   .faq__item[open]::details-content { block-size: auto; }
+  @media (prefers-reduced-motion: no-preference) {
+    .faq__item[open] .faq__answer { animation: answer-in 420ms var(--ease-out) 60ms both; }
+  }
+  @keyframes answer-in { from { opacity: 0; translate: 0 -6px; } }
+  @media (hover: hover) { .faq__item summary:hover .faq__toggle { background: var(--color-surface); } }
 
   @media (min-width: 990px) {
     .faq__grid { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: var(--space-9); align-items: start; }

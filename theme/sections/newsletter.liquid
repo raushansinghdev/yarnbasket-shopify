@@ -66,6 +66,10 @@
   .newsletter__field input::placeholder { color: var(--color-muted); }
   .newsletter__field .btn { min-height: 48px; padding-inline: var(--space-5); }
   .newsletter__msg { margin-top: var(--space-3); font-size: var(--fs-small); }
+  @media (prefers-reduced-motion: no-preference) {
+    .newsletter__msg[role="status"] { animation: msg-in 700ms var(--ease-spring) both; }
+  }
+  @keyframes msg-in { from { opacity: 0; scale: .92; } }
   .newsletter__msg--error { color: #9A3F33; }
 {% endstylesheet %}
 

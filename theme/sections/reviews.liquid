@@ -98,7 +98,28 @@
     background: var(--color-surface);
   }
   .review__stars { display: flex; gap: 2px; color: var(--cocoa-deep); }
+  .review__star { display: inline-flex; }
   .review__star .icon { width: 16px; height: 16px; }
+  .review__star:nth-child(2) { --s: 1; }
+  .review__star:nth-child(3) { --s: 2; }
+  .review__star:nth-child(4) { --s: 3; }
+  .review__star:nth-child(5) { --s: 4; }
+  /* The stars pop in one after another as the reviews scroll into view (tied to scroll, plays once on the way in). */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .reviews { view-timeline-name: --reviews; }
+      .review__star {
+        animation: star-in linear both;
+        animation-timeline: --reviews;
+        animation-range: entry calc(45% + var(--s, 0) * 5% + var(--i, 0) * 4%) entry calc(65% + var(--s, 0) * 5% + var(--i, 0) * 4%);
+      }
+    }
+  }
+  @keyframes star-in { from { scale: .2; opacity: 0; } 70% { scale: 1.15; } }
+  @media (hover: hover) {
+    .review__inner { transition: translate var(--dur-panel) var(--ease-out), box-shadow var(--dur-panel) var(--ease-out); }
+    .review:hover .review__inner { translate: 0 -3px; box-shadow: 0 20px 40px -28px rgba(78, 58, 49, .4); }
+  }
   .review__star.is-empty { opacity: .22; }
   .review__quote { font-size: 1.0625rem; line-height: 1.6; color: var(--color-ink); }
   .review__quote p::before { content: "\201C"; }
