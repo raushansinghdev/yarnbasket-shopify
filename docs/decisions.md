@@ -5,7 +5,7 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 
 ## 2026-10-02 (header and navigation, docs/nav-plan.md)
 
-- **Header icons are 28px glyphs with 1.8 strokes in 48px targets.** The menu icon is three lines, and the cart icon is a basket drawn like the logo's. The cart badge is 20px with a 12px number. Cart changes are announced through a `role="status"` line. Raushan said the old icons were too small and not accessible.
+- **Header icons are 28px glyphs with 1.8 strokes in 48px targets.** The menu icon is three lines, and the cart icon is a classic trolley. A basket drawn like the logo's was tried first, but at 28px it read as a striped bucket. Raushan chose the trolley from four options because Indian shoppers already know it from Flipkart, Amazon and Meesho, and on phones the icon has no word beside it. The cart badge is 20px with a 12px number. Cart changes are announced through a `role="status"` line. Raushan said the old icons were too small and not accessible.
 - **Words where there's room:** on desktop, "Cart" is always written, search is a real field from 1280px, and Account has a tooltip (Esc hides it). Phones stay icon-only, because there's no room at 360px.
 - **The main menu is Shop / Gifts / Bestsellers / Our story / Help, with Home dropped** (the logo, named "Yarn Basket, home", goes home). Shop shows the crafts as photo tiles, in the desktop panel and at the top of the phone drawer.
 - **No bottom tab bar on phones for now.** It would take 56px of every screen and clash with the planned sticky "Add to cart". Revisit after launch.

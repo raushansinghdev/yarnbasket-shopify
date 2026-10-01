@@ -162,7 +162,7 @@
           </a>
         {%- endif -%}
         <a href="{{ routes.cart_url }}" class="icon-btn site-header__cart" data-no-prerender {% if request.page_type == 'cart' %}aria-current="page"{% endif %}>
-          {%- render 'icon', icon: 'basket' -%}
+          {%- render 'icon', icon: 'cart' -%}
           <span class="site-header__cart-word" aria-hidden="true">{{ 'header.cart' | t }}</span>
           <span class="site-header__count" data-cart-count aria-hidden="true" {% if cart.item_count == 0 %}hidden{% endif %}>
             {%- if cart.item_count > 99 %}99+{% else %}{{ cart.item_count }}{% endif -%}
@@ -366,11 +366,11 @@
   @media (hover: hover) {
     .site-header__search:hover .icon { transform: rotate(-10deg) scale(1.06); }
     .site-header__account:hover .icon { transform: translateY(-1px); }
-    .site-header__cart:hover .icon { transform: rotate(-8deg) translateY(-1px); }
+    .site-header__cart:hover .icon { transform: translateX(2px); }
     .site-header__menu-btn:hover .icon { transform: scaleX(1.12); }
   }
 
-  /* The count sits on the basket's corner, with a ring in the header colour so it never merges with the glyph. */
+  /* The count sits on the cart's top corner, with a ring in the header colour so it never merges with the glyph. */
   .site-header__count {
     position: absolute;
     top: 0;

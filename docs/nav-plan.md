@@ -110,7 +110,7 @@ Familiar shapes come first and brand character second. A crochet-themed magnifie
 - **menu**: three equal lines, 3.5 → 20.5, at y = 6.5 / 12 / 17.5
 - **search**: lens r = 7 centred at 10.5, 10.5. A 6px handle at 45°. The lens is a little larger than today so it balances the basket
 - **account**: a fuller head (r = 4) and shoulders that end at the baseline, so it doesn't look like a keyhole
-- **basket**: today's basket, redrawn closer to the logo's basket. Handle arc, a slanted body, one weave line at 60% opacity. It's the brand's own mark, so it doubles as the cart icon
+- **cart**: a classic trolley (icon name `cart`). *Changed 2026-10-02: the logo-style basket read as a striped bucket at 28px. The basket idea stays in the logo.*
 - **close**: a 12px ×, the same weight as menu (so the swap between them looks like one icon turning into the other)
 - **chevron**, **arrow**: re-stroked to 1.8 so they match
 - **whatsapp**, **truck** (track order), **help** (question in a circle): new, for the drawer and the Help menu
