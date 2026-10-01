@@ -417,36 +417,10 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 260ms; animation-timing-function: var(--ease-out); }
 
-/* Content rises gently into place as it scrolls into view. Browsers without scroll timelines show it static. */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .reveal {
-      animation: reveal linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 70%;
-    }
-    .reveal-group > * {
-      animation: reveal linear both;
-      animation-timeline: view();
-      animation-range: entry calc(var(--i, 0) * 6%) entry calc(60% + var(--i, 0) * 6%);
-    }
-    /* Inside a swipe row the items' own view() is measured against the row (which never scrolls vertically),
-       so it would never play. Use the row's timeline on the page instead. */
-    .scroller.reveal-group { view-timeline-name: --row; }
-    .scroller.reveal-group > * {
-      animation-timeline: --row;
-      /* Measured against the viewport (cover) rather than the row's own height, so even a short row of chips eases in over ~200px of scroll. */
-      animation-range: entry calc(var(--i, 0) * 4%) cover calc(24% + var(--i, 0) * 3%);
-    }
-  }
-}
-@keyframes reveal {
-  from { opacity: 0; transform: translateY(28px); }
-  to { opacity: 1; transform: none; }
-}
-
 /* ---------- Alive: small motion that answers the shopper, never motion that competes with the products ----------
-   Everything here plays once or follows the shopper's own scroll; nothing loops. Transform and opacity only. */
+   Reveals play once, on a timer, as each thing arrives on screen (theme.js), not tied to the scroll position:
+   scroll-linked reveals advance in steps under a notched mouse wheel and read as jitter, and Firefox can't run them.
+   Transform and opacity only; all of it is off for reduced motion. */
 
 /* Photos fade in as they arrive instead of popping in (theme.js marks the ones still loading).
    The page's main hero photo is never held back, so it still paints first for LCP. */
@@ -454,26 +428,38 @@ img.img-wait { opacity: 0; }
 img.img-in { animation: img-in 700ms var(--ease-out); }
 @keyframes img-in { from { opacity: 0; } }
 
+/* Arrivals: theme.js adds .is-pending only to things still below the screen at load, then swaps it for .is-arriving
+   when they come into view. Section heads and blocks rise in; rows and grids stagger by --i; stitched borders sew
+   themselves in (dots grow into stitches); review stars pop one by one. */
+@media (prefers-reduced-motion: no-preference) {
+  .is-pending { opacity: 0; }
+  .reveal.is-pending, .reveal-group > .is-pending { transform: translateY(20px); }
+  .reveal.is-arriving, .reveal-group > .is-arriving { animation: reveal 760ms var(--ease-out) calc(var(--i, 0) * 80ms) both; }
+  .stitch.is-pending, .review__stars.is-pending { opacity: 1; }
+  .stitch.is-pending rect { stroke-dasharray: 0 13; }
+  .stitch.is-arriving rect { animation: stitch-in 1400ms var(--ease-out) 150ms both; }
+  .review__stars.is-pending .review__star { opacity: 0; }
+  .review__stars.is-arriving .review__star { animation: star-in 520ms var(--ease-out) calc(200ms + var(--s, 0) * 90ms + var(--i, 0) * 120ms) both; }
+}
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes stitch-in { from { stroke-dasharray: 0 13; } }
+
+/* Swipe rows on phones: cards grow from slightly smaller as they slide into the row (scale only, so text keeps
+   its contrast), so the half-visible card at the edge reads as "there's more this way". This one is tied to the
+   finger on purpose: it follows a touch swipe, which is continuous. */
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
-    /* Swipe rows on phones: cards grow from slightly smaller as they slide into the row (scale only, so text keeps its contrast),
-       so the half-visible card at the edge reads as "there's more this way". */
     .scroller > * > :first-child {
       animation: row-in linear both;
       animation-timeline: view(inline);
       animation-range: entry 0% entry 100%;
     }
-    /* Stitched borders sew themselves in: dots grow into stitches as the box scrolls into view. */
-    .stitch { view-timeline-name: --stitch; }
-    .stitch rect {
-      animation: stitch-in linear both;
-      animation-timeline: --stitch;
-      animation-range: entry 10% cover 45%;
-    }
   }
 }
 @keyframes row-in { from { scale: .94; } }
-@keyframes stitch-in { from { stroke-dasharray: 0 13; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

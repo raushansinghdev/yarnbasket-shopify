@@ -23,7 +23,7 @@
 
 {%- if section.index == 1 and s.scheme == 'blush' -%}
   {%- comment -%} At the top of the page the header takes the hero's Blush, so they read as one welcome; it turns light again on scroll. {%- endcomment -%}
-  <style>html:not(.header-scrolled) { --header-bg: var(--blush); }</style>
+  <style>html:not(.header-scrolled) .site-header { --header-bg: var(--blush); }</style>
 {%- endif -%}
 <section class="section hero scheme-{{ s.scheme }}" aria-labelledby="Hero-{{ section.id }}">
   <div class="hero__grid">
@@ -427,7 +427,12 @@
 
     new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; schedule(); }, { threshold: 0.25 }).observe(root);
     document.addEventListener('visibilitychange', schedule);
-    new MutationObserver(schedule).observe(html, { attributes: true, attributeFilter: ['class'] });
+    // Wait out the logo intro. Only react when the intro class itself changes: the header flips classes on <html>
+    // all the time while scrolling, and restarting the timer on each flip stalled the slideshow.
+    let intro = html.classList.contains('yb-intro');
+    new MutationObserver(() => {
+      if (html.classList.contains('yb-intro') !== intro) { intro = !intro; schedule(); }
+    }).observe(html, { attributes: true, attributeFilter: ['class'] });
     reduce.addEventListener('change', () => { if (reduce.matches) setPaused(true); });
 
     // Theme editor: selecting a photo block shows it and holds it still.

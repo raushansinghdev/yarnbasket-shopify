@@ -253,9 +253,44 @@ document.addEventListener('cart:updated', (event) => {
   });
 });
 
-/* ---------- Scroll timelines fallback ----------
-   Browsers with CSS scroll-driven animations need nothing here. Others get a light
-   IntersectionObserver that adds .is-inview, which sections can use for one-off reveals. */
+/* ---------- Arrivals: things rise, stagger, sew and pop into place as they come into view ----------
+   Played once on a timer (CSS in base.css), the same in every browser. Only what is still below the screen at
+   load waits to arrive, so nothing already visible ever blinks out. Rows that swipe sideways arrive as a whole,
+   so cards off to the side don't wait for a swipe. */
+if ('IntersectionObserver' in window && !reduceMotion.matches) {
+  const arrive = (el) => {
+    el.classList.replace('is-pending', 'is-arriving');
+    const done = (e) => {
+      if (e.target !== el) return;
+      el.classList.remove('is-arriving');
+      el.removeEventListener('animationend', done);
+    };
+    el.addEventListener('animationend', done);
+  };
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      io.unobserve(el);
+      if (el.matches('.scroller.reveal-group')) [...el.children].forEach((item) => item.classList.contains('is-pending') && arrive(item));
+      else arrive(el);
+    });
+  }, { rootMargin: '0px 0px -10% 0px' });
+  const below = (el) => el.getBoundingClientRect().top > innerHeight * 0.9;
+  const wait = (el, watch = el) => { el.classList.add('is-pending'); io.observe(watch); };
+  document.querySelectorAll('.reveal, .reveal-group, .stitch, .review__stars').forEach((el) => {
+    if (el.matches('.scroller.reveal-group')) {
+      if (below(el)) { [...el.children].forEach((item) => item.classList.add('is-pending')); io.observe(el); }
+    } else if (el.matches('.reveal-group')) {
+      [...el.children].forEach((item) => below(item) && wait(item));
+    } else if (below(el)) {
+      wait(el);
+    }
+  });
+}
+
+/* ---------- Story strand fallback ----------
+   The story's yarn strand draws with the scroll where scroll timelines exist; elsewhere it draws once on arrival. */
 if (!CSS.supports('animation-timeline: view()') && 'IntersectionObserver' in window) {
   const io = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {

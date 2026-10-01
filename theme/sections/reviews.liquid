@@ -104,17 +104,7 @@
   .review__star:nth-child(3) { --s: 2; }
   .review__star:nth-child(4) { --s: 3; }
   .review__star:nth-child(5) { --s: 4; }
-  /* The stars pop in one after another as the reviews scroll into view (tied to scroll, plays once on the way in). */
-  @media (prefers-reduced-motion: no-preference) {
-    @supports (animation-timeline: view()) {
-      .reviews { view-timeline-name: --reviews; }
-      .review__star {
-        animation: star-in linear both;
-        animation-timeline: --reviews;
-        animation-range: entry calc(45% + var(--s, 0) * 5% + var(--i, 0) * 4%) entry calc(65% + var(--s, 0) * 5% + var(--i, 0) * 4%);
-      }
-    }
-  }
+  /* The stars pop in one after another when a review arrives on screen (base.css + theme.js). */
   @keyframes star-in { from { scale: .2; opacity: 0; } 70% { scale: 1.15; } }
   @media (hover: hover) {
     .review__inner { transition: translate var(--dur-panel) var(--ease-out), box-shadow var(--dur-panel) var(--ease-out); }

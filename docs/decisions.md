@@ -80,6 +80,14 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
     - **The promise box no longer rises:** the box rising, its items rising and the stitches sewing all at once was too busy. The box stays put; the stitches sew and the items stagger.
     - LCP is still the hero photo (about 0.9 s on a 4x-throttled phone, local), so the photo fade-in costs nothing there.
     - Re-verified in Pixel 7, iPhone 13 (WebKit) and desktop: every row reveals while entering and is fully visible once in view; images, stitches and stars all work; reduced motion is static; axe shows 0.
+- **Reveals are time-based on arrival, not tied to scroll position (2026-10-02, after Raushan reported jitter and no effects).** The cause, measured:
+  - **Firefox has no CSS scroll timelines,** so every scroll-linked effect was static there (as on Safari before 26). Raushan uses Firefox.
+  - **Scroll-linked reveals advance in steps under a notched mouse wheel** (move, stop, move), which reads as jitter, and the content drifts at a different speed from the page. Headless Chrome rendered at a steady 60 fps even with 4x CPU throttling, so this was never a raw speed problem.
+  - **One real hitch at the start of every scroll:** the hero set `--header-bg` on `<html>`, and flipping it restyled the whole page. It is now scoped to `.site-header`, and there are no slow frames left.
+  - **New approach:** an IntersectionObserver in `theme.js` marks only things still below the screen at load as `.is-pending`. When they arrive, they get `.is-arriving` and play a short CSS animation (rise 20px over 760ms, staggered 80ms by `--i`; stitches sew in; stars pop), the same in every browser. Swipe rows arrive as a whole, so off-screen cards don't wait for a swipe.
+  - **Still scroll-linked on purpose** (decorative or finger-driven): the story's yarn strand (with its existing fallback), the footer flowers' drift, and the scale in phone swipe rows.
+  - **Also fixed:** the hero slideshow restarted its timer every time the header hid or showed (its MutationObserver watched all `<html>` class changes). It now reacts only to the logo intro.
+  - Verified in Firefox, Chrome desktop, Pixel 7 and iPhone 13 (WebKit): sections rise in, stars pop and stitches sew in; nothing stays hidden after scrolling the page (except stars on a review card still off to the side in the swipe row, which pop on swipe); the slideshow advances while the header toggles; no slow frames; reduced motion has nothing pending; axe shows 0.
 - Axe after round 3: 0 violations on mobile and desktop.
 
 ## 2026-10-01 (home page, round 2)
