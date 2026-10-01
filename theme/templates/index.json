@@ -4,19 +4,22 @@
       "type": "hero",
       "settings": {
         "eyebrow": "Handmade in India",
-        "heading": "Handmade crochet flowers that never fade",
+        "heading": "Handmade crochet flowers that *never fade*",
         "text": "Bouquets, keychains, hair clips and bag charms, crocheted stitch by stitch and made to be gifted.",
         "button_label": "Shop bouquets",
         "link_label": "Find a gift",
-        "scheme": "cream"
+        "scheme": "soft",
+        "show_badge": true
       }
     },
     "craft": {
       "type": "collection-list",
       "settings": {
-        "eyebrow": "Our crafts",
+        "eyebrow": "Shop by craft",
         "heading": "Made stitch by stitch",
-        "scheme": "cream"
+        "scheme": "white",
+        "shape": "circle",
+        "center": true
       },
       "blocks": {
         "c1": {
@@ -36,7 +39,7 @@
         "c3": {
           "type": "collection",
           "settings": {
-            "title": "Hair clips",
+            "title": "Hair accessories",
             "tagline": "Soft crochet for your hair"
           }
         },
@@ -46,13 +49,21 @@
             "title": "Bag charms",
             "tagline": "Little touches of handmade"
           }
+        },
+        "c5": {
+          "type": "collection",
+          "settings": {
+            "title": "Flower pots",
+            "tagline": "A bloom for your desk"
+          }
         }
       },
       "block_order": [
         "c1",
         "c2",
         "c3",
-        "c4"
+        "c4",
+        "c5"
       ]
     },
     "bestsellers": {
@@ -62,7 +73,7 @@
         "heading": "Bestsellers",
         "limit": 4,
         "show_view_all": true,
-        "scheme": "cream"
+        "scheme": "white"
       }
     },
     "story": {
@@ -72,7 +83,7 @@
         "heading": "One stitch at a time",
         "text": "<p>Every piece is crocheted by hand with soft yarn, one stitch at a time. No machines, no shortcuts, so no two pieces are ever quite the same.</p>",
         "link_label": "Our story",
-        "scheme": "cocoa"
+        "scheme": "soft"
       }
     },
     "occasions": {
@@ -81,7 +92,7 @@
         "eyebrow": "Gifting",
         "heading": "A gift for every occasion",
         "text": "Flowers that never wilt, for the people you never forget.",
-        "scheme": "cream"
+        "scheme": "white"
       },
       "blocks": {
         "o1": {
@@ -128,14 +139,14 @@
       "settings": {
         "eyebrow": "Customer love",
         "heading": "Your words make our day",
-        "scheme": "oat"
+        "scheme": "white"
       }
     },
     "promise": {
       "type": "promise",
       "settings": {
         "label": "Our promise",
-        "scheme": "cream"
+        "scheme": "white"
       },
       "blocks": {
         "p1": {
@@ -175,7 +186,7 @@
         "eyebrow": "Good to know",
         "heading": "Questions, answered",
         "link_label": "",
-        "scheme": "cream"
+        "scheme": "white"
       },
       "blocks": {
         "q1": {
@@ -212,7 +223,7 @@
         "eyebrow": "Stay in the loop",
         "heading": "New drops, first",
         "text": "New designs and restocks, straight to your inbox. No spam, ever.",
-        "scheme": "oat"
+        "scheme": "blush"
       }
     }
   },

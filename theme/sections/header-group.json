@@ -2,6 +2,27 @@
   "type": "header",
   "name": "Header",
   "sections": {
+    "announcement": {
+      "type": "announcement-bar",
+      "blocks": {
+        "m1": {
+          "type": "message",
+          "settings": {
+            "text": "Handmade with love in India"
+          }
+        },
+        "m2": {
+          "type": "message",
+          "settings": {
+            "text": "Gifts that never wilt"
+          }
+        }
+      },
+      "block_order": [
+        "m1",
+        "m2"
+      ]
+    },
     "header": {
       "type": "header",
       "settings": {
@@ -10,6 +31,7 @@
     }
   },
   "order": [
+    "announcement",
     "header"
   ]
 }

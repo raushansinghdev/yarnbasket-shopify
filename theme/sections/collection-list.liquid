@@ -1,14 +1,14 @@
 {%- liquid
   assign s = section.settings
   assign count = section.blocks.size
-  if count <= 4
+  if count <= 4 or s.shape == 'circle'
     assign desktop_cols = count
   else
     assign desktop_cols = 3
   endif
 -%}
 
-<section class="section craft scheme-{{ s.scheme }}" aria-labelledby="Craft-{{ section.id }}">
+<section class="section craft craft--{{ s.shape }} scheme-{{ s.scheme }}" aria-labelledby="Craft-{{ section.id }}">
   <div class="section-head{% if s.center %} section-head--center{% endif %} reveal">
     {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
     <h2 id="Craft-{{ section.id }}">{{ s.heading }}</h2>
@@ -30,13 +30,16 @@
           <div class="media craft__media">
             {%- if img -%}
               {%- render 'image', image: img, sizes: '(min-width: 990px) 25vw, 60vw', alt: '', class: 'craft__img' -%}
+            {%- elsif settings.demo_content -%}
+              {%- assign demo_names = 'cat-bouquets,cat-keychains,cat-hair,cat-charms,cat-pots,cat-bouquets' | split: ',' -%}
+              {%- render 'demo-image', name: demo_names[forloop.index0], sizes: '(min-width: 990px) 20vw, 45vw', class: 'craft__img' -%}
             {%- else -%}
               {%- assign art = forloop.index | modulo: 6 | plus: 1 -%}
               {{ 'collection-' | append: art | placeholder_svg_tag: 'placeholder-svg' }}
             {%- endif -%}
           </div>
           <span class="craft__text">
-            <span class="craft__title">{{ title | default: 'Collection' }}</span>
+            <span class="craft__title">{{ title | default: 'Collection' }}{% render 'icon', icon: 'arrow' %}</span>
             {%- if block.settings.tagline != blank -%}
               <span class="craft__tagline">{{ block.settings.tagline }}</span>
             {%- endif -%}
@@ -70,14 +73,31 @@
     line-height: 1.1;
     color: var(--color-heading);
   }
+  .craft__title .icon { width: 16px; height: 16px; opacity: .5; transition: transform var(--dur-panel) var(--ease-out), opacity var(--dur-state) ease; }
   .craft__tagline { font-size: var(--fs-small); color: var(--color-muted); }
+
+  /* Round tiles, like the Instagram story highlights in the brand kit */
+  .craft--circle .craft__list { --scroller-item: 40%; --scroller-gap: var(--space-5); }
+  .craft--circle .craft__link { justify-items: center; text-align: center; }
+  .craft--circle .craft__media {
+    --ratio: 1;
+    border-radius: 50%;
+    outline: 1.5px solid color-mix(in srgb, var(--rose) 70%, transparent);
+    outline-offset: 5px;
+    width: calc(100% - 14px);
+    margin: 7px;
+  }
+  .craft--circle .craft__title { font-size: 1.3125rem; }
+  .craft--circle .craft__tagline { max-width: 12rem; }
 
   @media (hover: hover) {
     .craft__link:hover .craft__img { transform: scale(1.04); }
+    .craft__link:hover .craft__title .icon { opacity: 1; transform: translateX(3px); }
   }
 
   @media (min-width: 750px) {
     .craft__list { --scroller-item: 38%; }
+    .craft--circle .craft__list { --scroller-item: 26%; }
   }
   @media (min-width: 990px) {
     .craft__list {
@@ -103,13 +123,23 @@
     { "type": "checkbox", "id": "center", "label": "Centre the heading", "default": false },
     {
       "type": "select",
+      "id": "shape",
+      "label": "Tile shape",
+      "options": [
+        { "value": "circle", "label": "Circle" },
+        { "value": "portrait", "label": "Portrait" }
+      ],
+      "default": "circle"
+    },
+    {
+      "type": "select",
       "id": "scheme",
       "label": "Background",
       "options": [
-        { "value": "cream", "label": "Cream" },
-        { "value": "oat", "label": "Oat" }
+        { "value": "white", "label": "White" },
+        { "value": "soft", "label": "Soft blush" }
       ],
-      "default": "cream"
+      "default": "white"
     }
   ],
   "blocks": [
@@ -128,6 +158,7 @@
     {
       "name": "Shop by craft",
       "blocks": [
+        { "type": "collection" },
         { "type": "collection" },
         { "type": "collection" },
         { "type": "collection" },

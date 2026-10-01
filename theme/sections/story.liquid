@@ -23,9 +23,11 @@
 
   <div class="story__grid">
     <div class="story__visual reveal">
-      <div class="media story__media">
+      <div class="media story__media"{% if s.image %} style="--ratio: {{ s.image.aspect_ratio }}"{% elsif settings.demo_content %} style="--ratio: 1179 / 678"{% endif %}>
         {%- if s.image -%}
           {%- render 'image', image: s.image, sizes: '(min-width: 990px) 45vw, calc(100vw - 40px)', class: 'story__img' -%}
+        {%- elsif settings.demo_content -%}
+          {%- render 'demo-image', name: 'story-rose', sizes: '(min-width: 990px) 45vw, calc(100vw - 40px)', class: 'story__img', width: 1179, height: 678, alt: 'Hands crocheting a red rose with a steel hook' -%}
         {%- else -%}
           {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}
         {%- endif -%}
@@ -61,7 +63,7 @@
   .story__line { position: absolute; inset: 3% 0 2%; width: 100%; height: 95%; overflow: visible; }
   .story__line path {
     fill: none;
-    stroke: var(--rose);
+    stroke: var(--strand);
     stroke-width: 1.6;
     stroke-linecap: round;
     opacity: .75;
@@ -79,6 +81,7 @@
   .story__bloom ellipse { fill: var(--cream); stroke: var(--cocoa-deep); }
   .story__bloom-centre { fill: var(--sage); stroke: var(--cocoa-deep); }
   .scheme-cocoa .story__bloom ellipse { fill: var(--blush); stroke: var(--cocoa-deep); }
+  .scheme-cocoa { --strand: var(--rose); }
 
   .story__grid { display: grid; gap: var(--space-7); align-items: center; }
   .story__media { --ratio: 4 / 5; border-radius: var(--radius-lg); }
@@ -174,11 +177,12 @@
       "id": "scheme",
       "label": "Background",
       "options": [
-        { "value": "cocoa", "label": "Cocoa" },
-        { "value": "oat", "label": "Oat" },
-        { "value": "cream", "label": "Cream" }
+        { "value": "soft", "label": "Soft blush" },
+        { "value": "white", "label": "White" },
+        { "value": "blush", "label": "Blush" },
+        { "value": "cocoa", "label": "Cocoa" }
       ],
-      "default": "cocoa"
+      "default": "soft"
     }
   ],
   "presets": [{ "name": "Made by hand" }]

@@ -8,7 +8,7 @@
       <h2 id="Reviews-{{ section.id }}">{{ s.heading }}</h2>
     </div>
 
-    <ul class="reviews__list scroller reveal-group" role="list">
+    <ul class="reviews__list scroller reveal-group" role="list" tabindex="0" aria-label="{{ s.heading | escape }}">
       {%- for block in section.blocks -%}
         {%- assign b = block.settings -%}
         <li class="review" style="--i: {{ forloop.index0 | modulo: 3 }}" {{ block.shopify_attributes }}>
@@ -32,6 +32,47 @@
                   <a class="review__product" href="{{ b.product.url }}">{{ b.product.title }}</a>
                 {%- endif -%}
               </span>
+            </figcaption>
+          </figure>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </section>
+{%- elsif settings.demo_content -%}
+  {%- comment -%} Sample reviews so the layout can be judged. They say "Sample" on purpose; turn demo content off before launch. {%- endcomment -%}
+  <section class="section reviews scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}">
+    <div class="section-head reveal">
+      {%- render 'icon', icon: 'reviews' -%}
+      {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h2 id="Reviews-{{ section.id }}">{{ s.heading }}</h2>
+    </div>
+    <ul class="reviews__list scroller reveal-group" role="list" tabindex="0" aria-label="{{ s.heading | escape }}">
+      {%- for i in (1..3) -%}
+        {%- liquid
+          case i
+            when 1
+              assign q = 'The sunflowers look even better in person. My sister keeps them on her desk and they still look new.'
+              assign who = 'Sunflower Trio Bouquet'
+            when 2
+              assign q = 'Neatly made and so soft. The bee keychain is on my bag every day and people always ask where it is from.'
+              assign who = 'Bee & Chick Keychain Set'
+            else
+              assign q = 'Gave the rose bouquet on our anniversary instead of real flowers. It was packed beautifully.'
+              assign who = 'Red Rose Crochet Bouquet'
+          endcase
+        -%}
+        <li class="review" style="--i: {{ forloop.index0 }}">
+          <figure class="review__inner">
+            <p class="review__stars" role="img" aria-label="{{ 'reviews.rating' | t: rating: 5 }}">
+              {%- for k in (1..5) -%}<span class="review__star">{%- render 'icon', icon: 'star' -%}</span>{%- endfor -%}
+            </p>
+            <blockquote class="review__quote"><p>{{ q }}</p></blockquote>
+            <figcaption class="review__by">
+              <span>
+                <span class="review__name">{{ 'reviews.sample_name' | t }}</span>
+                <span class="review__city">{{ who }}</span>
+              </span>
+              <span class="demo-tag">{{ 'reviews.sample' | t }}</span>
             </figcaption>
           </figure>
         </li>
@@ -64,7 +105,8 @@
   .review__quote p::after { content: "\201D"; }
   .review__by { display: flex; align-items: center; gap: var(--space-3); margin-top: auto; }
   .review__photo { width: 48px; height: 48px; --ratio: 1; border-radius: 50%; flex: none; }
-  .review__by > span:last-child { display: grid; line-height: 1.35; }
+  .review__by > span:not(.demo-tag, .review__photo) { display: grid; line-height: 1.35; }
+  .review__by .demo-tag { margin-left: auto; }
   .review__name { font-weight: 500; color: var(--color-heading); }
   .review__city { font-size: var(--fs-small); color: var(--color-muted); }
   .review__product { font-size: var(--fs-small); color: var(--color-muted); text-underline-offset: 3px; text-decoration-color: var(--color-line-strong); }
@@ -95,11 +137,11 @@
       "id": "scheme",
       "label": "Background",
       "options": [
-        { "value": "cream", "label": "Cream" },
-        { "value": "oat", "label": "Oat" },
+        { "value": "white", "label": "White" },
+        { "value": "soft", "label": "Soft blush" },
         { "value": "blush", "label": "Blush" }
       ],
-      "default": "cream"
+      "default": "white"
     },
     {
       "type": "paragraph",

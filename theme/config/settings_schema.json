@@ -57,5 +57,17 @@
         "info": "With country code, like +91 98765 43210."
       }
     ]
+  },
+  {
+    "name": "Demo content",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "demo_content",
+        "label": "Show demo content",
+        "default": true,
+        "info": "Fills empty slots with brand illustrations, sample products and sample reviews while the store is being built. Turn this off before launch."
+      }
+    ]
   }
 ]

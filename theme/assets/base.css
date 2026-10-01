@@ -2,8 +2,9 @@
   Yarn Basket · base styles
   Tokens, reset, typography, layout, buttons and motion. Loaded on every page.
   Section styles live in each section's {% stylesheet %} tag.
-  Colours come from the brand kit (docs/brand-direction.md). Restraint is the rule:
-  mostly Cream and Oat, Cocoa for ink, Blush and Rose only as small accents.
+  Colours come from the brand kit (docs/brand-direction.md), arranged the way Raushan liked on
+  rareyou.com: a white page, soft blush bands, one stronger Blush band, Cocoa for text and buttons.
+  Rose and Sage stay as small accents inside illustrations and lines.
 */
 
 /* ---------- Tokens ---------- */
@@ -18,16 +19,19 @@
   --cream: #FBF6EF;
   --taupe: #8E7468;
   --taupe-ink: #705B52; /* Taupe darkened to pass AA for small text */
+  --white: #FFFFFF;
+  --blush-soft: #FBF1EE; /* Blush at about 35% on white, like rareyou's header */
 
   /* Roles */
-  --color-bg: var(--cream);
-  --color-surface: var(--oat);
+  --color-bg: var(--white);
+  --color-surface: var(--blush-soft);
   --color-ink: var(--cocoa);
   --color-heading: var(--cocoa-deep);
   --color-muted: var(--taupe-ink);
-  --color-line: #E8DDD1;
-  --color-line-strong: #D9CABB;
+  --color-line: #F1E3DE;
+  --color-line-strong: #E6D0C9;
   --color-accent: var(--rose);
+  --strand: #D49488;
 
   /* Type */
   --font-serif: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
@@ -82,9 +86,9 @@
 }
 
 /* ---------- Colour schemes for sections ---------- */
-.scheme-cream { --color-bg: var(--cream); --color-surface: var(--oat); }
-.scheme-oat { --color-bg: var(--oat); --color-surface: var(--cream); --color-line: #E3D6C8; }
-.scheme-blush { --color-bg: #F8E6E0; --color-surface: var(--cream); --color-line: #EDCFC6; }
+.scheme-white { --color-bg: var(--white); --color-surface: var(--blush-soft); }
+.scheme-soft { --color-bg: var(--blush-soft); --color-surface: var(--white); --color-line: #F0DBD4; --color-line-strong: #E6C9C1; }
+.scheme-blush { --color-bg: var(--blush); --color-surface: var(--blush-soft); --color-line: #E8C3B9; --color-line-strong: #DDB2A7; --strand: #B97C70; }
 .scheme-cocoa {
   --color-bg: var(--cocoa);
   --color-surface: #5E4539;
@@ -137,6 +141,18 @@ p { text-wrap: pretty; }
 html:has(dialog[open][data-scroll-lock]) { overflow: hidden; }
 
 ::selection { background: var(--blush); color: var(--cocoa-deep); }
+
+.demo-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px dashed var(--color-line-strong);
+  font-size: .625rem;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
 
 /* ---------- Focus ---------- */
 :focus-visible {
@@ -193,10 +209,10 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 
 .section { padding-block: var(--section-space); }
 /* Neighbouring sections on the same background share one gap instead of two. */
-.shopify-section:has(> .scheme-cream) + .shopify-section > .scheme-cream,
-.shopify-section:has(> .scheme-oat) + .shopify-section > .scheme-oat,
-.shopify-section:has(> .scheme-cream) + .shopify-section:not(:has(> *)) + .shopify-section > .scheme-cream,
-.shopify-section:has(> .scheme-oat) + .shopify-section:not(:has(> *)) + .shopify-section > .scheme-oat { padding-top: 0; }
+.shopify-section:has(> .scheme-white) + .shopify-section > .scheme-white,
+.shopify-section:has(> .scheme-soft) + .shopify-section > .scheme-soft,
+.shopify-section:has(> .scheme-white) + .shopify-section:not(:has(> *)) + .shopify-section > .scheme-white,
+.shopify-section:has(> .scheme-soft) + .shopify-section:not(:has(> *)) + .shopify-section > .scheme-soft { padding-top: 0; }
 /* Sections with nothing to show (like Reviews before the first review) take no space. */
 .shopify-section:not(:has(> *)) { display: none; }
 

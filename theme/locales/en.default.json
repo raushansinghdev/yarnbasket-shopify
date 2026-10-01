@@ -84,12 +84,19 @@
   },
   "reviews": {
     "rating": "{{ rating }} out of 5 stars",
-    "empty_editor": "Add a review block to show this section. It stays hidden on the live store until it has at least one review."
+    "empty_editor": "Add a review block to show this section. It stays hidden on the live store until it has at least one review.",
+    "sample": "Sample",
+    "sample_name": "Sample review"
   },
   "newsletter": {
     "email_label": "Email address",
     "email_placeholder": "Your email",
     "submit": "Join",
     "success": "Thank you! You're on the list."
+  },
+  "announcement": {
+    "previous": "Previous message",
+    "next": "Next message",
+    "label": "Announcements"
   }
 }

@@ -1,0 +1,35 @@
+{%- doc -%}
+  A demo photo from Yarn Basket's own product shots (assets/demo-*-600.webp and -1200.webp),
+  shown where a real image is missing while Theme settings → Demo content is on.
+  Delete the demo-* assets and turn demo content off before launch.
+
+  @param {string} name - Asset name without prefix and size, e.g. 'hero-sunflowers', 'p1-a', 'cat-bouquets'
+  @param {string} [sizes] - The sizes attribute. Defaults to 100vw.
+  @param {string} [alt] - Alt text. Defaults to empty (decorative).
+  @param {string} [class] - Class for the img element
+  @param {string} [loading] - 'lazy' (default) or 'eager'
+  @param {boolean} [priority] - true for the page's main image
+  @param {number} [width] - Intrinsic width. Defaults to 1200.
+  @param {number} [height] - Intrinsic height. Defaults to 1200.
+{%- enddoc -%}
+{%- liquid
+  assign small = 'demo-' | append: name | append: '-600.webp' | asset_url
+  assign large = 'demo-' | append: name | append: '-1200.webp' | asset_url
+  if priority
+    assign fetch = 'high'
+  else
+    assign fetch = 'auto'
+  endif
+-%}
+<img
+  src="{{ large }}"
+  srcset="{{ small }} 600w, {{ large }} 1200w"
+  sizes="{{ sizes | default: '100vw' }}"
+  alt="{{ alt | escape }}"
+  width="{{ width | default: 1200 }}"
+  height="{{ height | default: 1200 }}"
+  loading="{{ loading | default: 'lazy' }}"
+  fetchpriority="{{ fetch }}"
+  decoding="async"
+  class="{{ class }}"
+>

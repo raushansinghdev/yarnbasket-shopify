@@ -1,5 +1,7 @@
 # Store theme direction, from the brand kit
 
+> Update 2026-10-01: the palette is now lighter. It uses a white page, Soft blush (`#FBF1EE`) and Blush bands, and Cocoa for text and buttons, inspired by rareyou.com's lightness but with our own design. See `decisions.md`, round 2. The brand files now also live in `../brand/`.
+
 How the Yarn Basket brand kit (`../Brand Kit/`) becomes the visual language of the Shopify theme. The coming-soon page already uses the same tokens and logo animation.
 
 Source files to reuse:

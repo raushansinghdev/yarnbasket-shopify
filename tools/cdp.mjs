@@ -39,6 +39,10 @@ if (!motion) await send('Emulation.setEmulatedMedia', { features: [{ name: 'pref
 await send('Page.navigate', { url });
 await sleep(+opt('--wait', 3500));
 
+// Walk down the page so lazy images load, then return to the top.
+if (flag('--full')) {
+  await send('Runtime.evaluate', { expression: `(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight * 0.8) { scrollTo(0, y); await new Promise(r => setTimeout(r, 120)); } scrollTo(0, 0); await new Promise(r => setTimeout(r, 900)); })()`, awaitPromise: true });
+}
 const scroll = opt('--scroll');
 if (scroll) { await send('Runtime.evaluate', { expression: `window.scrollTo(0, ${scroll})` }); await sleep(900); }
 

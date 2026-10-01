@@ -4,6 +4,7 @@
   and at most one badge. Renders a placeholder card when product is blank.
 
   Badges come from product tags: "bestseller" or "new". Sold out always wins.
+  With no product, shows one of eight demo products (Theme settings → Demo content) or a plain placeholder.
 
   @param {product} [product] - The product. Blank renders a placeholder.
   @param {string} [sizes] - Image sizes attribute for the grid it sits in
@@ -43,6 +44,68 @@
       <div class="card__info">
         <h3 class="card__title">{{ product.title }}</h3>
         {%- render 'price', product: product -%}
+      </div>
+    </a>
+  {%- elsif settings.demo_content -%}
+    {%- comment -%} Demo product while the store has none (Theme settings → Demo content). {%- endcomment -%}
+    {%- liquid
+      assign n = index | default: 0 | modulo: 8 | plus: 1
+      case n
+        when 1
+          assign d_title = 'Sunflower Trio Crochet Bouquet'
+          assign d_price = '₹1,299'
+          assign d_badge = 'products.bestseller' | t
+        when 2
+          assign d_title = 'Red Rose Crochet Bouquet'
+          assign d_price = '₹1,199'
+          assign d_badge = ''
+        when 3
+          assign d_title = 'Pink Tulip & Daisy Bouquet'
+          assign d_price = '₹999'
+          assign d_compare = '₹1,199'
+          assign d_badge = ''
+        when 4
+          assign d_title = 'Bee & Chick Keychain Set'
+          assign d_price = '₹449'
+          assign d_badge = 'products.new' | t
+        when 5
+          assign d_title = 'Daisy Crochet Flower Pot'
+          assign d_price = '₹599'
+          assign d_badge = ''
+        when 6
+          assign d_title = 'Flower Hair Clips, Set of 8'
+          assign d_price = '₹399'
+          assign d_badge = ''
+        when 7
+          assign d_title = 'Lily of the Valley Bag Charm'
+          assign d_price = '₹349'
+          assign d_badge = ''
+        else
+          assign d_title = 'Daisy Crochet Headband'
+          assign d_price = '₹449'
+          assign d_badge = ''
+      endcase
+      assign img_a = 'p' | append: n | append: '-a'
+      assign img_b = 'p' | append: n | append: '-b'
+    -%}
+    <a href="{{ routes.all_products_collection_url }}" class="card__link">
+      <div class="card__media media">
+        {%- render 'demo-image', name: img_a, sizes: img_sizes, class: 'card__img', alt: d_title, loading: loading -%}
+        {%- render 'demo-image', name: img_b, sizes: img_sizes, class: 'card__img card__img--alt' -%}
+        {%- if d_badge != blank -%}<span class="card__badge">{{ d_badge }}</span>{%- endif -%}
+      </div>
+      <div class="card__info">
+        <h3 class="card__title">{{ d_title }}</h3>
+        <p class="price{% if d_compare %} price--sale{% endif %}">
+          {%- if d_compare -%}
+            <span class="visually-hidden">{{ 'products.sale_price' | t }}</span>
+            <span>{{ d_price }}</span>
+            <span class="visually-hidden">{{ 'products.regular_price' | t }}</span>
+            <s class="price__compare">{{ d_compare }}</s>
+          {%- else -%}
+            {{ d_price }}
+          {%- endif -%}
+        </p>
       </div>
     </a>
   {%- else -%}
