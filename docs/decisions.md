@@ -33,8 +33,8 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   The logo is live text rather than the PNG, so it stays sharp and is read by Google and screen readers. On hover the mark tilts slightly.
   - **Rule C, refined:** the page ground stays Soft blush. Blush panels are kept for brand moments (how it's made, what we promise). Shopping rows (craft circles, bestsellers, reviews) stay on the calm ground so the photos lead. Each panel has an on/off "Blush panel" setting in the theme editor.
   - Contrast on Blush: Cocoa 5.33:1, Taupe Ink 4.56:1, Cocoa deep 7.63:1, all AA.
-- **Logo intro: 2 seconds, once a day, on whichever page someone lands on** (Raushan chose to keep it for brand value; the frequency rule is Claude's recommendation).
-  - Duration: the brand kit choreography plays at double speed (the logo is fully drawn at about 1.6 s), then a 0.4 s fade, so about 2 s in all, down from 3.4 s. Any tap, scroll or key still skips it.
+- **Logo intro: about 3 seconds, once a day, on whichever page someone lands on** (Raushan chose to keep it for brand value; the frequency rule is Claude's recommendation).
+  - Duration: 2 s was tried first, and Raushan found it too quick to read. It is now about 3.2 s in all, down from about 4.1 s originally (3.4 s of drawing plus a 0.7 s fade). The kit choreography plays at 70% of its length: the name is written by about 1.8 s and the tagline by about 2.35 s. The finished logo then holds until 2.7 s so it can be read, followed by a 0.5 s fade. Any tap, scroll or key still skips it.
   - When: on the first page of a visit, whether home, a collection, a product or a content page, because many first visits from Instagram or Google land on a product. At most once every 24 hours per browser. Reloads and moving between pages never replay it.
   - Why not 30 days (the old rule): returning shoppers barely saw it. Why not every page or every session: a repeated intro turns from premium into a wait.
   - Never on: cart, account, search, checkout or the 404 page, for reduce-motion users, in the theme editor, or for search engine bots and speed tests, so Google always sees the page itself.

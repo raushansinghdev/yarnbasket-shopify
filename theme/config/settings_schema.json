@@ -33,7 +33,7 @@
         "id": "show_intro",
         "label": "Show logo intro",
         "default": true,
-        "info": "Plays the brand kit logo animation (about 2 seconds) on the first page of a visit, at most once a day per visitor. Never on cart, account or search pages. Any tap or scroll skips it."
+        "info": "Plays the brand kit logo animation (about 3 seconds) on the first page of a visit, at most once a day per visitor. Never on cart, account or search pages. Any tap or scroll skips it."
       }
     ]
   },
