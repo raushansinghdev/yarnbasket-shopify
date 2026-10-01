@@ -135,6 +135,24 @@ document.querySelectorAll(root.classList.contains('lite') ? ':not(*)' : '.media 
   }
 }
 
+/* ---------- Tooltips (.tip): Esc hides them until the pointer or focus moves to something else (WCAG 1.4.13) ---------- */
+if (document.querySelector('.tip')) {
+  let owner = null;
+  addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    owner = document.querySelector('.icon-btn:hover, .icon-btn:focus-visible');
+    if (owner?.querySelector('.tip')) root.classList.add('tips-off');
+  });
+  const wake = (event) => {
+    if (owner && !owner.contains(event.target)) {
+      root.classList.remove('tips-off');
+      owner = null;
+    }
+  };
+  addEventListener('pointerover', wake, { passive: true });
+  addEventListener('focusin', wake);
+}
+
 /* ---------- Menu drawer (native <dialog>: focus trap, Esc and inert page come built in) ---------- */
 {
   const drawer = document.getElementById('MenuDrawer');

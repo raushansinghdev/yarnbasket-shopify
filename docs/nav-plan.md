@@ -1,6 +1,30 @@
 # Header & navigation plan
 
-Status: **proposed, 2026-10-02.** Nothing is built yet. Wait for Raushan's go before Stage 1.
+Status: **Stages 1–3 built 2026-10-02.** Raushan approved the recommendations for D1–D5 (§14). Stage 4 (search panel) waits for build-plan Phase 3. Two things are still to do: the WhatsApp number (Theme settings → Social) and the real main menu in Shopify admin (§3).
+
+### As built (where it differs from the plan below)
+- **The desktop layout starts at 1100px, not 990.** Five menu items at 14px don't fit beside the logo and tools below that. Between 768 and 1099px the header uses the phone layout.
+- **The desktop header is 72px and doesn't shrink.** Shrinking a sticky header changes its layout height, and the page jumps under it. A steady height is calmer.
+- **Search is a real `<form action="/search">` field, not a button that looks like a field.** It shows at 768–1099px and from 1280px up. At 1100–1279px it's a 28px icon link. Typing and pressing Enter works with no JavaScript. It sends `options[prefix]=last`, so "bouq" finds "bouquet". Stage 4 adds results as you type on top of this.
+- **The tablet header** (768–1099px) shows the search field and an icon-only cart. With the word "Cart" too, the logo can't stay centred.
+- **The phone drawer scrolls on a 390 × 844 screen.** The craft tiles are 4:3 and come first, and Account / WhatsApp / Instagram sit below them. Seeing the products first mattered more than fitting everything on one screen.
+- **"Track order" is in the Help dropdown**, not in the drawer's bottom row. The bottom row is Account, then WhatsApp (once the number is set), then Instagram.
+- **Demo menu:** while Demo content is on and the main menu has no dropdowns, the header shows the planned menu (Shop / Gifts / Bestsellers / Our story / Help) with demo craft photos. Its links only go to pages that exist. Once a real menu with dropdowns is saved in the admin, the demo menu goes away.
+- **How photo tiles are chosen:** a dropdown whose children are all collection links (2 or more) shows them as photo tiles. A dropdown with any collection link gets a "Shop all" / "View all" link.
+- **Tooling:** `tools/cdp.mjs` gained `--tab N` (presses the real Tab key, so focus styles show) and `--forced-colors`.
+- **Checks on 2026-10-02:**
+  - axe: 0 violations at 360, 390, 768, 1100 and 1440px, on the home page and a collection page, with the drawer and dropdowns open
+  - theme check: clean
+  - tab order: skip link → logo → menu → search → Account → Cart
+  - forced colours and the landscape static header both work
+  - not yet done: the real-phone VoiceOver/TalkBack pass (Raushan)
+
+### Setting up the real menu (Shopify admin, about 5 minutes)
+1. Go to **Products → Collections** and create Bouquets, Keychains, Hair clips, Bag charms (and Bestsellers). They can be empty for now.
+2. Go to **Content → Menus → Main menu** and delete Home, Catalog and Contact.
+3. Add **Shop**, linked to "Collections". Add the four craft collections, then drag each one to the right under Shop, so they become a photo dropdown.
+4. Add **Gifts**, linked to a collection, with occasion collections nested under it. Add **Bestsellers**, linked to its collection.
+5. Add **Our story** (a page) and **Help**, with FAQ / Shipping / Contact pages nested under it.
 This plan covers the header bar, its icons, the desktop menu, the mobile menu drawer and search, on every page.
 It follows `motion-plan.md` (tokens, budgets) and `brand-direction.md` (stitch marks, line icons).
 

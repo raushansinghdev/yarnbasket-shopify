@@ -1,5 +1,6 @@
 // Tiny Chrome DevTools Protocol driver for screenshots and in-page checks (no dependencies; Node 22+).
-// usage: node tools/cdp.mjs <url> <width> <height> <out.png|-> [--mobile] [--motion] [--eval "js"] [--scroll N] [--full] [--wait ms] [--console]
+// usage: node tools/cdp.mjs <url> <width> <height> <out.png|-> [--mobile] [--motion] [--eval "js"] [--scroll N] [--tab N] [--forced-colors] [--full] [--wait ms] [--console]
+// --tab N presses the real Tab key N times (so :focus-visible styles show); --forced-colors emulates Windows contrast mode.
 // Reduced motion is on unless --motion is passed, so the logo intro is skipped for layout screenshots.
 import { spawn } from 'node:child_process';
 import { writeFileSync, mkdtempSync } from 'node:fs';
@@ -46,7 +47,10 @@ await send('Page.enable');
 await send('Emulation.setDeviceMetricsOverride', { width: +w, height: +h, deviceScaleFactor: mobile ? 2 : 1, mobile });
 if (mobile) await send('Emulation.setTouchEmulationEnabled', { enabled: true });
 if (mobile) await send('Network.setUserAgentOverride', { userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36' });
-if (!motion) await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+const media = [];
+if (!motion) media.push({ name: 'prefers-reduced-motion', value: 'reduce' });
+if (flag('--forced-colors')) media.push({ name: 'forced-colors', value: 'active' });
+if (media.length) await send('Emulation.setEmulatedMedia', { features: media });
 await send('Page.navigate', { url });
 await sleep(+opt('--wait', 3500));
 
@@ -56,6 +60,12 @@ if (flag('--full')) {
 }
 const scroll = opt('--scroll');
 if (scroll) { await send('Runtime.evaluate', { expression: `window.scrollTo(0, ${scroll})` }); await sleep(900); }
+const tabs = +opt('--tab', 0);
+for (let i = 0; i < tabs; i++) {
+  for (const type of ['rawKeyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9 });
+  await sleep(60);
+}
+if (tabs) await sleep(500);
 
 const expr = opt('--eval');
 if (expr) {

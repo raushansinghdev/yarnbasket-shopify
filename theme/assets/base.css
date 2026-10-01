@@ -126,6 +126,9 @@ html {
   /* Keep room for the scrollbar, so locking scroll (drawers, the logo intro) never shifts the page sideways. */
   scrollbar-gutter: stable;
 }
+@media (min-width: 1100px) { :root { --header-height: 72px; } }
+/* Short screens: the header isn't sticky there (sections/header.liquid), so nothing needs clearing. */
+@media (max-height: 480px) { html { scroll-padding-top: var(--space-4); } }
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
 }

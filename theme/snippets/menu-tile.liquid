@@ -1,0 +1,48 @@
+{%- doc -%}
+  One photo tile in the Shop menu (desktop panel and phone drawer): the collection's photo, else its first
+  product's photo, else a demo photo (Demo content on), else the brand icon on Oat. The whole tile is the link;
+  its name is the link text, so the photo stays decorative (alt="").
+
+  @param {string} title - Link text
+  @param {string} url - Link URL
+  @param {string} [handle] - Link handle, used to pick a demo photo or brand icon
+  @param {object} [collection] - The linked collection, when the menu link points at one
+  @param {boolean} [current] - true when this is the page you're on
+  @param {string} [sizes] - The image sizes attribute
+  @param {string} [class] - Extra classes for the link
+
+  @example
+  {% render 'menu-tile', title: child.title, url: child.url, handle: child.handle, collection: child.object, current: child.current %}
+{%- enddoc -%}
+{%- liquid
+  assign img = collection.featured_image
+  if img == blank and collection.products.first.featured_media
+    assign img = collection.products.first.featured_media.preview_image
+  endif
+  assign demo = blank
+  if img == blank and settings.demo_content
+    if handle contains 'bouquet'
+      assign demo = 'cat-bouquets'
+    elsif handle contains 'keychain' or handle contains 'key-chain'
+      assign demo = 'cat-keychains'
+    elsif handle contains 'hair' or handle contains 'clip'
+      assign demo = 'cat-hair'
+    elsif handle contains 'charm'
+      assign demo = 'cat-charms'
+    elsif handle contains 'pot' or handle contains 'decor'
+      assign demo = 'cat-pots'
+    endif
+  endif
+-%}
+<a href="{{ url }}" class="menu-tile {{ class }}" {% if current %}aria-current="page"{% endif %}>
+  <span class="media menu-tile__media">
+    {%- if img -%}
+      {%- render 'image', image: img, sizes: sizes, alt: '', width: 480, class: 'menu-tile__img' -%}
+    {%- elsif demo != blank -%}
+      {%- render 'demo-image', name: demo, sizes: sizes, class: 'menu-tile__img' -%}
+    {%- else -%}
+      <span class="menu-tile__art">{%- render 'menu-link-icon', handle: handle -%}</span>
+    {%- endif -%}
+  </span>
+  <span class="menu-tile__title">{{ title }}</span>
+</a>

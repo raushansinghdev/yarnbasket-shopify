@@ -50,7 +50,8 @@
     "results_for_html": "{{ count }} results found for {{ terms }}"
   },
   "accessibility": {
-    "skip_to_content": "Skip to content"
+    "skip_to_content": "Skip to content",
+    "new_window": "opens in a new tab"
   },
   "general": {
     "tagline": "Handmade with love",
@@ -66,14 +67,19 @@
     "main_menu": "Main menu",
     "open_menu": "Open menu",
     "close_menu": "Close menu",
+    "home": "home",
     "search": "Search",
+    "search_placeholder": "Search bouquets…",
     "account": "Account",
+    "cart": "Cart",
     "shop_all": "Shop all",
     "cart_count": {
       "zero": "Cart, empty",
       "one": "Cart, 1 item",
       "other": "Cart, {{ count }} items"
-    }
+    },
+    "whatsapp": "Chat on WhatsApp",
+    "whatsapp_message": "Hi Yarn Basket! I have a question."
   },
   "products": {
     "sold_out": "Sold out",
