@@ -1,0 +1,991 @@
+<title>Yarn Basket Build Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&family=Jost:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #F5EFE6;
+  --surface: #FBF6EF;
+  --tint: #F2D4CC;
+  --ink: #6B4F43;
+  --ink-strong: #4E3830;
+  --muted: #705B52;
+  --line: #E4D7CA;
+  --rose: #E3A69C;
+  --sage: #A9B8A0;
+  --sage-ink: #4F6146;
+  --bar-core: #6B4F43;
+  --bar-par: #A9B8A0;
+  --bar-home: #E3A69C;
+  --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --sans: "Jost", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #211915; --surface: #2B211C; --tint: #3A2A25; --ink: #EFE4D8; --ink-strong: #FBF6EF;
+    --muted: #C9B6AA; --line: #43352E; --rose: #E3A69C; --sage: #A9B8A0; --sage-ink: #BFD0B5;
+    --bar-core: #D9C3B4; --bar-par: #8FA286; --bar-home: #E3A69C;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #211915; --surface: #2B211C; --tint: #3A2A25; --ink: #EFE4D8; --ink-strong: #FBF6EF;
+  --muted: #C9B6AA; --line: #43352E; --rose: #E3A69C; --sage: #A9B8A0; --sage-ink: #BFD0B5;
+  --bar-core: #D9C3B4; --bar-par: #8FA286; --bar-home: #E3A69C;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.65;
+  padding-inline: 20px;
+}
+a { color: var(--ink-strong); text-decoration-color: var(--rose); text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+a:hover { text-decoration-color: currentColor; }
+a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 2px; }
+code { font-family: var(--mono); font-size: .86em; background: var(--surface); border: 1px solid var(--line); padding: .05em .35em; border-radius: 4px; overflow-wrap: anywhere; }
+strong { color: var(--ink-strong); font-weight: 600; }
+
+.shell { max-width: 1180px; margin: 0 auto; display: grid; gap: 56px; padding-block: 48px 96px; }
+@media (min-width: 1000px) { .shell { grid-template-columns: 220px minmax(0, 1fr); gap: 72px; } }
+
+/* Contents */
+.toc { font-size: .875rem; }
+.toc-inner { display: grid; gap: 14px; }
+@media (min-width: 1000px) { .toc-inner { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 32px); } }
+.toc-label { font-weight: 500; font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.toc a { display: block; padding: 5px 0; text-decoration: none; color: var(--ink); }
+.toc a:hover { color: var(--ink-strong); text-decoration: underline; text-decoration-color: var(--rose); }
+@media (max-width: 999px) {
+  .toc ol { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); column-gap: 20px; }
+  .toc { border-block: 1px solid var(--line); padding-block: 18px; }
+}
+
+main { min-width: 0; display: grid; gap: 88px; }
+.doc-head { display: grid; gap: 18px; max-width: 46rem; }
+.eyebrow { font-weight: 500; font-size: .75rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin: 0; }
+h1, h2, h3 { font-family: var(--serif); font-style: italic; font-weight: 600; color: var(--ink-strong); text-wrap: balance; margin: 0; letter-spacing: -.005em; }
+h1 { font-size: clamp(2.6rem, 2rem + 3vw, 4rem); line-height: 1; }
+h2 { font-size: clamp(1.9rem, 1.6rem + 1.4vw, 2.5rem); line-height: 1.08; }
+h3 { font-size: 1.45rem; line-height: 1.15; }
+h4 { font-family: var(--sans); font-weight: 500; font-size: .75rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0; }
+p { margin: 0; }
+.lede { font-size: 1.125rem; max-width: 62ch; text-wrap: pretty; }
+
+.facts { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 6px 0 0; padding: 18px 0 0; border-top: 1px solid var(--line); }
+.facts div { display: grid; gap: 0; }
+.facts dt { font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.facts dd { margin: 0; font-family: var(--serif); font-style: italic; font-weight: 600; font-size: 1.35rem; color: var(--ink-strong); font-variant-numeric: tabular-nums; }
+
+section { display: grid; gap: 28px; }
+.sec-head { display: grid; gap: 10px; max-width: 46rem; }
+.prose { display: grid; gap: 14px; max-width: 66ch; }
+ul.list { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; }
+ul.list li::marker { color: var(--rose); }
+ul.list li { padding-left: .2em; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; border-top: 1px solid var(--ink); }
+table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+th, td { text-align: left; vertical-align: top; padding: 12px 16px 12px 0; border-bottom: 1px solid var(--line); }
+th { font-weight: 500; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+td:first-child { font-weight: 500; color: var(--ink-strong); white-space: nowrap; }
+.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.pass { color: var(--sage-ink); font-weight: 500; }
+.fail { color: #A3463A; font-weight: 500; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .fail { color: #F0A597; } }
+:root[data-theme="dark"] .fail { color: #F0A597; }
+.swatch { display: inline-block; width: .9em; height: .9em; border-radius: 50%; vertical-align: -.1em; margin-right: 6px; border: 1px solid rgba(0,0,0,.12); }
+
+/* Decision callouts */
+.decide { border: 1px solid var(--line); border-left: 3px solid var(--rose); background: var(--surface); padding: 18px 20px; display: grid; gap: 8px; max-width: 66ch; border-radius: 0 6px 6px 0; }
+.decide .tag { font-size: .7rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+
+/* Reference stores */
+.refs { display: grid; gap: 0; border-top: 1px solid var(--ink); }
+.ref { display: grid; gap: 10px 32px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+@media (min-width: 760px) { .ref { grid-template-columns: 170px 1fr 1fr; } }
+.ref h3 { font-size: 1.3rem; }
+.ref .kind { font-size: .8rem; color: var(--muted); }
+.ref p { font-size: .9375rem; }
+.ref .lbl { display: block; font-size: .68rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+
+/* Timeline */
+.gantt-wrap { overflow-x: auto; padding-bottom: 6px; }
+.gantt { min-width: 700px; display: grid; grid-template-columns: 190px repeat(10, minmax(0, 1fr)); font-size: .8125rem; }
+.gantt .wk { font-size: .68rem; letter-spacing: .08em; color: var(--muted); padding: 0 4px 10px; border-left: 1px solid var(--line); font-variant-numeric: tabular-nums; line-height: 1.3; }
+.gantt .wk b { display: block; font-weight: 600; color: var(--ink); letter-spacing: .12em; }
+.gantt .name { padding: 7px 12px 7px 0; border-top: 1px solid var(--line); color: var(--ink-strong); font-weight: 500; }
+.gantt .lane { grid-column: 2 / -1; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); align-items: center;
+  background-image: repeating-linear-gradient(to right, var(--line) 0 1px, transparent 1px 10%); }
+.gantt .bar { height: 14px; border-radius: 999px; background: var(--bar-core); margin: 0 3px; }
+.gantt .bar.par { background: var(--bar-par); }
+.gantt .bar.home { background: var(--bar-home); }
+.gantt .bar.ms { height: 14px; width: 14px; justify-self: center; transform: rotate(45deg); border-radius: 2px; margin: 0; background: var(--ink-strong); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: .8125rem; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 18px; height: 8px; border-radius: 9px; margin-right: 8px; vertical-align: 1px; background: var(--k); }
+
+/* Phases */
+.phases { display: grid; gap: 0; border-top: 1px solid var(--ink); }
+.phase { display: grid; gap: 18px 40px; padding: 34px 0; border-bottom: 1px solid var(--line); }
+@media (min-width: 860px) { .phase { grid-template-columns: 200px minmax(0, 1fr); } }
+.phase-meta { display: grid; gap: 6px; align-content: start; }
+.phase-no { font-family: var(--serif); font-style: italic; font-weight: 600; font-size: 3rem; line-height: .9; color: var(--rose); font-variant-numeric: lining-nums; }
+.phase-when { font-size: .8125rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.phase-body { display: grid; gap: 18px; min-width: 0; }
+.phase-body > p { max-width: 66ch; }
+.cols { display: grid; gap: 22px 36px; }
+@media (min-width: 700px) { .cols { grid-template-columns: 1fr 1fr; } }
+.cols > div { display: grid; gap: 8px; align-content: start; }
+.done { font-size: .9375rem; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px; max-width: 66ch; }
+.done b { font-weight: 600; color: var(--ink-strong); }
+
+/* Home page spec */
+.home-grid { display: grid; gap: 40px; }
+@media (min-width: 900px) { .home-grid { grid-template-columns: 250px minmax(0, 1fr); gap: 56px; align-items: start; } }
+.phone { width: 250px; max-width: 100%; margin: 0 auto; border: 1.5px solid var(--ink); border-radius: 34px; padding: 12px 10px; background: var(--surface); }
+@media (min-width: 900px) { .phone { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 32px); } }
+.phone-screen { border-radius: 24px; overflow: hidden; background: #F5EFE6; display: grid; gap: 7px; padding: 0 0 8px; color: #6B4F43; font-size: .66rem; }
+.phone-screen > div { margin: 0 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 500; letter-spacing: .04em; padding: 4px; line-height: 1.25; }
+.ph-hdr { margin: 0 !important; border-radius: 0 !important; height: 26px; background: #FBF6EF; border-bottom: 1px solid #E4D7CA; justify-content: space-between !important; padding: 0 12px !important; }
+.ph-hero { height: 150px; background: #F2D4CC; font-family: var(--serif); font-style: italic; font-size: .95rem; color: #4E3830; }
+.ph-cat { height: 46px; background: transparent !important; gap: 5px; padding: 0 !important; justify-content: flex-start !important; overflow: hidden; }
+.ph-cat i { flex: 0 0 38%; height: 100%; border-radius: 6px; background: #E4D7CA; display: grid; place-items: center; font-style: normal; }
+.ph-grid { height: 112px; background: transparent !important; display: grid !important; grid-template-columns: 1fr 1fr; gap: 5px; padding: 0 !important; }
+.ph-grid i { background: #FBF6EF; border: 1px solid #E4D7CA; border-radius: 6px; display: grid; place-items: end start; padding: 4px; font-style: normal; font-size: .58rem; }
+.ph-story { height: 70px; background: #6B4F43; color: #FBF6EF; }
+.ph-occ { height: 26px; background: transparent !important; gap: 4px; justify-content: flex-start !important; padding: 0 !important; overflow: hidden; }
+.ph-occ i { flex: none; border: 1px solid #6B4F43; border-radius: 999px; padding: 3px 7px; font-style: normal; font-size: .56rem; }
+.ph-rev { height: 54px; background: #F2D4CC; }
+.ph-prom { height: 30px; background: transparent; border: 1.5px dashed rgba(107,79,67,.45); }
+.ph-faq { height: 44px; background: transparent; border-block: 1px solid #E4D7CA; border-radius: 0 !important; }
+.ph-join { height: 30px; background: #FBF6EF; border: 1px dashed #C9B6AA; }
+.ph-foot { margin: 0 !important; border-radius: 0 !important; height: 46px; background: #6B4F43; color: #FBF6EF; }
+.phone-cap { text-align: center; font-size: .78rem; color: var(--muted); margin-top: 12px; }
+
+.secs { display: grid; gap: 0; border-top: 1px solid var(--ink); counter-reset: s; }
+.sec { display: grid; gap: 10px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+.sec-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.sec-title h3 { font-size: 1.35rem; }
+.chip { font-size: .66rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.chip.launch { border-color: var(--sage); color: var(--sage-ink); }
+.sec dl { margin: 0; display: grid; gap: 6px; font-size: .9375rem; }
+.sec dl div { display: grid; gap: 0 14px; }
+@media (min-width: 620px) { .sec dl div { grid-template-columns: 92px 1fr; } }
+.sec dt { font-size: .68rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); padding-top: .3em; }
+.sec dd { margin: 0; }
+
+/* Rule grid */
+.rules { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+@media (min-width: 700px) { .rules { grid-template-columns: 1fr 1fr; } }
+.rule { background: var(--surface); padding: 18px 20px; display: grid; gap: 6px; align-content: start; }
+.rule h4 { color: var(--ink-strong); }
+.rule p { font-size: .9375rem; }
+
+.checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 70ch; }
+.checklist li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; }
+.checklist li::before { content: ""; width: 14px; height: 14px; border: 1.5px solid var(--ink); border-radius: 3px; margin-top: .35em; }
+
+footer.end { border-top: 1px solid var(--line); padding-top: 24px; font-size: .875rem; color: var(--muted); max-width: 66ch; }
+</style>
+
+<div class="shell">
+  <nav class="toc" aria-label="Contents">
+    <div class="toc-inner">
+      <span class="toc-label">Contents</span>
+      <ol>
+        <li><a href="#decisions">Decisions</a></li>
+        <li><a href="#references">Reference stores</a></li>
+        <li><a href="#brand">Brand direction</a></li>
+        <li><a href="#principles">Principles</a></li>
+        <li><a href="#timeline">Timeline</a></li>
+        <li><a href="#phases">Phases</a></li>
+        <li><a href="#home">Home page spec</a></li>
+        <li><a href="#system">Design system</a></li>
+        <li><a href="#motion">Motion</a></li>
+        <li><a href="#a11y">Accessibility</a></li>
+        <li><a href="#seo">SEO</a></li>
+        <li><a href="#perf">Performance</a></li>
+        <li><a href="#ops">Store setup (India)</a></li>
+        <li><a href="#dod">Definition of done</a></li>
+        <li><a href="#launch">Launch day</a></li>
+        <li><a href="#open">Open decisions</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <main>
+    <header class="doc-head">
+      <p class="eyebrow">yarnbasket.in · Custom Shopify theme</p>
+      <h1>Yarn Basket Build Plan</h1>
+      <p class="lede">How we take yarnbasket.in from an empty Shopify store to a calm, fast, animated, mobile-first shop by early December 2026. We build the home page first, then each page after it, and every page has to pass the same SEO, accessibility, motion and speed checks before we call it finished.</p>
+      <dl class="facts">
+        <div><dt>Plan written</dt><dd>1 Oct 2026</dd></div>
+        <div><dt>Soft launch</dt><dd>30 Nov</dd></div>
+        <div><dt>Public launch</dt><dd>7 Dec</dd></div>
+        <div><dt>Build time</dt><dd>10 weeks</dd></div>
+      </dl>
+    </header>
+
+    <!-- Decisions -->
+    <section id="decisions">
+      <div class="sec-head">
+        <p class="eyebrow">Where we stand</p>
+        <h2>Decisions already made</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Area</th><th>Decision</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Platform</td><td>Custom Liquid theme on Shopify (Online Store 2.0)</td><td>Shopify's sitemap, canonical tags, redirects and meta fields come built in. Content can be changed in the theme editor without touching code.</td></tr>
+            <tr><td>Not Hydrogen</td><td>No headless React front end</td><td>We would have to rebuild all of the SEO plumbing ourselves on a brand-new domain. Liquid can look and move just as well.</td></tr>
+            <tr><td>Store</td><td><code>yarnbasket-in.myshopify.com</code>, a client transfer store</td><td>It stays free until launch. Products and settings carry over when we transfer it and pick a plan.</td></tr>
+            <tr><td>Tooling</td><td>Shopify CLI 4.8.3, <code>shopify theme dev</code>, GitHub repo <code>yarnbasket-shopify</code></td><td>Local preview with hot reload, plus a preview link that opens on your phone.</td></tr>
+            <tr><td>Brand</td><td>Cocoa, Blush, Rose, Sage, Oat, Cream, Taupe. Cormorant Garamond Italic for headings, Jost for text.</td><td>Matches the logo and banner already in the brand kit.</td></tr>
+            <tr><td>Front-end code</td><td>Plain CSS, small Web Components, no framework</td><td>Keeps the site fast on mid-range Android phones, which most Indian shoppers use.</td></tr>
+            <tr><td>Base theme</td><td>Shopify's Skeleton theme (decided 1 Oct)</td><td>A minimal official starter with nothing to strip out. Dawn and Horizon stay open as references for the cart drawer, search, filters and variant picker.</td></tr>
+            <tr><td>Launch</td><td>Soft launch 30 Nov, public launch 7 Dec (confirmed 1 Oct)</td><td>Lands ahead of Christmas gifting.</td></tr>
+            <tr><td>Team</td><td>Raushan and Claude</td><td>Raushan owns the product, photos, store admin and final say. Claude writes the code, runs the checks and drafts copy. Every SEO-sensitive change is flagged in its pull request.</td></tr>
+            <tr><td>Order of work</td><td>Home page first, then collection, product, cart, content pages</td><td>The home page sets the design system that every later page reuses.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="decide">
+        <span class="tag">Decided · base theme</span>
+        <p><strong>We start from Shopify's Skeleton theme.</strong> It's Shopify's official minimal starter (<a href="https://github.com/Shopify/skeleton-theme">github.com/Shopify/skeleton-theme</a>), with the Online Store 2.0 structure and theme blocks and nothing else. We write every section ourselves and never spend days stripping out someone else's code. For the hard, well-tested parts (the accessible cart drawer, predictive search, filters, the variant picker) we read how Dawn and Horizon do it, then write our own version.</p>
+      </div>
+    </section>
+
+    <!-- References -->
+    <section id="references">
+      <div class="sec-head">
+        <p class="eyebrow">Research</p>
+        <h2>What the reference stores teach us</h2>
+        <p class="lede">I read each home page's structure from its HTML. Before we design the home page we'll also walk through all five on a phone.</p>
+      </div>
+      <div class="refs">
+        <article class="ref">
+          <div><h3>Floreal</h3><span class="kind">floreal.in · crochet bouquets</span></div>
+          <p><span class="lbl">Take</span>Occasion gift boxes (Rakhi, Mother's Day), a founder's note written in a human voice, and "view all" links that keep the product rows short.</p>
+          <p><span class="lbl">Avoid</span>About 9 product rows and 12 category tiles on one page, a Shark Tank badge repeated many times, duplicate menus, and "43% OFF" badges on almost everything.</p>
+        </article>
+        <article class="ref">
+          <div><h3>Knots n Gifts</h3><span class="kind">knotsngifts.in · crochet gifts</span></div>
+          <p><span class="lbl">Take</span>Collections by occasion and by who it's for (couple gifts), a clear "ships in 5–7 days" promise, press mentions, and an artisan mission story.</p>
+          <p><span class="lbl">Avoid</span>Several promo bars stacked at the top and a modal that pops up on page load.</p>
+        </article>
+        <article class="ref">
+          <div><h3>Rare You</h3><span class="kind">rareyou.com · handmade decor</span></div>
+          <p><span class="lbl">Take</span>The calmest structure of the group. A short "why us" row (handcrafted, women-led, add a note, quality yarn), an FAQ that explains partial COD, and one big trust number.</p>
+          <p><span class="lbl">Avoid</span>Grids of 11 to 20 products on the home page, and a wall of "sold out" labels.</p>
+        </article>
+        <article class="ref">
+          <div><h3>Raask Crochet</h3><span class="kind">raaskcrochet.com · crochet bouquets</span></div>
+          <p><span class="lbl">Take</span>A cream palette, generous spacing and a short home page of about 8 sections. This is the closest to our direction.</p>
+          <p><span class="lbl">Avoid</span>Emoji in product titles, which hurts search and screen readers. Also a rotating hero carousel and 20+ bestsellers on one page.</p>
+        </article>
+        <article class="ref">
+          <div><h3>Deep Suhani</h3><span class="kind">deepsuhani.in · herbal hair care</span></div>
+          <p><span class="lbl">Take</span>Trust built through transparency: a "how it's made" infographic, a founder photo, ratings shown with review counts, and reviews signed with a name and city in Hindi and English.</p>
+          <p><span class="lbl">Avoid</span>A very long page, testimonials repeated twice, and an expired offer still on show.</p>
+        </article>
+      </div>
+      <div class="prose">
+        <p><strong>The gap we can own:</strong> every crochet store here competes on discounts and quantity. Yarn Basket can win by being the calm one: fewer, better-photographed products, plenty of space, and a clear story of who makes each piece and how long it takes. Gifting is central to the whole category, so the gift experience has to be excellent: shopping by occasion, a gift note, and wrapping.</p>
+      </div>
+    </section>
+
+    <!-- Brand -->
+    <section id="brand">
+      <div class="sec-head">
+        <p class="eyebrow">From the brand kit</p>
+        <h2>Brand direction</h2>
+        <p class="lede">The Instagram grid in the brand kit already has a complete visual system. The store reuses it, so the shop, the Instagram profile, the coming-soon page and the parcels all feel like one brand.</p>
+      </div>
+      <div class="rules">
+        <div class="rule"><h4>Three surfaces in a rhythm</h4><p>The grid alternates Blush cards, Cocoa cards and Oat photo frames. The home page does the same: mostly Oat, one Blush band and one Cocoa band. Sections separate through colour, with no dividers adding clutter.</p></div>
+        <div class="rule"><h4>Stitch borders</h4><p>The covers' dashed inner border looks like a row of stitches (dashes 14 / gaps 12, rounded caps, Cocoa at 32%). It frames feature panels and the promise strip, and it can sew itself in as it scrolls into view.</p></div>
+        <div class="rule"><h4>Photo frame as product card</h4><p>An Oat card, a rounded photo window, a Cormorant italic caption and a tiny tracked label. That is our product card, so products look the same on Instagram and on the site.</p></div>
+        <div class="rule"><h4>Cover layout as section heading</h4><p>Line icon, then a tracked eyebrow, a two-line serif headline and one plain line of text. Every section heading follows this order.</p></div>
+        <div class="rule"><h4>Line icons already drawn</h4><p>Bouquet, keychain heart, hair clip, reviews, basket, bag charm, yarn ball and hook, care basin. We export them as one SVG sprite and draw the missing UI icons in the same 2px style.</p></div>
+        <div class="rule"><h4>The yarn strand</h4><p>The pinned banner runs one yarn strand from the ball across all three tiles to a flower. That becomes the store's signature scroll animation.</p></div>
+      </div>
+      <div class="prose">
+        <p><strong>Voice:</strong> the cover lines become section headings: "Flowers that never fade", "Tiny, cute &amp; all yours", "One stitch at a time", "Little touches of handmade", "Your words make our day". The full mapping is saved in <code>docs/brand-direction.md</code>.</p>
+      </div>
+    </section>
+
+    <!-- Principles -->
+    <section id="principles">
+      <div class="sec-head">
+        <p class="eyebrow">How it should feel</p>
+        <h2>Six principles</h2>
+      </div>
+      <div class="rules">
+        <div class="rule"><h4>Space is a feature</h4><p>Every section gets one idea, one heading and at most one main button. If a section needs a second idea, it becomes a second section or a separate page.</p></div>
+        <div class="rule"><h4>Thumb first</h4><p>Design at 360px wide first. Anything important sits within thumb reach, every tap target is at least 48px, and the cart is always one tap away.</p></div>
+        <div class="rule"><h4>Alive, not busy</h4><p>Motion responds to what the shopper does: a press, a scroll, an add to cart. Nothing moves on a loop to grab attention, and nothing rotates by itself.</p></div>
+        <div class="rule"><h4>Fast is premium</h4><p>A beautiful page that loads in 5 seconds on a Redmi over 4G is not premium. Speed budgets are hard limits, not targets.</p></div>
+        <div class="rule"><h4>Honest commerce</h4><p>Real reviews with names and cities, a delivery promise we can keep, and quiet sale prices with no shouting badges.</p></div>
+        <div class="rule"><h4>Search engines read it too</h4><p>Every page has one clear H1, real text, structured data and descriptive image alt text. SEO is built into each section, not added at the end.</p></div>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section id="timeline">
+      <div class="sec-head">
+        <p class="eyebrow">Oct to Dec 2026</p>
+        <h2>Timeline</h2>
+        <p class="lede">Ten weeks. Theme work runs in order, while store setup and content run alongside it. Diwali (8 Nov) falls in the middle of the build, and Meesho orders will peak that week, so the plan expects less theme work then.</p>
+      </div>
+      <div class="legend">
+        <span style="--k: var(--bar-home)">Home page (current focus)</span>
+        <span style="--k: var(--bar-core)">Theme build</span>
+        <span style="--k: var(--bar-par)">Runs alongside (no code)</span>
+      </div>
+      <div class="gantt-wrap" role="img" aria-label="Gantt chart of ten weeks from 1 October to 7 December 2026, matching the phase list below.">
+        <div class="gantt">
+          <div></div>
+          <div class="wk"><b>W1</b>1 Oct</div><div class="wk"><b>W2</b>5 Oct</div><div class="wk"><b>W3</b>12 Oct</div><div class="wk"><b>W4</b>19 Oct</div><div class="wk"><b>W5</b>26 Oct</div>
+          <div class="wk"><b>W6</b>2 Nov</div><div class="wk"><b>W7</b>9 Nov</div><div class="wk"><b>W8</b>16 Nov</div><div class="wk"><b>W9</b>23 Nov</div><div class="wk"><b>W10</b>30 Nov</div>
+
+          <div class="name">0 · Foundation</div><div class="lane"><div class="bar" style="grid-column: 1 / 3"></div></div>
+          <div class="name">1 · Design system</div><div class="lane"><div class="bar" style="grid-column: 2 / 4"></div></div>
+          <div class="name">2 · Home page</div><div class="lane"><div class="bar home" style="grid-column: 3 / 6"></div></div>
+          <div class="name">3 · Collections, search</div><div class="lane"><div class="bar" style="grid-column: 5 / 7"></div></div>
+          <div class="name">4 · Product page</div><div class="lane"><div class="bar" style="grid-column: 6 / 8"></div></div>
+          <div class="name">5 · Cart, checkout</div><div class="lane"><div class="bar" style="grid-column: 7 / 8"></div></div>
+          <div class="name">6 · Content pages, blog</div><div class="lane"><div class="bar" style="grid-column: 7 / 9"></div></div>
+          <div class="name">7 · SEO, a11y, speed audit</div><div class="lane"><div class="bar" style="grid-column: 8 / 10"></div></div>
+          <div class="name">8 · Store setup</div><div class="lane"><div class="bar par" style="grid-column: 2 / 10"></div></div>
+          <div class="name">9 · Photos, copy, blog</div><div class="lane"><div class="bar par" style="grid-column: 2 / 10"></div></div>
+          <div class="name">10 · QA, soft launch</div><div class="lane"><div class="bar" style="grid-column: 9 / 11"></div></div>
+          <div class="name">Public launch</div><div class="lane"><div class="bar ms" style="grid-column: 10 / 11; justify-self: end; margin-right: 6px"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Phases -->
+    <section id="phases">
+      <div class="sec-head">
+        <p class="eyebrow">Step by step</p>
+        <h2>Phases</h2>
+      </div>
+      <div class="phases">
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">0</span><h3>Foundation</h3><span class="phase-when">1 – 11 Oct</span></div>
+          <div class="phase-body">
+            <p>Set up the workshop before building anything: the theme folder, the tools that catch mistakes, and the site map that every page will hang from.</p>
+            <div class="cols">
+              <div><h4>Code and tools</h4><ul class="list">
+                <li>Add <code>theme/</code> to the repo from Skeleton, alongside <code>coming-soon/</code>, which stays live until launch.</li>
+                <li><code>shopify theme dev</code> for the local preview, plus a "Staging" theme you can open on your phone through its preview link.</li>
+                <li><code>shopify theme check</code> and Prettier's Liquid plugin, run on every commit.</li>
+                <li>GitHub Actions: theme check, Lighthouse CI and axe accessibility tests on every pull request, then auto-deploy <code>main</code> to Staging using a Theme Access token.</li>
+                <li>Connect the Shopify Dev MCP so Claude checks Liquid and schema against Shopify's docs instead of guessing.</li>
+              </ul></div>
+              <div><h4>Research and structure</h4><ul class="list">
+                <li>Keyword research: a list of the searches we want to rank for, grouped by product type and occasion. See <a href="#seo">SEO</a>.</li>
+                <li>Site map: the collections, pages and menus, along with their URLs.</li>
+                <li>Content inventory: which 15–25 Meesho products we launch with, plus price, stock and photo status for each.</li>
+                <li>Load 10–15 real products into the store now, so we design against real images and titles rather than placeholders.</li>
+                <li>A photo brief (see <a href="#ops">Store setup</a>).</li>
+              </ul></div>
+            </div>
+            <p class="done"><b>Done when</b> the theme runs locally and on Staging, CI checks run on each pull request, the keyword list and site map are written down, and the first real products are in the store.</p>
+          </div>
+        </article>
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">1</span><h3>Design system</h3><span class="phase-when">5 – 18 Oct</span></div>
+          <div class="phase-body">
+            <p>Turn the brand kit into tokens and components that every section reuses. Lock this before the home page and nothing will drift later.</p>
+            <div class="cols">
+              <div><h4>Tokens</h4><ul class="list">
+                <li>Colour roles with contrast checked, taken from the brand kit (see <a href="#brand">Brand direction</a> and <a href="#system">Design system</a>).</li>
+                <li>A fluid type scale using <code>clamp()</code>, from 360px up to 1440px.</li>
+                <li>A spacing scale and section rhythm, the core defence against clutter.</li>
+                <li>Motion tokens for duration and easing (see <a href="#motion">Motion</a>).</li>
+                <li>Fonts served from our own store (Shopify's font library or files in <code>assets/</code>), not from Google, to save a connection on every page.</li>
+              </ul></div>
+              <div><h4>Components</h4><ul class="list">
+                <li>Button, text link, icon button, badge, price, star rating.</li>
+                <li>Product card, the most reused piece. It shows a second image on hover or long-press.</li>
+                <li>Accordion, drawer, toast, chip, input, quantity stepper.</li>
+                <li>Skeleton placeholders for loading states. No spinners.</li>
+                <li>The brand kit's line icons exported as an SVG sprite, with any missing ones (cart, search, menu, account) drawn in the same style.</li>
+                <li>The stitch border and the photo-frame card from the Instagram covers.</li>
+                <li>A living style guide at a hidden page (<code>/pages/styleguide</code>) that shows every component.</li>
+              </ul></div>
+            </div>
+            <p class="done"><b>Done when</b> the style guide page shows every token and component correctly on a real phone, and each component passes keyboard and screen reader checks.</p>
+          </div>
+        </article>
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">2</span><h3>Home page</h3><span class="phase-when">12 Oct – 1 Nov</span></div>
+          <div class="phase-body">
+            <p>The current focus. Three weeks, built section by section, each one tested on a phone before the next starts. The full spec is in <a href="#home">Home page spec</a>.</p>
+            <div class="cols">
+              <div><h4>Week A</h4><ul class="list">
+                <li>Header (with the mobile menu drawer), footer, page shell.</li>
+                <li>Hero with the first-visit logo splash from the brand kit.</li>
+                <li>Organization and WebSite structured data.</li>
+              </ul></div>
+              <div><h4>Week B</h4><ul class="list">
+                <li>Shop by craft tiles, bestsellers grid, product card in context.</li>
+                <li>"Made by hand" story band with the scroll-drawn thread.</li>
+              </ul></div>
+              <div><h4>Week C</h4><ul class="list">
+                <li>Shop by occasion, reviews, promise strip, FAQ, join list.</li>
+                <li>Motion polish pass, speed pass, accessibility pass.</li>
+              </ul></div>
+              <div><h4>Editable without code</h4><ul class="list">
+                <li>Every section has editor settings for its text, images and links. You can reorder or hide them without code.</li>
+                <li>Settings are limited on purpose, so nobody can make the page cluttered from the editor.</li>
+              </ul></div>
+            </div>
+            <p class="done"><b>Done when</b> the home page meets every item in the <a href="#dod">Definition of done</a> on a mid-range Android phone and an iPhone.</p>
+          </div>
+        </article>
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">3</span><h3>Collections and search</h3><span class="phase-when">26 Oct – 8 Nov</span></div>
+          <div class="phase-body">
+            <div class="cols">
+              <div><h4>Collection page</h4><ul class="list">
+                <li>Two columns of products on mobile with generous gaps. Pages hold 24 products, with a "Load more" button that updates the URL.</li>
+                <li>Filters in a bottom sheet on mobile: price, colour, occasion, in stock. Sorting sits next to it.</li>
+                <li>A short intro paragraph at the top and a longer SEO description at the bottom of each collection.</li>
+                <li>A breadcrumb, plus BreadcrumbList and ItemList structured data.</li>
+              </ul></div>
+              <div><h4>Search</h4><ul class="list">
+                <li>Predictive search that shows products, collections and blog posts as you type.</li>
+                <li>Popular searches and categories shown before the shopper types anything.</li>
+                <li>A helpful "no results" page with bestsellers.</li>
+                <li>Filter and sort URLs keep the collection's canonical tag and are kept out of the index.</li>
+              </ul></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">4</span><h3>Product page</h3><span class="phase-when">2 – 15 Nov</span></div>
+          <div class="phase-body">
+            <p>The page that sells. On mobile: a swipeable photo gallery, then the title, price and rating, variants, the add to cart button, the delivery date, and the details.</p>
+            <div class="cols">
+              <div><h4>Shopping</h4><ul class="list">
+                <li>A gallery with pinch-zoom, a texture close-up and a photo showing the size in a hand.</li>
+                <li>Colour variants shown as yarn swatches, with the name read out to screen readers.</li>
+                <li>An add to cart bar that sticks to the bottom once the main button scrolls away.</li>
+                <li>"Order today, ships by …" calculated from the handmade lead time.</li>
+                <li>Gift options: a gift note and wrapping, stored as line item properties.</li>
+                <li>Personalisation fields (name, colour) where a product allows them.</li>
+              </ul></div>
+              <div><h4>Trust and SEO</h4><ul class="list">
+                <li>Details in accordions: materials, size, care, shipping, returns.</li>
+                <li>Reviews with photos, names and cities.</li>
+                <li>"Complete the gift" and "You may also like", which feed internal linking.</li>
+                <li>Product structured data with offers, shipping details, return policy and rating.</li>
+                <li>The gallery image morphs smoothly from the product card on the page before.</li>
+              </ul></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">5</span><h3>Cart and checkout</h3><span class="phase-when">9 – 15 Nov</span></div>
+          <div class="phase-body">
+            <ul class="list">
+              <li>Cart drawer from the right: the item appears instantly and syncs in the background, the free-shipping progress bar fills, and the gift note can be added in the drawer.</li>
+              <li>A full cart page as the fallback when JavaScript is off, and for sharing.</li>
+              <li>An announcement read out to screen readers when the cart updates, focus held inside the drawer, and <kbd>Esc</kbd> to close it.</li>
+              <li>The checkout belongs to Shopify and cannot be rebuilt on our plan. We brand it in the checkout editor with our logo, colours, fonts and button style so it feels like the same shop.</li>
+              <li>New customer accounts (login by email code, no password), styled to match.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">6</span><h3>Content pages and blog</h3><span class="phase-when">9 – 22 Nov</span></div>
+          <div class="phase-body">
+            <div class="cols">
+              <div><h4>Pages</h4><ul class="list">
+                <li>Our story, the maker page, with process photos.</li>
+                <li>Contact, with WhatsApp and email shown as text.</li>
+                <li>FAQ, Track order, Care guide.</li>
+                <li>Policies: privacy, refunds, shipping, terms. Payment gateways and Google require these.</li>
+                <li>A 404 page that helps the shopper, and the password page before launch.</li>
+              </ul></div>
+              <div><h4>Blog</h4><ul class="list">
+                <li>Blog index and article templates designed for long reading.</li>
+                <li>Each article has a table of contents, product cards inline and related posts.</li>
+                <li>Article structured data with the author.</li>
+              </ul></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">7</span><h3>Audit pass</h3><span class="phase-when">16 – 29 Nov</span></div>
+          <div class="phase-body">
+            <p>Every page was checked as it was built. This phase checks the whole site end to end, the way a shopper and Google will see it.</p>
+            <ul class="list">
+              <li>SEO: crawl the whole store (Screaming Frog is free for up to 500 URLs). Check titles, descriptions, canonical tags, alt text, broken links and orphan products. Run every template through Google's Rich Results Test.</li>
+              <li>Accessibility: axe on every template, a keyboard-only walk through the full purchase, VoiceOver on iPhone and TalkBack on Android.</li>
+              <li>Speed: Lighthouse with mobile settings, WebPageTest on a Moto G class phone over 4G, and the CPU profile on a real Android phone.</li>
+              <li>Apps: list every app and the JavaScript it adds. Remove anything that doesn't pay for itself.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">8</span><h3>Store setup</h3><span class="phase-when">Parallel · 5 Oct – 29 Nov</span></div>
+          <div class="phase-body">
+            <p>Admin work that doesn't need code: payments, shipping, tax, emails and apps. Some of it has long lead times (payment gateway KYC), so it starts in week 2. Details are in <a href="#ops">Store setup</a>.</p>
+          </div>
+        </article>
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">9</span><h3>Photos, copy and blog</h3><span class="phase-when">Parallel · 5 Oct – 29 Nov</span></div>
+          <div class="phase-body">
+            <ul class="list">
+              <li>Shoot the launch products to the photo brief: same backdrop and light, 4:5 portrait.</li>
+              <li>Write a unique title, description, SEO title and meta description for each product, in our own voice, without copying the Meesho text.</li>
+              <li>Write collection intros, the Our story page and the FAQ answers.</li>
+              <li>Write 8–10 cornerstone blog posts, 1–2 a week.</li>
+              <li>Ask past Meesho buyers for permission to quote their reviews, with their name and city.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="phase">
+          <div class="phase-meta"><span class="phase-no">10</span><h3>QA and soft launch</h3><span class="phase-when">23 Nov – 6 Dec</span></div>
+          <div class="phase-body">
+            <ul class="list">
+              <li>Device testing (see <a href="#perf">Performance</a>): a full purchase on each device, including a test COD order and a test prepaid order.</li>
+              <li>From 30 Nov, a soft launch: share the store password with friends, family and a few loyal Meesho buyers. Watch Microsoft Clarity recordings to see where people hesitate.</li>
+              <li>Fix what the soft launch finds, then freeze the theme 2 days before the public launch.</li>
+            </ul>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- Home spec -->
+    <section id="home">
+      <div class="sec-head">
+        <p class="eyebrow">Current focus</p>
+        <h2>Home page spec</h2>
+        <p class="lede">Nine content sections between the header and footer. Floreal's home page has about fifteen. Each section answers one question a new visitor has, in the order they ask it: what is this, what do you make, what's popular, who makes it, what should I gift, can I trust you.</p>
+      </div>
+      <div class="home-grid">
+        <div>
+          <div class="phone" aria-hidden="true">
+            <div class="phone-screen">
+              <div class="ph-hdr"><span>☰</span><span>Yarn Basket</span><span>⌕ ◯</span></div>
+              <div class="ph-hero">Handmade crochet<br>bouquets &amp; gifts</div>
+              <div class="ph-cat"><i>Bouquets</i><i>Keychains</i><i>Clips</i></div>
+              <div class="ph-grid"><i>Product</i><i>Product</i><i>Product</i><i>Product</i></div>
+              <div class="ph-story">Made by hand</div>
+              <div class="ph-occ"><i>Birthday</i><i>Anniversary</i><i>For her</i><i>Under ₹999</i></div>
+              <div class="ph-rev">Reviews</div>
+              <div class="ph-prom">Our promise</div>
+              <div class="ph-faq">FAQ</div>
+              <div class="ph-join">Join the list</div>
+              <div class="ph-foot">Footer</div>
+            </div>
+          </div>
+          <p class="phone-cap">Mobile order of sections, not to scale</p>
+        </div>
+
+        <div class="secs">
+          <div class="sec">
+            <div class="sec-title"><h3>Header</h3><span class="chip launch">Launch</span></div>
+            <dl>
+              <div><dt>Layout</dt><dd>56px tall on mobile. Menu on the left, logo in the centre, search and cart on the right. Transparent over the hero, then Oat once you scroll. It hides as you scroll down and comes back as you scroll up.</dd></div>
+              <div><dt>Anti-clutter</dt><dd>At most one announcement line, and only when there's a real offer. It's dismissible and never stacked with another.</dd></div>
+              <div><dt>Motion</dt><dd>The menu drawer slides in with a soft settle, and its links stagger in 30ms apart. The cart count gives a small bounce when it changes.</dd></div>
+              <div><dt>A11y</dt><dd>A skip link, a menu button that announces whether it's open, and focus held inside the open drawer. The sticky header never hides the item that has focus.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>Hero</h3><span class="chip launch">Launch</span></div>
+            <dl>
+              <div><dt>Purpose</dt><dd>Tell people what we are in one glance.</dd></div>
+              <div><dt>Surface</dt><dd>Blush, like the banner, with two or three outline flowers drifting slowly at the edges.</dd></div>
+              <div><dt>Content</dt><dd>One portrait photo of a bouquet in a rounded photo frame, or a muted 6-second loop that shows its poster image first. The H1 carries the keyword ("Handmade crochet bouquets and gifts"), followed by one line of support, one button ("Shop bouquets") and a text link ("Find a gift").</dd></div>
+              <div><dt>Not</dt><dd>No carousel, no text baked into the image, no second button.</dd></div>
+              <div><dt>Motion</dt><dd>The brand kit logo splash plays on the first visit of a session only, and a tap skips it. The headline then rises in word by word. The image loads with high priority so the splash never slows the main content.</dd></div>
+              <div><dt>SEO</dt><dd>The only H1 on the page. Real text, not text in an image. The hero image is preloaded with proper <code>srcset</code> sizes.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>Shop by craft</h3><span class="chip launch">Launch</span></div>
+            <dl>
+              <div><dt>Content</dt><dd>4–6 tiles: bouquets, keychains, hair clips, bag charms, scrunchies, home decor. Each tile is one image and a name, with the cover line underneath ("Flowers that never fade", "Tiny, cute &amp; all yours").</dd></div>
+              <div><dt>Layout</dt><dd>A horizontal swipe on mobile that snaps tile by tile, with the next tile peeking at 38% so people know to swipe. Three columns on desktop.</dd></div>
+              <div><dt>Motion</dt><dd>Tiles lift slightly as they enter the screen, and the image zooms 3% on press.</dd></div>
+              <div><dt>SEO</dt><dd>Plain links to the collection pages, which is the first layer of internal linking.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>Bestsellers</h3><span class="chip launch">Launch</span></div>
+            <dl>
+              <div><dt>Content</dt><dd>Four products in a 2×2 grid on mobile and 4 across on desktop, plus a "View all" link. Never more than 8.</dd></div>
+              <div><dt>Card</dt><dd>The Instagram photo frame: a rounded image (4:5) on Oat, the name in Cormorant italic, then price and rating count in Jost. One badge at most ("Bestseller" or "New"). A sale shows as a quiet struck-through price, with no percentage badge.</dd></div>
+              <div><dt>Motion</dt><dd>Images fade in over a soft placeholder in the product's own dominant colour. The second image shows on hover or long-press. Tapping morphs the image into the product page.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>Made by hand</h3><span class="chip launch">Launch</span></div>
+            <dl>
+              <div><dt>Purpose</dt><dd>Explain the price and build trust. This is the seed of our difference from the other stores.</dd></div>
+              <div><dt>Surface</dt><dd>Cocoa, the page's one dark band, with Cream text. Heading from the kit: "One stitch at a time".</dd></div>
+              <div><dt>Content</dt><dd>A photo or short clip of hands crocheting, a real number from your own work (for example, hours per bouquet), two lines of story, and a link to Our story.</dd></div>
+              <div><dt>Motion</dt><dd>The signature moment, taken from the kit's pinned banner: a single yarn strand draws itself across the section as you scroll and ends in a crochet flower, driven by CSS scroll timelines. It stays still for people who prefer reduced motion.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>Shop by occasion</h3><span class="chip launch">Launch</span></div>
+            <dl>
+              <div><dt>Content</dt><dd>A row of chips: Birthday, Anniversary, Valentine's, For her, For kids, Under ₹999. Each one links to its own collection page.</dd></div>
+              <div><dt>Why</dt><dd>It's how people shop for gifts, and each occasion collection page targets its own search ("crochet bouquet for anniversary").</dd></div>
+              <div><dt>Later</dt><dd>It could grow into a 3-question gift finder, if we choose gifting as the differentiator.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>Reviews</h3><span class="chip launch">Launch</span></div>
+            <dl>
+              <div><dt>Surface</dt><dd>Blush, headed "Your words make our day", with the kit's speech-bubble icon.</dd></div>
+              <div><dt>Content</dt><dd>3–6 real reviews, each with a customer photo, first name, city and the product reviewed. Shown once on the page, never repeated.</dd></div>
+              <div><dt>Layout</dt><dd>A horizontal swipe with buttons and dots. It never moves by itself.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>Our promise</h3><span class="chip launch">Launch</span></div>
+            <dl>
+              <div><dt>Content</dt><dd>Inside one stitch border. Four short lines with the kit's line icons: Handmade in India · Ships in X days · Gift note included · UPI and COD.</dd></div>
+              <div><dt>Rule</dt><dd>Only promises we can keep every time. This row appears once, here, and nowhere else on the page.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>FAQ</h3><span class="chip launch">Launch</span></div>
+            <dl>
+              <div><dt>Content</dt><dd>5 questions: how long it takes to make, care (the kit's "hand wash in cool water, dry flat in the shade"), custom orders, shipping time, payment and COD. A link to the full FAQ page.</dd></div>
+              <div><dt>Tech</dt><dd>Native <code>&lt;details&gt;</code> elements that open smoothly, with FAQPage structured data.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>Join the list</h3><span class="chip">After launch is fine</span></div>
+            <dl>
+              <div><dt>Content</dt><dd>One line and an email or WhatsApp field: "New drops and restocks, once a month." No pop-up on page load.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>Footer</h3><span class="chip launch">Launch</span></div>
+            <dl>
+              <div><dt>Content</dt><dd>Cocoa background. The logo in reverse, 3 short link groups (Shop, Help, About), Instagram, payment icons and the policies. On mobile the link groups collapse into accordions.</dd></div>
+            </dl>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><h3>Left out on purpose</h3></div>
+            <dl>
+              <div><dt>Skip</dt><dd>An Instagram feed embed (heavy and slow), a chat bubble covering the cart button, countdown timers, "X people are viewing this", spin-to-win wheels, and a second product row of the same kind.</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design system -->
+    <section id="system">
+      <div class="sec-head">
+        <p class="eyebrow">Phase 1 detail</p>
+        <h2>Design system</h2>
+      </div>
+      <div class="prose">
+        <h3>Colour contrast check</h3>
+        <p>I measured each brand colour against our backgrounds using the WCAG 2.2 formula. Normal text needs 4.5:1. Large text (24px and up) and icons need 3:1.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Colour</th><th>On Oat</th><th>On Cream</th><th>On Blush</th><th>Use it for</th></tr></thead>
+          <tbody>
+            <tr><td><span class="swatch" style="background:#6B4F43"></span>Cocoa</td><td class="num pass">6.50 ✓</td><td class="num pass">6.91 ✓</td><td class="num pass">5.33 ✓</td><td>All text, buttons, focus rings. Cream text on a Cocoa button is 6.91 ✓</td></tr>
+            <tr><td><span class="swatch" style="background:#8E7468"></span>Taupe</td><td class="num fail">3.79 ✗</td><td class="num fail">4.03 ✗</td><td class="num fail">3.11 ✗</td><td>Large headings and decoration only. Fails for small text.</td></tr>
+            <tr><td><span class="swatch" style="background:#705B52"></span>Taupe Ink (new)</td><td class="num pass">5.56 ✓</td><td class="num pass">5.91 ✓</td><td class="num pass">4.56 ✓</td><td>Taupe darkened to pass. For captions, labels and secondary text.</td></tr>
+            <tr><td><span class="swatch" style="background:#E3A69C"></span>Rose</td><td class="num fail">1.80 ✗</td><td class="num fail">1.91 ✗</td><td class="num fail">1.48 ✗</td><td>Fills, underlines and illustration only. Never text, and never the only focus ring.</td></tr>
+            <tr><td><span class="swatch" style="background:#A9B8A0"></span>Sage</td><td class="num fail">1.83 ✗</td><td class="num fail">1.94 ✗</td><td class="num fail">1.50 ✗</td><td>Backgrounds of sections and badges, with Cocoa text on top (3.56, large text only).</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="decide">
+        <span class="tag">Fix carried over from the coming-soon page</span>
+        <p>The coming-soon button uses a Rose focus ring, which is only 1.8:1 against Oat. In the store, the focus ring will be a 2px Cocoa line with a soft Rose halo outside it, which passes and still looks on-brand.</p>
+      </div>
+      <div class="cols">
+        <div><h4>Type scale (mobile → desktop)</h4><ul class="list">
+          <li>Display: Cormorant Garamond Italic 600, 40 → 72px</li>
+          <li>H2: 32 → 48px · H3: 24 → 30px</li>
+          <li>Body: Jost 400, 16 → 17px, line height 1.6, at most 65 characters per line</li>
+          <li>Labels: Jost 500 uppercase, 12–13px, letter spacing 0.16–0.28em</li>
+          <li>Prices: Jost 500 with tabular figures so digits line up</li>
+        </ul></div>
+        <div><h4>Space (the anti-clutter system)</h4><ul class="list">
+          <li>Base unit 4px. Scale: 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 · 96 · 128</li>
+          <li>Between sections: 72px on mobile, 128px on desktop</li>
+          <li>Side gutter: 20px on mobile, 40px on tablet, 64px on desktop. Content is at most 1280px wide.</li>
+          <li>Product grid gaps: 16px horizontal and 32px vertical on mobile, 32px and 56px on desktop</li>
+          <li>Heading to content: always 24–32px. Never squeezed.</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <!-- Motion -->
+    <section id="motion">
+      <div class="sec-head">
+        <p class="eyebrow">Making it feel alive</p>
+        <h2>Motion system</h2>
+        <p class="lede">The site feels alive when it answers every touch and pages flow into each other, not when things move everywhere. Almost all of it runs on modern CSS that Chrome on Android (most of our shoppers) supports today, and it falls back gracefully on other browsers.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Token</th><th>Value</th><th>Used for</th></tr></thead>
+          <tbody>
+            <tr><td><code>--dur-press</code></td><td class="num">120ms</td><td>Button press, tap feedback</td></tr>
+            <tr><td><code>--dur-state</code></td><td class="num">200ms</td><td>Hover, colour changes, swatch selection</td></tr>
+            <tr><td><code>--dur-panel</code></td><td class="num">320ms</td><td>Drawers, accordions, bottom sheets</td></tr>
+            <tr><td><code>--dur-enter</code></td><td class="num">560ms</td><td>Content arriving on scroll</td></tr>
+            <tr><td><code>--dur-hero</code></td><td class="num">900ms</td><td>The single orchestrated moment on each page</td></tr>
+            <tr><td><code>--ease-out</code></td><td><code>cubic-bezier(.22, 1, .36, 1)</code></td><td>Most motion (already used on the coming-soon page)</td></tr>
+            <tr><td><code>--ease-spring</code></td><td><code>linear(…)</code> spring curve</td><td>Cart bounce, drawer settle</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="rules">
+        <div class="rule"><h4>Page transitions</h4><p>Cross-document View Transitions (<code>@view-transition { navigation: auto }</code>). The product image morphs from the card into the product page, and the header stays put. This needs no single-page app.</p></div>
+        <div class="rule"><h4>Instant pages</h4><p>Speculation Rules prerender a page when a finger touches its link, so the next page is often ready before the tap ends.</p></div>
+        <div class="rule"><h4>Scroll</h4><p>Scroll-driven CSS animations (<code>animation-timeline: view()</code>) for content entering the screen and for the yarn thread. Browsers without them get a small IntersectionObserver fallback. Native scrolling always, never smooth-scroll libraries that hijack it.</p></div>
+        <div class="rule"><h4>Add to cart</h4><p>The button turns into a tick, a small product image flies to the cart icon, the count bounces and the drawer opens. All of it happens at once (optimistic), then syncs with Shopify.</p></div>
+        <div class="rule"><h4>Panels</h4><p>Drawers, menus and sheets use <code>@starting-style</code> and the native <code>popover</code> and <code>dialog</code> elements, so they animate without a library and come with keyboard and focus handling built in.</p></div>
+        <div class="rule"><h4>Hard rules</h4><p>Animate only transform, opacity and clip-path. Content is visible without JavaScript. With reduced motion, everything becomes a short fade. It must hold 60fps on a mid-range Android phone. No GSAP unless a moment truly needs it.</p></div>
+      </div>
+    </section>
+
+    <!-- A11y -->
+    <section id="a11y">
+      <div class="sec-head">
+        <p class="eyebrow">Target: WCAG 2.2 AA</p>
+        <h2>Accessibility</h2>
+      </div>
+      <div class="cols">
+        <div><h4>Built in from the start</h4><ul class="list">
+          <li>Real HTML first: <code>button</code>, <code>a</code>, <code>dialog</code>, <code>details</code>, form labels. ARIA only where HTML falls short.</li>
+          <li>One H1 per page, headings in order, and landmarks (header, nav, main, footer).</li>
+          <li>Tap targets of at least 48px. WCAG requires 24px, and we go further.</li>
+          <li>A visible focus ring everywhere, never hidden behind the sticky header.</li>
+          <li>Carousels have buttons, never move by themselves, and work by swipe or keyboard.</li>
+          <li>Cart and form updates are announced to screen readers.</li>
+          <li>Pages still work at 200% zoom and at 320px wide.</li>
+          <li><code>lang="en-IN"</code>, and Hindi words marked <code>lang="hi"</code> where we use them.</li>
+        </ul></div>
+        <div><h4>Content rules</h4><ul class="list">
+          <li>Alt text describes the piece: the colour, the flower and the size ("Pink and white crochet rose bouquet, 12 stems, wrapped in kraft paper").</li>
+          <li>Colour is never the only signal. Sold-out states also have a word and a strike-through.</li>
+          <li>Prices are read in full: "₹1,299, was ₹1,599".</li>
+          <li>Error messages say what's wrong and how to fix it.</li>
+        </ul>
+        <h4>Testing</h4><ul class="list">
+          <li>axe in CI on every pull request, and the axe DevTools extension while building.</li>
+          <li>A keyboard-only purchase every week.</li>
+          <li>VoiceOver on iPhone and TalkBack on Android before each phase closes.</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <!-- SEO -->
+    <section id="seo">
+      <div class="sec-head">
+        <p class="eyebrow">The top priority</p>
+        <h2>SEO</h2>
+      </div>
+      <div class="cols">
+        <div><h4>Keywords and structure</h4><ul class="list">
+          <li>Group searches into clusters. By product: crochet bouquet, crochet flowers, crochet keychain, crochet hair clips, crochet bag charm. By occasion: anniversary, birthday, Valentine's. By modifier: handmade, everlasting, online India, under ₹999.</li>
+          <li>Each cluster gets one page: a product type collection or an occasion collection. Blog posts link to it.</li>
+          <li>Clean URLs: <code>/collections/crochet-bouquets</code>, <code>/products/pink-rose-crochet-bouquet</code>.</li>
+          <li>Product links always go to <code>/products/…</code>, never <code>/collections/x/products/…</code>, so there is one URL per product.</li>
+          <li>Rename image files to describe the piece before uploading.</li>
+        </ul></div>
+        <div><h4>Structured data (JSON-LD)</h4><ul class="list">
+          <li>Home: Organization (logo, Instagram, Meesho) and WebSite with site search.</li>
+          <li>Product: Offer with price and stock, shipping details, return policy, and AggregateRating from real reviews.</li>
+          <li>BreadcrumbList on collections and products, Article on blog posts.</li>
+          <li>FAQPage on FAQs. Google now shows FAQ rich results only for government and health sites, so this mainly helps AI answer engines understand us.</li>
+          <li>Every template checked in Google's Rich Results Test.</li>
+        </ul></div>
+        <div><h4>Content</h4><ul class="list">
+          <li>8–10 cornerstone posts before launch, for example: "How to care for crochet flowers", "Crochet bouquet vs real flowers", "Anniversary gifts under ₹999", "What is a bag charm and how to style it".</li>
+          <li>Seasonal guides published 4–6 weeks before Valentine's, Rakhi, Diwali and Christmas.</li>
+          <li>Every post links to at least 2 collections and 3 products.</li>
+        </ul></div>
+        <div><h4>Technical and launch</h4><ul class="list">
+          <li>While the store is password-protected, Google can't see it. Indexing starts on launch day, and that's expected.</li>
+          <li>Launch day: verify Search Console, submit the sitemap, request indexing of the home page and top collections.</li>
+          <li>Google Merchant Center free listings through the Google &amp; YouTube app, to show up in Shopping results.</li>
+          <li><code>llms.txt</code> for AI crawlers: Shopify can't host files at the domain root directly, so we'll check during Phase 7 whether a URL redirect to a page works.</li>
+          <li>Tune <code>robots.txt.liquid</code> so search engines skip filter and sort URLs.</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <!-- Performance -->
+    <section id="perf">
+      <div class="sec-head">
+        <p class="eyebrow">Hard limits</p>
+        <h2>Performance</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Measure</th><th>Limit</th><th>How we stay under it</th></tr></thead>
+          <tbody>
+            <tr><td>LCP (main content shown)</td><td class="num">&lt; 2.0 s</td><td>A preloaded hero image with high priority, AVIF/WebP from Shopify's CDN with exact <code>srcset</code> sizes, and fonts from our own domain.</td></tr>
+            <tr><td>INP (tap response)</td><td class="num">&lt; 200 ms</td><td>Little JavaScript, all deferred, optimistic UI updates, no heavy apps.</td></tr>
+            <tr><td>CLS (layout jumps)</td><td class="num">&lt; 0.1</td><td>Every image and embed has a fixed aspect ratio, font fallbacks are size-matched, and nothing is injected above content.</td></tr>
+            <tr><td>Our JavaScript, home page</td><td class="num">≤ 30 KB gzip</td><td>Web Components loaded only when the section is on the page.</td></tr>
+            <tr><td>CSS, home page</td><td class="num">≤ 40 KB gzip</td><td>Base CSS plus CSS per section, loaded only with that section.</td></tr>
+            <tr><td>Hero image</td><td class="num">≤ 120 KB</td><td>AVIF at the right width for the phone.</td></tr>
+            <tr><td>Fonts</td><td class="num">≤ 3 files</td><td>Cormorant Garamond Italic 600 and Jost 400/500, Latin subset, WOFF2.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cols">
+        <div><h4>Test devices</h4><ul class="list">
+          <li>A mid-range Android phone (Redmi or Samsung A series) on Chrome. Top priority.</li>
+          <li>An iPhone on Safari.</li>
+          <li>Samsung Internet.</li>
+          <li>Desktop Chrome, Safari and Firefox.</li>
+          <li>Network throttled to slow 4G in DevTools.</li>
+        </ul></div>
+        <div><h4>Tools</h4><ul class="list">
+          <li>Lighthouse CI on every pull request, which fails the build over budget.</li>
+          <li>WebPageTest before each phase closes.</li>
+          <li>After launch: Shopify's Web Performance dashboard and the CrUX field data in Search Console.</li>
+          <li>Every app is checked for the JavaScript it adds before it's installed.</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <!-- Ops -->
+    <section id="ops">
+      <div class="sec-head">
+        <p class="eyebrow">Phase 8 · runs alongside</p>
+        <h2>Store setup for India</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Area</th><th>What to set up</th><th>Start by</th></tr></thead>
+          <tbody>
+            <tr><td>Payments</td><td>Shopify Payments isn't available in India, so we use a third-party gateway: Razorpay, Cashfree, PayU or PhonePe. They need KYC and live policy pages. Note that Shopify adds a transaction fee on third-party gateways for most plans, so factor that into the plan choice.</td><td class="num">Week 2</td></tr>
+            <tr><td>COD</td><td>Cash on delivery as a manual payment method, or partial COD (part paid online) through an app. Decide the minimum order and any COD fee.</td><td class="num">Week 3</td></tr>
+            <tr><td>Shipping</td><td>Shiprocket or Delhivery for rates, labels and tracking. Shipping zones, a free shipping threshold and handmade lead times.</td><td class="num">Week 4</td></tr>
+            <tr><td>Tax</td><td>GSTIN, tax settings for India, and GST invoices (Order Printer template or an app).</td><td class="num">Week 4</td></tr>
+            <tr><td>Policies</td><td>Privacy, refunds and returns, shipping, terms, contact details. Gateways, Google Merchant Center and shoppers all need them.</td><td class="num">Week 2</td></tr>
+            <tr><td>Emails</td><td>Order confirmation, shipping and delivery emails styled in our brand. Optional WhatsApp order updates.</td><td class="num">Week 7</td></tr>
+            <tr><td>Reviews</td><td>A lightweight reviews app (Judge.me or similar) that outputs rating structured data. Only real reviews, collected with a card in each parcel.</td><td class="num">Week 5</td></tr>
+            <tr><td>Analytics</td><td>GA4 through the Google &amp; YouTube app, Search Console, Microsoft Clarity, and the Meta pixel if we run ads.</td><td class="num">Week 8</td></tr>
+            <tr><td>Photos</td><td>Oat or Blush backdrop, soft daylight, 4:5 portrait, at least 2048px wide. Per product: a hero shot, a texture close-up, a shot in a hand for scale, and a gifting or lifestyle shot.</td><td class="num">Week 2</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DoD -->
+    <section id="dod">
+      <div class="sec-head">
+        <p class="eyebrow">Applies to every section and page</p>
+        <h2>Definition of done</h2>
+        <p class="lede">A section only counts as finished when all of these are true. This is how SEO, accessibility, motion and speed get built in rather than bolted on at the end.</p>
+      </div>
+      <ul class="checklist">
+        <li>Looks right at 360, 390, 768, 1024 and 1440px, with nothing cramped or overlapping.</li>
+        <li>Follows the spacing scale, with one idea and at most one main button.</li>
+        <li>Editable in the theme editor, with sensible defaults and limited settings.</li>
+        <li>Works with the keyboard alone, with visible focus and correct screen reader output.</li>
+        <li>Text and icons pass the contrast check.</li>
+        <li>Motion uses the tokens, runs at 60fps on the Android test phone, and becomes a fade with reduced motion.</li>
+        <li>Content is visible and usable without JavaScript.</li>
+        <li>Correct heading level, real text, alt text, and valid structured data where relevant.</li>
+        <li>Within the speed budget. Lighthouse mobile shows no new LCP, CLS or INP regressions.</li>
+        <li><code>theme check</code>, axe and Lighthouse CI all pass on the pull request.</li>
+      </ul>
+    </section>
+
+    <!-- Launch -->
+    <section id="launch">
+      <div class="sec-head">
+        <p class="eyebrow">Monday 7 December</p>
+        <h2>Launch day</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Step</th><th>What happens</th></tr></thead>
+          <tbody>
+            <tr><td>1 · Transfer</td><td>In the Partner dashboard, transfer the store to your own account and choose a paid plan.</td></tr>
+            <tr><td>2 · Publish</td><td>Publish the final theme and remove the store password.</td></tr>
+            <tr><td>3 · Domain</td><td>At Spaceship: point the A record to <code>23.227.38.65</code> and the <code>www</code> CNAME to <code>shops.myshopify.com</code>. Connect yarnbasket.in in Shopify and set it as the primary domain.</td></tr>
+            <tr><td>4 · Retire coming soon</td><td>Once the domain points to Shopify, delete <code>coming-soon/</code> and its GitHub Pages workflow.</td></tr>
+            <tr><td>5 · Search</td><td>Verify Search Console and submit the sitemap. Check Merchant Center and GA4 are receiving data.</td></tr>
+            <tr><td>6 · Check</td><td>Place one real order and refund it. Test on both test phones.</td></tr>
+            <tr><td>7 · Tell people</td><td>Instagram, WhatsApp, and a card in every Meesho parcel that week.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="prose">
+        <h3>First 30 days</h3>
+        <ul class="list">
+          <li>Every week, check Search Console coverage and queries, CWV field data, and Clarity recordings of the purchase flow.</li>
+          <li>Publish one blog post a week, with a Valentine's guide by early January.</li>
+          <li>Start the differentiator module. Following our rule, it gets its own sprint after the foundation is live and stable.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Open -->
+    <section id="open">
+      <div class="sec-head">
+        <p class="eyebrow">Needs your call</p>
+        <h2>Open decisions</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Decision</th><th>My recommendation</th><th>Needed by</th></tr></thead>
+          <tbody>
+            <tr><td>Base theme</td><td><span class="pass">Decided:</span> Skeleton</td><td class="num">Done 1 Oct</td></tr>
+            <tr><td>Launch dates</td><td><span class="pass">Decided:</span> soft launch 30 Nov, public launch 7 Dec</td><td class="num">Done 1 Oct</td></tr>
+            <tr><td>Differentiator</td><td>"Made by hand" storytelling plus gifting (occasions, gift note, wrap). Both fit what the reference stores lack.</td><td class="num">By 12 Oct (home page)</td></tr>
+            <tr><td>Launch range</td><td>15–25 of your best Meesho products, each with full photos</td><td class="num">Week 2</td></tr>
+            <tr><td>Payment gateway and COD</td><td>Razorpay plus partial COD, if the fees work for your margins</td><td class="num">Week 2</td></tr>
+                      </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="end">
+      <p>Plan for yarnbasket.in · written 1 October 2026, updated the same day with the brand kit direction and the base theme and launch decisions. Saved in the repo at <code>docs/</code> with a decision log. Contrast ratios computed with the WCAG 2.2 relative luminance formula. Reference store notes come from reading each home page's HTML on 1 Oct 2026.</p>
+    </footer>
+  </main>
+</div>

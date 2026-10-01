@@ -12,6 +12,10 @@ Storefront for **Yarn Basket**, handmade crochet from India.
 
 ## Next: custom Shopify theme
 
-Planned: a custom Online Store 2.0 Liquid theme built from Dawn. SEO-first, mobile-first, and within these Core Web Vitals budgets: LCP < 2.0s, INP < 200ms, CLS < 0.1.
+A custom Online Store 2.0 Liquid theme built from Shopify's [Skeleton theme](https://github.com/Shopify/skeleton-theme). It's SEO-first, mobile-first and WCAG 2.2 AA, and stays within these Core Web Vitals budgets: LCP < 2.0s, INP < 200ms, CLS < 0.1. Soft launch 30 Nov 2026, public launch 7 Dec 2026.
+
+- [docs/build-plan.html](docs/build-plan.html): the full phased plan, including the home page spec, design system, motion, accessibility, SEO, performance and launch steps
+- [docs/brand-direction.md](docs/brand-direction.md): how the brand kit becomes the store's visual language
+- [docs/decisions.md](docs/decisions.md): the decision log
 
 When the Shopify store goes live, point the domain's DNS at Shopify, then delete `coming-soon/` and the deploy workflow.
