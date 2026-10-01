@@ -112,13 +112,13 @@
   }
   html.header-hidden .header-section:not(:focus-within) { transform: translateY(-100%); }
   .site-header {
-    background: color-mix(in srgb, var(--blush-soft) 88%, transparent);
+    background-color: var(--header-bg, color-mix(in srgb, var(--blush-soft) 88%, transparent));
     -webkit-backdrop-filter: saturate(1.4) blur(14px);
     backdrop-filter: saturate(1.4) blur(14px);
     border-bottom: 1px solid transparent;
-    transition: border-color var(--dur-state) ease;
+    transition: border-color var(--dur-state) ease, background-color var(--dur-panel) ease;
   }
-  html.header-scrolled .site-header { border-bottom-color: var(--color-line); }
+  html.header-scrolled .site-header { --header-bg: color-mix(in srgb, var(--blush-soft) 88%, transparent); border-bottom-color: var(--color-line); }
 
   .site-header__row {
     display: grid;

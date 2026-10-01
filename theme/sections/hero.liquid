@@ -21,6 +21,10 @@
   {%- endfor -%}
 {%- endcapture -%}
 
+{%- if section.index == 1 and s.scheme == 'blush' -%}
+  {%- comment -%} At the top of the page the header takes the hero's Blush, so they read as one welcome; it turns light again on scroll. {%- endcomment -%}
+  <style>html:not(.header-scrolled) { --header-bg: var(--blush); }</style>
+{%- endif -%}
 <section class="section hero scheme-{{ s.scheme }}" aria-labelledby="Hero-{{ section.id }}">
   <div class="hero__grid">
     <div class="hero__copy">
@@ -161,6 +165,15 @@
 
 {% stylesheet %}
   .hero { padding-top: clamp(var(--space-6), 2rem + 3vw, var(--space-9)); overflow: clip; }
+  /* On Blush: the colour fades softly into the page below instead of ending in a hard band, and the
+     photo frame and the bee's border turn white, like a mat around a print, so the photos stay crisp. */
+  .hero.scheme-blush {
+    --hero-fade: clamp(120px, 14vw, 220px);
+    background: linear-gradient(to bottom, var(--blush) calc(100% - var(--hero-fade)), var(--blush-soft));
+  }
+  .hero.scheme-blush .hero__frame { border-color: color-mix(in srgb, var(--white) 92%, transparent); }
+  .hero.scheme-blush .hero__inset-media { border-color: var(--white); }
+  .hero.scheme-blush .btn--ghost { --btn-line: color-mix(in srgb, var(--cocoa) 22%, transparent); background: color-mix(in srgb, var(--white) 72%, transparent); }
   .hero__grid { display: grid; gap: clamp(var(--space-7), 2rem + 4vw, var(--space-9)); align-items: center; }
   .hero__copy { display: grid; gap: var(--space-4); justify-items: start; max-width: 36rem; }
   .hero__title { max-width: 12ch; }
@@ -297,7 +310,7 @@
   .hero__inset:active .hero__inset-media, .hero__frame:has(.hero__link:active) { scale: .985; transition: scale var(--dur-press) ease; }
 
   @media (hover: hover) {
-    .hero__frame:hover { border-color: var(--rose); }
+    .hero__frame:hover, .hero.scheme-blush .hero__frame:hover { border-color: var(--rose); }
     .hero__link:hover .hero__img { scale: 1.03; }
     .hero__inset:hover .hero__inset-label .icon { transform: translateX(3px); }
   }

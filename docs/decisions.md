@@ -45,6 +45,13 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   - Tested: the hero flowers move, stop on pause and resume on play; the footer flowers go from offset (46px, -48°) to halfway to rest as the footer scrolls in.
   - **Footer flowers float continuously too (Raushan's call, Claude agreed).** After the scroll-in drift they keep floating very slowly: 12–17 s cycles, a few pixels, out of step. The scroll drift uses `transform` and the float uses `translate`/`rotate`, so the two combine.
   - **Deliberate WCAG 2.2.2 exception:** the footer has no pause control. We accepted this because the flowers are faint (30% opacity), decorative, very slow, and never near text. They are tested to keep at least 17px from every word, link and the logo at 390px, 430px, 768px and 1440px. On phones narrower than 390px only two flowers show, at least 24px clear. They are still for reduce motion. If an accessibility audit ever matters (for example a B2B or government buyer), the fix is a small "Pause animations" link in the footer.
+- **Hero in Blush, blended with the header (option C, chosen by Raushan from three previews).** The first screen now opens in the brand colour, like the Instagram banner, and the page opens and closes on Blush (hero and newsletter). Raushan's condition: it must stay calm and never pull attention from navigation, buttons or photos. So:
+  - At the top of the page the header takes the hero's Blush, so they read as one block with no seam. Once you scroll, it fades back to the light frosted header with its line, so the Blush never follows you down. (Done with a `--header-bg` token that the hero sets only when it is first on the page and Blush.)
+  - The hero's bottom fades softly into the page (over 120–220px) instead of ending in a hard band.
+  - The photo frame line and the bee's border are white, like a mat around a print. A rose line almost vanished on Blush. Hover still turns the frame rose.
+  - "Find a gift" has a brighter white fill (72%) so both buttons read clearly.
+  - Contrast on Blush: body text 5.33:1 and headings 7.63:1. Axe: 0 on mobile and desktop.
+  - **Blush budget is now full:** hero, story panel, promise panel, newsletter and small accents. No more Blush surfaces on the home page.
 - Axe after round 3: 0 violations on mobile and desktop.
 
 ## 2026-10-01 (home page, round 2)
