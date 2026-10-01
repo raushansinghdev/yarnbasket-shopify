@@ -23,7 +23,14 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   - **Our promise** is a Blush card with the dashed stitch border sewn 12px inside its edge, the same as the brand's Instagram covers.
   - **Accents:** Blush product badges ("Bestseller", "New"); a Blush hover on the gift-occasion buttons (instead of a dark Cocoa fill); Blush behind product and craft photos while they load.
   - **Newsletter** stays the one full-width Blush band. A Blush footer was tried and then reverted the same day. Raushan felt the newsletter and footer blended into one block, and Claude agreed: the newsletter is a call to action, so it should be the only Blush band and stand out. The footer is back on Soft blush; its "Background" setting still offers Blush.
-- **Footer with the logo,** taken from the brand kit's sign-off. Every Instagram cover ends with the basket mark + "Yarn Basket", and the pinned banner shows the full lockup. The footer now opens with the basket mark (60px on phones, 72px on desktop), "Yarn Basket" in Cormorant, and HANDMADE WITH LOVE in tracked Jost, all as one link home (its name for screen readers is "Yarn Basket Handmade with love"). The line above copyright and policies is a dashed row of stitches, like the covers' borders. On hover the mark tilts slightly; it never moves on its own.
+- **Footer built from the brand banner and horizontal logo** (`Brand Kit/3-banner`, `Brand Kit/1-logo/logo-horizontal-colour`), as Raushan asked. Everything is centred:
+  - the basket mark (76px on phones, 104px from tablet up) beside "Yarn Basket" and HANDMADE WITH LOVE, linking home;
+  - a short rule;
+  - the crafts line "CROCHET BOUQUETS · KEYCHAINS · HAIR CLIPS · BAG CHARMS", as real links (a "Crafts line" menu setting; demo links until the menus exist). On phones it shows as a neat two-column grid with no dots;
+  - social icons, then the help menu(s) as quiet centred rows;
+  - a stitched dashed line, then copyright, policies and payment icons;
+  - faint outline flowers in the corners, which never move.
+  The logo is live text rather than the PNG, so it stays sharp and is read by Google and screen readers. On hover the mark tilts slightly.
   - **Rule C, refined:** the page ground stays Soft blush. Blush panels are kept for brand moments (how it's made, what we promise). Shopping rows (craft circles, bestsellers, reviews) stay on the calm ground so the photos lead. Each panel has an on/off "Blush panel" setting in the theme editor.
   - Contrast on Blush: Cocoa 5.33:1, Taupe Ink 4.56:1, Cocoa deep 7.63:1, all AA.
 - Axe after round 3: 0 violations on mobile and desktop.

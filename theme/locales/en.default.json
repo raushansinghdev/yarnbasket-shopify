@@ -54,6 +54,7 @@
   },
   "general": {
     "tagline": "Handmade with love",
+    "crafts": "Shop by craft",
     "made_in": "Handmade in India",
     "view_all": "View all",
     "tagged": "tagged \"{{ tags }}\"",
