@@ -1,0 +1,341 @@
+{%- comment -%}
+  Shop by craft, with the products right there (docs/home-shop-plan.md §3).
+  The craft circles are toggle buttons: pressing one shows that craft's products in the grid below, like opening
+  an Instagram highlight. Every craft's cards are in the HTML (hidden ones don't load their photos until shown),
+  so switching is instant and every "See all" collection link is crawlable. A craft with no products is left out.
+  Without JavaScript the buttons hide and every craft's products are listed one after another.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign per = s.limit
+  assign fav = s.collection
+  assign uid = section.id
+
+  # The tabs: Favourites first, then each craft block that has products (or demo products).
+  assign tab_count = 0
+  if fav != blank and fav.products_count > 0
+    assign tab_count = 1
+  elsif settings.demo_content
+    assign tab_count = 1
+  endif
+  for block in section.blocks
+    if block.settings.collection.products_count > 0 or settings.demo_content
+      assign tab_count = tab_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if tab_count > 0 -%}
+<section class="section shop scheme-{{ s.scheme }}" id="shop" aria-labelledby="Shop-{{ uid }}" data-shop-crafts>
+  <div class="shop__head">
+    <div class="section-head" data-arrive="lines">
+      {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h2 id="Shop-{{ uid }}">{{ s.heading }}</h2>
+    </div>
+
+    <div class="shop__crafts scroller" role="group" aria-label="{{ 'shop.choose_craft' | t }}" data-arrive="stagger glide">
+      {%- assign n = 0 -%}
+      {%- if fav.products_count > 0 or settings.demo_content -%}
+        <button type="button" class="shop__craft" id="ShopTab-{{ uid }}-0" aria-pressed="true" aria-controls="ShopPanel-{{ uid }}-0" data-shop-tab>
+          <span class="shop__circle shop__circle--fav">{%- render 'logo-mark', size: 44, id: 'shop' -%}</span>
+          <span class="shop__label">{{ s.favourites_label }}</span>
+        </button>
+        {%- assign n = 1 -%}
+      {%- endif -%}
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign c = block.settings.collection
+          unless c.products_count > 0 or settings.demo_content
+            continue
+          endunless
+          assign title = block.settings.title | default: c.title | default: 'Craft'
+          assign img = block.settings.image | default: c.featured_image
+          if img == blank and c.products.first.featured_media
+            assign img = c.products.first.featured_media.preview_image
+          endif
+          assign key = title | downcase
+          assign demo_img = blank
+          if key contains 'bouquet'
+            assign demo_img = 'cat-bouquets'
+          elsif key contains 'key'
+            assign demo_img = 'cat-keychains'
+          elsif key contains 'hair' or key contains 'clip'
+            assign demo_img = 'cat-hair'
+          elsif key contains 'charm'
+            assign demo_img = 'cat-charms'
+          elsif key contains 'pot' or key contains 'decor'
+            assign demo_img = 'cat-pots'
+          endif
+        -%}
+        <button type="button" class="shop__craft" id="ShopTab-{{ uid }}-{{ n }}" aria-pressed="{% if n == 0 %}true{% else %}false{% endif %}" aria-controls="ShopPanel-{{ uid }}-{{ n }}" data-shop-tab {{ block.shopify_attributes }}>
+          <span class="shop__circle media">
+            {%- if img -%}
+              {%- render 'image', image: img, sizes: '88px', width: 180, alt: '', class: 'shop__img' -%}
+            {%- elsif settings.demo_content and demo_img != blank -%}
+              {%- render 'demo-image', name: demo_img, sizes: '88px', class: 'shop__img' -%}
+            {%- else -%}
+              <span class="shop__art">{%- render 'menu-link-icon', handle: key -%}</span>
+            {%- endif -%}
+          </span>
+          <span class="shop__label">{{ title }}</span>
+        </button>
+        {%- assign n = n | plus: 1 -%}
+      {%- endfor -%}
+    </div>
+  </div>
+
+  <div class="shop__panels" data-shop-panels>
+    {%- assign n = 0 -%}
+    {%- if fav.products_count > 0 or settings.demo_content -%}
+      {%- liquid
+        if fav.products_count > 0
+          assign shown = fav.products_count | at_most: per
+          assign total = shown
+        else
+          assign shown = 4 | at_most: per
+          assign total = shown
+        endif
+      -%}
+      <div class="shop__panel" id="ShopPanel-{{ uid }}-0" role="region" aria-labelledby="ShopTab-{{ uid }}-0" data-label="{{ s.favourites_label | downcase | escape }}" data-shown="{{ shown }}" data-total="{{ total }}">
+        <h3 class="shop__panel-title">{{ s.favourites_label }}</h3>
+        <ul class="product-grid" role="list" data-arrive="stagger">
+          {%- if fav.products_count > 0 -%}
+            {%- for product in fav.products limit: per -%}
+              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: product, index: forloop.index0, skip_bestseller: true -%}</li>
+            {%- endfor -%}
+          {%- else -%}
+            {%- assign picks = '1,4,6,7' | split: ',' -%}
+            {%- for pick in picks limit: per -%}
+              {%- assign pick_n = pick | plus: 0 -%}
+              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: blank, index: forloop.index0, demo: pick_n, skip_bestseller: true -%}</li>
+            {%- endfor -%}
+          {%- endif -%}
+        </ul>
+        <a class="btn btn--ghost shop__all" href="{{ routes.all_products_collection_url }}">
+          {{- 'header.shop_all' | t -}}
+          {%- render 'icon', icon: 'arrow' -%}
+        </a>
+      </div>
+      {%- assign n = 1 -%}
+    {%- endif -%}
+
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign c = block.settings.collection
+        unless c.products_count > 0 or settings.demo_content
+          continue
+        endunless
+        assign title = block.settings.title | default: c.title | default: 'Craft'
+        assign key = title | downcase
+        if c.products_count > 0
+          assign total = c.products_count
+          assign shown = total | at_most: per
+          assign url = c.url
+        else
+          if key contains 'bouquet'
+            assign picks = '1,2,3'
+          elsif key contains 'key'
+            assign picks = '4'
+          elsif key contains 'hair' or key contains 'clip'
+            assign picks = '6,8'
+          elsif key contains 'charm'
+            assign picks = '7'
+          else
+            assign picks = '5'
+          endif
+          assign picks = picks | split: ','
+          assign total = picks.size
+          assign shown = total | at_most: per
+          assign url = routes.all_products_collection_url
+        endif
+      -%}
+      <div class="shop__panel" id="ShopPanel-{{ uid }}-{{ n }}" role="region" aria-labelledby="ShopTab-{{ uid }}-{{ n }}" data-label="{{ key | escape }}" data-shown="{{ shown }}" data-total="{{ total }}" {% if n > 0 %}hidden{% endif %}>
+        <h3 class="shop__panel-title">{{ title }}</h3>
+        <ul class="product-grid" role="list" {% if n == 0 %}data-arrive="stagger"{% endif %}>
+          {%- if c.products_count > 0 -%}
+            {%- for product in c.products limit: per -%}
+              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: product, index: forloop.index0 -%}</li>
+            {%- endfor -%}
+          {%- else -%}
+            {%- for pick in picks limit: per -%}
+              {%- assign pick_n = pick | plus: 0 -%}
+              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: blank, index: forloop.index0, demo: pick_n -%}</li>
+            {%- endfor -%}
+          {%- endif -%}
+        </ul>
+        <a class="btn btn--ghost shop__all" href="{{ url }}">
+          {{- 'shop.see_all' | t: craft: key -}}
+          {%- if total > shown %} <span class="shop__count">({{ total }})</span>{% endif -%}
+          {%- render 'icon', icon: 'arrow' -%}
+        </a>
+      </div>
+      {%- assign n = n | plus: 1 -%}
+    {%- endfor -%}
+  </div>
+
+  <p class="visually-hidden" role="status" data-shop-status data-template="{{ 'shop.status' | t: craft: '[craft]', shown: '[shown]', total: '[total]' | escape }}"></p>
+  {%- comment -%} Without JavaScript the buttons can't switch anything, so they hide and every craft is listed in turn. {%- endcomment -%}
+  <noscript><style>.shop__crafts { display: none !important; } .shop__panel[hidden] { display: block !important; } .shop__panel + .shop__panel { margin-top: var(--space-8); } .shop__panel-title { position: static !important; width: auto !important; height: auto !important; clip-path: none !important; }</style></noscript>
+</section>
+{%- endif -%}
+
+{% stylesheet %}
+  .shop__head { display: grid; gap: var(--space-5); margin-bottom: clamp(var(--space-5), 1rem + 2vw, var(--space-7)); }
+  .shop__head .section-head { margin-bottom: 0; }
+
+  /* The craft circles: a swipe row on phones, one line beside the heading on desktop. */
+  .shop__crafts { --scroller-item: 80px; --scroller-gap: var(--space-3); padding-block: 6px var(--space-2); }
+  .shop__craft {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: var(--space-2);
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-heading);
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .shop__circle {
+    --ratio: 1;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    border-radius: 50%;
+    background: var(--blush);
+    /* The ring is decoration until the circle is chosen; the label carries the state in words. */
+    outline: 1.5px solid color-mix(in srgb, var(--rose) 70%, transparent);
+    outline-offset: 3px;
+    transition: outline-color var(--dur-state) ease, outline-width var(--dur-state) ease, scale var(--dur-press) ease;
+  }
+  .shop__circle--fav { aspect-ratio: 1; }
+  .shop__circle--fav .logo-mark { width: 44px; height: 44px; }
+  .shop__art .icon--brand { width: 36px; height: 36px; }
+  .shop__img { transition: transform 900ms var(--ease-out); }
+  .shop__label {
+    position: relative;
+    max-width: 100%;
+    font-size: .875rem;
+    font-weight: 500;
+    line-height: 1.25;
+    text-align: center;
+    padding-bottom: 6px;
+  }
+  /* Chosen: a solid Cocoa Deep ring, a bolder label and a run of stitches under it (not colour alone, WCAG 1.4.1). */
+  .shop__craft[aria-pressed="true"] .shop__circle { outline: 2px solid var(--cocoa-deep); }
+  .shop__craft[aria-pressed="true"] .shop__label { font-weight: 600; }
+  .shop__craft[aria-pressed="true"] .shop__label::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 28px;
+    height: 2px;
+    translate: -50% 0;
+    background: linear-gradient(90deg, currentColor 6px, transparent 0) 0 0 / 10px 2px round;
+  }
+  .shop__craft:focus-visible { outline: none; box-shadow: none; }
+  .shop__craft:focus-visible .shop__circle { outline: 2px solid var(--color-ink); outline-offset: 4px; box-shadow: 0 0 0 9px color-mix(in srgb, var(--rose) 45%, transparent); }
+  .shop__craft:active .shop__circle { scale: .95; }
+  @media (hover: hover) {
+    .shop__craft:hover .shop__circle { outline-color: var(--rose); }
+    .shop__craft:hover .shop__img { transform: scale(1.06); }
+  }
+
+  /* The panel title is for the no-JavaScript list and for the editor outline; the pressed circle already names it. */
+  .shop__panel-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; font-family: var(--font-serif); font-style: italic; font-size: var(--fs-h3); margin-bottom: var(--space-4); }
+  .shop__panels { transition: height var(--dur-panel) var(--ease-out); }
+  .shop__panels.is-sizing { overflow: clip; }
+  .shop__all { margin-top: var(--space-6); width: 100%; }
+  .shop__count { font-variant-numeric: tabular-nums; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .shop__panel.is-switching .product-grid > li { animation: arrive 560ms var(--ease-out) calc(var(--i, 0) * 45ms) backwards; }
+  }
+
+  @media (min-width: 750px) {
+    .shop__all { width: auto; }
+    .shop__panel { display: grid; }
+    .shop__panel[hidden] { display: none; }
+    .shop__all { justify-self: end; }
+  }
+  @media (min-width: 990px) {
+    .shop__head { grid-template-columns: auto 1fr; align-items: end; column-gap: var(--space-7); }
+    .shop__crafts {
+      grid-auto-flow: column;
+      grid-auto-columns: 96px;
+      justify-content: end;
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+      gap: var(--space-4);
+    }
+    .shop__circle { width: 88px; }
+    .shop__circle--fav .logo-mark { width: 52px; height: 52px; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Shop by craft",
+  "tag": "div",
+  "class": "section-shop-crafts",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Shop by craft" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Our favourite makes" },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "First circle's collection",
+      "info": "Your picks. After launch, sort this collection by \"Best selling\" and rename the circle to Bestsellers."
+    },
+    { "type": "text", "id": "favourites_label", "label": "First circle's name", "default": "Favourites" },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Products per craft",
+      "min": 2,
+      "max": 8,
+      "step": 2,
+      "default": 4,
+      "info": "Four keeps the page calm: one row on desktop, two on phones."
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "white", "label": "White" },
+        { "value": "soft", "label": "Soft blush" }
+      ],
+      "default": "soft"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "craft",
+      "name": "Craft",
+      "settings": [
+        { "type": "collection", "id": "collection", "label": "Collection", "info": "Crafts with no products are hidden." },
+        { "type": "text", "id": "title", "label": "Name", "info": "Leave blank to use the collection's name. Keep it the same as in the menu, and short enough for one line." },
+        { "type": "image_picker", "id": "image", "label": "Circle image", "info": "Leave blank to use the collection's image." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop by craft",
+      "blocks": [
+        { "type": "craft" },
+        { "type": "craft" },
+        { "type": "craft" },
+        { "type": "craft" }
+      ]
+    }
+  ]
+}
+{% endschema %}

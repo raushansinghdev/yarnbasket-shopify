@@ -1,6 +1,20 @@
 # Home page: "Shop by craft" and "Bestsellers" plan
 
-Status: **proposed, 2026-10-02.** Nothing is built yet. Wait for Raushan's go and answers to §9.
+Status: **built 2026-10-02 (direction B).** Raushan approved the recommendations: D1 merge, D2 "Our favourite makes" with a "Favourites" first circle, D3 "Ships in X days" on cards, D4 quick add later. D5 (is Flower pots a launch category?) is still open. Pots stays on the home page for now, and disappears automatically if it never gets products.
+
+### As built
+- **`sections/shop-crafts.liquid`** replaces `collection-list` and `featured-products` on the home page. Both old files remain for other pages; `.product-grid` moved to `base.css`.
+- **Phone circles** are 72px in a swipe row with **4½ visible**. Six won't fit at 5½ as the plan said.
+- **First product on a 390 × 844 phone: 1,304px**, down from 1,489 (−185px). The plan estimated about 1,250; the rest is the section's top padding, which is shared with every section.
+- **Demo:** the Favourites circle shows one bouquet, keychain, hair clip set and bag charm. Each craft shows its matching demo products; some crafts have only one, which is fine until real products exist.
+- **The "Ships in" line uses the metafield `custom.ships_in_days`.** Raushan still needs to add the definition (Settings → Custom data → Products → Add definition: name "Ships in days", namespace and key `custom.ships_in_days`, type Integer) and fill it per product.
+- **Checks:**
+  - theme check: clean
+  - axe: 0 at 390, 768 and 1440, before and after switching
+  - Tab reaches every circle, and the focus ring shows
+  - with JavaScript off, every craft is listed under its own heading
+  - `npm run check`: 25/25 in Chrome, Safari and Firefox (phone images on first load 696 KB, so hidden crafts' photos don't load early)
+- **`tools/cdp.mjs`** gained `--no-js`.
 Sections: `sections/collection-list.liquid` (Shop by craft), `sections/featured-products.liquid` (Bestsellers), `snippets/product-card.liquid`.
 It follows `motion-plan.md` (arrivals, budgets), `nav-plan.md` (the Shop menu now shows the same crafts) and the UX-first rule: the shopper should see what we sell, fast.
 

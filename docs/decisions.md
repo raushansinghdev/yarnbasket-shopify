@@ -3,6 +3,17 @@
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
 
+## 2026-10-02 (home page shop section, docs/home-shop-plan.md)
+
+- **"Shop by craft" and "Bestsellers" are merged into one section** (`shop-crafts`). The craft circles are toggle buttons that switch the product grid below them, like opening an Instagram highlight. On phones, products show 185px sooner. The home page has one section fewer, and it no longer repeats the header's Shop menu. Every craft's "See all" link stays in the HTML for SEO.
+- **The heading is "Our favourite makes" and the first circle is "Favourites" until there are real sales.** Saying "Bestsellers" before anything has sold would be invented. After launch, sort the Favourites collection by "Best selling" and rename the circle.
+- **Product cards only show what's true:**
+  - badges: Sold out, Last few (tracked stock of 3 or fewer), New (tag), Bestseller (tag, hidden inside Favourites)
+  - one line: "Ships in X days" (metafield `custom.ships_in_days`), or the number of colours
+  - stars only from real review metafields
+  - the badge comes after the name in the HTML, so links read name first
+- **No quick add-to-cart on cards yet.** It comes with the cart drawer (build-plan Phase 5).
+
 ## 2026-10-02 (header and navigation, docs/nav-plan.md)
 
 - **Header icons are 28px glyphs with 1.8 strokes in 48px targets.** The menu icon is three lines, and the cart icon is a classic trolley. A basket drawn like the logo's was tried first, but at 28px it read as a striped bucket. Raushan chose the trolley from four options because Indian shoppers already know it from Flipkart, Amazon and Meesho, and on phones the icon has no word beside it. The cart badge is 20px with a 12px number. Cart changes are announced through a `role="status"` line. Raushan said the old icons were too small and not accessible.

@@ -88,7 +88,15 @@
     "placeholder_name": "Crochet bouquet",
     "from_price": "From {{ price }}",
     "sale_price": "Sale price",
-    "regular_price": "Regular price"
+    "regular_price": "Regular price",
+    "last_few": "Last few",
+    "ships_in": "Ships in {{ days }} days",
+    "ships_in_one": "Ships in 1 day",
+    "colours": {
+      "one": "{{ count }} colour",
+      "other": "{{ count }} colours"
+    },
+    "rating": "Rated {{ rating }} out of 5, from {{ count }} reviews"
   },
   "reviews": {
     "rating": "{{ rating }} out of 5 stars",
@@ -114,5 +122,10 @@
     "next": "Next photo",
     "pause": "Pause slideshow",
     "play": "Play slideshow"
+  },
+  "shop": {
+    "choose_craft": "Choose a craft",
+    "see_all": "See all {{ craft }}",
+    "status": "Showing {{ craft }}, {{ shown }} of {{ total }}"
   }
 }

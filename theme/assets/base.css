@@ -253,6 +253,16 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 .section-head .icon--brand { width: 44px; height: 44px; color: var(--color-heading); margin-bottom: var(--space-1); }
 .section-head__sub { max-width: 34rem; }
 
+/* Product grid: 2 across on phones, 4 on desktop (product cards: snippets/product-card.liquid) */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-7) var(--space-4);
+}
+@media (min-width: 990px) {
+  .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-8) var(--space-6); }
+}
+
 /* Horizontal swipe rows on mobile */
 .scroller {
   display: grid;

@@ -1,5 +1,6 @@
 // Tiny Chrome DevTools Protocol driver for screenshots and in-page checks (no dependencies; Node 22+).
-// usage: node tools/cdp.mjs <url> <width> <height> <out.png|-> [--mobile] [--motion] [--eval "js"] [--scroll N] [--tab N] [--forced-colors] [--full] [--wait ms] [--console]
+// usage: node tools/cdp.mjs <url> <width> <height> <out.png|-> [--mobile] [--motion] [--eval "js"] [--scroll N] [--tab N] [--forced-colors] [--no-js] [--full] [--wait ms] [--console]
+// --no-js turns JavaScript off for the page (no-JS fallbacks); --eval still runs.
 // --tab N presses the real Tab key N times (so :focus-visible styles show); --forced-colors emulates Windows contrast mode.
 // Reduced motion is on unless --motion is passed, so the logo intro is skipped for layout screenshots.
 import { spawn } from 'node:child_process';
@@ -51,6 +52,7 @@ const media = [];
 if (!motion) media.push({ name: 'prefers-reduced-motion', value: 'reduce' });
 if (flag('--forced-colors')) media.push({ name: 'forced-colors', value: 'active' });
 if (media.length) await send('Emulation.setEmulatedMedia', { features: media });
+if (flag('--no-js')) await send('Emulation.setScriptExecutionDisabled', { value: true });
 await send('Page.navigate', { url });
 await sleep(+opt('--wait', 3500));
 

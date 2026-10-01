@@ -11,69 +11,54 @@
         "scheme": "blush"
       }
     },
-    "craft": {
-      "type": "collection-list",
+    "shop": {
+      "type": "shop-crafts",
       "settings": {
         "eyebrow": "Shop by craft",
-        "heading": "Made stitch by stitch",
-        "scheme": "soft",
-        "shape": "circle",
-        "center": true
+        "heading": "Our favourite makes",
+        "favourites_label": "Favourites",
+        "limit": 4,
+        "scheme": "soft"
       },
       "blocks": {
-        "c1": {
-          "type": "collection",
+        "bouquets": {
+          "type": "craft",
           "settings": {
-            "title": "Bouquets",
-            "tagline": "Flowers that never fade"
+            "title": "Bouquets"
           }
         },
-        "c2": {
-          "type": "collection",
+        "keychains": {
+          "type": "craft",
           "settings": {
-            "title": "Keychains",
-            "tagline": "Tiny, cute & all yours"
+            "title": "Keychains"
           }
         },
-        "c3": {
-          "type": "collection",
+        "hair": {
+          "type": "craft",
           "settings": {
-            "title": "Hair accessories",
-            "tagline": "Soft crochet for your hair"
+            "title": "Hair clips"
           }
         },
-        "c4": {
-          "type": "collection",
+        "charms": {
+          "type": "craft",
           "settings": {
-            "title": "Bag charms",
-            "tagline": "Little touches of handmade"
+            "title": "Bag charms"
           }
         },
-        "c5": {
-          "type": "collection",
+        "pots": {
+          "type": "craft",
           "settings": {
-            "title": "Flower pots",
-            "tagline": "A bloom for your desk"
+            "title": "Flower pots"
           }
         }
       },
       "block_order": [
-        "c1",
-        "c2",
-        "c3",
-        "c4",
-        "c5"
+        "bouquets",
+        "keychains",
+        "hair",
+        "charms",
+        "pots"
       ]
-    },
-    "bestsellers": {
-      "type": "featured-products",
-      "settings": {
-        "eyebrow": "Loved most",
-        "heading": "Bestsellers",
-        "limit": 4,
-        "show_view_all": true,
-        "scheme": "soft"
-      }
     },
     "story": {
       "type": "story",
@@ -228,8 +213,7 @@
   },
   "order": [
     "hero",
-    "craft",
-    "bestsellers",
+    "shop",
     "story",
     "occasions",
     "reviews",
