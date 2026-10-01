@@ -1,0 +1,47 @@
+{%- doc -%}
+  Renders an inline SVG icon.
+
+  UI icons use a 24px grid with 1.6px strokes in the current text colour.
+  Brand icons come from the brand kit (Brand Kit/_source/brand.js and covers.js):
+  a 40px grid with Rose accents. Tune them with --icon-accent, --icon-paper and --icon-leaf.
+
+  @param {string} icon - menu, search, basket, account, close, arrow, plus, chevron, instagram, whatsapp, star, or a brand icon: bouquets, keychains, hair-clips, reviews, how-to-order, bagcharm, makers, hook, care
+  @param {string} [class] - Extra classes for the svg element
+
+  @example
+  {% render 'icon', icon: 'basket' %}
+{%- enddoc -%}
+{%- liquid
+  assign brand_icons = 'bouquets,keychains,hair-clips,reviews,how-to-order,bagcharm,makers,hook,care' | split: ','
+-%}
+{%- if brand_icons contains icon -%}
+<svg class="icon icon--brand icon--{{ icon }} {{ class }}" viewBox="0 0 40 40" aria-hidden="true" focusable="false" fill="none" stroke-linecap="round" stroke-linejoin="round">
+{%- case icon -%}
+{%- when 'bouquets' -%}<g transform="translate(13 14) scale(0.6)" style="fill:var(--icon-paper)" stroke="currentColor" stroke-width="1.8"><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(72)"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(144)"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(216)"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(288)"/></g><g transform="translate(27 14) scale(0.6)" style="fill:var(--icon-paper)" stroke="currentColor" stroke-width="1.8"><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(72)"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(144)"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(216)"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(288)"/></g><g transform="translate(20 9) scale(0.7)" style="fill:var(--icon-paper)" stroke="currentColor" stroke-width="1.6"><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(72)"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(144)"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(216)"/><ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(288)"/></g><path d="M10 19 H30 L20 37 Z" style="fill:var(--icon-paper)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 24 L20 28 L26 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+{%- when 'keychains' -%}<circle cx="20" cy="8" r="4.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 12.6 V16" stroke="currentColor" stroke-width="2"/><path transform="translate(20 26) scale(0.95)" d="M0 11 C-10 4 -12 -1 -12 -4.5 C-12 -8.5 -9 -11 -5.8 -11 C-3 -11 -1 -9.5 0 -7.2 C1 -9.5 3 -11 5.8 -11 C9 -11 12 -8.5 12 -4.5 C12 -1 10 4 0 11 Z" style="fill:var(--icon-accent)" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/>
+{%- when 'hair-clips' -%}<circle cx="20" cy="20" r="13" style="fill:var(--icon-accent)" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="20" r="5.5" style="fill:var(--icon-paper)" stroke="currentColor" stroke-width="2"/><path d="M20 7.5 V13 M20 27 V32.5 M7.5 20 H13 M27 20 H32.5 M11 11 L15 15 M25 25 L29 29 M29 11 L25 15 M15 25 L11 29" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+{%- when 'reviews' -%}<path d="M8 8 H32 Q35 8 35 11 V25 Q35 28 32 28 H18 L11 34 V28 H8 Q5 28 5 25 V11 Q5 8 8 8 Z" style="fill:var(--icon-paper)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path transform="translate(20 18) scale(0.5)" d="M0 11 C-10 4 -12 -1 -12 -4.5 C-12 -8.5 -9 -11 -5.8 -11 C-3 -11 -1 -9.5 0 -7.2 C1 -9.5 3 -11 5.8 -11 C9 -11 12 -8.5 12 -4.5 C12 -1 10 4 0 11 Z" style="fill:var(--icon-accent)" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+{%- when 'how-to-order' -%}<path d="M12 16 C12 6 28 6 28 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 19 H32 L29 33 Q28.6 35 26.6 35 H13.4 Q11.4 35 11 33 Z" style="fill:var(--icon-paper)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="6" y="15" width="28" height="5" rx="2.5" style="fill:var(--icon-accent)" stroke="currentColor" stroke-width="2"/>
+{%- when 'bagcharm' -%}<path d="M13 17 C13 9 27 9 27 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="7" y="16" width="26" height="19" rx="4" style="fill:var(--icon-paper)" stroke="currentColor" stroke-width="2"/><path d="M27 17 V23" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="27" cy="27" r="4.2" style="fill:var(--icon-accent)" stroke="currentColor" stroke-width="1.6"/>
+{%- when 'makers' -%}<g transform="translate(9 5) rotate(-24) scale(.3)"><path d="M8 96 V12 C8 5 4 3.5 2.6 8" fill="none" stroke="currentColor" stroke-width="6.6" stroke-linecap="round"/><rect x="4" y="66" width="8" height="20" rx="3" fill="currentColor"/></g><circle cx="23" cy="24" r="11" style="fill:var(--icon-accent)" stroke="currentColor" stroke-width="2"/><path d="M13.5 20 Q23 14 32.5 21 M13 26.5 Q23 20.5 33 27.5 M19 13.8 Q14 24 20 34" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".75"/>
+{%- when 'hook' -%}<g transform="translate(15 1) rotate(18) scale(.37)"><path d="M8 96 V12 C8 5 4 3.5 2.6 8" fill="none" stroke="currentColor" stroke-width="5.4" stroke-linecap="round"/><rect x="4" y="66" width="8" height="20" rx="3" fill="currentColor"/></g><path d="M6 34 C12 28 18 36 24 30 S34 28 36 33" fill="none" style="stroke:var(--icon-accent)" stroke-width="2.6" stroke-linecap="round"/>
+{%- when 'care' -%}<path d="M6 20 H34 L31 32 Q30.4 34.5 28 34.5 H12 Q9.6 34.5 9 32 Z" style="fill:var(--icon-paper)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 25 Q14 22 20 25 T31 25" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="15" cy="12" r="3.2" style="fill:var(--icon-accent)" stroke="currentColor" stroke-width="1.5"/><circle cx="23" cy="8" r="2.2" style="fill:var(--icon-accent)" stroke="currentColor" stroke-width="1.4"/><circle cx="26" cy="15" r="2.6" style="fill:var(--icon-accent)" stroke="currentColor" stroke-width="1.4"/>
+{%- endcase -%}
+</svg>
+{%- else -%}
+<svg class="icon icon--{{ icon }} {{ class }}" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+{%- case icon -%}
+{%- when 'menu' -%}<path d="M3.5 8h17M3.5 16h11"/>
+{%- when 'search' -%}<circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/>
+{%- when 'basket' -%}<path d="M8 10V8.5a4 4 0 0 1 8 0V10"/><path d="M3.5 10h17l-1.6 8.4a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z"/><path d="M6 14.5h12" opacity=".45"/>
+{%- when 'account' -%}<circle cx="12" cy="8.5" r="3.75"/><path d="M4.75 20c.9-3.6 3.8-5.5 7.25-5.5s6.35 1.9 7.25 5.5"/>
+{%- when 'close' -%}<path d="m6 6 12 12M18 6 6 18"/>
+{%- when 'arrow' -%}<path d="M4.5 12h15M14 6.5l5.5 5.5-5.5 5.5"/>
+{%- when 'plus' -%}<path d="M12 5v14M5 12h14"/>
+{%- when 'chevron' -%}<path d="m6.5 9.5 5.5 5.5 5.5-5.5"/>
+{%- when 'instagram' -%}<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6" fill="currentColor"/>
+{%- when 'whatsapp' -%}<path d="M4 20l1.2-4A8.2 8.2 0 1 1 8.3 19Z"/><path d="M9.2 8.6c.3-.6.9-.6 1.1 0l.5 1.3c.1.3 0 .6-.2.8l-.4.4c.5 1.1 1.4 2 2.5 2.5l.4-.4c.2-.2.5-.3.8-.2l1.3.5c.6.2.6.8 0 1.1-.6.4-1.4.6-2.2.3a7 7 0 0 1-4.1-4.1c-.3-.8-.1-1.6.3-2.2Z" stroke-width="1.1"/>
+{%- when 'star' -%}<path d="m12 3.6 2.5 5.2 5.7.8-4.1 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4.1-4 5.7-.8Z" fill="currentColor" stroke="none"/>
+{%- endcase -%}
+</svg>
+{%- endif -%}

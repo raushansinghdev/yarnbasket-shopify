@@ -1,0 +1,10 @@
+{%- doc -%}
+  Draws the brand's dashed "stitch" border around its positioned parent.
+  The parent needs position: relative.
+
+  @param {number} [radius] - Corner radius in px. Defaults to 22.
+
+  @example
+  {% render 'stitch', radius: 28 %}
+{%- enddoc -%}
+<svg class="stitch" aria-hidden="true" focusable="false"><rect width="100%" height="100%" rx="{{ radius | default: 22 }}" ry="{{ radius | default: 22 }}"/></svg>

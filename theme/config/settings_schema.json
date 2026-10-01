@@ -1,0 +1,61 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Yarn Basket",
+    "theme_version": "0.1.0",
+    "theme_author": "Yarn Basket",
+    "theme_documentation_url": "https://github.com/raushansinghdev/yarnbasket-shopify",
+    "theme_support_url": "https://yarnbasket.in"
+  },
+  {
+    "name": "Brand",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo for Google",
+        "info": "Square logo used in search results and structured data. Use Brand Kit/2-instagram/instagram-profile-1080.png."
+      },
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon",
+        "info": "Use Brand Kit/1-logo/icon-colour.png."
+      },
+      {
+        "type": "image_picker",
+        "id": "share_image",
+        "label": "Default share image",
+        "info": "Shown when a page without its own image is shared on WhatsApp or social media. 1200 \u00d7 630 px."
+      },
+      {
+        "type": "checkbox",
+        "id": "show_intro",
+        "label": "Show logo intro",
+        "default": true,
+        "info": "Plays the brand kit logo animation on the home page, once every 30 days per visitor."
+      }
+    ]
+  },
+  {
+    "name": "Social",
+    "settings": [
+      {
+        "type": "url",
+        "id": "social_instagram",
+        "label": "Instagram"
+      },
+      {
+        "type": "url",
+        "id": "social_meesho",
+        "label": "Meesho store"
+      },
+      {
+        "type": "text",
+        "id": "social_whatsapp",
+        "label": "WhatsApp number",
+        "info": "With country code, like +91 98765 43210."
+      }
+    ]
+  }
+]

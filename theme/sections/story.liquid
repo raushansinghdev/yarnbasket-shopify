@@ -1,0 +1,185 @@
+{%- assign s = section.settings -%}
+
+<section class="section story scheme-{{ s.scheme }}" aria-labelledby="Story-{{ section.id }}" data-inview>
+  {%- comment -%}
+    The yarn strand from the brand kit's pinned Instagram banner: one line that draws itself
+    across the section as it scrolls past and ends in a crochet flower.
+  {%- endcomment -%}
+  <div class="story__strand full-bleed" aria-hidden="true">
+    <svg class="story__line" viewBox="0 0 1200 600" preserveAspectRatio="none" focusable="false">
+      <path pathLength="1" vector-effect="non-scaling-stroke" d="M-20 70 C 160 40, 260 210, 420 180 S 640 40, 760 150 S 900 420, 1040 380 S 1150 470, 1130 540"/>
+    </svg>
+    <svg class="story__bloom" viewBox="-15 -15 30 30" focusable="false">
+      <g stroke-width="1.1">
+        <ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2"/>
+        <ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(72)"/>
+        <ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(144)"/>
+        <ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(216)"/>
+        <ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(288)"/>
+        <circle r="2.6" class="story__bloom-centre"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="story__grid">
+    <div class="story__visual reveal">
+      <div class="media story__media">
+        {%- if s.image -%}
+          {%- render 'image', image: s.image, sizes: '(min-width: 990px) 45vw, calc(100vw - 40px)', class: 'story__img' -%}
+        {%- else -%}
+          {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="story__copy reveal">
+      {%- render 'icon', icon: 'makers', class: 'story__icon' -%}
+      {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h2 id="Story-{{ section.id }}">{{ s.heading }}</h2>
+      {%- if s.text != blank -%}<div class="rte story__text">{{ s.text }}</div>{%- endif -%}
+
+      {%- if s.stat_value != blank -%}
+        <p class="story__stat">
+          <span class="story__stat-value">{{ s.stat_value }}</span>
+          <span class="story__stat-label">{{ s.stat_label }}</span>
+        </p>
+      {%- endif -%}
+
+      {%- if s.link_label != blank -%}
+        <a class="link" href="{{ s.link_url | default: routes.root_url }}">
+          {{- s.link_label -}}
+          {%- render 'icon', icon: 'arrow' -%}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .story { position: relative; overflow: clip; isolation: isolate; }
+  .story__strand { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .story__line { position: absolute; inset: 6% 0 8%; width: 100%; height: 86%; overflow: visible; }
+  .story__line path {
+    fill: none;
+    stroke: var(--rose);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    opacity: .75;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+  .story__bloom {
+    position: absolute;
+    width: 46px;
+    left: calc(94.2% - 23px);
+    top: calc(6% + 86% * .9 - 23px);
+    overflow: visible;
+  }
+  .story__bloom ellipse { fill: var(--cream); stroke: var(--cocoa-deep); }
+  .story__bloom-centre { fill: var(--sage); stroke: var(--cocoa-deep); }
+  .scheme-cocoa .story__bloom ellipse { fill: var(--blush); stroke: var(--cocoa-deep); }
+
+  .story__grid { display: grid; gap: var(--space-7); align-items: center; }
+  .story__media { --ratio: 4 / 5; border-radius: var(--radius-lg); }
+  .story__copy { display: grid; gap: var(--space-4); justify-items: start; max-width: 32rem; }
+  .story__icon { width: 52px; height: 52px; color: var(--color-heading); }
+  .story__text { color: var(--color-ink); }
+  .story__stat {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding-block: var(--space-4);
+    margin-block: var(--space-2);
+    border-block: 1px solid var(--color-line);
+    width: 100%;
+  }
+  .story__stat-value {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(2.75rem, 2.2rem + 2.5vw, 4rem);
+    line-height: 1;
+    color: var(--color-heading);
+    font-variant-numeric: lining-nums;
+  }
+  .story__stat-label { font-size: var(--fs-small); color: var(--color-muted); max-width: 16rem; }
+
+  @media (min-width: 990px) {
+    .story__grid { grid-template-columns: minmax(0, 5fr) minmax(0, 5fr); gap: clamp(var(--space-8), 8vw, var(--space-10)); }
+    .story__copy { padding-block: var(--space-6); }
+  }
+
+  /* Scroll-driven drawing. Without support the strand is simply shown complete. */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .story__line path {
+        animation: strand-draw linear both;
+        animation-timeline: --story;
+        animation-range: entry 35% exit 35%;
+      }
+      .story { view-timeline-name: --story; }
+      .story__bloom {
+        animation: strand-bloom linear both;
+        animation-timeline: --story;
+        animation-range: cover 52% cover 64%;
+      }
+    }
+    @supports not (animation-timeline: view()) {
+      .story[data-inview] .story__line path { stroke-dashoffset: 1; transition: stroke-dashoffset 2.4s var(--ease-in-out); }
+      .story[data-inview] .story__bloom { transform: scale(0) rotate(-60deg); transition: transform .8s var(--ease-spring) 2s; }
+      .story.is-inview .story__line path { stroke-dashoffset: 0; }
+      .story.is-inview .story__bloom { transform: none; }
+    }
+  }
+  @keyframes strand-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes strand-bloom { from { transform: scale(0) rotate(-60deg); } to { transform: none; } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Made by hand",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Photo",
+      "info": "Hands at work: crocheting, winding yarn or finishing a piece. Portrait."
+    },
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "How it's made" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "One stitch at a time" },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Every piece is crocheted by hand with soft yarn, one stitch at a time. No machines, no shortcuts, so no two pieces are ever quite the same.</p>"
+    },
+    {
+      "type": "text",
+      "id": "stat_value",
+      "label": "Number",
+      "info": "A real figure from your work, like \"6 hrs\". Leave blank to hide."
+    },
+    {
+      "type": "text",
+      "id": "stat_label",
+      "label": "Number label",
+      "info": "What the number means, like \"to crochet one bouquet\"."
+    },
+    { "type": "text", "id": "link_label", "label": "Link label", "default": "Our story" },
+    { "type": "url", "id": "link_url", "label": "Link" },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "cocoa", "label": "Cocoa" },
+        { "value": "oat", "label": "Oat" },
+        { "value": "cream", "label": "Cream" }
+      ],
+      "default": "cocoa"
+    }
+  ],
+  "presets": [{ "name": "Made by hand" }]
+}
+{% endschema %}

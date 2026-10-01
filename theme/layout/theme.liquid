@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}{% if request.locale.iso_code == 'en' %}-IN{% endif %}">
+  <head>
+    {%- render 'meta-tags' -%}
+
+    {{ 'cormorant-garamond-600-italic.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
+    {{ 'jost-variable.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
+    {%- render 'font-faces' -%}
+
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+
+    {%- if request.page_type == 'index' and settings.show_intro and request.design_mode == false -%}
+      {%- render 'splash', part: 'head' -%}
+    {%- endif -%}
+
+    {%- comment -%} Start loading likely next pages as soon as a finger or pointer lands on a link. {%- endcomment -%}
+    <script type="speculationrules">
+      {
+        "prerender": [{
+          "where": { "and": [
+            { "href_matches": "/*" },
+            { "not": { "href_matches": ["/cart*", "/checkout*", "/account*", "/*\\?*"] } },
+            { "not": { "selector_matches": "[rel~=nofollow], [data-no-prerender]" } }
+          ] },
+          "eagerness": "moderate"
+        }]
+      }
+    </script>
+
+    <script src="{{ 'theme.js' | asset_url }}" type="module"></script>
+
+    {{ content_for_header }}
+
+    {%- render 'structured-data' -%}
+  </head>
+
+  <body class="template-{{ request.page_type | handle }}">
+    <a class="skip-link" href="#MainContent">{{ 'accessibility.skip_to_content' | t }}</a>
+
+    {%- if request.page_type == 'index' and settings.show_intro and request.design_mode == false -%}
+      {%- render 'splash', part: 'body' -%}
+    {%- endif -%}
+
+    {% sections 'header-group' %}
+
+    <main id="MainContent" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+  </body>
+</html>

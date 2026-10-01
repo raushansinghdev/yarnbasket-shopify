@@ -1,0 +1,139 @@
+{%- liquid
+  assign s = section.settings
+  assign count = section.blocks.size
+  if count <= 4
+    assign desktop_cols = count
+  else
+    assign desktop_cols = 3
+  endif
+-%}
+
+<section class="section craft scheme-{{ s.scheme }}" aria-labelledby="Craft-{{ section.id }}">
+  <div class="section-head{% if s.center %} section-head--center{% endif %} reveal">
+    {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    <h2 id="Craft-{{ section.id }}">{{ s.heading }}</h2>
+    {%- if s.text != blank -%}<p class="section-head__sub muted">{{ s.text }}</p>{%- endif -%}
+  </div>
+
+  <ul class="craft__list scroller reveal-group" role="list" style="--cols: {{ desktop_cols | at_least: 1 }}">
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign c = block.settings.collection
+        assign title = block.settings.title | default: c.title
+        assign img = block.settings.image | default: c.featured_image
+        if img == blank and c.products.first.featured_media
+          assign img = c.products.first.featured_media.preview_image
+        endif
+      -%}
+      <li class="craft__item" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+        <a href="{{ c.url | default: routes.collections_url }}" class="craft__link">
+          <div class="media craft__media">
+            {%- if img -%}
+              {%- render 'image', image: img, sizes: '(min-width: 990px) 25vw, 60vw', alt: '', class: 'craft__img' -%}
+            {%- else -%}
+              {%- assign art = forloop.index | modulo: 6 | plus: 1 -%}
+              {{ 'collection-' | append: art | placeholder_svg_tag: 'placeholder-svg' }}
+            {%- endif -%}
+          </div>
+          <span class="craft__text">
+            <span class="craft__title">{{ title | default: 'Collection' }}</span>
+            {%- if block.settings.tagline != blank -%}
+              <span class="craft__tagline">{{ block.settings.tagline }}</span>
+            {%- endif -%}
+          </span>
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
+</section>
+
+{% stylesheet %}
+  .craft__list { --scroller-item: 60%; --scroller-gap: var(--space-4); }
+  .craft__link {
+    display: grid;
+    gap: var(--space-4);
+    text-decoration: none;
+    color: inherit;
+  }
+  .craft__media { --ratio: 4 / 5; transition: transform var(--dur-panel) var(--ease-out); }
+  .craft__img { transition: transform 1100ms var(--ease-out); }
+  .craft__link:active .craft__media { transform: scale(.98); transition-duration: var(--dur-press); }
+  .craft__text { display: grid; gap: 2px; }
+  .craft__title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 600;
+    font-size: var(--fs-h3);
+    line-height: 1.1;
+    color: var(--color-heading);
+  }
+  .craft__tagline { font-size: var(--fs-small); color: var(--color-muted); }
+
+  @media (hover: hover) {
+    .craft__link:hover .craft__img { transform: scale(1.04); }
+  }
+
+  @media (min-width: 750px) {
+    .craft__list { --scroller-item: 38%; }
+  }
+  @media (min-width: 990px) {
+    .craft__list {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      gap: var(--space-7) var(--space-5);
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Shop by craft",
+  "tag": "div",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Our crafts" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Made stitch by stitch" },
+    { "type": "textarea", "id": "text", "label": "Text" },
+    { "type": "checkbox", "id": "center", "label": "Centre the heading", "default": false },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "cream", "label": "Cream" },
+        { "value": "oat", "label": "Oat" }
+      ],
+      "default": "cream"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        { "type": "collection", "id": "collection", "label": "Collection" },
+        { "type": "text", "id": "title", "label": "Title", "info": "Leave blank to use the collection's name." },
+        { "type": "text", "id": "tagline", "label": "Tagline", "info": "One short line, like \"Flowers that never fade\"." },
+        { "type": "image_picker", "id": "image", "label": "Image", "info": "Leave blank to use the collection's image. Portrait 4:5 works best." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop by craft",
+      "blocks": [
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" }
+      ]
+    }
+  ]
+}
+{% endschema %}

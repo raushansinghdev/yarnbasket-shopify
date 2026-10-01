@@ -1,0 +1,59 @@
+{%- doc -%}
+  JSON-LD for search engines and AI answer engines.
+  Home: Organization and WebSite (with site search). Product: Shopify's built-in Product data for now;
+  Phase 4 replaces it with a richer version (shipping, returns, ratings).
+  The home page FAQ section outputs its own FAQPage data.
+{%- enddoc -%}
+{%- if request.page_type == 'index' -%}
+  {%- liquid
+    assign same_as = ''
+    if settings.social_instagram != blank
+      assign same_as = same_as | append: settings.social_instagram | append: '|'
+    endif
+    if settings.social_meesho != blank
+      assign same_as = same_as | append: settings.social_meesho | append: '|'
+    endif
+    assign same_as = same_as | split: '|'
+  -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": {{ shop.url | append: '/#organization' | json }},
+          "name": {{ shop.name | json }},
+          "url": {{ shop.url | json }},
+          {%- if settings.logo %}
+          "logo": {{ settings.logo | image_url: width: 600 | prepend: 'https:' | json }},
+          {%- endif %}
+          {%- if shop.description != blank %}
+          "description": {{ shop.description | json }},
+          {%- endif %}
+          "slogan": "Handmade with love",
+          "sameAs": {{ same_as | json }}
+        },
+        {
+          "@type": "WebSite",
+          "@id": {{ shop.url | append: '/#website' | json }},
+          "name": {{ shop.name | json }},
+          "url": {{ shop.url | json }},
+          "inLanguage": "en-IN",
+          "publisher": { "@id": {{ shop.url | append: '/#organization' | json }} },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": {{ shop.url | append: routes.search_url | append: '?q={search_term_string}' | json }}
+            },
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+  </script>
+{%- elsif request.page_type == 'product' -%}
+  <script type="application/ld+json">
+    {{ product | structured_data }}
+  </script>
+{%- endif -%}

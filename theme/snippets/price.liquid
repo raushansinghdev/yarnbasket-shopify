@@ -1,0 +1,41 @@
+{%- doc -%}
+  Product price. A sale shows quietly as the old price struck through, with no percentage badge.
+  Screen readers hear "Sale price ₹1,299, Regular price ₹1,599".
+
+  @param {product} product - The product
+{%- enddoc -%}
+{%- liquid
+  assign target = product.selected_or_first_available_variant
+  assign on_sale = false
+  if target.compare_at_price > target.price
+    assign on_sale = true
+  endif
+-%}
+<p class="price{% if on_sale %} price--sale{% endif %}">
+  {%- if product.price_varies -%}
+    {%- assign min_price = product.price_min | money -%}
+    {{ 'products.from_price' | t: price: min_price }}
+  {%- elsif on_sale -%}
+    <span class="visually-hidden">{{ 'products.sale_price' | t }}</span>
+    <span>{{ target.price | money }}</span>
+    <span class="visually-hidden">{{ 'products.regular_price' | t }}</span>
+    <s class="price__compare">{{ target.compare_at_price | money }}</s>
+  {%- else -%}
+    {{ target.price | money }}
+  {%- endif -%}
+</p>
+
+{% stylesheet %}
+  .price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-2);
+    font-size: .9375rem;
+    font-weight: 500;
+    letter-spacing: .02em;
+    color: var(--color-ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .price__compare { color: var(--color-muted); font-weight: 400; font-size: .875rem; }
+{% endstylesheet %}

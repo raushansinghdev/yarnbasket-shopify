@@ -1,0 +1,125 @@
+{%- assign s = section.settings -%}
+
+{%- if section.blocks.size > 0 -%}
+  <section class="section reviews scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}">
+    <div class="section-head reveal">
+      {%- render 'icon', icon: 'reviews' -%}
+      {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h2 id="Reviews-{{ section.id }}">{{ s.heading }}</h2>
+    </div>
+
+    <ul class="reviews__list scroller reveal-group" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        <li class="review" style="--i: {{ forloop.index0 | modulo: 3 }}" {{ block.shopify_attributes }}>
+          <figure class="review__inner">
+            <p class="review__stars" role="img" aria-label="{{ 'reviews.rating' | t: rating: b.rating }}">
+              {%- for i in (1..5) -%}
+                <span class="review__star{% if i > b.rating %} is-empty{% endif %}">{%- render 'icon', icon: 'star' -%}</span>
+              {%- endfor -%}
+            </p>
+            <blockquote class="review__quote"><p>{{ b.quote }}</p></blockquote>
+            <figcaption class="review__by">
+              {%- if b.photo -%}
+                <span class="review__photo media">
+                  {%- render 'image', image: b.photo, sizes: '56px', width: 160, alt: '' -%}
+                </span>
+              {%- endif -%}
+              <span>
+                <span class="review__name">{{ b.name }}</span>
+                {%- if b.city != blank -%}<span class="review__city">{{ b.city }}</span>{%- endif -%}
+                {%- if b.product != blank -%}
+                  <a class="review__product" href="{{ b.product.url }}">{{ b.product.title }}</a>
+                {%- endif -%}
+              </span>
+            </figcaption>
+          </figure>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </section>
+{%- elsif request.design_mode -%}
+  <section class="section reviews scheme-{{ s.scheme }}">
+    <p class="reviews__empty">{{ 'reviews.empty_editor' | t }}</p>
+  </section>
+{%- endif -%}
+
+{% stylesheet %}
+  .reviews .section-head .icon--brand { width: 44px; height: 44px; }
+  .reviews__list { --scroller-item: 84%; --scroller-gap: var(--space-4); }
+  .review__inner {
+    display: grid;
+    align-content: start;
+    gap: var(--space-4);
+    height: 100%;
+    padding: var(--space-6) var(--space-5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+  }
+  .review__stars { display: flex; gap: 2px; color: var(--cocoa-deep); }
+  .review__star .icon { width: 16px; height: 16px; }
+  .review__star.is-empty { opacity: .22; }
+  .review__quote { font-size: 1.0625rem; line-height: 1.6; color: var(--color-ink); }
+  .review__quote p::before { content: "\201C"; }
+  .review__quote p::after { content: "\201D"; }
+  .review__by { display: flex; align-items: center; gap: var(--space-3); margin-top: auto; }
+  .review__photo { width: 48px; height: 48px; --ratio: 1; border-radius: 50%; flex: none; }
+  .review__by > span:last-child { display: grid; line-height: 1.35; }
+  .review__name { font-weight: 500; color: var(--color-heading); }
+  .review__city { font-size: var(--fs-small); color: var(--color-muted); }
+  .review__product { font-size: var(--fs-small); color: var(--color-muted); text-underline-offset: 3px; text-decoration-color: var(--color-line-strong); }
+  .reviews__empty { padding: var(--space-6); border: 1px dashed var(--color-line-strong); border-radius: var(--radius-md); text-align: center; }
+
+  @media (min-width: 990px) {
+    .reviews__list {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-5);
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Reviews",
+  "tag": "div",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Customer love" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Your words make our day" },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "cream", "label": "Cream" },
+        { "value": "oat", "label": "Oat" },
+        { "value": "blush", "label": "Blush" }
+      ],
+      "default": "cream"
+    },
+    {
+      "type": "paragraph",
+      "content": "Only real reviews from real buyers, used with their permission. The section stays hidden until you add one."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        { "type": "range", "id": "rating", "label": "Stars", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "textarea", "id": "quote", "label": "Review" },
+        { "type": "text", "id": "name", "label": "First name" },
+        { "type": "text", "id": "city", "label": "City" },
+        { "type": "product", "id": "product", "label": "Product reviewed" },
+        { "type": "image_picker", "id": "photo", "label": "Customer photo", "info": "Optional. Square crop." }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Reviews" }]
+}
+{% endschema %}

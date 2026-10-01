@@ -1,0 +1,230 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "eyebrow": "Handmade in India",
+        "heading": "Handmade crochet flowers that never fade",
+        "text": "Bouquets, keychains, hair clips and bag charms, crocheted stitch by stitch and made to be gifted.",
+        "button_label": "Shop bouquets",
+        "link_label": "Find a gift",
+        "scheme": "cream"
+      }
+    },
+    "craft": {
+      "type": "collection-list",
+      "settings": {
+        "eyebrow": "Our crafts",
+        "heading": "Made stitch by stitch",
+        "scheme": "cream"
+      },
+      "blocks": {
+        "c1": {
+          "type": "collection",
+          "settings": {
+            "title": "Bouquets",
+            "tagline": "Flowers that never fade"
+          }
+        },
+        "c2": {
+          "type": "collection",
+          "settings": {
+            "title": "Keychains",
+            "tagline": "Tiny, cute & all yours"
+          }
+        },
+        "c3": {
+          "type": "collection",
+          "settings": {
+            "title": "Hair clips",
+            "tagline": "Soft crochet for your hair"
+          }
+        },
+        "c4": {
+          "type": "collection",
+          "settings": {
+            "title": "Bag charms",
+            "tagline": "Little touches of handmade"
+          }
+        }
+      },
+      "block_order": [
+        "c1",
+        "c2",
+        "c3",
+        "c4"
+      ]
+    },
+    "bestsellers": {
+      "type": "featured-products",
+      "settings": {
+        "eyebrow": "Loved most",
+        "heading": "Bestsellers",
+        "limit": 4,
+        "show_view_all": true,
+        "scheme": "cream"
+      }
+    },
+    "story": {
+      "type": "story",
+      "settings": {
+        "eyebrow": "How it's made",
+        "heading": "One stitch at a time",
+        "text": "<p>Every piece is crocheted by hand with soft yarn, one stitch at a time. No machines, no shortcuts, so no two pieces are ever quite the same.</p>",
+        "link_label": "Our story",
+        "scheme": "cocoa"
+      }
+    },
+    "occasions": {
+      "type": "occasions",
+      "settings": {
+        "eyebrow": "Gifting",
+        "heading": "A gift for every occasion",
+        "text": "Flowers that never wilt, for the people you never forget.",
+        "scheme": "cream"
+      },
+      "blocks": {
+        "o1": {
+          "type": "occasion",
+          "settings": {
+            "label": "Birthday"
+          }
+        },
+        "o2": {
+          "type": "occasion",
+          "settings": {
+            "label": "Anniversary"
+          }
+        },
+        "o3": {
+          "type": "occasion",
+          "settings": {
+            "label": "Valentine's"
+          }
+        },
+        "o4": {
+          "type": "occasion",
+          "settings": {
+            "label": "For her"
+          }
+        },
+        "o5": {
+          "type": "occasion",
+          "settings": {
+            "label": "Under ₹999"
+          }
+        }
+      },
+      "block_order": [
+        "o1",
+        "o2",
+        "o3",
+        "o4",
+        "o5"
+      ]
+    },
+    "reviews": {
+      "type": "reviews",
+      "settings": {
+        "eyebrow": "Customer love",
+        "heading": "Your words make our day",
+        "scheme": "oat"
+      }
+    },
+    "promise": {
+      "type": "promise",
+      "settings": {
+        "label": "Our promise",
+        "scheme": "cream"
+      },
+      "blocks": {
+        "p1": {
+          "type": "item",
+          "settings": {
+            "icon": "makers",
+            "title": "Handmade in India",
+            "text": "Crocheted by hand, one stitch at a time."
+          }
+        },
+        "p2": {
+          "type": "item",
+          "settings": {
+            "icon": "bouquets",
+            "title": "Never fades",
+            "text": "No water, no wilting. Made to last for years."
+          }
+        },
+        "p3": {
+          "type": "item",
+          "settings": {
+            "icon": "how-to-order",
+            "title": "Packed with love",
+            "text": "Wrapped with care so it arrives just right."
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3"
+      ]
+    },
+    "faq": {
+      "type": "faq",
+      "settings": {
+        "eyebrow": "Good to know",
+        "heading": "Questions, answered",
+        "link_label": "",
+        "scheme": "cream"
+      },
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "Is everything really handmade?",
+            "answer": "<p>Yes. Every bouquet, keychain, hair clip and bag charm is crocheted by hand in India, one stitch at a time.</p>"
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "Will crochet flowers fade or wilt?",
+            "answer": "<p>They never wilt and need no water. Keep them out of strong direct sunlight and their colours stay bright for years.</p>"
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "How do I care for my crochet?",
+            "answer": "<p>Hand wash in cool water. Press gently, don't wring. Dry flat in the shade.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3"
+      ]
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "eyebrow": "Stay in the loop",
+        "heading": "New drops, first",
+        "text": "New designs and restocks, straight to your inbox. No spam, ever.",
+        "scheme": "oat"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "craft",
+    "bestsellers",
+    "story",
+    "occasions",
+    "reviews",
+    "promise",
+    "faq",
+    "newsletter"
+  ]
+}

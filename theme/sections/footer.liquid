@@ -1,0 +1,139 @@
+{%- assign s = section.settings -%}
+
+<footer class="section footer scheme-cocoa">
+  <div class="footer__grid">
+    <div class="footer__brand">
+      <a href="{{ routes.root_url }}" class="footer__name">{{ shop.name }}</a>
+      <p class="eyebrow footer__tagline">{{ 'general.tagline' | t }}</p>
+      {%- if s.text != blank -%}<p class="footer__text">{{ s.text }}</p>{%- endif -%}
+      <ul class="footer__social" role="list">
+        {%- if settings.social_instagram != blank -%}
+          <li>
+            <a class="icon-btn" href="{{ settings.social_instagram }}" rel="noopener" target="_blank">
+              {%- render 'icon', icon: 'instagram' -%}<span class="visually-hidden">Instagram</span>
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if settings.social_whatsapp != blank -%}
+          <li>
+            <a class="icon-btn" href="https://wa.me/{{ settings.social_whatsapp | remove: '+' | remove: ' ' }}" rel="noopener" target="_blank">
+              {%- render 'icon', icon: 'whatsapp' -%}<span class="visually-hidden">WhatsApp</span>
+            </a>
+          </li>
+        {%- endif -%}
+      </ul>
+    </div>
+
+    {%- for i in (1..2) -%}
+      {%- liquid
+        if i == 1
+          assign menu = s.menu_shop
+        else
+          assign menu = s.menu_help
+        endif
+      -%}
+      {%- if menu.links.size > 0 -%}
+        <nav class="footer__menu" aria-labelledby="FooterMenu-{{ i }}">
+          <h2 class="eyebrow" id="FooterMenu-{{ i }}">{{ menu.title }}</h2>
+          <ul role="list">
+            {%- for link in menu.links -%}
+              <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+
+  <div class="footer__base">
+    <p>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }} · {{ 'general.made_in' | t }}</p>
+    {%- if shop.policies.size > 0 -%}
+      <ul class="footer__policies" role="list">
+        {%- for policy in shop.policies -%}
+          <li><a href="{{ policy.url }}">{{ policy.title }}</a></li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+    {%- if s.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+      <ul class="footer__payments" role="list" aria-label="{{ 'general.payment_methods' | t }}">
+        {%- for type in shop.enabled_payment_types -%}
+          <li>{{ type | payment_type_svg_tag }}</li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</footer>
+
+{% stylesheet %}
+  .footer { padding-bottom: max(var(--space-6), env(safe-area-inset-bottom)); }
+  .footer a { color: inherit; text-decoration: none; }
+  .footer__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-7) var(--space-5);
+    padding-bottom: var(--space-7);
+  }
+  .footer__brand { grid-column: 1 / -1; display: grid; gap: var(--space-3); justify-items: start; max-width: 24rem; }
+  .footer__name {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 2.25rem;
+    line-height: 1;
+    color: var(--cream);
+  }
+  .footer__tagline { color: var(--blush); }
+  .footer__text { color: var(--color-muted); font-size: var(--fs-small); }
+  .footer__social { display: flex; gap: var(--space-1); margin-left: -12px; }
+  .footer__social .icon-btn { color: var(--cream); }
+  .footer__menu { display: grid; gap: var(--space-3); align-content: start; }
+  .footer__menu h2 { color: var(--blush); }
+  .footer__menu ul { display: grid; }
+  .footer__menu a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    color: var(--cream);
+    background: linear-gradient(currentColor, currentColor) no-repeat 0 calc(50% + .8em) / 0 1px;
+    transition: background-size var(--dur-panel) var(--ease-out);
+  }
+  @media (hover: hover) { .footer__menu a:hover { background-size: 100% 1px; } }
+
+  .footer__base {
+    display: grid;
+    gap: var(--space-4);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line);
+    font-size: .8125rem;
+    color: var(--color-muted);
+  }
+  .footer__policies { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
+  .footer__policies a { display: inline-flex; min-height: 32px; align-items: center; }
+  .footer__policies a:hover { color: var(--cream); }
+  .footer__payments { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .footer__payments svg { width: 38px; height: 24px; }
+
+  @media (min-width: 990px) {
+    .footer__grid { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); }
+    .footer__brand { grid-column: auto; }
+    .footer__base { grid-template-columns: auto 1fr auto; align-items: center; }
+    .footer__policies { justify-content: center; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Short text",
+      "default": "Handmade crochet flowers, keychains, hair clips and bag charms, made to be gifted."
+    },
+    { "type": "link_list", "id": "menu_shop", "label": "First menu", "default": "footer" },
+    { "type": "link_list", "id": "menu_help", "label": "Second menu" },
+    { "type": "checkbox", "id": "show_payment_icons", "label": "Show payment icons", "default": true }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,385 @@
+/*
+  Yarn Basket · base styles
+  Tokens, reset, typography, layout, buttons and motion. Loaded on every page.
+  Section styles live in each section's {% stylesheet %} tag.
+  Colours come from the brand kit (docs/brand-direction.md). Restraint is the rule:
+  mostly Cream and Oat, Cocoa for ink, Blush and Rose only as small accents.
+*/
+
+/* ---------- Tokens ---------- */
+:root {
+  /* Brand palette */
+  --cocoa: #6B4F43;
+  --cocoa-deep: #4E3A31;
+  --blush: #F2D4CC;
+  --rose: #E3A69C;
+  --sage: #A9B8A0;
+  --oat: #F5EFE6;
+  --cream: #FBF6EF;
+  --taupe: #8E7468;
+  --taupe-ink: #705B52; /* Taupe darkened to pass AA for small text */
+
+  /* Roles */
+  --color-bg: var(--cream);
+  --color-surface: var(--oat);
+  --color-ink: var(--cocoa);
+  --color-heading: var(--cocoa-deep);
+  --color-muted: var(--taupe-ink);
+  --color-line: #E8DDD1;
+  --color-line-strong: #D9CABB;
+  --color-accent: var(--rose);
+
+  /* Type */
+  --font-serif: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-sans: "Jost", "Avenir Next", "Segoe UI", Roboto, system-ui, sans-serif;
+  --fs-display: clamp(2.625rem, 1.9rem + 3.6vw, 4.75rem);
+  --fs-h2: clamp(2rem, 1.6rem + 2vw, 3.125rem);
+  --fs-h3: clamp(1.375rem, 1.25rem + .6vw, 1.75rem);
+  --fs-lead: clamp(1.0625rem, 1rem + .35vw, 1.25rem);
+  --fs-body: clamp(1rem, .97rem + .15vw, 1.0625rem);
+  --fs-small: .875rem;
+  --fs-label: .75rem;
+  --tracking-label: .2em;
+
+  /* Space: 4px base */
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --space-10: 8rem;
+  --section-space: clamp(4.5rem, 3.4rem + 5vw, 8rem);
+  --gutter: clamp(1.25rem, .6rem + 3vw, 4rem);
+  --page-width: 80rem;
+
+  /* Shape */
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
+  --tap: 48px;
+
+  /* Motion */
+  --dur-press: 120ms;
+  --dur-state: 200ms;
+  --dur-panel: 320ms;
+  --dur-enter: 560ms;
+  --dur-hero: 900ms;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ease-spring: linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%, .975 57.1%, .997 69.8%, 1.003 76.9%, 1);
+
+  /* Brand icons */
+  --icon-accent: var(--rose);
+  --icon-paper: var(--cream);
+  --icon-leaf: var(--sage);
+
+  --header-height: 64px;
+}
+
+/* ---------- Colour schemes for sections ---------- */
+.scheme-cream { --color-bg: var(--cream); --color-surface: var(--oat); }
+.scheme-oat { --color-bg: var(--oat); --color-surface: var(--cream); --color-line: #E3D6C8; }
+.scheme-blush { --color-bg: #F8E6E0; --color-surface: var(--cream); --color-line: #EDCFC6; }
+.scheme-cocoa {
+  --color-bg: var(--cocoa);
+  --color-surface: #5E4539;
+  --color-ink: var(--cream);
+  --color-heading: var(--cream);
+  --color-muted: #E6D6CB;
+  --color-line: rgba(251, 246, 239, .18);
+  --color-line-strong: rgba(251, 246, 239, .32);
+  --icon-paper: #8C6D5E;
+}
+[class*="scheme-"] { background-color: var(--color-bg); color: var(--color-ink); }
+
+/* ---------- Reset ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-height) + var(--space-4));
+  interpolate-size: allow-keywords;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+body {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: clip;
+}
+main { flex: 1 0 auto; }
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+img, video { height: auto; }
+input, button, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+a { color: inherit; }
+ul[role="list"], ol[role="list"] { list-style: none; padding: 0; }
+p, h1, h2, h3, h4 { overflow-wrap: break-word; }
+p { text-wrap: pretty; }
+[hidden] { display: none !important; }
+html:has(dialog[open][data-scroll-lock]) { overflow: hidden; }
+
+::selection { background: var(--blush); color: var(--cocoa-deep); }
+
+/* ---------- Focus ---------- */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--rose) 45%, transparent);
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* ---------- Typography ---------- */
+.h-display, .h2, .h3, h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-heading);
+  letter-spacing: -.01em;
+  text-wrap: balance;
+}
+.h-display { font-size: var(--fs-display); line-height: 1; }
+h2, .h2 { font-size: var(--fs-h2); line-height: 1.05; }
+h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
+.lead { font-size: var(--fs-lead); line-height: 1.55; }
+.small { font-size: var(--fs-small); }
+.muted { color: var(--color-muted); }
+.eyebrow {
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-weight: 500;
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.rte > * + * { margin-top: var(--space-4); }
+.rte a { text-decoration-color: var(--color-accent); text-underline-offset: 3px; }
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Layout ---------- */
+/* Sections are three-column grids: gutter · content · gutter. Children sit in the centre column unless .full-bleed. */
+:root { --content-width: min(var(--page-width), 100% - var(--gutter) * 2); }
+.section, .page-grid {
+  display: grid;
+  grid-template-columns: minmax(var(--gutter), 1fr) var(--content-width) minmax(var(--gutter), 1fr);
+}
+.section > *, .page-grid > * { grid-column: 2; min-width: 0; }
+.section > .full-bleed, .page-grid > .full-bleed { grid-column: 1 / -1; }
+
+.section { padding-block: var(--section-space); }
+/* Neighbouring sections on the same background share one gap instead of two. */
+.shopify-section:has(> .scheme-cream) + .shopify-section > .scheme-cream,
+.shopify-section:has(> .scheme-oat) + .shopify-section > .scheme-oat { padding-top: 0; }
+
+.section-head {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: clamp(var(--space-6), 1.5rem + 2vw, var(--space-8));
+  max-width: 40rem;
+}
+.section-head--center { margin-inline: auto; text-align: center; justify-items: center; }
+.section-head--split {
+  max-width: none;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  column-gap: var(--space-5);
+}
+.section-head--split > :not(.section-head__link) { grid-column: 1; }
+.section-head--split .section-head__link { grid-column: 2; grid-row: 1 / span 3; align-self: end; }
+.section-head .icon--brand { width: 44px; height: 44px; color: var(--color-heading); margin-bottom: var(--space-1); }
+.section-head__sub { max-width: 34rem; }
+
+/* Horizontal swipe rows on mobile */
+.scroller {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--scroller-item, 72%);
+  gap: var(--scroller-gap, var(--space-4));
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  padding-inline: var(--gutter);
+  margin-inline: calc(var(--gutter) * -1);
+  padding-bottom: var(--space-2);
+  scrollbar-width: none;
+}
+.scroller::-webkit-scrollbar { display: none; }
+.scroller > * { scroll-snap-align: start; min-width: 0; }
+
+/* ---------- Buttons and links ---------- */
+.btn {
+  --btn-bg: var(--color-heading);
+  --btn-ink: var(--cream);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--btn-bg);
+  background: var(--btn-bg);
+  color: var(--btn-ink);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: .875rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform var(--dur-state) var(--ease-out), background-color var(--dur-state) ease, color var(--dur-state) ease, box-shadow var(--dur-state) var(--ease-out);
+}
+.btn .icon { width: 18px; height: 18px; transition: transform var(--dur-panel) var(--ease-out); }
+.btn:active { transform: scale(.97); transition-duration: var(--dur-press); }
+.scheme-cocoa .btn { --btn-bg: var(--cream); --btn-ink: var(--cocoa-deep); }
+.btn--ghost { background: transparent; color: var(--btn-bg); border-color: var(--color-line-strong); }
+@media (hover: hover) {
+  .btn:hover { box-shadow: 0 10px 24px -14px rgba(78, 58, 49, .7); transform: translateY(-1px); }
+  .btn:hover .icon { transform: translateX(3px); }
+  .btn--ghost:hover { border-color: var(--btn-bg); box-shadow: none; }
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  font-weight: 500;
+  font-size: .8125rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--color-heading);
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 calc(50% + .85em) / 100% 1px;
+  transition: background-size var(--dur-panel) var(--ease-out);
+}
+.link .icon { width: 16px; height: 16px; transition: transform var(--dur-panel) var(--ease-out); }
+@media (hover: hover) {
+  .link:hover { background-size: 0 1px; background-position: 100% calc(50% + .85em); }
+  .link:hover .icon { transform: translateX(3px); }
+}
+
+.icon { width: 24px; height: 24px; flex: none; }
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: 50%;
+  color: var(--color-heading);
+  position: relative;
+  transition: background-color var(--dur-state) ease, transform var(--dur-press) ease;
+}
+.icon-btn:active { transform: scale(.92); }
+@media (hover: hover) { .icon-btn:hover { background: color-mix(in srgb, var(--color-heading) 7%, transparent); } }
+
+/* ---------- Media ---------- */
+.media {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  aspect-ratio: var(--ratio, 4 / 5);
+  isolation: isolate;
+}
+.media > img, .media > svg, .media > video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.media > .placeholder-svg { fill: color-mix(in srgb, var(--color-ink) 22%, transparent); background: var(--color-surface); padding: 12%; }
+
+/* Stitch border: the dashed "row of stitches" from the Instagram covers (snippet: stitch) */
+.stitch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.stitch rect {
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-heading) 34%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 7 6;
+  stroke-linecap: round;
+}
+
+/* ---------- Skip link ---------- */
+.skip-link {
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 1000;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--cocoa-deep);
+  color: var(--cream);
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus-visible { transform: none; }
+
+/* ---------- Motion ---------- */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 260ms; animation-timing-function: var(--ease-out); }
+
+/* Content rises gently into place as it scrolls into view. Browsers without scroll timelines show it static. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+    .reveal-group > * {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--i, 0) * 6%) entry calc(60% + var(--i, 0) * 6%);
+    }
+  }
+}
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}

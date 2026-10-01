@@ -1,0 +1,129 @@
+{%- assign s = section.settings -%}
+
+<section class="section faq scheme-{{ s.scheme }}" aria-labelledby="Faq-{{ section.id }}">
+  <div class="faq__grid">
+    <div class="section-head faq__head reveal">
+      {%- render 'icon', icon: 'care' -%}
+      {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h2 id="Faq-{{ section.id }}">{{ s.heading }}</h2>
+      {%- if s.link_label != blank and s.link_url != blank -%}
+        <a class="link" href="{{ s.link_url }}">{{ s.link_label }}{%- render 'icon', icon: 'arrow' -%}</a>
+      {%- endif -%}
+    </div>
+
+    <div class="faq__list reveal">
+      {%- for block in section.blocks -%}
+        <details class="faq__item" {{ block.shopify_attributes }}>
+          <summary>
+            <span>{{ block.settings.question }}</span>
+            <span class="faq__toggle" aria-hidden="true">{%- render 'icon', icon: 'plus' -%}</span>
+          </summary>
+          <div class="faq__answer rte">{{ block.settings.answer }}</div>
+        </details>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{%- if section.blocks.size > 0 -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {%- for block in section.blocks -%}
+          {
+            "@type": "Question",
+            "name": {{ block.settings.question | strip_html | json }},
+            "acceptedAnswer": { "@type": "Answer", "text": {{ block.settings.answer | strip_html | json }} }
+          }{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      ]
+    }
+  </script>
+{%- endif -%}
+
+{% stylesheet %}
+  .faq__grid { display: grid; gap: var(--space-4); }
+  .faq__head .icon--brand { width: 44px; height: 44px; }
+  .faq__list { border-top: 1px solid var(--color-line-strong); }
+  .faq__item { border-bottom: 1px solid var(--color-line-strong); }
+  .faq__item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: 64px;
+    padding-block: var(--space-4);
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(1.25rem, 1.15rem + .5vw, 1.5rem);
+    line-height: 1.2;
+    color: var(--color-heading);
+  }
+  .faq__item summary::-webkit-details-marker { display: none; }
+  .faq__toggle {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--color-line-strong);
+    transition: transform var(--dur-panel) var(--ease-out), background-color var(--dur-state) ease;
+  }
+  .faq__toggle .icon { width: 16px; height: 16px; }
+  .faq__item[open] .faq__toggle { transform: rotate(45deg); background: var(--color-surface); }
+  .faq__answer { padding-bottom: var(--space-5); max-width: 40rem; color: var(--color-ink); }
+
+  /* Smooth open and close where the browser supports animating to height: auto. */
+  .faq__item::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    transition: block-size var(--dur-panel) var(--ease-out), content-visibility var(--dur-panel) allow-discrete;
+  }
+  .faq__item[open]::details-content { block-size: auto; }
+
+  @media (min-width: 990px) {
+    .faq__grid { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: var(--space-9); align-items: start; }
+    .faq__head { position: sticky; top: calc(var(--header-height) + var(--space-6)); }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "FAQ",
+  "tag": "div",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Good to know" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Questions, answered" },
+    { "type": "text", "id": "link_label", "label": "Link label", "default": "All FAQs" },
+    { "type": "url", "id": "link_url", "label": "Link" },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "cream", "label": "Cream" },
+        { "value": "oat", "label": "Oat" }
+      ],
+      "default": "cream"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question" },
+        { "type": "richtext", "id": "answer", "label": "Answer" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "FAQ" }]
+}
+{% endschema %}

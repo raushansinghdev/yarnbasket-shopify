@@ -1,0 +1,108 @@
+{%- doc -%}
+  Product card, modelled on the brand kit's Instagram photo frame: a rounded 4:5 photo on Oat,
+  the name in Cormorant italic, the price in Jost. Shows the second photo on hover (desktop)
+  and at most one badge. Renders a placeholder card when product is blank.
+
+  Badges come from product tags: "bestseller" or "new". Sold out always wins.
+
+  @param {product} [product] - The product. Blank renders a placeholder.
+  @param {string} [sizes] - Image sizes attribute for the grid it sits in
+  @param {string} [loading] - 'lazy' (default) or 'eager'
+  @param {number} [index] - Position in the grid, used for staggered reveal and placeholder art
+{%- enddoc -%}
+{%- liquid
+  assign img_sizes = sizes | default: '(min-width: 990px) 25vw, 50vw'
+  assign badge = blank
+  if product != blank
+    if product.available == false
+      assign badge = 'products.sold_out' | t
+    elsif product.tags contains 'bestseller'
+      assign badge = 'products.bestseller' | t
+    elsif product.tags contains 'new'
+      assign badge = 'products.new' | t
+    endif
+  endif
+-%}
+<article class="card" style="--i: {{ index | default: 0 | modulo: 4 }}">
+  {%- if product != blank -%}
+    <a href="{{ product.url }}" class="card__link">
+      <div class="card__media media">
+        {%- if product.featured_media -%}
+          {%- assign main_alt = product.featured_media.alt | default: product.title | escape -%}
+          {%- render 'image', image: product.featured_media.preview_image, sizes: img_sizes, loading: loading, class: 'card__img', alt: main_alt -%}
+          {%- if product.media[1] -%}
+            {%- render 'image', image: product.media[1].preview_image, sizes: img_sizes, class: 'card__img card__img--alt', alt: '' -%}
+          {%- endif -%}
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        {%- endif -%}
+        {%- if badge != blank -%}
+          <span class="card__badge">{{ badge }}</span>
+        {%- endif -%}
+      </div>
+      <div class="card__info">
+        <h3 class="card__title">{{ product.title }}</h3>
+        {%- render 'price', product: product -%}
+      </div>
+    </a>
+  {%- else -%}
+    {%- assign art = index | default: 0 | modulo: 6 | plus: 1 -%}
+    <div class="card__link" aria-hidden="true">
+      <div class="card__media media">
+        {{ 'product-' | append: art | placeholder_svg_tag: 'placeholder-svg' }}
+      </div>
+      <div class="card__info">
+        <p class="card__title">{{ 'products.placeholder_name' | t }}</p>
+        <p class="price">₹999</p>
+      </div>
+    </div>
+  {%- endif -%}
+</article>
+
+{% stylesheet %}
+  .card { min-width: 0; }
+  .card__link {
+    display: grid;
+    gap: var(--space-3);
+    color: inherit;
+    text-decoration: none;
+    -webkit-touch-callout: none;
+  }
+  .card__media { --ratio: 4 / 5; border-radius: var(--radius-md); }
+  .card__img {
+    transition: opacity 500ms var(--ease-out), transform 900ms var(--ease-out);
+  }
+  .card__img--alt { opacity: 0; }
+  @media (hover: hover) {
+    .card__link:hover .card__img { transform: scale(1.035); }
+    .card__link:hover .card__img--alt { opacity: 1; }
+  }
+  .card__link:active .card__media { transform: scale(.985); transition: transform var(--dur-press) ease; }
+  .card__media { transition: transform var(--dur-panel) var(--ease-out); }
+
+  .card__badge {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    z-index: 1;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--cream) 92%, transparent);
+    color: var(--cocoa-deep);
+    font-size: .6875rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  .card__info { display: grid; gap: 2px; padding-inline: 2px; }
+  .card__title {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(1.125rem, 1.05rem + .35vw, 1.3125rem);
+    line-height: 1.2;
+    letter-spacing: -.005em;
+    color: var(--color-heading);
+    text-wrap: balance;
+  }
+{% endstylesheet %}

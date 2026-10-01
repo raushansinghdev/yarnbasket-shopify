@@ -1,0 +1,105 @@
+{%- assign s = section.settings -%}
+
+<section class="section promise scheme-{{ s.scheme }}" aria-label="{{ s.label | escape }}">
+  <div class="promise__box reveal">
+    {%- render 'stitch', radius: 28 -%}
+    <ul class="promise__list" role="list" style="--count: {{ section.blocks.size | at_least: 1 }}">
+      {%- for block in section.blocks -%}
+        <li class="promise__item" {{ block.shopify_attributes }}>
+          {%- render 'icon', icon: block.settings.icon -%}
+          <p class="promise__title">{{ block.settings.title }}</p>
+          {%- if block.settings.text != blank -%}<p class="promise__text">{{ block.settings.text }}</p>{%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% stylesheet %}
+  .promise__box { position: relative; padding: var(--space-7) var(--space-5); }
+  .promise__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-7) var(--space-4);
+  }
+  .promise__item { display: grid; justify-items: center; align-content: start; gap: var(--space-2); text-align: center; }
+  .promise__item .icon--brand { width: 48px; height: 48px; color: var(--color-heading); margin-bottom: var(--space-2); }
+  .promise__title {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 1.375rem;
+    line-height: 1.15;
+    color: var(--color-heading);
+  }
+  .promise__text { font-size: var(--fs-small); color: var(--color-muted); max-width: 16rem; }
+  @media (max-width: 989px) {
+    .promise__item:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+  @media (min-width: 990px) {
+    .promise__box { padding: var(--space-8) var(--space-7); }
+    .promise__list { grid-template-columns: repeat(var(--count), minmax(0, 1fr)); }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Our promise",
+  "tag": "div",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "text", "id": "label", "label": "Label for screen readers", "default": "Our promise" },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "cream", "label": "Cream" },
+        { "value": "oat", "label": "Oat" }
+      ],
+      "default": "cream"
+    },
+    {
+      "type": "paragraph",
+      "content": "Only promises you can keep on every order."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Promise",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "makers", "label": "Yarn and hook" },
+            { "value": "hook", "label": "Crochet hook" },
+            { "value": "bouquets", "label": "Bouquet" },
+            { "value": "how-to-order", "label": "Basket" },
+            { "value": "reviews", "label": "Speech bubble" },
+            { "value": "keychains", "label": "Heart keychain" },
+            { "value": "hair-clips", "label": "Hair clip" },
+            { "value": "bagcharm", "label": "Bag charm" },
+            { "value": "care", "label": "Care basin" }
+          ],
+          "default": "makers"
+        },
+        { "type": "text", "id": "title", "label": "Title", "default": "Handmade in India" },
+        { "type": "text", "id": "text", "label": "Text" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Our promise",
+      "blocks": [
+        { "type": "item", "settings": { "icon": "makers", "title": "Handmade in India" } },
+        { "type": "item", "settings": { "icon": "bouquets", "title": "Never fades" } },
+        { "type": "item", "settings": { "icon": "how-to-order", "title": "Packed with love" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

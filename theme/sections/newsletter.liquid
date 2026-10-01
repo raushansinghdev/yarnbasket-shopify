@@ -1,0 +1,94 @@
+{%- assign s = section.settings -%}
+
+<section class="section newsletter scheme-{{ s.scheme }}" aria-labelledby="Newsletter-{{ section.id }}">
+  <div class="newsletter__inner reveal">
+    {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    <h2 id="Newsletter-{{ section.id }}">{{ s.heading }}</h2>
+    {%- if s.text != blank -%}<p class="muted">{{ s.text }}</p>{%- endif -%}
+
+    {%- assign form_id = 'Newsletter-form-' | append: section.id -%}
+    {%- form 'customer', id: form_id, class: 'newsletter__form' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      {%- if form.posted_successfully? -%}
+        <p class="newsletter__msg" role="status" tabindex="-1" autofocus>{{ 'newsletter.success' | t }}</p>
+      {%- else -%}
+        <div class="newsletter__field">
+          <label class="visually-hidden" for="Newsletter-email-{{ section.id }}">{{ 'newsletter.email_label' | t }}</label>
+          <input
+            id="Newsletter-email-{{ section.id }}"
+            type="email"
+            name="contact[email]"
+            autocomplete="email"
+            inputmode="email"
+            spellcheck="false"
+            required
+            placeholder="{{ 'newsletter.email_placeholder' | t }}"
+            {% if form.errors %}aria-invalid="true" aria-describedby="Newsletter-error-{{ section.id }}"{% endif %}
+          >
+          <button type="submit" class="btn">{{ 'newsletter.submit' | t }}</button>
+        </div>
+        {%- if form.errors -%}
+          <p class="newsletter__msg newsletter__msg--error" id="Newsletter-error-{{ section.id }}" role="alert">
+            {{- form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email -}}
+          </p>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endform -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .newsletter__inner { display: grid; justify-items: center; gap: var(--space-3); max-width: 34rem; margin-inline: auto; text-align: center; }
+  .newsletter__form { width: 100%; margin-top: var(--space-4); }
+  .newsletter__field {
+    display: flex;
+    gap: var(--space-2);
+    padding: 6px;
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--cream);
+    transition: border-color var(--dur-state) ease, box-shadow var(--dur-state) ease;
+  }
+  .newsletter__field:focus-within {
+    border-color: var(--color-heading);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rose) 40%, transparent);
+  }
+  .newsletter__field input {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0 var(--space-4);
+    border: 0;
+    background: transparent;
+    font-size: 1rem;
+  }
+  .newsletter__field input:focus { outline: none; box-shadow: none; }
+  .newsletter__field input::placeholder { color: var(--color-muted); }
+  .newsletter__field .btn { min-height: 48px; padding-inline: var(--space-5); }
+  .newsletter__msg { margin-top: var(--space-3); font-size: var(--fs-small); }
+  .newsletter__msg--error { color: #9A3F33; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Stay in the loop" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "New drops, first" },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "New designs and restocks, straight to your inbox. No spam, ever." },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "oat", "label": "Oat" },
+        { "value": "cream", "label": "Cream" },
+        { "value": "blush", "label": "Blush" }
+      ],
+      "default": "oat"
+    }
+  ],
+  "presets": [{ "name": "Newsletter" }]
+}
+{% endschema %}

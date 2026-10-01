@@ -1,0 +1,110 @@
+{%- assign s = section.settings -%}
+
+<section class="section occasions scheme-{{ s.scheme }}" aria-labelledby="Occasions-{{ section.id }}">
+  <div class="section-head section-head--center reveal">
+    {%- render 'icon', icon: 'bouquets' -%}
+    {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    <h2 id="Occasions-{{ section.id }}">{{ s.heading }}</h2>
+    {%- if s.text != blank -%}<p class="section-head__sub muted">{{ s.text }}</p>{%- endif -%}
+  </div>
+
+  <ul class="occasions__list scroller reveal-group" role="list">
+    {%- for block in section.blocks -%}
+      <li style="--i: {{ forloop.index0 | modulo: 6 }}" {{ block.shopify_attributes }}>
+        <a class="chip" href="{{ block.settings.link | default: routes.collections_url }}">
+          {{- block.settings.label -}}
+          {%- render 'icon', icon: 'arrow' -%}
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
+</section>
+
+{% stylesheet %}
+  .occasions__list {
+    --scroller-item: max-content;
+    --scroller-gap: var(--space-3);
+    justify-content: start;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 52px;
+    padding: 0 var(--space-5);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--color-bg);
+    color: var(--color-heading);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--dur-state) ease, color var(--dur-state) ease, border-color var(--dur-state) ease, transform var(--dur-press) ease;
+  }
+  .chip .icon { width: 16px; height: 16px; margin-right: -4px; opacity: .55; transition: transform var(--dur-panel) var(--ease-out), opacity var(--dur-state) ease; }
+  .chip:active { transform: scale(.97); }
+  @media (hover: hover) {
+    .chip:hover { background: var(--cocoa-deep); border-color: var(--cocoa-deep); color: var(--cream); }
+    .chip:hover .icon { opacity: 1; transform: translateX(3px); }
+  }
+  @media (min-width: 750px) {
+    .occasions__list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Shop by occasion",
+  "tag": "div",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Gifting" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "A gift for every occasion" },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "Flowers that never wilt, for the people you never forget." },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "cream", "label": "Cream" },
+        { "value": "oat", "label": "Oat" },
+        { "value": "blush", "label": "Blush" }
+      ],
+      "default": "cream"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "occasion",
+      "name": "Occasion",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label", "default": "Birthday" },
+        { "type": "url", "id": "link", "label": "Link", "info": "Point each occasion at its own collection, so it can rank for searches like \"crochet bouquet for anniversary\"." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop by occasion",
+      "blocks": [
+        { "type": "occasion", "settings": { "label": "Birthday" } },
+        { "type": "occasion", "settings": { "label": "Anniversary" } },
+        { "type": "occasion", "settings": { "label": "Valentine's" } },
+        { "type": "occasion", "settings": { "label": "For her" } },
+        { "type": "occasion", "settings": { "label": "Under ₹999" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
