@@ -15,6 +15,7 @@
     endif
     assign same_as = same_as | split: '|'
   -%}
+  {%- capture search_template -%}{{ shop.url }}{{ routes.search_url }}?q={search_term_string}{%- endcapture -%}
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -44,7 +45,7 @@
             "@type": "SearchAction",
             "target": {
               "@type": "EntryPoint",
-              "urlTemplate": {{ shop.url | append: routes.search_url | append: '?q={search_term_string}' | json }}
+              "urlTemplate": {{ search_template | json }}
             },
             "query-input": "required name=search_term_string"
           }

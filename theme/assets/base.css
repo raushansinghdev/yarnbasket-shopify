@@ -130,7 +130,7 @@ img, video { height: auto; }
 input, button, textarea, select { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: 0; padding: 0; }
 a { color: inherit; }
-ul[role="list"], ol[role="list"] { list-style: none; padding: 0; }
+:where(ul, ol)[role="list"] { list-style: none; padding: 0; }
 p, h1, h2, h3, h4 { overflow-wrap: break-word; }
 p { text-wrap: pretty; }
 [hidden] { display: none !important; }
@@ -194,7 +194,11 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 .section { padding-block: var(--section-space); }
 /* Neighbouring sections on the same background share one gap instead of two. */
 .shopify-section:has(> .scheme-cream) + .shopify-section > .scheme-cream,
-.shopify-section:has(> .scheme-oat) + .shopify-section > .scheme-oat { padding-top: 0; }
+.shopify-section:has(> .scheme-oat) + .shopify-section > .scheme-oat,
+.shopify-section:has(> .scheme-cream) + .shopify-section:not(:has(> *)) + .shopify-section > .scheme-cream,
+.shopify-section:has(> .scheme-oat) + .shopify-section:not(:has(> *)) + .shopify-section > .scheme-oat { padding-top: 0; }
+/* Sections with nothing to show (like Reviews before the first review) take no space. */
+.shopify-section:not(:has(> *)) { display: none; }
 
 .section-head {
   display: grid;

@@ -17,5 +17,7 @@ A custom Online Store 2.0 Liquid theme built from Shopify's [Skeleton theme](htt
 - [docs/build-plan.html](docs/build-plan.html): the full phased plan, including the home page spec, design system, motion, accessibility, SEO, performance and launch steps
 - [docs/brand-direction.md](docs/brand-direction.md): how the brand kit becomes the store's visual language
 - [docs/decisions.md](docs/decisions.md): the decision log
+- [theme/](theme/): the Shopify theme (`cd theme && shopify theme dev --store yarnbasket-in.myshopify.com`)
+- [tools/cdp.mjs](tools/cdp.mjs): headless Chrome screenshots and in-page checks for the local preview
 
 When the Shopify store goes live, point the domain's DNS at Shopify, then delete `coming-soon/` and the deploy workflow.
