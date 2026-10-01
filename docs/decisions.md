@@ -88,6 +88,12 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   - **Still scroll-linked on purpose** (decorative or finger-driven): the story's yarn strand (with its existing fallback), the footer flowers' drift, and the scale in phone swipe rows.
   - **Also fixed:** the hero slideshow restarted its timer every time the header hid or showed (its MutationObserver watched all `<html>` class changes). It now reacts only to the logo intro.
   - Verified in Firefox, Chrome desktop, Pixel 7 and iPhone 13 (WebKit): sections rise in, stars pop and stitches sew in; nothing stays hidden after scrolling the page (except stars on a review card still off to the side in the swipe row, which pop on swipe); the slideshow advances while the header toggles; no slow frames; reduced motion has nothing pending; axe shows 0.
+- **Arrival choreography (2026-10-02, Raushan: "make the animations while scrolling better").** Instead of one identical fade-up, each kind of content arrives in its own way, all within about a second:
+  - **Section heads, story text, newsletter, footer banner:** the block stays put and its lines arrive in turn, 90ms apart. The heading rises from behind a line (`arrive-ink`: clip-path plus a rise; the mask is generous at the sides and top for italic overhangs). In the footer, the short rule draws itself.
+  - **Product cards and craft circles:** photos settle from 94% (circles 90%) with a fade. Circles' rose rings open out as they arrive. Items stagger by `--i`.
+  - **Gift chips** glide in from the side (28px), matching the row's swipe direction. **Promise icons** pop with the spring easing. **FAQ** questions arrive one by one (the list became a `reveal-group`).
+  - **Fill mode `backwards`:** finished animations hand back to the normal styles, which look identical, so hover effects keep working (the craft ring still opens to 8px on hover; this was tested). `both` would have locked them.
+  - Verified in Chrome, Firefox and iPhone (WebKit) by in-page timing samples (label, then heading; chips 28 → 0px staggered; icons overshoot to 1.08 and settle; stitches 0/13 → 7/6; FAQ staggered), a frozen mid-frame of the ink rise, and nothing left hidden after scrolling. No slow frames on a 4x-throttled phone; reduced motion is static; axe shows 0.
 - Axe after round 3: 0 violations on mobile and desktop.
 
 ## 2026-10-01 (home page, round 2)

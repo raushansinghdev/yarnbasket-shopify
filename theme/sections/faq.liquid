@@ -11,9 +11,9 @@
       {%- endif -%}
     </div>
 
-    <div class="faq__list reveal">
+    <div class="faq__list reveal-group">
       {%- for block in section.blocks -%}
-        <details class="faq__item" {{ block.shopify_attributes }}>
+        <details class="faq__item" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
           <summary>
             <span>{{ block.settings.question }}</span>
             <span class="faq__toggle" aria-hidden="true">{%- render 'icon', icon: 'plus' -%}</span>

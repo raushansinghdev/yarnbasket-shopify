@@ -258,15 +258,9 @@ document.addEventListener('cart:updated', (event) => {
    load waits to arrive, so nothing already visible ever blinks out. Rows that swipe sideways arrive as a whole,
    so cards off to the side don't wait for a swipe. */
 if ('IntersectionObserver' in window && !reduceMotion.matches) {
-  const arrive = (el) => {
-    el.classList.replace('is-pending', 'is-arriving');
-    const done = (e) => {
-      if (e.target !== el) return;
-      el.classList.remove('is-arriving');
-      el.removeEventListener('animationend', done);
-    };
-    el.addEventListener('animationend', done);
-  };
+  // The class stays on: the finished animations hold their end state, which equals the normal style, and
+  // removing it early would cut short the photo settle that runs a little longer inside the item.
+  const arrive = (el) => el.classList.replace('is-pending', 'is-arriving');
   const io = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;

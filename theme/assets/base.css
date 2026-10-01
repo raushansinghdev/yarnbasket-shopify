@@ -429,22 +429,60 @@ img.img-in { animation: img-in 700ms var(--ease-out); }
 @keyframes img-in { from { opacity: 0; } }
 
 /* Arrivals: theme.js adds .is-pending only to things still below the screen at load, then swaps it for .is-arriving
-   when they come into view. Section heads and blocks rise in; rows and grids stagger by --i; stitched borders sew
-   themselves in (dots grow into stitches); review stars pop one by one. */
+   when they come into view. Each kind of content arrives in its own way, all within about a second:
+   - blocks and grid items rise and fade in, staggered by --i;
+   - text that leads a section arrives line by line, and its heading rises from behind a line, like ink lifting off the page;
+   - photos settle from slightly smaller (a soft focus-pull); craft circles' rose rings open out around them;
+   - gift chips glide in from the side, the way that row swipes; promise icons pop; the footer rule draws itself;
+   - stitched borders sew themselves in (dots grow into stitches); review stars pop one by one.
+   Fill mode is "backwards": the start state holds during the stagger delay, and once finished the animation lets go,
+   so hover effects (like the craft ring opening out) keep working. Every end state equals the normal style. */
 @media (prefers-reduced-motion: no-preference) {
   .is-pending { opacity: 0; }
-  .reveal.is-pending, .reveal-group > .is-pending { transform: translateY(20px); }
-  .reveal.is-arriving, .reveal-group > .is-arriving { animation: reveal 760ms var(--ease-out) calc(var(--i, 0) * 80ms) both; }
+  .reveal.is-pending, .reveal-group > .is-pending { transform: translateY(24px); }
+  .reveal.is-arriving, .reveal-group > .is-arriving { animation: arrive 800ms var(--ease-out) calc(var(--i, 0) * 90ms) backwards; }
+
+  /* Text groups: the block stays put and its lines arrive in turn. */
+  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-pending { opacity: 1; transform: none; }
+  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-pending > * { opacity: 0; }
+  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving { animation: none; }
+  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving > * { animation: arrive 760ms var(--ease-out) backwards; }
+  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving > :nth-child(2) { animation-delay: 90ms; }
+  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving > :nth-child(3) { animation-delay: 180ms; }
+  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving > :nth-child(4) { animation-delay: 270ms; }
+  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving > :nth-child(n + 5) { animation-delay: 360ms; }
+  :is(.section-head, .story__copy, .newsletter__inner).is-arriving > h2 { animation-name: arrive-ink; animation-duration: 900ms; }
+  .footer__banner.is-arriving > .footer__rule { animation-name: rule-draw; animation-duration: 900ms; }
+
+  /* Photos settle as their card or block arrives. */
+  .reveal-group > .is-arriving :is(.card__media, .craft__media),
+  .story__visual.is-arriving .story__media { animation: settle 1000ms var(--ease-out) calc(var(--i, 0) * 90ms) backwards; }
+  .craft--circle .reveal-group > .is-arriving .craft__media { animation-name: settle-ring; }
+
+  /* Gift chips glide in from the side. */
+  .occasions__list > .is-pending { transform: translateX(28px); }
+  .occasions__list > .is-arriving { animation-name: arrive-x; }
+
+  /* Promise icons pop once their item arrives. */
+  .promise__item.is-arriving .icon--brand { animation: pop-in 700ms var(--ease-spring) calc(120ms + var(--i, 0) * 90ms) backwards; }
+
   .stitch.is-pending, .review__stars.is-pending { opacity: 1; }
   .stitch.is-pending rect { stroke-dasharray: 0 13; }
-  .stitch.is-arriving rect { animation: stitch-in 1400ms var(--ease-out) 150ms both; }
+  .stitch.is-arriving rect { animation: stitch-in 1400ms var(--ease-out) 150ms backwards; }
   .review__stars.is-pending .review__star { opacity: 0; }
-  .review__stars.is-arriving .review__star { animation: star-in 520ms var(--ease-out) calc(200ms + var(--s, 0) * 90ms + var(--i, 0) * 120ms) both; }
+  .review__stars.is-arriving .review__star { animation: star-in 520ms var(--ease-out) calc(200ms + var(--s, 0) * 90ms + var(--i, 0) * 120ms) backwards; }
 }
-@keyframes reveal {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: none; }
+@keyframes arrive { from { opacity: 0; transform: translateY(24px); } }
+@keyframes arrive-x { from { opacity: 0; transform: translateX(28px); } }
+/* Italic serif overhangs its box, so the mask is generous on every side except the one it rises from. */
+@keyframes arrive-ink {
+  from { opacity: 0; transform: translateY(.5em); clip-path: inset(-20% -10% 100% -10%); }
+  to { opacity: 1; transform: none; clip-path: inset(-20% -10% -30% -10%); }
 }
+@keyframes settle { from { opacity: 0; scale: .94; } }
+@keyframes settle-ring { from { opacity: 0; scale: .9; outline-offset: -2px; outline-color: transparent; } }
+@keyframes pop-in { from { opacity: 0; scale: .4; } }
+@keyframes rule-draw { from { opacity: 0; transform: scaleX(0); } }
 @keyframes stitch-in { from { stroke-dasharray: 0 13; } }
 
 /* Swipe rows on phones: cards grow from slightly smaller as they slide into the row (scale only, so text keeps
