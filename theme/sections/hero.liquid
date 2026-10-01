@@ -67,7 +67,7 @@
         assign img_sizes = '(min-width: 990px) 46vw, calc(100vw - 60px)'
         assign demo_slides = ''
         if section.blocks.size == 0 and settings.demo_content
-          assign demo_slides = 'p2-a|Red Rose Crochet Bouquet,cat-hair|Crochet flower hair clips,cat-charms|Lily of the valley bag charm' | split: ','
+          assign demo_slides = 'bee-keychain|Bee crochet keychain,cat-hair|Crochet flower hair clips,cat-charms|Lily of the valley bag charm' | split: ','
         endif
         assign total = section.blocks.size | plus: demo_slides.size | plus: 1
       -%}
@@ -129,21 +129,6 @@
         {%- endif -%}
       </div>
 
-      {%- if s.inset_image or settings.demo_content -%}
-        <a class="hero__inset" href="{{ s.inset_link | default: routes.all_products_collection_url }}">
-          <span class="hero__inset-media media"{% if s.inset_label != blank %} aria-hidden="true"{% endif %}>
-            {%- if s.inset_image -%}
-              {%- render 'image', image: s.inset_image, sizes: '(min-width: 990px) 16vw, 34vw', width: 800, class: 'hero__inset-img' -%}
-            {%- else -%}
-              {%- render 'demo-image', name: 'bee-keychain', sizes: '(min-width: 990px) 16vw, 34vw', class: 'hero__inset-img', alt: 'Bee keychain' -%}
-            {%- endif -%}
-          </span>
-          {%- if s.inset_label != blank -%}
-            <span class="hero__inset-label">{{ s.inset_label }}{%- render 'icon', icon: 'arrow' -%}</span>
-          {%- endif -%}
-        </a>
-      {%- endif -%}
-
       <svg class="hero__flower hero__flower--a" viewBox="0 0 30 30" aria-hidden="true" focusable="false"><use href="#yb-flower"/></svg>
       <svg class="hero__flower hero__flower--b" viewBox="0 0 30 30" aria-hidden="true" focusable="false"><use href="#yb-flower"/></svg>
     </div>
@@ -166,13 +151,12 @@
 {% stylesheet %}
   .hero { padding-top: clamp(var(--space-6), 2rem + 3vw, var(--space-9)); overflow: clip; }
   /* On Blush: the colour fades softly into the page below instead of ending in a hard band, and the
-     photo frame and the bee's border turn white, like a mat around a print, so the photos stay crisp. */
+     photo frame turns white, like a mat around a print, so the photos stay crisp. */
   .hero.scheme-blush {
     --hero-fade: clamp(120px, 14vw, 220px);
     background: linear-gradient(to bottom, var(--blush) calc(100% - var(--hero-fade)), var(--blush-soft));
   }
   .hero.scheme-blush .hero__frame { border-color: color-mix(in srgb, var(--white) 92%, transparent); }
-  .hero.scheme-blush .hero__inset-media { border-color: var(--white); }
   .hero.scheme-blush .btn--ghost { --btn-line: color-mix(in srgb, var(--cocoa) 22%, transparent); background: color-mix(in srgb, var(--white) 72%, transparent); }
   .hero__grid { display: grid; gap: clamp(var(--space-7), 2rem + 4vw, var(--space-9)); align-items: center; }
   .hero__copy { display: grid; gap: var(--space-4); justify-items: start; max-width: 36rem; }
@@ -271,48 +255,11 @@
     .hero__ctrl:hover { background: color-mix(in srgb, var(--cocoa) 9%, transparent); }
   }
 
-  /* The second product: a round photo with a small label, so it is obviously tappable. */
-  .hero__inset {
-    position: absolute;
-    left: -6px;
-    bottom: -8px;
-    z-index: 3;
-    width: 34%;
-    display: grid;
-    justify-items: center;
-    text-decoration: none;
-    color: var(--cocoa-deep);
-    border-radius: 999px;
-  }
-  .hero__inset-media {
-    display: block;
-    width: 100%;
-    --ratio: 1;
-    border-radius: 50%;
-    border: 6px solid var(--color-bg);
-    box-shadow: 0 18px 40px -22px rgba(78, 58, 49, .55);
-  }
-  .hero__inset-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: -18px;
-    position: relative;
-    padding: 7px 12px 7px 14px;
-    border-radius: var(--radius-pill);
-    background: var(--white);
-    box-shadow: 0 8px 20px -12px rgba(78, 58, 49, .5);
-    font-size: .8125rem;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  .hero__inset-label .icon { width: 14px; height: 14px; transition: transform var(--dur-panel) var(--ease-out); }
-  .hero__inset:active .hero__inset-media, .hero__frame:has(.hero__link:active) { scale: .985; transition: scale var(--dur-press) ease; }
+  .hero__frame:has(.hero__link:active) { scale: .985; transition: scale var(--dur-press) ease; }
 
   @media (hover: hover) {
     .hero__frame:hover, .hero.scheme-blush .hero__frame:hover { border-color: var(--rose); }
     .hero__link:hover .hero__img { scale: 1.03; }
-    .hero__inset:hover .hero__inset-label .icon { transform: translateX(3px); }
   }
 
   .hero__flower { position: absolute; color: var(--taupe); opacity: .38; pointer-events: none; }
@@ -320,12 +267,10 @@
   .hero__flower--b { width: 40px; top: 30%; left: -22px; opacity: .28; }
 
   @media (min-width: 990px) {
-    .hero { padding-top: var(--space-7); padding-bottom: calc(var(--section-space) + var(--space-5)); }
+    .hero { padding-top: var(--space-7); }
     .hero__grid { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(var(--space-7), 6vw, var(--space-10)); }
     .hero__visual { margin-inline: 0 var(--space-6); }
-    .hero__inset { width: 38%; left: -16%; bottom: -36px; }
-    .hero__inset-label { font-size: .875rem; padding: 8px 14px 8px 16px; }
-    .hero__flower--a { width: 88px; right: -64px; bottom: 26%; }
+    .hero__flower--a { width: 72px; right: -84px; bottom: 22%; }
     .hero__flower--b { width: 56px; left: -30%; top: 12%; }
   }
 
@@ -334,7 +279,6 @@
     .hero__anim { animation: hero-rise var(--dur-hero) var(--ease-out) var(--d, 0ms) both; }
     .hero__img, .hero__media > .placeholder-svg { animation: hero-settle 1600ms var(--ease-out) both; }
     /* Arrival motion ends within 5 seconds (WCAG 2.2.2). */
-    .hero__inset { animation: hero-float-in 1100ms var(--ease-out) 380ms both, hero-bob 1600ms ease-in-out 1480ms 2 alternate; }
     .hl__stitch path { animation: hl-sew 1100ms var(--ease-in-out) 700ms both; }
     .hero__flower { animation: hero-drift 2200ms ease-in-out 300ms 2 alternate; }
     .hero__flower--b { animation-duration: 1900ms; animation-delay: 600ms; }
@@ -344,12 +288,10 @@
     .hero__visual:has([data-hero-slides]) .hero__flower--b { animation-duration: 13.5s; animation-delay: -6s; animation-direction: alternate-reverse; }
     .hero__visual:has([data-paused]) .hero__flower { animation-play-state: paused; }
     /* While the logo intro plays, hold the entrance so it happens as the intro fades. */
-    html.yb-intro :is(.hero__anim, .hero__img, .hero__inset, .hero__flower, .hl__stitch path) { animation-play-state: paused; }
+    html.yb-intro :is(.hero__anim, .hero__img, .hero__flower, .hl__stitch path) { animation-play-state: paused; }
   }
   @keyframes hero-rise { from { opacity: 0; transform: translateY(18px); } }
   @keyframes hero-settle { from { transform: scale(1.06); } }
-  @keyframes hero-float-in { from { opacity: 0; transform: translateY(28px); } }
-  @keyframes hero-bob { to { translate: 0 -6px; } }
   @keyframes hl-sew { from { stroke-dasharray: 0 400; } to { stroke-dasharray: 7 6; } }
   @keyframes hero-float {
     0% { transform: translate3d(0, 0, 0) rotate(0deg); }
@@ -460,14 +402,6 @@
       "info": "Portrait or square, at least 1600 px wide. One product, plenty of space around it."
     },
     { "type": "url", "id": "image_link", "label": "Main photo link", "info": "The product in the photo. Defaults to the button link." },
-    {
-      "type": "image_picker",
-      "id": "inset_image",
-      "label": "Small round photo",
-      "info": "A second product, shown in a circle overlapping the main photo. Square."
-    },
-    { "type": "url", "id": "inset_link", "label": "Small photo link", "info": "The product in the small photo." },
-    { "type": "text", "id": "inset_label", "label": "Small photo label", "info": "Optional. A short name shown under the round photo. Leave blank to show the photo only." },
     {
       "type": "text",
       "id": "eyebrow",

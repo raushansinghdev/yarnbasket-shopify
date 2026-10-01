@@ -52,6 +52,7 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   - "Find a gift" has a brighter white fill (72%) so both buttons read clearly.
   - Contrast on Blush: body text 5.33:1 and headings 7.63:1. Axe: 0 on mobile and desktop.
   - **Blush budget is now full:** hero, story panel, promise panel, newsletter and small accents. No more Blush surfaces on the home page.
+- **Bee photo removed from the hero; the keychain joined the slideshow (Claude's recommendation, Raushan agreed).** With a slideshow, the fixed round bee photo competed with it as a second focal point and covered the bottom-left of every slide, more so on phones. The slideshow now shows exactly what the hero text lists, in the same order: sunflower bouquet, bee keychain, hair clips, bag charm. The red rose bouquet left the slideshow and stays in Bestsellers. The bee's markup, CSS, animation and its three settings (small round photo, link, label) are gone, as is the extra desktop bottom space it needed. The right-hand outline flower moved fully outside the frame line on desktop.
 - Axe after round 3: 0 violations on mobile and desktop.
 
 ## 2026-10-01 (home page, round 2)
