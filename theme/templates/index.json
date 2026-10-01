@@ -3,10 +3,10 @@
     "hero": {
       "type": "hero",
       "settings": {
-        "eyebrow": "Handmade in India",
-        "heading": "Handmade crochet flowers that *never fade*",
+        "eyebrow": "Made in India",
+        "heading": "Handmade crochet gifts, *stitched with love*",
         "text": "Bouquets, keychains, hair clips and bag charms, crocheted stitch by stitch and made to be gifted.",
-        "button_label": "Shop bouquets",
+        "button_label": "Shop the collection",
         "link_label": "Find a gift",
         "scheme": "soft",
         "show_badge": true
@@ -91,7 +91,7 @@
       "settings": {
         "eyebrow": "Gifting",
         "heading": "A gift for every occasion",
-        "text": "Flowers that never wilt, for the people you never forget.",
+        "text": "Thoughtful handmade gifts that last, for the people you never forget.",
         "scheme": "white"
       },
       "blocks": {
@@ -161,8 +161,8 @@
           "type": "item",
           "settings": {
             "icon": "bouquets",
-            "title": "Never fades",
-            "text": "No water, no wilting. Made to last for years."
+            "title": "Made to last",
+            "text": "No wilting, no fading. Made to be kept for years."
           }
         },
         "p3": {
@@ -199,8 +199,8 @@
         "q2": {
           "type": "question",
           "settings": {
-            "question": "Will crochet flowers fade or wilt?",
-            "answer": "<p>They never wilt and need no water. Keep them out of strong direct sunlight and their colours stay bright for years.</p>"
+            "question": "Will the colours fade?",
+            "answer": "<p>Crochet never wilts and needs no water. Keep your pieces out of strong direct sunlight and their colours stay bright for years.</p>"
           }
         },
         "q3": {

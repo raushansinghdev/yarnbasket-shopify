@@ -1,5 +1,5 @@
 // Tiny Chrome DevTools Protocol driver for screenshots and in-page checks (no dependencies; Node 22+).
-// usage: node tools/cdp.mjs <url> <width> <height> <out.png|-> [--mobile] [--motion] [--eval "js"] [--scroll N] [--full] [--wait ms]
+// usage: node tools/cdp.mjs <url> <width> <height> <out.png|-> [--mobile] [--motion] [--eval "js"] [--scroll N] [--full] [--wait ms] [--console]
 // Reduced motion is on unless --motion is passed, so the logo intro is skipped for layout screenshots.
 import { spawn } from 'node:child_process';
 import { writeFileSync, mkdtempSync } from 'node:fs';
@@ -31,6 +31,17 @@ let id = 0; const pending = new Map();
 ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } };
 const send = (method, params = {}) => new Promise((r) => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
 
+const logs = [];
+const origOnMessage = ws.onmessage;
+ws.onmessage = (m) => {
+  const d = JSON.parse(m.data);
+  if (d.method === 'Runtime.exceptionThrown') logs.push('EXCEPTION ' + (d.params.exceptionDetails.exception?.description || d.params.exceptionDetails.text).split('\n')[0]);
+  if (d.method === 'Log.entryAdded' && ['error', 'warning'].includes(d.params.entry.level)) logs.push(d.params.entry.level.toUpperCase() + ' ' + d.params.entry.text.slice(0, 200) + (d.params.entry.url ? ' @ ' + d.params.entry.url.slice(0, 90) : ''));
+  if (d.method === 'Runtime.consoleAPICalled' && ['error', 'warning'].includes(d.params.type)) logs.push('CONSOLE ' + d.params.type + ' ' + d.params.args.map((a) => a.value ?? a.description ?? '').join(' ').slice(0, 200));
+  origOnMessage(m);
+};
+await send('Runtime.enable');
+await send('Log.enable');
 await send('Page.enable');
 await send('Emulation.setDeviceMetricsOverride', { width: +w, height: +h, deviceScaleFactor: mobile ? 2 : 1, mobile });
 if (mobile) await send('Emulation.setTouchEmulationEnabled', { enabled: true });
@@ -63,5 +74,6 @@ if (out && out !== '-') {
   writeFileSync(out, Buffer.from(s.result.data, 'base64'));
   console.log('saved', out);
 }
+if (flag('--console')) console.log(logs.length ? logs.join('\n') : 'console: clean');
 ws.close(); chrome.kill();
 process.exit(0);

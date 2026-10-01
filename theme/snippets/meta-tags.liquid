@@ -37,6 +37,11 @@
 {%- if settings.favicon %}
   <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 64, height: 64 }}">
   <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180, height: 180 }}">
+{%- else %}
+  {%- comment -%} The brand kit basket icon, the same files the coming-soon page uses. {%- endcomment -%}
+  <link rel="icon" type="image/svg+xml" href="{{ 'favicon.svg' | asset_url }}">
+  <link rel="icon" type="image/png" sizes="64x64" href="{{ 'favicon-64.png' | asset_url }}">
+  <link rel="apple-touch-icon" href="{{ 'apple-touch-icon.png' | asset_url }}">
 {%- endif %}
 
 <meta property="og:site_name" content="{{ shop.name }}">
