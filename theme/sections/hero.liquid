@@ -220,13 +220,10 @@
   .hero__link { position: absolute; inset: 0; display: block; border-radius: inherit; }
   .hero__link:focus-visible { outline-offset: -5px; }
   .hero__link > img, .hero__link > svg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .hero__img { transition: scale 1100ms var(--ease-out), translate 320ms var(--ease-out); }
-  /* While a finger drags, the photo follows it a little, so the swipe feels physical. */
-  .hero__slide.is-active .hero__img { translate: var(--drag, 0px) 0; }
-  .hero__frame.is-dragging .hero__img { transition: none; }
+  .hero__img { transition: scale 1100ms var(--ease-out); }
 
   /* Previous / pause / next. On mouse devices they appear only on hover or keyboard focus.
-     On touch screens, swiping replaces the arrows: the pill shows position dots and a pause button. */
+     Touch screens get a real swipe gallery instead (see below): no buttons, no autoplay, just dots. */
   .hero__controls {
     position: absolute;
     right: 20px;
@@ -257,22 +254,40 @@
   .hero__ico-play, [data-paused] .hero__ico-pause { display: none; }
   [data-paused] .hero__ico-play { display: block; }
   .hero__dots { display: none; }
+  /* Touch screens: the photos sit side by side and swipe natively (scroll snap), like an Instagram carousel.
+     They change only when the person swipes, so nothing moves on its own and no buttons are needed. */
   @media (hover: none) and (pointer: coarse) {
-    .hero__controls { align-items: center; gap: 0; padding: 2px 2px 2px 12px; }
-    .hero__dots { display: flex; align-items: center; gap: 5px; margin-right: 4px; order: -1; }
+    .hero__media {
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      touch-action: auto;
+    }
+    .hero__media::-webkit-scrollbar { display: none; }
+    .hero__slide, .hero__slide.is-leaving {
+      position: relative;
+      flex: 0 0 100%;
+      opacity: 1;
+      pointer-events: auto;
+      transition: none;
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+    }
+    .hero__frame:has(.hero__link:active) { scale: none; }
+    .hero__controls {
+      right: auto;
+      left: 50%;
+      translate: -50% 0;
+      padding: 7px 10px;
+      pointer-events: none;
+    }
+    .hero__ctrl { display: none; }
+    .hero__dots { display: flex; align-items: center; gap: 5px; }
     .hero__dots i { width: 6px; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--cocoa) 30%, transparent); transition: width var(--dur-panel) var(--ease-out), background-color var(--dur-panel) ease; }
     .hero__dots i.is-on { width: 16px; background: var(--cocoa-deep); }
-    .hero__ctrl { width: 32px; height: 32px; }
-    .hero__ctrl .icon { width: 16px; height: 16px; }
-    /* The arrows stay for screen readers (VoiceOver and TalkBack take over swipe gestures) and reappear if focused. */
-    .hero__frame:not(:focus-within) .hero__ctrl--arrow {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
   }
   @media (hover: hover) {
     .hero__controls { opacity: 0; translate: 0 6px; }
@@ -342,6 +357,8 @@
     const dots = [...root.querySelectorAll('.hero__dots i')];
     const html = document.documentElement;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    // Touch screens get the native swipe gallery: no autoplay, every photo reachable, dots follow the scroll.
+    const touch = matchMedia('(hover: none) and (pointer: coarse)');
     let index = 0;
     let timer = 0;
     let userPaused = reduce.matches;
@@ -349,7 +366,7 @@
     let focused = false;
     let visible = true;
 
-    const running = () => !userPaused && !hovering && !focused && visible && !document.hidden && !html.classList.contains('yb-intro');
+    const running = () => !touch.matches && !userPaused && !hovering && !focused && visible && !document.hidden && !html.classList.contains('yb-intro');
     let leaving = 0;
     const show = (i) => {
       const prev = index;
@@ -358,7 +375,7 @@
       slides.forEach((slide, n) => {
         slide.classList.toggle('is-active', n === index);
         slide.classList.toggle('is-leaving', n === prev);
-        slide.inert = n !== index;
+        slide.inert = !touch.matches && n !== index;
       });
       dots.forEach((dot, n) => dot.classList.toggle('is-on', n === index));
       clearTimeout(leaving);
@@ -388,39 +405,18 @@
     root.addEventListener('focusin', (e) => { focused = e.target.matches(':focus-visible'); schedule(); });
     root.addEventListener('focusout', (e) => { if (!root.contains(e.relatedTarget)) { focused = false; schedule(); } });
 
-    // Swipe left or right on touch screens. The photo follows the finger (a quarter of the distance, at most 32px),
-    // then the next photo cross-fades in. A mostly vertical move is left alone so the page scrolls as usual.
-    let x0 = null;
-    let y0 = 0;
-    let swiped = false;
-    let horizontal = null;
-    const drag = (px) => stage.style.setProperty('--drag', `${px}px`);
-    const release = () => { root.classList.remove('is-dragging'); drag(0); };
-    stage.addEventListener('touchstart', (e) => {
-      x0 = e.touches[0].clientX;
-      y0 = e.touches[0].clientY;
-      swiped = false;
-      horizontal = null;
+    // Swipe gallery: whichever photo is snapped into view becomes the current one.
+    stage.addEventListener('scroll', () => {
+      if (!touch.matches) return;
+      const i = Math.round(stage.scrollLeft / stage.clientWidth);
+      if (i !== index && slides[i]) show(i);
     }, { passive: true });
-    stage.addEventListener('touchmove', (e) => {
-      if (x0 === null || reduce.matches) return;
-      const dx = e.touches[0].clientX - x0;
-      const dy = e.touches[0].clientY - y0;
-      if (horizontal === null && Math.abs(dx) + Math.abs(dy) > 8) horizontal = Math.abs(dx) > Math.abs(dy);
-      if (!horizontal) return;
-      root.classList.add('is-dragging');
-      drag(Math.max(-32, Math.min(32, dx / 4)));
-    }, { passive: true });
-    stage.addEventListener('touchend', (e) => {
-      if (x0 === null) return;
-      const dx = e.changedTouches[0].clientX - x0;
-      const dy = e.changedTouches[0].clientY - y0;
-      x0 = null;
-      release();
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) { swiped = true; go(dx < 0 ? 1 : -1); }
-    }, { passive: true });
-    stage.addEventListener('touchcancel', () => { x0 = null; release(); }, { passive: true });
-    stage.addEventListener('click', (e) => { if (swiped) { e.preventDefault(); swiped = false; } }, true);
+    const setMode = () => {
+      if (!touch.matches) stage.scrollLeft = 0;
+      slides.forEach((slide, n) => { slide.inert = !touch.matches && n !== index; });
+      schedule();
+    };
+    touch.addEventListener('change', setMode);
 
     new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; schedule(); }, { threshold: 0.25 }).observe(root);
     document.addEventListener('visibilitychange', schedule);
@@ -430,10 +426,15 @@
     // Theme editor: selecting a photo block shows it and holds it still.
     document.addEventListener('shopify:block:select', (e) => {
       const i = slides.findIndex((slide) => slide.contains(e.target));
-      if (i > -1) { show(i); setPaused(true); }
+      if (i > -1) {
+        show(i);
+        setPaused(true);
+        if (touch.matches) stage.scrollTo({ left: i * stage.clientWidth });
+      }
     });
 
     setPaused(userPaused);
+    setMode();
   });
 {% endjavascript %}
 
