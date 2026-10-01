@@ -1,0 +1,206 @@
+{%- doc -%}
+  What search shows before anything is typed, and when nothing matches (docs/search-plan.md §5.3, §5.5, §8.4).
+  - Recent searches (panel only): filled in by search.js from this browser's storage; hidden until there are some.
+  - Popular: links from Theme settings → Search → Popular searches menu. Demo chips while Demo content is on.
+  - No matches only: a "we make custom pieces" card that opens WhatsApp (Theme settings → Social), or the contact page.
+  - Up to 4 products from Theme settings → Search → Products to suggest (default: "bestsellers", then "our-favourites").
+  In the panel, photos load only when the panel opens (lazy images in a closed dialog aren't fetched).
+
+  @param {string} context - 'panel' or 'page'
+  @param {string} [mode] - 'start' (default) or 'none' (nothing matched)
+  @param {string} [terms] - What was searched, for the no-matches message
+{%- enddoc -%}
+{%- liquid
+  assign none = false
+  if mode == 'none'
+    assign none = true
+  endif
+  assign popular = settings.search_popular_menu
+  assign picks = settings.search_products | default: collections['bestsellers'] | default: collections['our-favourites']
+  # A missing collection gives an empty value, not 0: make the count a number before comparing.
+  assign pick_count = picks.products_count | plus: 0
+  assign demo = false
+  if settings.demo_content and shop.products_count == 0
+    assign demo = true
+  endif
+  assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
+  if context == 'panel'
+    assign card_sizes = '(min-width: 768px) 160px, 45vw'
+  else
+    assign card_sizes = '(min-width: 990px) 25vw, 50vw'
+  endif
+-%}
+<div class="search-start search-start--{{ context }}">
+  {%- if none -%}
+    <div class="search-start__none">
+      <p class="search-start__none-title">{{ 'search.no_results' | t: terms: terms }}</p>
+      <p class="search-start__none-tip">{{ 'search.no_results_tip' | t }}</p>
+    </div>
+  {%- elsif context == 'panel' -%}
+    <div class="search-start__group" data-search-recent hidden>
+      <div class="search-start__head">
+        <h2 class="search-start__title eyebrow">{{ 'search.recent' | t }}</h2>
+        <button type="button" class="search-start__clear" data-search-recent-clear>
+          <span aria-hidden="true">{{ 'search.clear_recent' | t }}</span>
+          <span class="visually-hidden">{{ 'search.clear_recent_label' | t }}</span>
+        </button>
+      </div>
+      <ul class="search-start__recent" role="list" data-search-recent-list></ul>
+      <template data-search-recent-item>
+        <li><a class="search-start__recent-link" href="">{%- render 'icon', icon: 'recent' -%}<span></span></a></li>
+      </template>
+    </div>
+  {%- endif -%}
+
+  {%- if popular.links.size > 0 or demo -%}
+    <div class="search-start__group">
+      {%- unless none -%}<h2 class="search-start__title eyebrow">{{ 'search.popular' | t }}</h2>{%- endunless -%}
+      <ul class="search-start__chips" role="list">
+        {%- if popular.links.size > 0 -%}
+          {%- for link in popular.links limit: 6 -%}
+            <li><a class="search-chip" href="{{ link.url }}">{{ link.title }}</a></li>
+          {%- endfor -%}
+        {%- else -%}
+          {%- assign d_titles = 'Bouquets|Keychains|Hair clips|Bag charms|Flower pots' | split: '|' -%}
+          {%- assign d_terms = 'bouquet|keychain|hair clip|bag charm|pot' | split: '|' -%}
+          {%- for d_title in d_titles -%}
+            <li><a class="search-chip" href="{{ routes.search_url }}?q={{ d_terms[forloop.index0] | url_encode }}&amp;options%5Bprefix%5D=last">{{ d_title }}</a></li>
+          {%- endfor -%}
+        {%- endif -%}
+      </ul>
+    </div>
+  {%- endif -%}
+
+  {%- if none -%}
+    <div class="search-custom">
+      {%- render 'icon', icon: 'hook' -%}
+      <div class="search-custom__text">
+        <p class="search-custom__title">{{ 'search.custom_title' | t }}</p>
+        <p class="search-custom__body">{{ 'search.custom_text' | t }}</p>
+      </div>
+      {%- if whatsapp != blank -%}
+        <a class="btn btn--ghost search-custom__btn" href="https://wa.me/{{ whatsapp }}?text={{ 'search.custom_message' | t: terms: terms | url_encode }}" rel="noopener" target="_blank">
+          {%- render 'icon', icon: 'whatsapp' -%}
+          {{ 'search.custom_whatsapp' | t }}
+          <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
+        </a>
+      {%- else -%}
+        <a class="btn btn--ghost search-custom__btn" href="/pages/contact">{{ 'search.custom_contact' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- if pick_count > 0 or demo -%}
+    <div class="search-start__group">
+      <h2 class="search-start__title eyebrow">{{ 'search.picks' | t }}</h2>
+      <ul class="{% if context == 'panel' %}search-start__products{% else %}product-grid{% endif %}" role="list">
+        {%- if pick_count > 0 -%}
+          {%- for product in picks.products limit: 4 -%}
+            <li>{%- render 'product-card', product: product, index: forloop.index0, sizes: card_sizes, skip_bestseller: true -%}</li>
+          {%- endfor -%}
+        {%- else -%}
+          {%- assign d_picks = '1,2,4,6' | split: ',' -%}
+          {%- for n in d_picks -%}
+            {%- assign d_n = n | plus: 0 -%}
+            <li>{%- render 'product-card', product: blank, index: forloop.index0, demo: d_n, sizes: card_sizes, skip_bestseller: true -%}</li>
+          {%- endfor -%}
+        {%- endif -%}
+      </ul>
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .search-start { display: grid; gap: var(--space-6); }
+  .search-start__group { display: grid; gap: var(--space-3); }
+  .search-start__head { display: flex; align-items: center; justify-content: space-between; }
+  .search-start__title { margin: 0; }
+  .search-start__clear {
+    min-height: 40px;
+    padding: 0 var(--space-2);
+    margin-right: calc(var(--space-2) * -1);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--color-heading);
+    font: inherit;
+    font-size: .875rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--rose);
+    cursor: pointer;
+  }
+  .search-start__recent { display: grid; }
+  .search-start__recent-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--tap);
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+  .search-start__recent-link .icon { width: 20px; height: 20px; flex: none; color: var(--color-muted); }
+  @media (hover: hover) { .search-start__recent-link:hover span { text-decoration: underline; text-decoration-color: var(--rose); text-underline-offset: 3px; } }
+
+  /* Chips: 40px tall on a 48px pitch (WCAG 2.5.8 spacing). Shared with the as-you-type suggestions. */
+  .search-start__chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .search-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 40px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--white);
+    color: var(--color-heading);
+    font-size: .9375rem;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur-state) ease, border-color var(--dur-state) ease, scale var(--dur-press) ease;
+  }
+  .search-chip:active { scale: .97; }
+  .search-chip[aria-current] { background: var(--cocoa-deep); border-color: var(--cocoa-deep); color: var(--cream); }
+  .search-chip mark { background: none; color: inherit; font-weight: 600; }
+  .search-chip__count { font-size: .8125rem; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+  .search-chip[aria-current] .search-chip__count { color: inherit; }
+  @media (hover: hover) { .search-chip:not([aria-current]):hover { background: var(--blush); border-color: var(--rose); } }
+  @media (forced-colors: active) { .search-chip { border-color: CanvasText; } .search-chip[aria-current] { border-width: 3px; } }
+
+  .search-start__products { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5) var(--space-3); }
+  @container search-body (min-width: 560px) { .search-start__products { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); } }
+  .search-start--panel .card__title { font-size: 1.125rem; }
+
+  .search-start__none { display: grid; gap: var(--space-1); }
+  .search-start__none-title { font-family: var(--font-serif); font-style: italic; font-weight: 600; font-size: 1.5rem; line-height: 1.15; color: var(--color-heading); }
+  .search-start__none-tip { color: var(--color-muted); }
+
+  /* "We make custom pieces": a Blush card with a row of stitches sewn inside its edge, as on the brand's covers. */
+  .search-custom {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: var(--space-2) var(--space-4);
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
+    background: var(--blush);
+    color: var(--cocoa-deep);
+  }
+  .search-custom::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1.5px dashed color-mix(in srgb, var(--cocoa) 35%, transparent);
+    border-radius: calc(var(--radius-md) - 6px);
+    pointer-events: none;
+  }
+  .search-custom > .icon { width: 44px; height: 44px; color: var(--cocoa-deep); }
+  .search-custom__text { display: grid; gap: var(--space-1); }
+  .search-custom__title { font-family: var(--font-serif); font-style: italic; font-weight: 600; font-size: 1.25rem; line-height: 1.2; }
+  .search-custom__body { font-size: .9375rem; color: var(--cocoa-deep); }
+  .search-custom__btn { grid-column: 1 / -1; justify-self: start; position: relative; min-height: 48px; }
+  @media (min-width: 768px) { .search-custom__btn { grid-column: 2; } }
+{% endstylesheet %}

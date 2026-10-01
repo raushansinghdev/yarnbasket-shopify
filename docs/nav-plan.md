@@ -183,6 +183,8 @@ This is the same layout as the phone, with more room:
 
 ## 7. Search panel (desktop and phone)
 
+> **Superseded by `search-plan.md` (2026-10-02),** which has the detailed design for the icon, panel and results page. The summary below is kept for history.
+
 This replaces the plain link (fixes problem 9). The button stays a real `<a href="/search">`, so search still works without JavaScript.
 
 - **Phone:** the panel slides down from the top as a full-screen `<dialog>`. The input is focused and the keyboard opens. A "Cancel" text button sits on the right.

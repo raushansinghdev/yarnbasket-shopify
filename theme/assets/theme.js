@@ -249,6 +249,123 @@ if (document.querySelector('.tip')) {
   }
 }
 
+/* ---------- Search panel: open and close (docs/search-plan.md §5–§7) ----------
+   Phones get a full-screen modal sheet; wider screens a panel under the header, with the page dimmed behind it.
+   The field gets focus inside the tap itself, the only way iOS opens the keyboard, so this part can't wait for
+   search.js. search.js (results as you type, recent searches) loads on first touch of anything search. */
+{
+  const panel = document.getElementById('SearchPanel');
+
+  if (panel) {
+    const openers = [...document.querySelectorAll('[data-search-open]')];
+    const pill = document.getElementById('HeaderSearch');
+    const own = document.getElementById('SearchPanelInput');
+    const scrim = document.querySelector('[data-search-scrim]');
+    const phone = matchMedia('(max-width: 767px)');
+    let returnTo = null;
+    let loading = null;
+    let closing = 0;
+    let quiet = false;
+
+    // The real buttons replace the plain /search links (same box, so nothing moves).
+    document.querySelectorAll('[data-search-fallback]').forEach((link) => (link.hidden = true));
+    openers.forEach((button) => (button.hidden = false));
+
+    const load = () => (loading ||= import(panel.dataset.searchSrc).catch(() => (loading = null)));
+    const shown = (el) => !!el && (el.checkVisibility ? el.checkVisibility() : el.offsetParent !== null);
+    const setExpanded = (value) => openers.forEach((button) => button.setAttribute('aria-expanded', String(value)));
+    const field = () => (panel.classList.contains('is-attached') ? pill : own);
+    const inside = (node) => panel.contains(node) || pill?.form.contains(node) || openers.some((button) => button.contains(node));
+
+    const open = (from) => {
+      clearTimeout(closing);
+      delete panel.dataset.closing;
+      if (!panel.open) {
+        returnTo = from;
+        const attached = !phone.matches && shown(pill);
+        panel.classList.toggle('is-attached', attached);
+        if (phone.matches) panel.showModal();
+        else {
+          panel.show();
+          scrim.hidden = false;
+        }
+        setExpanded(true);
+        // Carry the text across when the other field was used last.
+        const other = attached ? own : pill;
+        if (!field().value && other?.value) field().value = other.value;
+      }
+      if (document.activeElement !== field()) field().focus();
+      load();
+      panel.dispatchEvent(new CustomEvent('search:open'));
+    };
+
+    const finish = (refocus) => {
+      panel.close();
+      delete panel.dataset.closing;
+      scrim.hidden = true;
+      setExpanded(false);
+      const target = shown(returnTo) ? returnTo : openers.find(shown);
+      if (refocus && target) {
+        quiet = true; // don't let the pill's focus reopen the panel
+        target.focus();
+        quiet = false;
+      }
+    };
+    // Fade out first (220ms), then close; instantly when following a link or with reduced motion.
+    const close = ({ refocus = false, instant = false } = {}) => {
+      if (!panel.open || 'closing' in panel.dataset) return;
+      if (instant || reduceMotion.matches) return finish(refocus);
+      panel.dataset.closing = '';
+      scrim.hidden = true;
+      closing = setTimeout(() => finish(refocus), 220);
+    };
+
+    openers.forEach((button) => {
+      button.addEventListener('click', () => {
+        if (panel.open) return close({ refocus: true });
+        // From the menu drawer: the drawer goes, and focus later returns to the menu button.
+        const drawer = button.closest('dialog');
+        drawer?.close();
+        open(drawer ? document.querySelector('[data-menu-open]') : button);
+      });
+    });
+    pill?.addEventListener('focus', () => !quiet && open(pill));
+    pill?.addEventListener('input', () => !panel.open && open(pill));
+    panel.querySelector('[data-search-close]')?.addEventListener('click', () => close({ refocus: true }));
+
+    // Esc: clears the text first, then closes. preventDefault also stops the dialog's own close.
+    const onKey = (event) => {
+      if (event.key !== 'Escape' || !panel.open) return;
+      event.preventDefault();
+      const input = event.target.closest?.('[data-search-input]');
+      if (input?.value) {
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      } else close({ refocus: true });
+    };
+    panel.addEventListener('keydown', onKey);
+    pill?.addEventListener('keydown', onKey);
+    panel.addEventListener('cancel', (event) => {
+      event.preventDefault();
+      close({ refocus: true });
+    });
+
+    // The wider panel isn't modal: a click or focus anywhere else closes it.
+    const away = (event) => panel.open && !panel.matches(':modal') && !inside(event.target) && close();
+    document.addEventListener('pointerdown', away);
+    document.addEventListener('focusin', away);
+    // Following a result closes the panel at once, so Back returns to a clean page.
+    panel.addEventListener('click', (event) => {
+      if (event.target.closest('a[href]') && !(event.metaKey || event.ctrlKey || event.shiftKey)) close({ instant: true });
+    });
+    phone.addEventListener('change', () => close({ instant: true }));
+
+    // Warm up: fetch search.js as soon as a pointer or finger heads for search.
+    [...openers, pill].forEach((el) => el?.addEventListener('pointerenter', load, { once: true, passive: true }));
+    [...openers, pill].forEach((el) => el?.addEventListener('touchstart', load, { once: true, passive: true }));
+  }
+}
+
 /* ---------- Shop by craft: the circles switch the product grid below (sections/shop-crafts.liquid) ----------
    Toggle buttons (aria-pressed), not ARIA tabs: Tab reaches each one, Enter or Space picks it, and focus stays put.
    The new cards rise in turn while the grid's height eases to fit; a status line says what is showing. */

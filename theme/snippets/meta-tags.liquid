@@ -33,6 +33,10 @@
   <meta name="description" content="{{ page_description | escape }}">
 {%- endif %}
 <link rel="canonical" href="{{ canonical_url }}">
+{%- comment -%} Search results are endless thin pages: keep them out of search engines (robots.txt also blocks /search). {%- endcomment -%}
+{%- if request.page_type == 'search' %}
+  <meta name="robots" content="noindex, follow">
+{%- endif %}
 
 {%- if settings.favicon %}
   <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 64, height: 64 }}">

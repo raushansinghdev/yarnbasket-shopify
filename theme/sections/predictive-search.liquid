@@ -1,0 +1,157 @@
+{%- comment -%}
+  Results as you type (docs/search-plan.md §9). Never placed on a page: search.js asks Shopify for
+  /search/suggest?q=…&section_id=predictive-search and swaps this HTML into the search panel.
+  One column in this order everywhere (so keyboard order = reading order): suggested phrases, products,
+  collections and pages, then "See all results". The wider panel shows products as a 3-across grid.
+  data-status is what the screen-reader status line says once typing pauses.
+  While Demo content is on and the store has no products, the demo products are searched instead (snippets/search-demo).
+{%- endcomment -%}
+{%- liquid
+  assign terms = predictive_search.terms
+  assign demo = false
+  if settings.demo_content and shop.products_count == 0
+    assign demo = true
+  endif
+
+  if demo
+    capture ids
+      render 'search-demo', what: 'products', terms: terms
+    endcapture
+    assign demo_products = ids | strip | split: ','
+    capture ids
+      render 'search-demo', what: 'collections', terms: terms
+    endcapture
+    assign demo_collections = ids | strip | split: ','
+    assign n_products = demo_products.size
+    assign n_collections = demo_collections.size
+    assign n_queries = 0
+    assign n_pages = 0
+  else
+    assign r = predictive_search.resources
+    assign n_products = r.products.size | default: 0
+    assign n_collections = r.collections.size | default: 0
+    assign n_queries = r.queries.size | default: 0
+    assign n_pages = r.pages.size | plus: r.articles.size
+  endif
+  assign total = n_products | plus: n_collections | plus: n_pages
+
+  # What the status line says, e.g. "5 products, 1 collection". Parts are joined with | first, then with commas.
+  assign said = ''
+  if n_products > 0
+    assign part = 'search.status_products' | t: count: n_products
+    assign said = said | append: '|' | append: part
+  endif
+  if n_collections > 0
+    assign part = 'search.status_collections' | t: count: n_collections
+    assign said = said | append: '|' | append: part
+  endif
+  if n_pages > 0
+    assign part = 'search.status_pages' | t: count: n_pages
+    assign said = said | append: '|' | append: part
+  endif
+  if total == 0 and n_queries > 0
+    assign part = 'search.status_suggestions' | t: count: n_queries
+    assign said = said | append: '|' | append: part
+  endif
+  assign said = said | remove_first: '|' | split: '|' | join: ', '
+  if total == 0 and n_queries == 0
+    assign said = 'search.no_results' | t: terms: terms
+  endif
+-%}
+<div class="ps" data-ps data-status="{{ said | escape }}">
+  {%- if total > 0 or n_queries > 0 -%}
+    {%- if n_queries > 0 -%}
+      <div class="ps__group">
+        <h2 class="visually-hidden">{{ 'search.suggestions' | t }}</h2>
+        <ul class="ps__chips" role="list">
+          {%- for query in r.queries limit: 3 -%}
+            <li><a class="search-chip" href="{{ query.url }}">{{ query.styled_text }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+    {%- if n_products > 0 -%}
+      <div class="ps__group">
+        <h2 class="ps__title eyebrow">{{ 'search.products' | t }}</h2>
+        <ul class="ps__products" role="list">
+          {%- if demo -%}
+            {%- for id in demo_products limit: 6 -%}
+              {%- assign d_n = id | plus: 0 -%}
+              {%- render 'search-result', product: blank, demo: d_n, terms: terms -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- for product in r.products -%}
+              {%- render 'search-result', product: product, terms: terms -%}
+            {%- endfor -%}
+          {%- endif -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+    {%- if n_collections > 0 -%}
+      <div class="ps__group">
+        <h2 class="ps__title eyebrow">{{ 'search.collections' | t }}</h2>
+        <ul class="ps__chips ps__chips--wrap" role="list">
+          {%- if demo -%}
+            {%- assign d_titles = 'Bouquets|Keychains|Hair clips|Bag charms' | split: '|' -%}
+            {%- for id in demo_collections -%}
+              {%- assign i = id | minus: 1 -%}
+              <li><a class="search-chip" href="{{ routes.all_products_collection_url }}">{{ d_titles[i] }}{%- render 'icon', icon: 'arrow' -%}</a></li>
+            {%- endfor -%}
+          {%- else -%}
+            {%- for collection in r.collections -%}
+              <li><a class="search-chip" href="{{ collection.url }}">{{ collection.title | escape }}{%- render 'icon', icon: 'arrow' -%}</a></li>
+            {%- endfor -%}
+          {%- endif -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+    {%- if n_pages > 0 -%}
+      <div class="ps__group">
+        <h2 class="ps__title eyebrow">{{ 'search.pages' | t }}</h2>
+        <ul class="ps__chips ps__chips--wrap" role="list">
+          {%- for item in r.pages -%}
+            <li><a class="search-chip" href="{{ item.url }}">{{ item.title | escape }}{%- render 'icon', icon: 'arrow' -%}</a></li>
+          {%- endfor -%}
+          {%- for item in r.articles -%}
+            <li><a class="search-chip" href="{{ item.url }}">{{ item.title | escape }}{%- render 'icon', icon: 'arrow' -%}</a></li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+    <a class="btn btn--ghost ps__all" href="{{ routes.search_url }}?q={{ terms | url_encode }}&amp;options%5Bprefix%5D=last">
+      <span>{{ 'search.see_all' | t: terms: terms }}</span>
+      {%- render 'icon', icon: 'arrow' -%}
+    </a>
+  {%- else -%}
+    {%- render 'search-start', context: 'panel', mode: 'none', terms: terms -%}
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .ps { display: grid; gap: var(--space-5); }
+  .ps__group { display: grid; gap: var(--space-2); }
+  .ps__title { margin: 0; }
+  /* Suggested phrases: one row that scrolls sideways on phones, so products stay high on the screen. */
+  .ps__chips { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; margin: -4px; padding: 4px; }
+  .ps__chips::-webkit-scrollbar { display: none; }
+  .ps__chips--wrap { flex-wrap: wrap; overflow: visible; }
+  .ps__chips .search-chip .icon { width: 16px; height: 16px; opacity: .55; margin-right: -4px; }
+  .ps__products { display: grid; gap: 2px; }
+  .ps__all { width: 100%; justify-content: space-between; white-space: normal; text-align: left; }
+  .ps__all span { overflow: hidden; text-overflow: ellipsis; }
+  @container search-body (min-width: 560px) {
+    .ps__chips { flex-wrap: wrap; overflow: visible; }
+    .ps__products { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-5) var(--space-4); }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Predictive search",
+  "settings": []
+}
+{% endschema %}

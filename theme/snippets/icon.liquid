@@ -6,7 +6,7 @@
   Brand icons come from the brand kit (Brand Kit/_source/brand.js and covers.js):
   a 40px grid with Rose accents. Tune them with --icon-accent, --icon-paper and --icon-leaf.
 
-  @param {string} icon - menu, search, cart, account, close, arrow, gift, pause, play, plus, chevron, instagram, whatsapp, truck, help, star, or a brand icon: bouquets, keychains, hair-clips, reviews, how-to-order, bagcharm, makers, hook, care
+  @param {string} icon - menu, search, recent, cart, account, close, arrow, gift, pause, play, plus, chevron, instagram, whatsapp, truck, help, star, or a brand icon: bouquets, keychains, hair-clips, reviews, how-to-order, bagcharm, makers, hook, care
   @param {string} [class] - Extra classes for the svg element
 
   @example
@@ -34,6 +34,7 @@
 {%- case icon -%}
 {%- when 'menu' -%}<path d="M3.5 6.5h17M3.5 12h17M3.5 17.5h17"/>
 {%- when 'search' -%}<circle class="icon__fill" cx="10.5" cy="10.5" r="7"/><path d="m15.6 15.6 4.9 4.9"/>
+{%- when 'recent' -%}<path d="M4.6 13.2A7.6 7.6 0 1 0 6.4 6.6"/><path d="M3.8 4.6v3.6h3.6"/><path d="M12 8.2V12l2.6 1.7"/>
 {%- when 'cart' -%}<path d="M2.5 3.5h2.3l.86 4"/><path class="icon__fill" d="M5.66 7.5H20.5l-1.7 7.3a1.5 1.5 0 0 1-1.5 1.1H8.7a1.5 1.5 0 0 1-1.5-1.2Z"/><circle cx="9.5" cy="19.6" r="1.4"/><circle cx="17" cy="19.6" r="1.4"/>
 {%- when 'account' -%}<circle class="icon__fill" cx="12" cy="7.9" r="4"/><path class="icon__fill" d="M4.5 20.5c.8-3.9 3.8-6 7.5-6s6.7 2.1 7.5 6Z"/>
 {%- when 'close' -%}<path d="m6 6 12 12M18 6 6 18"/>

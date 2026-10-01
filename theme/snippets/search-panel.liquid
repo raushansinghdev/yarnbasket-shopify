@@ -1,0 +1,136 @@
+{%- doc -%}
+  The search panel (docs/search-plan.md §5–§7). One <dialog>, two ways of showing it, decided by theme.js when it opens:
+  - Phones (under 768px): a full-screen modal sheet with its own field, label and Cancel button.
+  - Wider: a non-modal panel under the header. Where the header has its search pill (768–1099px, 1280px+), the
+    panel shows results only (.is-attached) and the pill stays the field. At 1100–1279px it brings its own field.
+  It sits in the header's icon row right after the search controls, so Tab goes from the field straight into the results.
+  theme.js opens and closes it; search.js (loaded on first touch of anything search) fills in results as you type.
+{%- enddoc -%}
+<dialog
+  class="search-panel"
+  id="SearchPanel"
+  aria-labelledby="SearchPanelLabel"
+  data-search-panel
+  data-search-src="{{ 'search.js' | asset_url }}"
+  data-suggest-url="{{ routes.predictive_search_url }}"
+  data-loading="{{ 'search.loading' | t | escape }}"
+  data-error="{{ 'search.error' | t | escape }}"
+>
+  <form action="{{ routes.search_url }}" method="get" role="search" class="search-panel__head">
+    <label for="SearchPanelInput" class="search-panel__label" id="SearchPanelLabel">{{ 'search.label' | t }}</label>
+    <button type="button" class="search-panel__cancel" data-search-close>{{ 'search.cancel' | t }}</button>
+    {%- render 'search-field', id: 'SearchPanelInput', live: true -%}
+    <input type="hidden" name="options[prefix]" value="last">
+  </form>
+  <div class="search-panel__body" data-search-body>
+    <div data-search-start>{%- render 'search-start', context: 'panel' -%}</div>
+    <div class="search-panel__results" data-search-results hidden></div>
+    <p class="search-panel__note" data-search-note hidden></p>
+  </div>
+  <p class="visually-hidden" role="status" data-search-status></p>
+</dialog>
+
+{% stylesheet %}
+  /* Phones: a full-screen sheet over everything (top layer), Soft blush like the page. */
+  .search-panel {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--blush-soft);
+    color: var(--color-ink);
+    opacity: 1;
+    translate: 0 0;
+    transition: opacity var(--dur-panel) var(--ease-out), translate var(--dur-panel) var(--ease-out), overlay var(--dur-panel) allow-discrete, display var(--dur-panel) allow-discrete;
+  }
+  .search-panel[open] { display: flex; flex-direction: column; }
+  .search-panel[open][data-closing] { opacity: 0; translate: 0 -8px; transition-duration: 220ms; transition-timing-function: var(--ease-exit); }
+  @starting-style { .search-panel[open] { opacity: 0; translate: 0 -12px; } }
+  .search-panel::backdrop { background: transparent; }
+  html:has(.search-panel:modal) { overflow: hidden; }
+
+  .search-panel__head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    padding: max(var(--space-2), env(safe-area-inset-top)) var(--gutter) var(--space-4);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .search-panel__label { font-family: var(--font-serif); font-style: italic; font-weight: 600; font-size: 1.625rem; line-height: 1; color: var(--color-heading); }
+  .search-panel__cancel {
+    min-height: var(--tap);
+    padding: 0 var(--space-2);
+    margin-right: calc(var(--space-2) * -1);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--color-heading);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .search-panel__cancel:active { background: color-mix(in srgb, var(--cocoa) 8%, transparent); }
+  .search-panel__head .search-field { grid-column: 1 / -1; }
+
+  .search-panel__body {
+    container: search-body / inline-size;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--space-5) var(--gutter) max(var(--space-7), env(safe-area-inset-bottom));
+  }
+  /* While the next results load, the current ones stay and dim; no spinner. */
+  .search-panel__results { transition: opacity 150ms ease; }
+  [data-search-body][aria-busy="true"] .search-panel__results { opacity: .6; }
+  .search-panel__results > .ps { animation: ps-in 150ms ease; }
+  @keyframes ps-in { from { opacity: 0; } }
+  .search-panel__note { margin-top: var(--space-4); color: var(--color-muted); }
+
+  /* Wider screens: a panel hanging from the header, right-aligned with the page content. */
+  @media (min-width: 768px) {
+    .search-panel {
+      position: absolute;
+      inset: 100% calc((100% - var(--content-width)) / 2) auto auto;
+      z-index: 3;
+      width: min(720px, var(--content-width));
+      height: auto;
+      max-height: calc(100dvh - var(--header-height) - var(--space-6));
+      margin-top: var(--space-2);
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      box-shadow: 0 28px 56px -28px rgb(78 58 49 / .5);
+      transform-origin: top right;
+    }
+    .search-panel[open][data-closing] { translate: 0 -6px; }
+    @starting-style { .search-panel[open] { opacity: 0; translate: 0 -8px; } }
+    .search-panel__head { padding: var(--space-4) var(--space-5); }
+    .search-panel__label { font-size: 1.375rem; }
+    .search-panel.is-attached .search-panel__head { display: none; }
+    .search-panel__body { padding: var(--space-5); }
+  }
+
+  /* Behind the wider panel: the page dims, and a click on it closes the panel. */
+  .search-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: rgb(51 37 31 / .2);
+    transition: opacity var(--dur-panel) ease, display var(--dur-panel) allow-discrete;
+  }
+  @starting-style { .search-scrim { opacity: 0; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .search-panel, .search-scrim { transition: none; }
+    .search-panel__results > .ps { animation: none; }
+  }
+  html.lite .search-panel__results > .ps { animation: none; }
+  @media (forced-colors: active) { .search-panel { border: 1px solid CanvasText; } }
+{% endstylesheet %}

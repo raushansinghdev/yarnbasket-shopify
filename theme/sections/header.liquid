@@ -135,25 +135,25 @@
       {%- endif -%}
 
       <div class="site-header__icons">
-        {%- comment -%} A real search field where there's room (tablet, wide desktop); an icon link everywhere else. Both work without JavaScript. {%- endcomment -%}
+        {%- comment -%}
+          Search (docs/search-plan.md): a real field where there's room (tablet, wide desktop), a lens everywhere else.
+          Without JavaScript the field submits and the lens is a link to /search. theme.js swaps the link for the
+          button beside it, which opens the search panel; the panel follows here so Tab moves from the field into it.
+        {%- endcomment -%}
         <form action="{{ routes.search_url }}" method="get" role="search" class="site-header__search-form">
           <label for="HeaderSearch" class="visually-hidden">{{ 'header.search' | t }}</label>
-          {%- render 'icon', icon: 'search' -%}
-          <input
-            id="HeaderSearch"
-            type="search"
-            name="q"
-            value="{{ search.terms | escape }}"
-            placeholder="{{ 'header.search_placeholder' | t }}"
-            autocomplete="off"
-            enterkeyhint="search"
-          >
+          {%- render 'search-field', id: 'HeaderSearch', value: search.terms, class: 'search-field--header', placeholder: 'header.search_placeholder', live: true -%}
           <input type="hidden" name="options[prefix]" value="last">
         </form>
-        <a href="{{ routes.search_url }}" class="icon-btn site-header__search" {% if request.page_type == 'search' %}aria-current="page"{% endif %}>
+        <a href="{{ routes.search_url }}" class="icon-btn site-header__search" data-search-fallback {% if request.page_type == 'search' %}aria-current="page"{% endif %}>
           {%- render 'icon', icon: 'search' -%}
           <span class="visually-hidden">{{ 'header.search' | t }}</span>
         </a>
+        <button type="button" class="icon-btn site-header__search" aria-haspopup="dialog" aria-controls="SearchPanel" aria-expanded="false" data-search-open hidden {% if request.page_type == 'search' %}aria-current="page"{% endif %}>
+          {%- render 'icon', icon: 'search' -%}
+          <span class="visually-hidden">{{ 'header.search' | t }}</span>
+        </button>
+        {%- render 'search-panel' -%}
         {%- if shop.customer_accounts_enabled -%}
           <a href="{{ routes.account_url }}" class="icon-btn site-header__account" {% if request.page_type contains 'customers/' %}aria-current="page"{% endif %}>
             {%- render 'icon', icon: 'account' -%}
@@ -184,6 +184,8 @@
     </div>
   </div>
 </header>
+{%- comment -%} Dims the page behind the search panel on wider screens; a click on it closes the panel. {%- endcomment -%}
+<div class="search-scrim" data-search-scrim hidden></div>
 
 <dialog class="drawer" id="MenuDrawer" aria-label="{{ 'header.menu' | t }}" data-scroll-lock closedby="any">
   <div class="drawer__panel">
@@ -208,6 +210,13 @@
 
     {%- assign i = item_count -%}
     <ul class="drawer__secondary" role="list">
+      {%- assign i = i | plus: 1 -%}
+      <li style="--i: {{ i }}">
+        <a href="{{ routes.search_url }}" data-search-fallback>{%- render 'icon', icon: 'search' -%}{{ 'header.search' | t }}</a>
+        <button type="button" aria-haspopup="dialog" aria-controls="SearchPanel" aria-expanded="false" data-search-open hidden>
+          {%- render 'icon', icon: 'search' -%}{{ 'header.search' | t }}
+        </button>
+      </li>
       {%- if shop.customer_accounts_enabled -%}
         {%- assign i = i | plus: 1 -%}
         <li style="--i: {{ i }}">
@@ -250,7 +259,10 @@
     transition: transform var(--dur-panel) var(--ease-out);
   }
   html.header-hidden .header-section:not(:focus-within) { transform: translateY(-100%); transition-timing-function: var(--ease-in-out); }
+  /* Positioned so it sits above the search scrim; the search panel hangs from its bottom edge. */
   .site-header {
+    position: relative;
+    z-index: 1;
     background-color: var(--header-bg, color-mix(in srgb, var(--blush-soft) 88%, transparent));
     -webkit-backdrop-filter: saturate(1.4) blur(14px);
     backdrop-filter: saturate(1.4) blur(14px);
@@ -297,41 +309,9 @@
   .site-header .icon-btn > .icon, .drawer__close > .icon { width: 28px; height: 28px; }
   .site-header__account, .site-header__cart-word, .site-header__search-form { display: none; }
 
-  /* Search field (tablet and wide desktop). The pill's border is Cocoa at 75%, 3:1 against Blush. */
-  .site-header__search-form {
-    position: relative;
-    align-items: center;
-    width: clamp(184px, 24vw, 240px);
-    height: 44px;
-    margin-right: var(--space-2);
-    border: 1px solid color-mix(in srgb, var(--cocoa) 75%, transparent);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--white) 60%, transparent);
-    color: var(--color-heading);
-    transition: background-color var(--dur-state) ease, border-color var(--dur-state) ease;
-  }
-  .site-header__search-form .icon { position: absolute; left: 13px; width: 22px; height: 22px; pointer-events: none; }
-  .site-header__search-form input {
-    width: 100%;
-    height: 100%;
-    padding: 0 var(--space-4) 0 42px;
-    border: 0;
-    border-radius: inherit;
-    background: none;
-    color: inherit;
-    font: inherit;
-    font-size: .9375rem;
-  }
-  .site-header__search-form input::placeholder { color: var(--taupe-ink); opacity: 1; }
-  .site-header__search-form input:focus-visible { outline: 0; box-shadow: none; }
-  .site-header__search-form:focus-within {
-    background: var(--white);
-    border-color: var(--color-heading);
-    outline: 2px solid var(--color-ink);
-    outline-offset: 3px;
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--rose) 45%, transparent);
-  }
-  @media (hover: hover) { .site-header__search-form:hover { background: var(--white); } }
+  /* Search field (tablet and wide desktop): the pill itself is snippets/search-field. */
+  .site-header__search-form { width: clamp(184px, 24vw, 240px); margin-right: var(--space-2); }
+  .site-header__search-form .search-field { width: 100%; }
 
   /* A word under an icon, on hover and keyboard focus. It sits flush under the button so the pointer can move onto it,
      and Esc hides it (theme.js), as WCAG 1.4.13 asks. */
@@ -669,7 +649,13 @@
   }
   @keyframes drawer-item { from { opacity: 0; transform: translateX(-16px); } }
   .drawer__secondary { display: grid; gap: var(--space-1); padding-top: var(--space-5); border-top: 1px solid var(--color-line); }
-  .drawer__secondary a {
+  .drawer__secondary :is(a, button) {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: var(--space-3);

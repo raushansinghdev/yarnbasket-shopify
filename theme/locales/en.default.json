@@ -44,10 +44,60 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search articles, pages, or products",
+    "label": "Search",
+    "placeholder": "Bouquets, keychains, hair clips…",
     "submit": "Search",
-    "no_results_html": "No results found for {{ terms }}",
-    "results_for_html": "{{ count }} results found for {{ terms }}"
+    "clear": "Clear search",
+    "cancel": "Cancel",
+    "recent": "Recent",
+    "clear_recent": "Clear",
+    "clear_recent_label": "Clear recent searches",
+    "popular": "Popular",
+    "picks": "Bestsellers",
+    "suggestions": "Suggestions",
+    "products": "Products",
+    "collections": "Collections",
+    "pages": "Pages",
+    "help_stories": "Help & stories",
+    "page_type": "Page",
+    "article_type": "Story",
+    "see_all": "See all results for “{{ terms }}”",
+    "results_count": {
+      "one": "{{ count }} result for “{{ terms }}”",
+      "other": "{{ count }} results for “{{ terms }}”"
+    },
+    "status_products": {
+      "one": "{{ count }} product",
+      "other": "{{ count }} products"
+    },
+    "status_collections": {
+      "one": "{{ count }} collection",
+      "other": "{{ count }} collections"
+    },
+    "status_pages": {
+      "one": "{{ count }} page",
+      "other": "{{ count }} pages"
+    },
+    "status_suggestions": {
+      "one": "{{ count }} suggestion",
+      "other": "{{ count }} suggestions"
+    },
+    "no_results": "No matches for “{{ terms }}”.",
+    "no_results_tip": "Check the spelling, or try a craft:",
+    "empty_heading": "What are you looking for?",
+    "custom_title": "Can’t find it? We make custom pieces by hand.",
+    "custom_text": "Tell us what you have in mind and we’ll tell you if we can make it.",
+    "custom_whatsapp": "Ask on WhatsApp",
+    "custom_contact": "Ask us",
+    "custom_message": "Hi Yarn Basket! I searched for “{{ terms }}” on your site. Could you make one?",
+    "loading": "Searching…",
+    "error": "Couldn’t load suggestions. Press Search to see all results.",
+    "sort": "Sort",
+    "sort_apply": "Apply",
+    "filter_craft": "Filter by craft",
+    "all": "All",
+    "load_more": "Load more",
+    "showing": "Showing {{ shown }} of {{ total }}"
   },
   "accessibility": {
     "skip_to_content": "Skip to content",

@@ -14,6 +14,20 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **No quick add-to-cart on cards yet.** It comes with the cart drawer (build-plan Phase 5).
 - **Flower pots is a launch category** (Raushan, 2026-10-02). It's on the home page and in the Shop menu. The menu item stays "Bestsellers".
 
+## 2026-10-02 (search, docs/search-plan.md)
+
+Raushan accepted every recommendation in search-plan §13.
+- **Built the same day (stages S-1 to S-3, see "As built" in search-plan.md).** The panel is one column at every size, so the keyboard order matches the reading order. "See all" has no count, because predictive search doesn't return one. The open/close code stays in theme.js (2.0 KB gzipped) so the phone keyboard opens on the first tap. Search runs on demo products until real ones exist.
+- **S1 Scope:** search covers products, collections and help pages (blog posts once the blog exists). Products always come first.
+- **S2 Phones:** search opens as a full-screen sheet with the keyboard up at once. Tablet and desktop get a dropdown panel under the header.
+- **S3 Before typing:** recent searches (kept only in this browser), Popular chips and 4 Bestsellers, so products are on screen straight away.
+- **S4 No results:** Popular chips, a "we make custom pieces, ask on WhatsApp" card (once the number is set) and Bestsellers.
+- **S5 Popular searches** come from an admin menu called "Popular searches", so they change without a deploy.
+- **S6 Results page at launch:** sort and craft chips only. A full filter drawer, shared with collections, comes once the catalogue passes about 40 products.
+- **S7 Analytics at launch:** Shopify admin search reports and GA4 only. No custom event for panel clicks yet.
+- **S8 Install Search & Discovery** (Shopify, free) for synonyms, boosts and search filters.
+- **Built with plain links and a status line, not an ARIA combobox** (kept from nav-plan §7). The search page gets `noindex, follow` as a backup to Shopify's robots.txt (SEO-sensitive, approved with the plan).
+
 ## 2026-10-02 (header and navigation, docs/nav-plan.md)
 
 - **Header icons are 28px glyphs with 1.8 strokes in 48px targets.** The menu icon is three lines, and the cart icon is a classic trolley. A basket drawn like the logo's was tried first, but at 28px it read as a striped bucket. Raushan chose the trolley from four options because Indian shoppers already know it from Flipkart, Amazon and Meesho, and on phones the icon has no word beside it. The cart badge is 20px with a 12px number. Cart changes are announced through a `role="status"` line. Raushan said the old icons were too small and not accessible.

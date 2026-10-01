@@ -26,7 +26,7 @@
         "type": "image_picker",
         "id": "share_image",
         "label": "Default share image",
-        "info": "Shown when a page without its own image is shared on WhatsApp or social media. 1200 \u00d7 630 px."
+        "info": "Shown when a page without its own image is shared on WhatsApp or social media. 1200 × 630 px."
       },
       {
         "type": "checkbox",
@@ -55,6 +55,27 @@
         "id": "social_whatsapp",
         "label": "WhatsApp number",
         "info": "With country code, like +91 98765 43210."
+      }
+    ]
+  },
+  {
+    "name": "Search",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Shown in the search panel before someone types, and on a search with no matches. See docs/search-plan.md."
+      },
+      {
+        "type": "link_list",
+        "id": "search_popular_menu",
+        "label": "Popular searches menu",
+        "info": "Create a menu called \"Popular searches\" in Content → Menus, with 4–6 links to collections or searches."
+      },
+      {
+        "type": "collection",
+        "id": "search_products",
+        "label": "Products to suggest",
+        "info": "Up to 4 products from this collection. If empty, the \"bestsellers\" collection is used (or \"our-favourites\")."
       }
     ]
   },

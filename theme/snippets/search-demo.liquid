@@ -1,0 +1,48 @@
+{%- doc -%}
+  Demo search, used only while Theme settings → Demo content is on and the store has no products yet.
+  Matches the typed words against the eight demo products (the same ones product-card shows) or the four crafts,
+  so the search panel and results page can be judged before real products exist. Every word must match the
+  start of a word or part of one ("bouq", "rose bouquet", "keyring"). Delete with the demo-* assets before launch.
+
+  Outputs a comma-separated list of matching numbers (1–8 for products, 1–4 for crafts), or for what: 'title' / 'price',
+  the title or price of demo product n.
+
+  @param {string} what - 'products', 'collections', 'title' or 'price'
+  @param {string} [terms] - The search text (for 'products' and 'collections')
+  @param {number} [n] - Demo product number (for 'title' and 'price')
+{%- enddoc -%}
+{%- liquid
+  case what
+    when 'title'
+      assign list = 'Sunflower Trio Crochet Bouquet|Red Rose Crochet Bouquet|Pink Tulip & Daisy Bouquet|Bee & Chick Keychain Set|Daisy Crochet Flower Pot|Flower Hair Clips, Set of 8|Lily of the Valley Bag Charm|Daisy Crochet Headband' | split: '|'
+      assign i = n | minus: 1
+      echo list[i]
+    when 'price'
+      assign list = '₹1,299|₹1,199|₹999|₹449|₹599|₹399|₹349|₹449' | split: '|'
+      assign i = n | minus: 1
+      echo list[i]
+    else
+      if what == 'collections'
+        assign pool = 'bouquets flowers flower phool guldasta|keychains keyrings key chains key rings|hair clips hairclips hair pins headbands|bag charms purse charms bag hanging' | split: '|'
+      else
+        assign pool = 'sunflower trio crochet bouquet bouquets flowers flower yellow gift phool|red rose roses crochet bouquet bouquets flowers flower gift phool|pink tulip daisy crochet bouquet bouquets flowers flower gift phool|bee chick crochet keychain keychains keyring key chain set gift|daisy crochet flower pot plant pots|flower crochet hair clips clip hairclip hairclips set of 8|lily of the valley crochet bag charm charms purse flower|daisy crochet headband hair band flower' | split: '|'
+      endif
+      assign words = terms | downcase | replace: ',', ' ' | replace: '&', ' ' | split: ' '
+      assign out = ''
+      if words.size > 0
+        for hay in pool
+          assign ok = true
+          for word in words
+            unless hay contains word
+              assign ok = false
+              break
+            endunless
+          endfor
+          if ok
+            assign out = out | append: forloop.index | append: ','
+          endif
+        endfor
+      endif
+      echo out
+  endcase
+-%}

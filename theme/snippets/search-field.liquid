@@ -1,0 +1,103 @@
+{%- doc -%}
+  The search field: a lens, the input and a clear button, in one pill. Shared by the header, the search panel and
+  the results page (docs/search-plan.md §4.4). The caller owns the <form> and the <label>.
+  The clear button stays hidden until search.js runs (it needs JavaScript); after that, CSS shows it only when
+  there is text. The browser's own clear cross is hidden: it's tiny and differs per browser.
+
+  @param {string} id - id for the input (the caller's label points at it)
+  @param {string} [value] - Text already in the field
+  @param {string} [class] - Extra classes on the pill, e.g. search-field--header
+  @param {string} [placeholder] - Translation key for the placeholder. Defaults to search.placeholder.
+  @param {boolean} [live] - true for fields that show results as you type (header pill, panel)
+{%- enddoc -%}
+{%- assign hint_key = placeholder | default: 'search.placeholder' -%}
+<div class="search-field{% if class != blank %} {{ class }}{% endif %}">
+  {%- render 'icon', icon: 'search' -%}
+  <input
+    id="{{ id }}"
+    class="search-field__input"
+    type="search"
+    name="q"
+    value="{{ value | escape }}"
+    placeholder="{{ hint_key | t }}"
+    autocomplete="off"
+    autocapitalize="off"
+    autocorrect="off"
+    spellcheck="false"
+    enterkeyhint="search"
+    {% if live %}data-search-input{% endif %}
+  >
+  <button type="button" class="search-field__clear" data-search-clear hidden>
+    {%- render 'icon', icon: 'close' -%}
+    <span class="visually-hidden">{{ 'search.clear' | t }}</span>
+  </button>
+</div>
+
+{% stylesheet %}
+  /* The pill's border is Cocoa at 75%: 3:1 against Soft blush and white. */
+  .search-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 52px;
+    border: 1px solid color-mix(in srgb, var(--cocoa) 75%, transparent);
+    border-radius: var(--radius-pill);
+    background: var(--white);
+    color: var(--color-heading);
+    transition: background-color var(--dur-state) ease, border-color var(--dur-state) ease;
+  }
+  .search-field > .icon { position: absolute; left: 16px; width: 22px; height: 22px; pointer-events: none; }
+  .search-field__input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 var(--space-2) 0 48px;
+    border: 0;
+    border-radius: inherit;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 1rem; /* 16px or more, or iOS zooms the page when the field gets focus */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .search-field__input::placeholder { color: var(--taupe-ink); opacity: 1; }
+  .search-field__input::-webkit-search-cancel-button,
+  .search-field__input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+  .search-field__input:focus-visible { outline: 0; box-shadow: none; }
+  .search-field:focus-within {
+    border-color: var(--color-heading);
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--rose) 45%, transparent);
+  }
+  .search-field__clear {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-right: 3px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--color-heading);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .search-field__clear .icon { width: 18px; height: 18px; }
+  .search-field__clear:focus-visible { outline-offset: -4px; box-shadow: none; }
+  .search-field:has(.search-field__input:placeholder-shown) .search-field__clear { display: none; }
+  @media (hover: hover) { .search-field__clear:hover { background: color-mix(in srgb, var(--cocoa) 8%, transparent); } }
+
+  /* The smaller pill in the header bar. */
+  .search-field--header { height: 44px; background: color-mix(in srgb, var(--white) 60%, transparent); }
+  .search-field--header > .icon { left: 13px; }
+  .search-field--header .search-field__input { padding-left: 42px; font-size: .9375rem; }
+  .search-field--header .search-field__clear { width: 38px; height: 38px; }
+  .search-field--header:focus-within { background: var(--white); }
+  @media (hover: hover) { .search-field--header:hover { background: var(--white); } }
+
+  @media (forced-colors: active) { .search-field { border-color: CanvasText; } }
+{% endstylesheet %}

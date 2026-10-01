@@ -143,6 +143,42 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   await browser.close();
 }
 
+// 7. Search (docs/search-plan.md): the panel opens with focus in the field, results arrive as you type,
+//    nothing in it loads before it's opened, and axe passes with results showing. Phone and desktop.
+for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
+  const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
+  const before = await page.evaluate(() => ({
+    imgs: [...document.querySelectorAll('#SearchPanel img')].filter((img) => img.complete && img.naturalWidth).length,
+    js: performance.getEntriesByType('resource').filter((r) => /search\.js/.test(r.name)).length,
+  }));
+  record(`Search, ${label}: nothing loads before it opens`, before.imgs === 0 && before.js === 0, `${before.imgs} photos, ${before.js} search.js requests`);
+  const pill = await page.isVisible('#HeaderSearch');
+  await page.click(pill ? '#HeaderSearch' : 'button.site-header__search');
+  const field = pill ? '#HeaderSearch' : '#SearchPanelInput';
+  const focused = await page.evaluate((sel) => document.activeElement === document.querySelector(sel), field);
+  await page.keyboard.type('flower', { delay: 40 });
+  const shown = await page.waitForSelector('#SearchPanel [data-ps]', { timeout: 8000 }).then(() => true, () => false);
+  record(`Search, ${label}: opens focused, results as you type`, focused && shown, `focus in field: ${focused}, results: ${shown}`);
+  await page.addScriptTag({ content: axe.source });
+  const v = await page.evaluate(async () => (await window.axe.run(document.getElementById('SearchPanel'), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+  record(`Search, ${label}: panel accessibility (axe)`, v.length === 0, v.join(', ') || '0 violations');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+  const closed = await page.evaluate(() => !document.getElementById('SearchPanel').open);
+  record(`Search, ${label}: Esc clears, then closes`, closed && errors.length === 0, `closed: ${closed}${errors.length ? `, errors: ${errors[0]}` : ''}`);
+  await browser.close();
+}
+{
+  const { browser, page } = await open(chromium, devices['Pixel 7'], { reducedMotion: 'reduce' });
+  await page.goto(new globalThis.URL('/search?q=flower', URL).href, { waitUntil: 'load' });
+  await page.waitForTimeout(1000);
+  await page.addScriptTag({ content: axe.source });
+  const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+  record('Search results page, phone (axe)', v.length === 0, v.join(', ') || '0 violations');
+  await browser.close();
+}
+
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
 process.exit(failed.length ? 1 : 0);
