@@ -38,13 +38,16 @@
       {%- if s.button_label != blank or s.link_label != blank -%}
         <div class="hero__actions hero__anim" style="--d: 220ms">
           {%- if s.button_label != blank -%}
-            <a class="btn" href="{{ s.button_link | default: routes.all_products_collection_url }}">
+            <a class="btn btn--knob hero__btn" href="{{ s.button_link | default: routes.all_products_collection_url }}">
               {{- s.button_label -}}
-              {%- render 'icon', icon: 'arrow' -%}
+              <span class="btn__knob">{%- render 'icon', icon: 'arrow' -%}</span>
             </a>
           {%- endif -%}
           {%- if s.link_label != blank -%}
-            <a class="link" href="{{ s.link_url | default: routes.collections_url }}">{{ s.link_label }}</a>
+            <a class="btn btn--ghost hero__btn" href="{{ s.link_url | default: routes.collections_url }}">
+              {%- render 'icon', icon: 'gift' -%}
+              {{- s.link_label -}}
+            </a>
           {%- endif -%}
         </div>
       {%- endif -%}
@@ -112,8 +115,16 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-3) var(--space-6);
+    gap: var(--space-3);
     margin-top: var(--space-3);
+    width: 100%;
+  }
+  /* On phones the two buttons stack full width, right under the thumb; from tablet up they sit side by side. */
+  .hero__btn { flex: 1 1 100%; }
+  .hero__btn.btn--knob { justify-content: space-between; padding-left: 1.75rem; }
+  @media (min-width: 600px) {
+    .hero__btn { flex: 0 0 auto; }
+    .hero__btn.btn--knob { justify-content: center; }
   }
 
   /* Highlighted words get a hand-stitched underline that sews itself in. */
@@ -257,8 +268,8 @@
     },
     { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop the collection" },
     { "type": "url", "id": "button_link", "label": "Button link" },
-    { "type": "text", "id": "link_label", "label": "Second link label", "default": "Find a gift" },
-    { "type": "url", "id": "link_url", "label": "Second link" },
+    { "type": "text", "id": "link_label", "label": "Second button label", "default": "Find a gift" },
+    { "type": "url", "id": "link_url", "label": "Second button link" },
     {
       "type": "select",
       "id": "scheme",

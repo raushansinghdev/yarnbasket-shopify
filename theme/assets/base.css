@@ -254,35 +254,67 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 
 /* ---------- Buttons and links ---------- */
 .btn {
-  --btn-bg: var(--color-heading);
+  --btn-bg: var(--cocoa-deep);
   --btn-ink: var(--cream);
+  --btn-line: var(--btn-bg);
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  min-height: 52px;
-  padding: 0 var(--space-6);
+  min-height: 54px;
+  padding: 0 1.625rem;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--btn-bg);
+  border: 1.5px solid var(--btn-line);
   background: var(--btn-bg);
   color: var(--btn-ink);
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: .875rem;
-  letter-spacing: .14em;
-  text-transform: uppercase;
+  font-size: 1rem;
+  letter-spacing: .01em;
   text-decoration: none;
   white-space: nowrap;
-  transition: transform var(--dur-state) var(--ease-out), background-color var(--dur-state) ease, color var(--dur-state) ease, box-shadow var(--dur-state) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-state) var(--ease-out), background-color var(--dur-state) ease, border-color var(--dur-state) ease, color var(--dur-state) ease, box-shadow var(--dur-state) var(--ease-out);
 }
 .btn .icon { width: 18px; height: 18px; transition: transform var(--dur-panel) var(--ease-out); }
 .btn:active { transform: scale(.97); transition-duration: var(--dur-press); }
 .scheme-cocoa .btn { --btn-bg: var(--cream); --btn-ink: var(--cocoa-deep); }
-.btn--ghost { background: transparent; color: var(--btn-bg); border-color: var(--color-line-strong); }
+
+/* Arrow sits in a small round "knob" at the end of the pill, like a button sewn onto fabric. */
+.btn--knob { padding-right: 7px; gap: var(--space-4); }
+.btn__knob {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--btn-ink);
+  color: var(--btn-bg);
+  overflow: hidden;
+  flex: none;
+  transition: transform var(--dur-panel) var(--ease-spring);
+}
+
+/* Quiet second choice: outlined, with a tint of the page behind it. */
+.btn--ghost {
+  --btn-line: color-mix(in srgb, var(--cocoa) 28%, transparent);
+  background: color-mix(in srgb, var(--white) 45%, transparent);
+  color: var(--cocoa-deep);
+}
+.btn--ghost .icon { width: 20px; height: 20px; color: var(--cocoa); }
+
 @media (hover: hover) {
-  .btn:hover { box-shadow: 0 10px 24px -14px rgba(78, 58, 49, .7); transform: translateY(-1px); }
+  .btn:hover { box-shadow: 0 14px 28px -16px rgba(78, 58, 49, .65); transform: translateY(-1px); }
   .btn:hover .icon { transform: translateX(3px); }
-  .btn--ghost:hover { border-color: var(--btn-bg); box-shadow: none; }
+  .btn--knob:hover .btn__knob { transform: scale(1.08); }
+  .btn--knob:hover .btn__knob .icon { animation: knob-arrow 520ms var(--ease-out); transform: none; }
+  .btn--ghost:hover { --btn-line: var(--cocoa); background: var(--white); box-shadow: none; }
+  .btn--ghost:hover .icon { transform: rotate(-8deg) scale(1.06); }
+}
+@keyframes knob-arrow {
+  45% { transform: translateX(150%); }
+  46% { transform: translateX(-150%); }
 }
 
 .link {
