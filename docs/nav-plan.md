@@ -20,10 +20,10 @@ Status: **Stages 1–3 built 2026-10-02.** Raushan approved the recommendations 
   - not yet done: the real-phone VoiceOver/TalkBack pass (Raushan)
 
 ### Setting up the real menu (Shopify admin, about 5 minutes)
-1. Go to **Products → Collections** and create Bouquets, Keychains, Hair clips, Bag charms (and Bestsellers). They can be empty for now.
+1. Go to **Products → Collections** and create Bouquets, Keychains, Hair clips, Bag charms, Flower pots (and Favourites). They can be empty for now.
 2. Go to **Content → Menus → Main menu** and delete Home, Catalog and Contact.
-3. Add **Shop**, linked to "Collections". Add the four craft collections, then drag each one to the right under Shop, so they become a photo dropdown.
-4. Add **Gifts**, linked to a collection, with occasion collections nested under it. Add **Bestsellers**, linked to its collection.
+3. Add **Shop**, linked to "Collections". Add the five craft collections, then drag each one to the right under Shop, so they become a photo dropdown.
+4. Add **Gifts**, linked to a collection, with occasion collections nested under it. Add **Favourites**, linked to its collection. Rename it "Bestsellers" after launch, once it's sorted by real sales (home-shop-plan D2).
 5. Add **Our story** (a page) and **Help**, with FAQ / Shipping / Contact pages nested under it.
 This plan covers the header bar, its icons, the desktop menu, the mobile menu drawer and search, on every page.
 It follows `motion-plan.md` (tokens, budgets) and `brand-direction.md` (stitch marks, line icons).

@@ -1,12 +1,12 @@
 {%- doc -%}
   Product card, modelled on the brand kit's Instagram photo frame: a rounded 4:5 photo on Oat,
-  the name in Cormorant italic, the price in Jost, then at most one quiet line that answers the next
-  question a gift buyer has: when it ships, or how many colours. Shows the second photo on hover (desktop)
+  the name in Cormorant italic, the price in Jost, then at most one quiet line: how many colours. Shows the second photo on hover (desktop)
   and at most one badge. Renders a placeholder card when product is blank.
 
   Everything on the card is true data (docs/home-shop-plan.md §4):
   - Badge: Sold out wins, then "Last few" (tracked stock of 3 or fewer), then the "new" tag, then the "bestseller" tag.
-  - Meta line: the product metafield custom.ships_in_days, else the number of colours (an option named Colour or Color).
+  - Meta line: the number of colours (an option named Colour or Color), when there's more than one.
+    (No "Ships in X days": every order ships in 1–2 days, so it would say the same thing on every card.)
   - Stars: only from Shopify's standard reviews.rating / reviews.rating_count metafields, which review apps fill in.
   The badge comes after the name in the HTML (CSS places it on the photo), so the link reads name first.
   With no product, shows one of eight demo products (Theme settings → Demo content) or a plain placeholder.
@@ -43,23 +43,14 @@
       assign badge = 'products.bestseller' | t
     endif
 
-    assign ships_in = product.metafields.custom.ships_in_days.value
-    if ships_in != blank and product.available
-      if ships_in == 1
-        assign meta = 'products.ships_in_one' | t
-      else
-        assign meta = 'products.ships_in' | t: days: ships_in
-      endif
-    else
-      for option in product.options_with_values
-        assign option_name = option.name | downcase
-        if option_name == 'colour' or option_name == 'color' or option_name == 'colours' or option_name == 'colors'
-          if option.values.size > 1
-            assign meta = 'products.colours' | t: count: option.values.size
-          endif
+    for option in product.options_with_values
+      assign option_name = option.name | downcase
+      if option_name == 'colour' or option_name == 'color' or option_name == 'colours' or option_name == 'colors'
+        if option.values.size > 1
+          assign meta = 'products.colours' | t: count: option.values.size
         endif
-      endfor
-    endif
+      endif
+    endfor
 
     assign rating = product.metafields.reviews.rating.value
     assign rating_count = product.metafields.reviews.rating_count.value | default: 0
@@ -106,7 +97,6 @@
         when 1
           assign d_title = 'Sunflower Trio Crochet Bouquet'
           assign d_price = '₹1,299'
-          assign d_meta = 'products.ships_in' | t: days: 2
           unless skip_bestseller
             assign d_badge = 'products.bestseller' | t
           endunless
@@ -118,12 +108,10 @@
           assign d_title = 'Pink Tulip & Daisy Bouquet'
           assign d_price = '₹999'
           assign d_compare = '₹1,199'
-          assign d_meta = 'products.ships_in' | t: days: 4
         when 4
           assign d_title = 'Bee & Chick Keychain Set'
           assign d_price = '₹449'
           assign d_badge = 'products.new' | t
-          assign d_meta = 'products.ships_in_one' | t
         when 5
           assign d_title = 'Daisy Crochet Flower Pot'
           assign d_price = '₹599'
@@ -131,7 +119,6 @@
         when 6
           assign d_title = 'Flower Hair Clips, Set of 8'
           assign d_price = '₹399'
-          assign d_meta = 'products.ships_in_one' | t
         when 7
           assign d_title = 'Lily of the Valley Bag Charm'
           assign d_price = '₹349'
@@ -140,7 +127,6 @@
         else
           assign d_title = 'Daisy Crochet Headband'
           assign d_price = '₹449'
-          assign d_meta = 'products.ships_in' | t: days: 3
       endcase
       assign img_a = 'p' | append: n | append: '-a'
       assign img_b = 'p' | append: n | append: '-b'
@@ -228,7 +214,7 @@
     color: var(--color-heading);
     text-wrap: balance;
   }
-  /* One quiet line: when it ships, or how many colours. Taupe Ink is 5.7:1 on Soft blush. */
+  /* One quiet line: how many colours. Taupe Ink is 5.7:1 on Soft blush. */
   .card__meta, .card__rating { font-size: .875rem; line-height: 1.35; color: var(--color-muted); }
   .card__rating { color: var(--color-ink); font-variant-numeric: tabular-nums; }
   .card__muted { color: var(--color-muted); }

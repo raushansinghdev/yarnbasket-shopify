@@ -20,7 +20,7 @@
   assign item_count = 0
 
   if demo_menu
-    assign d_titles = 'Shop|Gifts|Bestsellers|Our story|Help' | split: '|'
+    assign d_titles = 'Shop|Gifts|Favourites|Our story|Help' | split: '|'
     assign d_urls = routes.collections_url | append: '|' | append: all_url | append: '|' | append: all_url | append: '|' | append: routes.root_url | append: '|/pages/contact' | split: '|'
     assign item_count = d_titles.size
     assign shop_here = false
@@ -37,9 +37,9 @@
       assign here = false
       case forloop.index
         when 1
-          assign kt = 'Bouquets|Keychains|Hair clips|Bag charms'
-          assign kh = 'bouquets|keychains|hair-clips|bag-charms'
-          assign ku = all_url | append: '|' | append: all_url | append: '|' | append: all_url | append: '|' | append: all_url
+          assign kt = 'Bouquets|Keychains|Hair clips|Bag charms|Flower pots'
+          assign kh = 'bouquets|keychains|hair-clips|bag-charms|flower-pots'
+          assign ku = all_url | append: '|' | append: all_url | append: '|' | append: all_url | append: '|' | append: all_url | append: '|' | append: all_url
           assign tiles = true
           assign all_link = true
           assign here = shop_here
@@ -527,7 +527,10 @@
     .site-header__account { display: inline-grid; }
 
     /* Shop panel: the crafts as photo tiles. */
-    .site-header__sub--tiles { min-width: 0; padding: var(--space-4); }
+    /* Five or more tiles are too wide to centre under "Shop" without running off the left edge, so this panel
+       lines up with its menu item instead. */
+    .site-header__sub--tiles { left: calc(var(--space-4) * -1); min-width: 0; padding: var(--space-4); translate: 0 -8px; }
+    .site-header__nav-item.is-open > .site-header__sub--tiles { translate: 0 4px; }
     .site-header__tiles { display: grid; grid-auto-flow: column; grid-auto-columns: 128px; gap: var(--space-4); }
     .site-header__sub--tiles .site-header__sub-all { margin-top: var(--space-3); }
     @media (prefers-reduced-motion: no-preference) {

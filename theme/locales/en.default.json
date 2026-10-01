@@ -90,8 +90,6 @@
     "sale_price": "Sale price",
     "regular_price": "Regular price",
     "last_few": "Last few",
-    "ships_in": "Ships in {{ days }} days",
-    "ships_in_one": "Ships in 1 day",
     "colours": {
       "one": "{{ count }} colour",
       "other": "{{ count }} colours"

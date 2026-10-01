@@ -1,13 +1,13 @@
 # Home page: "Shop by craft" and "Bestsellers" plan
 
-Status: **built 2026-10-02 (direction B).** Raushan approved the recommendations: D1 merge, D2 "Our favourite makes" with a "Favourites" first circle, D3 "Ships in X days" on cards, D4 quick add later. D5 (is Flower pots a launch category?) is still open. Pots stays on the home page for now, and disappears automatically if it never gets products.
+Status: **built 2026-10-02 (direction B).** Raushan approved the recommendations: D1 merge, D2 "Our favourite makes" with a "Favourites" first circle, D4 quick add later. **D3 reversed the same day:** every order ships in 1–2 days, so a per-product "Ships in" line would say the same thing on every card, and it was removed. **D5: Flower pots is a launch category.** It's on the home page and in the Shop menu.
 
 ### As built
 - **`sections/shop-crafts.liquid`** replaces `collection-list` and `featured-products` on the home page. Both old files remain for other pages; `.product-grid` moved to `base.css`.
 - **Phone circles** are 72px in a swipe row with **4½ visible**. Six won't fit at 5½ as the plan said.
 - **First product on a 390 × 844 phone: 1,304px**, down from 1,489 (−185px). The plan estimated about 1,250; the rest is the section's top padding, which is shared with every section.
 - **Demo:** the Favourites circle shows one bouquet, keychain, hair clip set and bag charm. Each craft shows its matching demo products; some crafts have only one, which is fine until real products exist.
-- **The "Ships in" line uses the metafield `custom.ships_in_days`.** Raushan still needs to add the definition (Settings → Custom data → Products → Add definition: name "Ships in days", namespace and key `custom.ships_in_days`, type Integer) and fill it per product.
+- **Card meta line:** only the colour count (when there's more than one colour). There's no "Ships in" line and no metafield to set up.
 - **Checks:**
   - theme check: clean
   - axe: 0 at 390, 768 and 1440, before and after switching
