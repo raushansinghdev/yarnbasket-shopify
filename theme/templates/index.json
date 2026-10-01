@@ -17,7 +17,7 @@
       "settings": {
         "eyebrow": "Shop by craft",
         "heading": "Made stitch by stitch",
-        "scheme": "white",
+        "scheme": "soft",
         "shape": "circle",
         "center": true
       },
@@ -73,7 +73,7 @@
         "heading": "Bestsellers",
         "limit": 4,
         "show_view_all": true,
-        "scheme": "white"
+        "scheme": "soft"
       }
     },
     "story": {
@@ -92,7 +92,7 @@
         "eyebrow": "Gifting",
         "heading": "A gift for every occasion",
         "text": "Thoughtful handmade gifts that last, for the people you never forget.",
-        "scheme": "white"
+        "scheme": "soft"
       },
       "blocks": {
         "o1": {
@@ -139,14 +139,14 @@
       "settings": {
         "eyebrow": "Customer love",
         "heading": "Your words make our day",
-        "scheme": "white"
+        "scheme": "soft"
       }
     },
     "promise": {
       "type": "promise",
       "settings": {
         "label": "Our promise",
-        "scheme": "white"
+        "scheme": "soft"
       },
       "blocks": {
         "p1": {
@@ -186,7 +186,7 @@
         "eyebrow": "Good to know",
         "heading": "Questions, answered",
         "link_label": "",
-        "scheme": "white"
+        "scheme": "soft"
       },
       "blocks": {
         "q1": {

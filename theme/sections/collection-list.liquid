@@ -77,8 +77,9 @@
   .craft__tagline { font-size: var(--fs-small); color: var(--color-muted); }
 
   /* Round tiles, like the Instagram story highlights in the brand kit */
-  .craft--circle .craft__list { --scroller-item: 40%; --scroller-gap: var(--space-5); }
-  .craft--circle .craft__link { justify-items: center; text-align: center; }
+  .craft--circle .craft__list { --scroller-item: 29%; --scroller-gap: var(--space-4); }
+  .craft--circle .craft__link { justify-items: center; text-align: center; gap: var(--space-3); }
+  .craft--circle .craft__text { justify-items: center; }
   .craft--circle .craft__media {
     --ratio: 1;
     border-radius: 50%;
@@ -87,8 +88,11 @@
     width: calc(100% - 14px);
     margin: 7px;
   }
-  .craft--circle .craft__title { font-size: 1.3125rem; }
+  .craft--circle .craft__title { font-size: 1.125rem; }
+  .craft--circle .craft__title .icon { display: none; }
   .craft--circle .craft__tagline { max-width: 12rem; }
+  /* On phones the circles are small; the name is enough, the tagline only adds lines. */
+  @media (max-width: 749px) { .craft--circle .craft__tagline { display: none; } }
 
   @media (hover: hover) {
     .craft__link:hover .craft__img { transform: scale(1.04); }
@@ -97,7 +101,9 @@
 
   @media (min-width: 750px) {
     .craft__list { --scroller-item: 38%; }
-    .craft--circle .craft__list { --scroller-item: 26%; }
+    .craft--circle .craft__list { --scroller-item: 22%; }
+    .craft--circle .craft__title { font-size: 1.3125rem; }
+    .craft--circle .craft__title .icon { display: inline; }
   }
   @media (min-width: 990px) {
     .craft__list {
@@ -139,7 +145,7 @@
         { "value": "white", "label": "White" },
         { "value": "soft", "label": "Soft blush" }
       ],
-      "default": "white"
+      "default": "soft"
     }
   ],
   "blocks": [
