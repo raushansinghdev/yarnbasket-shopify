@@ -54,18 +54,76 @@
     </div>
 
     <div class="hero__visual">
-      {%- comment -%} Both photos are links: a product photo you can't tap is a dead end on a phone. {%- endcomment -%}
-      <a class="hero__frame" href="{{ s.image_link | default: s.button_link | default: routes.all_products_collection_url }}">
-        <span class="media hero__media">
-          {%- if s.image -%}
-            {%- render 'image', image: s.image, sizes: '(min-width: 990px) 46vw, calc(100vw - 60px)', loading: img_loading, priority: img_priority, class: 'hero__img' -%}
-          {%- elsif settings.demo_content -%}
-            {%- render 'demo-image', name: 'hero-sunflowers', sizes: '(min-width: 990px) 46vw, calc(100vw - 60px)', loading: img_loading, priority: img_priority, class: 'hero__img', alt: 'Sunflower Trio Crochet Bouquet' -%}
-          {%- else -%}
-            {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
-          {%- endif -%}
-        </span>
-      </a>
+      {%- comment -%}
+        Every photo is a link: a product photo you can't tap is a dead end on a phone.
+        The main photo is always first (it is the page's LCP image). "Photo" blocks add more products,
+        which cross-fade slowly; the slideshow pauses on hover, focus, off-screen and for reduced motion.
+      {%- endcomment -%}
+      {%- liquid
+        assign img_sizes = '(min-width: 990px) 46vw, calc(100vw - 60px)'
+        assign demo_slides = ''
+        if section.blocks.size == 0 and settings.demo_content
+          assign demo_slides = 'p2-a|Red Rose Crochet Bouquet,cat-hair|Crochet flower hair clips,cat-charms|Lily of the valley bag charm' | split: ','
+        endif
+        assign total = section.blocks.size | plus: demo_slides.size | plus: 1
+      -%}
+      <div
+        class="hero__frame"
+        {% if total > 1 %}role="region" aria-roledescription="carousel" aria-label="{{ 'hero.slideshow' | t }}" data-hero-slides{% endif %}
+      >
+        <div class="media hero__media">
+          <div class="hero__slide is-active"{% if total > 1 %} role="group" aria-roledescription="slide" aria-label="{{ 'hero.slide_of' | t: index: 1, total: total }}"{% endif %}>
+            <a class="hero__link" href="{{ s.image_link | default: s.button_link | default: routes.all_products_collection_url }}">
+              {%- if s.image -%}
+                {%- render 'image', image: s.image, sizes: img_sizes, loading: img_loading, priority: img_priority, class: 'hero__img' -%}
+              {%- elsif settings.demo_content -%}
+                {%- render 'demo-image', name: 'hero-sunflowers', sizes: img_sizes, loading: img_loading, priority: img_priority, class: 'hero__img', alt: 'Sunflower Trio Crochet Bouquet' -%}
+              {%- else -%}
+                {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+            </a>
+          </div>
+          {%- for block in section.blocks -%}
+            {%- assign n = forloop.index | plus: 1 -%}
+            <div class="hero__slide" role="group" aria-roledescription="slide" aria-label="{{ 'hero.slide_of' | t: index: n, total: total }}" inert {{ block.shopify_attributes }}>
+              <a class="hero__link" href="{{ block.settings.link | default: routes.all_products_collection_url }}">
+                {%- if block.settings.image -%}
+                  {%- render 'image', image: block.settings.image, sizes: img_sizes, class: 'hero__img' -%}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- endif -%}
+              </a>
+            </div>
+          {%- endfor -%}
+          {%- for slide in demo_slides -%}
+            {%- assign d = slide | split: '|' -%}
+            {%- assign n = forloop.index | plus: 1 -%}
+            <div class="hero__slide" role="group" aria-roledescription="slide" aria-label="{{ 'hero.slide_of' | t: index: n, total: total }}" inert>
+              <a class="hero__link" href="{{ routes.all_products_collection_url }}">
+                {%- render 'demo-image', name: d[0], sizes: img_sizes, class: 'hero__img', alt: d[1] -%}
+              </a>
+            </div>
+          {%- endfor -%}
+        </div>
+
+        {%- if total > 1 -%}
+          <div class="hero__controls">
+            <button type="button" class="hero__ctrl" data-hero-prev>
+              {%- render 'icon', icon: 'chevron', class: 'hero__chev hero__chev--prev' -%}
+              <span class="visually-hidden">{{ 'hero.previous' | t }}</span>
+            </button>
+            <button type="button" class="hero__ctrl" data-hero-toggle data-label-pause="{{ 'hero.pause' | t }}" data-label-play="{{ 'hero.play' | t }}">
+              {%- render 'icon', icon: 'pause', class: 'hero__ico-pause' -%}
+              {%- render 'icon', icon: 'play', class: 'hero__ico-play' -%}
+              <span class="visually-hidden" data-hero-toggle-label>{{ 'hero.pause' | t }}</span>
+            </button>
+            <button type="button" class="hero__ctrl" data-hero-next>
+              {%- render 'icon', icon: 'chevron', class: 'hero__chev hero__chev--next' -%}
+              <span class="visually-hidden">{{ 'hero.next' | t }}</span>
+            </button>
+          </div>
+        {%- endif -%}
+      </div>
 
       {%- if s.inset_image or settings.demo_content -%}
         <a class="hero__inset" href="{{ s.inset_link | default: routes.all_products_collection_url }}">
@@ -152,14 +210,60 @@
     border-radius: calc(var(--radius-lg) + 10px);
     transition: border-color var(--dur-state) ease;
   }
-  .hero__media { display: block; --ratio: 4 / 5; border-radius: var(--radius-lg); }
+  .hero__media { display: block; --ratio: 4 / 5; border-radius: var(--radius-lg); touch-action: pan-y; z-index: 0; }
+
+  /* Slides sit on top of each other and cross-fade: opacity only, no sliding or zooming, so the change stays quiet.
+     The outgoing photo stays fully visible underneath while the new one fades in, so the background never shows through. */
+  .hero__slide { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 1400ms ease-in-out; }
+  .hero__slide.is-leaving { opacity: 1; transition: none; }
+  .hero__slide.is-active { opacity: 1; z-index: 1; pointer-events: auto; }
+  .hero__link { position: absolute; inset: 0; display: block; border-radius: inherit; }
+  .hero__link:focus-visible { outline-offset: -5px; }
+  .hero__link > img, .hero__link > svg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .hero__img { transition: scale 1100ms var(--ease-out); }
+
+  /* Previous / pause / next. On mouse devices they appear only on hover or keyboard focus; on touch screens they stay visible, small and quiet. */
+  .hero__controls {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2;
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--white) 82%, transparent);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 22px -14px rgba(78, 58, 49, .55);
+    transition: opacity var(--dur-panel) ease, translate var(--dur-panel) var(--ease-out);
+  }
+  .hero__ctrl {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--cocoa-deep);
+    transition: background-color var(--dur-state) ease, scale var(--dur-press) ease;
+  }
+  .hero__ctrl:active { scale: .9; }
+  .hero__ctrl .icon { width: 18px; height: 18px; }
+  .hero__chev--prev { transform: rotate(90deg); }
+  .hero__chev--next { transform: rotate(-90deg); }
+  .hero__ico-play, [data-paused] .hero__ico-pause { display: none; }
+  [data-paused] .hero__ico-play { display: block; }
+  @media (hover: hover) {
+    .hero__controls { opacity: 0; translate: 0 6px; }
+    .hero__frame:hover .hero__controls, .hero__frame:focus-within .hero__controls { opacity: 1; translate: 0 0; }
+    .hero__ctrl:hover { background: color-mix(in srgb, var(--cocoa) 9%, transparent); }
+  }
 
   /* The second product: a round photo with a small label, so it is obviously tappable. */
   .hero__inset {
     position: absolute;
     left: -6px;
     bottom: -8px;
+    z-index: 3;
     width: 34%;
     display: grid;
     justify-items: center;
@@ -190,11 +294,11 @@
     white-space: nowrap;
   }
   .hero__inset-label .icon { width: 14px; height: 14px; transition: transform var(--dur-panel) var(--ease-out); }
-  .hero__inset:active .hero__inset-media, .hero__frame:active { scale: .985; transition: scale var(--dur-press) ease; }
+  .hero__inset:active .hero__inset-media, .hero__frame:has(.hero__link:active) { scale: .985; transition: scale var(--dur-press) ease; }
 
   @media (hover: hover) {
     .hero__frame:hover { border-color: var(--rose); }
-    .hero__frame:hover .hero__img { scale: 1.03; }
+    .hero__link:hover .hero__img { scale: 1.03; }
     .hero__inset:hover .hero__inset-label .icon { transform: translateX(3px); }
   }
 
@@ -234,6 +338,92 @@
     to { transform: translate3d(8px, -14px, 0) rotate(28deg); }
   }
 {% endstylesheet %}
+
+{% javascript %}
+  // Hero slideshow: a slow cross-fade between product photos (7 s each, looping).
+  // It never moves while someone is looking closely: it pauses on mouse hover, on keyboard focus,
+  // when the hero is scrolled away or the tab is hidden, and starts paused for reduced motion.
+  document.querySelectorAll('[data-hero-slides]').forEach((root) => {
+    const HOLD = 7000;
+    const slides = [...root.querySelectorAll('.hero__slide')];
+    const stage = root.querySelector('.hero__media');
+    const toggle = root.querySelector('[data-hero-toggle]');
+    const toggleLabel = toggle.querySelector('[data-hero-toggle-label]');
+    const html = document.documentElement;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    let index = 0;
+    let timer = 0;
+    let userPaused = reduce.matches;
+    let hovering = false;
+    let focused = false;
+    let visible = true;
+
+    const running = () => !userPaused && !hovering && !focused && visible && !document.hidden && !html.classList.contains('yb-intro');
+    let leaving = 0;
+    const show = (i) => {
+      const prev = index;
+      index = (i + slides.length) % slides.length;
+      if (index === prev) return;
+      slides.forEach((slide, n) => {
+        slide.classList.toggle('is-active', n === index);
+        slide.classList.toggle('is-leaving', n === prev);
+        slide.inert = n !== index;
+      });
+      clearTimeout(leaving);
+      leaving = setTimeout(() => slides[prev].classList.remove('is-leaving'), 1500);
+    };
+    const schedule = () => {
+      clearTimeout(timer);
+      const on = running();
+      // Screen readers hear the new photo only when it changed because the person asked for it.
+      stage.setAttribute('aria-live', on ? 'off' : 'polite');
+      if (on) timer = setTimeout(() => { show(index + 1); schedule(); }, HOLD);
+    };
+    const setPaused = (paused) => {
+      userPaused = paused;
+      root.toggleAttribute('data-paused', paused);
+      toggleLabel.textContent = paused ? toggle.dataset.labelPlay : toggle.dataset.labelPause;
+      schedule();
+    };
+    const go = (step) => { show(index + step); schedule(); };
+
+    root.querySelector('[data-hero-prev]').addEventListener('click', () => go(-1));
+    root.querySelector('[data-hero-next]').addEventListener('click', () => go(1));
+    toggle.addEventListener('click', () => setPaused(!userPaused));
+
+    root.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { hovering = true; schedule(); } });
+    root.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hovering = false; schedule(); } });
+    root.addEventListener('focusin', (e) => { focused = e.target.matches(':focus-visible'); schedule(); });
+    root.addEventListener('focusout', (e) => { if (!root.contains(e.relatedTarget)) { focused = false; schedule(); } });
+
+    // Swipe left or right on touch screens.
+    let x0 = null;
+    let y0 = 0;
+    let swiped = false;
+    stage.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; swiped = false; }, { passive: true });
+    stage.addEventListener('touchend', (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      const dy = e.changedTouches[0].clientY - y0;
+      x0 = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) { swiped = true; go(dx < 0 ? 1 : -1); }
+    }, { passive: true });
+    stage.addEventListener('click', (e) => { if (swiped) { e.preventDefault(); swiped = false; } }, true);
+
+    new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; schedule(); }, { threshold: 0.25 }).observe(root);
+    document.addEventListener('visibilitychange', schedule);
+    new MutationObserver(schedule).observe(html, { attributes: true, attributeFilter: ['class'] });
+    reduce.addEventListener('change', () => { if (reduce.matches) setPaused(true); });
+
+    // Theme editor: selecting a photo block shows it and holds it still.
+    document.addEventListener('shopify:block:select', (e) => {
+      const i = slides.findIndex((slide) => slide.contains(e.target));
+      if (i > -1) { show(i); setPaused(true); }
+    });
+
+    setPaused(userPaused);
+  });
+{% endjavascript %}
 
 {% schema %}
 {
@@ -288,6 +478,21 @@
         { "value": "blush", "label": "Blush" }
       ],
       "default": "soft"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add Photo blocks to show more products in the big frame. They cross-fade slowly after the main photo, 7 seconds each."
+    }
+  ],
+  "max_blocks": 4,
+  "blocks": [
+    {
+      "type": "photo",
+      "name": "Photo",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo", "info": "Same shape as the main photo: portrait or square, one product. Set the alt text on the image itself." },
+        { "type": "url", "id": "link", "label": "Link", "info": "The product in the photo." }
+      ]
     }
   ],
   "presets": [{ "name": "Hero" }]

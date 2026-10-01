@@ -98,5 +98,13 @@
     "previous": "Previous message",
     "next": "Next message",
     "label": "Announcements"
+  },
+  "hero": {
+    "slideshow": "Featured products",
+    "slide_of": "{{ index }} of {{ total }}",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "pause": "Pause slideshow",
+    "play": "Play slideshow"
   }
 }
