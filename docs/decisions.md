@@ -6,14 +6,14 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 ## 2026-10-02 (home page shop section, docs/home-shop-plan.md)
 
 - **"Shop by craft" and "Bestsellers" are merged into one section** (`shop-crafts`). The craft circles are toggle buttons that switch the product grid below them, like opening an Instagram highlight. On phones, products show 185px sooner. The home page has one section fewer, and it no longer repeats the header's Shop menu. Every craft's "See all" link stays in the HTML for SEO.
-- **The heading is "Our favourite makes" and the first circle is "Favourites" until there are real sales.** Saying "Bestsellers" before anything has sold would be invented. After launch, sort the Favourites collection by "Best selling" and rename the circle.
+- **The section is Bestsellers only** (Raushan, 2026-10-02, replacing the earlier "Our favourite makes" / "Favourites" wording): "Loved most / Bestsellers". The first circle is **All** (the best sellers across every craft), and each craft circle shows that craft's best sellers. Set every one of those collections' sort order to **"Best selling"** in the admin so Shopify orders them by real sales. Until launch, the order is whatever is set by hand. No "Bestseller" badge inside this section, since every card in it is one.
 - **Product cards only show what's true:**
   - badges: Sold out, Last few (tracked stock of 3 or fewer), New (tag), Bestseller (tag, hidden inside Favourites)
   - one line: the number of colours, when there's more than one. "Ships in X days" was built and then removed the same day: Raushan said every order ships in 1–2 days, so it would say the same thing on every card.
   - stars only from real review metafields
   - the badge comes after the name in the HTML, so links read name first
 - **No quick add-to-cart on cards yet.** It comes with the cart drawer (build-plan Phase 5).
-- **Flower pots is a launch category** (Raushan, 2026-10-02). It's on the home page and in the Shop menu. The sample menu's "Bestsellers" item is now "Favourites", to match.
+- **Flower pots is a launch category** (Raushan, 2026-10-02). It's on the home page and in the Shop menu. The menu item stays "Bestsellers".
 
 ## 2026-10-02 (header and navigation, docs/nav-plan.md)
 

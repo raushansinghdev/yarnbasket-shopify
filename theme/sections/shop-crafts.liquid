@@ -1,7 +1,7 @@
 {%- comment -%}
-  Shop by craft, with the products right there (docs/home-shop-plan.md §3).
-  The craft circles are toggle buttons: pressing one shows that craft's products in the grid below, like opening
-  an Instagram highlight. Every craft's cards are in the HTML (hidden ones don't load their photos until shown),
+  Bestsellers, by craft (docs/home-shop-plan.md §3). The first circle shows the best sellers overall; each craft
+  circle shows that craft's best sellers (sort each craft collection by "Best selling" in the admin).
+  The circles are toggle buttons: pressing one switches the grid below, like opening an Instagram highlight. Every craft's cards are in the HTML (hidden ones don't load their photos until shown),
   so switching is instant and every "See all" collection link is crawlable. A craft with no products is left out.
   Without JavaScript the buttons hide and every craft's products are listed one after another.
 {%- endcomment -%}
@@ -11,7 +11,7 @@
   assign fav = s.collection
   assign uid = section.id
 
-  # The tabs: Favourites first, then each craft block that has products (or demo products).
+  # The tabs: All (the overall best sellers) first, then each craft block that has products (or demo products).
   assign tab_count = 0
   if fav != blank and fav.products_count > 0
     assign tab_count = 1
@@ -154,12 +154,12 @@
         <ul class="product-grid" role="list" {% if n == 0 %}data-arrive="stagger"{% endif %}>
           {%- if c.products_count > 0 -%}
             {%- for product in c.products limit: per -%}
-              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: product, index: forloop.index0 -%}</li>
+              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: product, index: forloop.index0, skip_bestseller: true -%}</li>
             {%- endfor -%}
           {%- else -%}
             {%- for pick in picks limit: per -%}
               {%- assign pick_n = pick | plus: 0 -%}
-              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: blank, index: forloop.index0, demo: pick_n -%}</li>
+              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: blank, index: forloop.index0, demo: pick_n, skip_bestseller: true -%}</li>
             {%- endfor -%}
           {%- endif -%}
         </ul>
@@ -280,20 +280,20 @@
 
 {% schema %}
 {
-  "name": "Shop by craft",
+  "name": "Bestsellers by craft",
   "tag": "div",
   "class": "section-shop-crafts",
   "max_blocks": 6,
   "settings": [
-    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Shop by craft" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Our favourite makes" },
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Loved most" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Bestsellers" },
     {
       "type": "collection",
       "id": "collection",
       "label": "First circle's collection",
-      "info": "Your picks. After launch, sort this collection by \"Best selling\" and rename the circle to Bestsellers."
+      "info": "Your best sellers across every craft. Set this collection's sort order to \"Best selling\" in the admin so Shopify orders it by real sales. Do the same for each craft's collection."
     },
-    { "type": "text", "id": "favourites_label", "label": "First circle's name", "default": "Favourites" },
+    { "type": "text", "id": "favourites_label", "label": "First circle's name", "default": "All" },
     {
       "type": "range",
       "id": "limit",
@@ -328,7 +328,7 @@
   ],
   "presets": [
     {
-      "name": "Shop by craft",
+      "name": "Bestsellers by craft",
       "blocks": [
         { "type": "craft" },
         { "type": "craft" },

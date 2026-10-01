@@ -14,9 +14,9 @@
     "shop": {
       "type": "shop-crafts",
       "settings": {
-        "eyebrow": "Shop by craft",
-        "heading": "Our favourite makes",
-        "favourites_label": "Favourites",
+        "eyebrow": "Loved most",
+        "heading": "Bestsellers",
+        "favourites_label": "All",
         "limit": 4,
         "scheme": "soft"
       },

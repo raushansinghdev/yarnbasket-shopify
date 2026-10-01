@@ -20,7 +20,7 @@
   assign item_count = 0
 
   if demo_menu
-    assign d_titles = 'Shop|Gifts|Favourites|Our story|Help' | split: '|'
+    assign d_titles = 'Shop|Gifts|Bestsellers|Our story|Help' | split: '|'
     assign d_urls = routes.collections_url | append: '|' | append: all_url | append: '|' | append: all_url | append: '|' | append: routes.root_url | append: '|/pages/contact' | split: '|'
     assign item_count = d_titles.size
     assign shop_here = false

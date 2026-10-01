@@ -1,6 +1,6 @@
 # Home page: "Shop by craft" and "Bestsellers" plan
 
-Status: **built 2026-10-02 (direction B).** Raushan approved the recommendations: D1 merge, D2 "Our favourite makes" with a "Favourites" first circle, D4 quick add later. **D3 reversed the same day:** every order ships in 1–2 days, so a per-product "Ships in" line would say the same thing on every card, and it was removed. **D5: Flower pots is a launch category.** It's on the home page and in the Shop menu.
+Status: **built 2026-10-02 (direction B).** Raushan approved the recommendations: D1 merge, D2 **changed by Raushan the same day: the section is Bestsellers only** ("Loved most / Bestsellers"; first circle **All**; every craft collection sorted by "Best selling"), D4 quick add later. **D3 reversed the same day:** every order ships in 1–2 days, so a per-product "Ships in" line would say the same thing on every card, and it was removed. **D5: Flower pots is a launch category.** It's on the home page and in the Shop menu.
 
 ### As built
 - **`sections/shop-crafts.liquid`** replaces `collection-list` and `featured-products` on the home page. Both old files remain for other pages; `.product-grid` moved to `base.css`.
