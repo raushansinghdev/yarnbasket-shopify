@@ -101,6 +101,17 @@
 }
 [class*="scheme-"] { background-color: var(--color-bg); color: var(--color-ink); }
 
+/* Blush panel: the brand colour as a rounded block inside the page, kept for brand moments
+   (how it's made, our promise). The page ground stays calm; shopping rows never sit in a panel. */
+.panel-blush {
+  --color-surface: var(--blush-soft);
+  --color-line: #E8C3B9;
+  --color-line-strong: #DDB2A7;
+  --strand: #B97C70;
+  background-color: var(--blush);
+  border-radius: calc(var(--radius-lg) + 4px);
+}
+
 /* ---------- Reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; }

@@ -1,8 +1,8 @@
 {%- assign s = section.settings -%}
 
 <section class="section promise scheme-{{ s.scheme }}" aria-label="{{ s.label | escape }}">
-  <div class="promise__box reveal">
-    {%- render 'stitch', radius: 28 -%}
+  <div class="promise__box reveal{% if s.panel %} promise__box--panel panel-blush{% endif %}">
+    {%- if s.panel -%}{%- render 'stitch', radius: 20 -%}{%- else -%}{%- render 'stitch', radius: 28 -%}{%- endif -%}
     <ul class="promise__list" role="list" style="--count: {{ section.blocks.size | at_least: 1 }}">
       {%- for block in section.blocks -%}
         <li class="promise__item" {{ block.shopify_attributes }}>
@@ -17,6 +17,8 @@
 
 {% stylesheet %}
   .promise__box { position: relative; padding: var(--space-7) var(--space-5); }
+  /* As on the brand's Instagram covers: a Blush card with the row of stitches sewn just inside its edge. */
+  .promise__box--panel .stitch { inset: 12px; width: calc(100% - 24px); height: calc(100% - 24px); }
   .promise__list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -59,6 +61,7 @@
       ],
       "default": "soft"
     },
+    { "type": "checkbox", "id": "panel", "label": "Blush panel", "default": true },
     {
       "type": "paragraph",
       "content": "Only promises you can keep on every order."
