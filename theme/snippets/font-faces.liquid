@@ -18,4 +18,25 @@
     font-display: swap;
     src: url("{{ 'jost-variable.woff2' | asset_url }}") format("woff2");
   }
+  /* Fallbacks tuned to the brand fonts' measured width and line metrics, so text doesn't rewrap or jump
+     when the real fonts arrive. Values from the font files (fontTools): average advance over English text,
+     ascent and descent per em. Android has neither Georgia nor Arial, so it gets the nearest system font. */
+  @font-face {
+    font-family: "Cormorant Fallback";
+    font-style: italic;
+    font-weight: 600;
+    src: local("Georgia Italic"), local("Georgia-Italic"), local("Times New Roman Italic"), local("Noto Serif Italic");
+    size-adjust: 79.82%;
+    ascent-override: 115.75%;
+    descent-override: 35.95%;
+    line-gap-override: 0%;
+  }
+  @font-face {
+    font-family: "Jost Fallback";
+    src: local("Arial"), local("ArialMT"), local("Helvetica"), local("Roboto");
+    size-adjust: 96.39%;
+    ascent-override: 111.01%;
+    descent-override: 38.9%;
+    line-gap-override: 0%;
+  }
 </style>

@@ -10,7 +10,7 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 /* ---------- Photos fade in as they arrive ----------
    Only images still loading are held back; ones already painted (and the hero's main photo) are left alone.
    If this script never runs, every image simply shows as normal. */
-document.querySelectorAll('.media img:not([fetchpriority="high"])').forEach((img) => {
+document.querySelectorAll(root.classList.contains('lite') ? ':not(*)' : '.media img:not([fetchpriority="high"])').forEach((img) => {
   if (img.complete) return;
   img.classList.add('img-wait');
   img.addEventListener('load', () => { img.classList.remove('img-wait'); img.classList.add('img-in'); }, { once: true });
@@ -239,10 +239,17 @@ document.addEventListener('cart:updated', (event) => {
       const { zero, one, other } = label.dataset;
       label.textContent = count === 0 ? zero : count === 1 ? one : other.replace('99', count);
     });
+    // Say it out loud: the badge is aria-hidden, so the status line is how screen readers hear the change.
+    const status = document.querySelector('[data-cart-status]');
+    const label = document.querySelector('[data-cart-label]');
+    if (status && label) {
+      status.textContent = '';
+      setTimeout(() => (status.textContent = label.textContent.trim()), 60);
+    }
   }
   document.querySelectorAll('[data-cart-count]').forEach((badge) => {
     if (typeof count === 'number') {
-      badge.textContent = count;
+      badge.textContent = count > 99 ? '99+' : count;
       badge.hidden = count === 0;
     }
     if (!reduceMotion.matches) {
@@ -253,34 +260,74 @@ document.addEventListener('cart:updated', (event) => {
   });
 });
 
-/* ---------- Arrivals: things rise, stagger, sew and pop into place as they come into view ----------
-   Played once on a timer (CSS in base.css), the same in every browser. Only what is still below the screen at
-   load waits to arrive, so nothing already visible ever blinks out. Rows that swipe sideways arrive as a whole,
-   so cards off to the side don't wait for a swipe. */
-if ('IntersectionObserver' in window && !reduceMotion.matches) {
-  // The class stays on: the finished animations hold their end state, which equals the normal style, and
-  // removing it early would cut short the photo settle that runs a little longer inside the item.
-  const arrive = (el) => el.classList.replace('is-pending', 'is-arriving');
-  const io = new IntersectionObserver((entries) => {
+/* ---------- Arrivals: data-arrive (CSS in base.css) ----------
+   Things rise, stagger, settle, sew and pop into place as they come into view, once, the same in every browser.
+   Only what is still below the screen when scanned waits to arrive, so nothing already visible blinks out.
+   A swipe row arrives as a whole, so cards off to the side don't wait for a swipe. Stagger order (--i) is set
+   here unless the markup sets it. Call window.ybArrive(element) after injecting new content (filters, load more);
+   sections re-rendered by the theme editor are rescanned automatically. */
+{
+  const enabled = 'IntersectionObserver' in window && !reduceMotion.matches;
+  const io = enabled && new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
       const el = entry.target;
       io.unobserve(el);
-      if (el.matches('.scroller.reveal-group')) [...el.children].forEach((item) => item.classList.contains('is-pending') && arrive(item));
-      else arrive(el);
+      const items = el.matches('[data-arrive~="stagger"].scroller') ? [...el.children] : [el];
+      items.forEach((item) => item.classList.replace('is-pending', 'is-arriving'));
     });
   }, { rootMargin: '0px 0px -10% 0px' });
   const below = (el) => el.getBoundingClientRect().top > innerHeight * 0.9;
   const wait = (el, watch = el) => { el.classList.add('is-pending'); io.observe(watch); };
-  document.querySelectorAll('.reveal, .reveal-group, .stitch, .review__stars').forEach((el) => {
-    if (el.matches('.scroller.reveal-group')) {
-      if (below(el)) { [...el.children].forEach((item) => item.classList.add('is-pending')); io.observe(el); }
-    } else if (el.matches('.reveal-group')) {
-      [...el.children].forEach((item) => below(item) && wait(item));
-    } else if (below(el)) {
-      wait(el);
-    }
-  });
+
+  const scan = (scope = document) => {
+    if (!enabled) return;
+    const found = [...scope.querySelectorAll('[data-arrive], .stitch, .review__stars')];
+    if (scope.matches?.('[data-arrive]')) found.unshift(scope);
+    found.forEach((el) => {
+      if (el.matches('.is-pending, .is-arriving')) return;
+      if (el.matches('[data-arrive~="stagger"]')) {
+        const items = [...el.children];
+        items.forEach((item, n) => { if (!item.style.getPropertyValue('--i')) item.style.setProperty('--i', Math.min(n, 6)); });
+        if (el.matches('.scroller')) {
+          if (below(el)) { items.forEach((item) => item.classList.add('is-pending')); io.observe(el); }
+        } else {
+          items.forEach((item) => below(item) && !item.matches('.is-pending, .is-arriving') && wait(item));
+        }
+      } else if (below(el)) {
+        wait(el);
+      }
+    });
+  };
+  scan();
+  window.ybArrive = scan;
+  document.addEventListener('shopify:section:load', (event) => scan(event.target));
+}
+
+/* ---------- Next page, sooner, where Speculation Rules aren't supported ----------
+   Chrome and Edge prerender on hover via the speculationrules script in theme.liquid. Firefox gets a
+   <link rel="prefetch"> when the pointer rests on a link (80ms) or a finger lands on it. Safari supports neither,
+   so it is skipped. Same exclusions as the rules: other sites, cart, checkout, account, query strings, nofollow. */
+if (!HTMLScriptElement.supports?.('speculationrules') && document.createElement('link').relList.supports?.('prefetch') && !root.classList.contains('lite')) {
+  const done = new Set();
+  const want = (a) => a && a.origin === location.origin && !a.search && !a.hasAttribute('download')
+    && !/^\/(cart|checkout|account)/.test(a.pathname) && !a.matches('[rel~="nofollow"], [data-no-prerender]')
+    && !(a.pathname === location.pathname && a.hash) && !done.has(a.href);
+  const prefetch = (a) => {
+    if (!want(a)) return;
+    done.add(a.href);
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = a.href;
+    document.head.append(link);
+  };
+  let timer = 0;
+  document.addEventListener('pointerover', (event) => {
+    const a = event.target.closest?.('a[href]');
+    clearTimeout(timer);
+    if (a) timer = setTimeout(() => prefetch(a), 80);
+  }, { passive: true });
+  document.addEventListener('touchstart', (event) => prefetch(event.target.closest?.('a[href]')), { passive: true });
 }
 
 /* ---------- Story strand fallback ----------

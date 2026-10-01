@@ -361,7 +361,8 @@
     const touch = matchMedia('(hover: none) and (pointer: coarse)');
     let index = 0;
     let timer = 0;
-    let userPaused = reduce.matches;
+    // Starts paused for reduced motion and lite mode; the play button still starts it.
+    let userPaused = reduce.matches || html.classList.contains('lite');
     let hovering = false;
     let focused = false;
     let visible = true;
@@ -409,15 +410,16 @@
     stage.addEventListener('scroll', () => {
       if (!touch.matches) return;
       const i = Math.round(stage.scrollLeft / stage.clientWidth);
-      if (i !== index && slides[i]) show(i);
+      if (i !== index && slides[i]) { show(i); prime(i + 1); }
     }, { passive: true });
-    // In the swipe row the later photos sit off to the side, where lazy loading (Safari especially) never
-    // fetches them, so a swipe would land on an empty frame. Once the page has loaded, fetch them all.
-    const warm = () => stage.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; });
+    // In the swipe row the later photos sit off to the side, where lazy loading (Safari especially) never fetches
+    // them, so a swipe would land on an empty frame. Fetch one photo ahead: the next one once the page has loaded,
+    // then the one after each time the shopper swipes. Most people never swipe, so they never pay for the rest.
+    const prime = (i) => slides[i]?.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; });
     const setMode = () => {
       if (touch.matches) {
-        if (document.readyState === 'complete') warm();
-        else addEventListener('load', warm, { once: true });
+        if (document.readyState === 'complete') prime(index + 1);
+        else addEventListener('load', () => prime(index + 1), { once: true });
       }
       if (!touch.matches) stage.scrollLeft = 0;
       slides.forEach((slide, n) => { slide.inert = !touch.matches && n !== index; });

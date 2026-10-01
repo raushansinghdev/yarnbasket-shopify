@@ -78,20 +78,20 @@
       {%- endif -%}
 
       <div class="site-header__icons">
-        <a href="{{ routes.search_url }}" class="icon-btn site-header__search">
+        <a href="{{ routes.search_url }}" class="icon-btn site-header__search" {% if request.page_type == 'search' %}aria-current="page"{% endif %}>
           {%- render 'icon', icon: 'search' -%}
           <span class="visually-hidden">{{ 'header.search' | t }}</span>
         </a>
         {%- if shop.customer_accounts_enabled -%}
-          <a href="{{ routes.account_url }}" class="icon-btn site-header__account">
+          <a href="{{ routes.account_url }}" class="icon-btn site-header__account" {% if request.page_type contains 'customers/' %}aria-current="page"{% endif %}>
             {%- render 'icon', icon: 'account' -%}
             <span class="visually-hidden">{{ 'header.account' | t }}</span>
           </a>
         {%- endif -%}
-        <a href="{{ routes.cart_url }}" class="icon-btn site-header__cart" data-no-prerender>
+        <a href="{{ routes.cart_url }}" class="icon-btn site-header__cart" data-no-prerender {% if request.page_type == 'cart' %}aria-current="page"{% endif %}>
           {%- render 'icon', icon: 'basket' -%}
           <span class="site-header__count" data-cart-count aria-hidden="true" {% if cart.item_count == 0 %}hidden{% endif %}>
-            {{- cart.item_count -}}
+            {%- if cart.item_count > 99 %}99+{% else %}{{ cart.item_count }}{% endif -%}
           </span>
           {%- comment -%} theme.js rewrites this label when the count changes; 99 is swapped for the new number. {%- endcomment -%}
           <span
@@ -105,6 +105,8 @@
           </span>
         </a>
       </div>
+      {%- comment -%} theme.js writes here when the cart changes, so screen readers hear the new count. {%- endcomment -%}
+      <p class="visually-hidden" role="status" data-cart-status></p>
     </div>
   </div>
 </header>
@@ -233,7 +235,9 @@
     white-space: nowrap;
   }
   .site-header__nav { display: none; }
-  .site-header__icons { display: flex; justify-content: flex-end; margin-right: -12px; }
+  .site-header__icons { display: flex; justify-content: flex-end; gap: 4px; margin-right: -10px; }
+  /* Header glyphs are 28px: big enough to find at a glance, still inside a 48px target. */
+  .site-header .icon-btn > .icon, .drawer__close > .icon { width: 28px; height: 28px; }
   .site-header__account { display: none; }
 
   /* Icons answer the pointer with a small, quiet gesture. */
@@ -245,22 +249,25 @@
     .site-header__menu-btn:hover .icon { transform: scaleX(1.12); }
   }
 
+  /* The count sits on the basket's corner, with a ring in the header colour so it never merges with the glyph. */
   .site-header__count {
     position: absolute;
-    top: 7px;
-    right: 5px;
-    min-width: 18px;
-    height: 18px;
+    top: 0;
+    right: -3px;
+    min-width: 20px;
+    height: 20px;
     padding: 0 5px;
     border-radius: var(--radius-pill);
     background: var(--cocoa-deep);
     color: var(--cream);
-    font-size: .6875rem;
-    font-weight: 500;
-    line-height: 18px;
+    box-shadow: 0 0 0 2px var(--header-bg, var(--blush-soft));
+    font-size: .75rem;
+    font-weight: 600;
+    line-height: 20px;
     text-align: center;
     font-variant-numeric: tabular-nums;
   }
+  @media (forced-colors: active) { .site-header__count { border: 1px solid CanvasText; line-height: 18px; } }
   .site-header__count.is-bumped { animation: count-bump 520ms var(--ease-spring); }
   @keyframes count-bump { from { transform: scale(.4); } to { transform: none; } }
 

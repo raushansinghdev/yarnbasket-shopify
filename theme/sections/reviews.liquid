@@ -2,13 +2,13 @@
 
 {%- if section.blocks.size > 0 -%}
   <section class="section reviews scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}">
-    <div class="section-head reveal">
+    <div class="section-head" data-arrive="lines">
       {%- render 'icon', icon: 'reviews' -%}
       {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
       <h2 id="Reviews-{{ section.id }}">{{ s.heading }}</h2>
     </div>
 
-    <ul class="reviews__list scroller reveal-group" role="list" tabindex="0" aria-label="{{ s.heading | escape }}">
+    <ul class="reviews__list scroller" data-arrive="stagger" role="list" tabindex="0" aria-label="{{ s.heading | escape }}">
       {%- for block in section.blocks -%}
         {%- assign b = block.settings -%}
         <li class="review" style="--i: {{ forloop.index0 | modulo: 3 }}" {{ block.shopify_attributes }}>
@@ -41,12 +41,12 @@
 {%- elsif settings.demo_content -%}
   {%- comment -%} Sample reviews so the layout can be judged. They say "Sample" on purpose; turn demo content off before launch. {%- endcomment -%}
   <section class="section reviews scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}">
-    <div class="section-head reveal">
+    <div class="section-head" data-arrive="lines">
       {%- render 'icon', icon: 'reviews' -%}
       {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
       <h2 id="Reviews-{{ section.id }}">{{ s.heading }}</h2>
     </div>
-    <ul class="reviews__list scroller reveal-group" role="list" tabindex="0" aria-label="{{ s.heading | escape }}">
+    <ul class="reviews__list scroller" data-arrive="stagger" role="list" tabindex="0" aria-label="{{ s.heading | escape }}">
       {%- for i in (1..3) -%}
         {%- liquid
           case i

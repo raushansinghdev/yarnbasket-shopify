@@ -4,7 +4,7 @@
 -%}
 
 <section class="section featured scheme-{{ s.scheme }}" aria-labelledby="Featured-{{ section.id }}">
-  <div class="section-head section-head--split reveal">
+  <div class="section-head section-head--split" data-arrive="lines">
     {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
     <h2 id="Featured-{{ section.id }}">{{ s.heading }}</h2>
     {%- if s.show_view_all and c != blank -%}
@@ -16,7 +16,7 @@
     {%- endif -%}
   </div>
 
-  <ul class="product-grid reveal-group" role="list">
+  <ul class="product-grid" role="list" data-arrive="stagger">
     {%- if c != blank and c.products_count > 0 -%}
       {%- for product in c.products limit: s.limit -%}
         <li style="--i: {{ forloop.index0 | modulo: 4 }}">

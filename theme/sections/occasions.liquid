@@ -1,14 +1,14 @@
 {%- assign s = section.settings -%}
 
 <section class="section occasions scheme-{{ s.scheme }}" aria-labelledby="Occasions-{{ section.id }}">
-  <div class="section-head section-head--center reveal">
+  <div class="section-head section-head--center" data-arrive="lines">
     {%- render 'icon', icon: 'bouquets' -%}
     {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
     <h2 id="Occasions-{{ section.id }}">{{ s.heading }}</h2>
     {%- if s.text != blank -%}<p class="section-head__sub muted">{{ s.text }}</p>{%- endif -%}
   </div>
 
-  <ul class="occasions__list scroller reveal-group" role="list">
+  <ul class="occasions__list scroller" role="list" data-arrive="stagger glide">
     {%- for block in section.blocks -%}
       <li style="--i: {{ forloop.index0 | modulo: 6 }}" {{ block.shopify_attributes }}>
         <a class="chip" href="{{ block.settings.link | default: routes.collections_url }}">

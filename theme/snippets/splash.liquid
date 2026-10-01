@@ -3,6 +3,7 @@
 
   Store rules, which differ from the coming-soon page:
   - About 3.2 s in all: the kit's choreography at 70% of its length, a short hold so the name can be read, then a 0.5 s fade.
+  - Skipped in lite mode (data saver, 2G, low-memory phones).
   - Plays on the first page of a visit (home, collection, product or content page; never cart, account,
     search or checkout), at most once every 24 hours per browser (localStorage). Reloads and moving
     between pages never replay it. Skipped for search engine bots and speed tests.
@@ -18,6 +19,7 @@
   (function () {
     try {
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if (document.documentElement.classList.contains('lite')) return;
       // Search engines and speed tests always see the page itself.
       if (navigator.webdriver || /bot|crawl|spider|slurp|lighthouse|pagespeed|headless|preview/i.test(navigator.userAgent)) return;
       // Once a day: the first page of a visit plays it; reloads and moving between pages never do.

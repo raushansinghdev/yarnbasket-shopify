@@ -11,7 +11,7 @@
   <svg class="footer__flower footer__flower--c" viewBox="0 0 30 30" aria-hidden="true" focusable="false"><use href="#yb-footer-flower"/></svg>
   <svg class="footer__flower footer__flower--d" viewBox="0 0 30 30" aria-hidden="true" focusable="false"><use href="#yb-footer-flower"/></svg>
 
-  <div class="footer__banner reveal">
+  <div class="footer__banner" data-arrive="lines">
     <a href="{{ routes.root_url }}" class="footer__logo">
       {%- render 'logo-mark', size: 104, id: 'footer', class: 'footer__mark' -%}
       <span class="footer__lockup">
@@ -155,6 +155,11 @@
   @media (hover: hover) { .footer__logo:hover .footer__mark { transform: rotate(-6deg); } }
 
   .footer__rule { width: min(220px, 50%); height: 1px; background: var(--color-line-strong); }
+  /* The short rule draws itself as the banner arrives. */
+  @media (prefers-reduced-motion: no-preference) {
+    .footer__banner.is-arriving > .footer__rule { animation-name: rule-draw; animation-duration: var(--dur-hero); }
+  }
+  @keyframes rule-draw { from { opacity: 0; transform: scaleX(0); } }
 
   /* Phones: two neat columns. Wider screens: one line with dots, as on the banner. */
   .footer__crafts ul { display: grid; grid-template-columns: repeat(2, auto); justify-content: center; gap: 0 var(--space-6); }

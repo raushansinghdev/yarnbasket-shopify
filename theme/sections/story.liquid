@@ -22,7 +22,7 @@
   </div>
 
   <div class="story__grid{% if s.panel %} story__grid--panel panel-blush{% endif %}">
-    <div class="story__visual reveal">
+    <div class="story__visual" data-arrive="settle">
       <div class="media story__media"{% if s.image %} style="--ratio: {{ s.image.aspect_ratio }}"{% elsif settings.demo_content %} style="--ratio: 1179 / 678"{% endif %}>
         {%- if s.image -%}
           {%- render 'image', image: s.image, sizes: '(min-width: 990px) 45vw, calc(100vw - 40px)', class: 'story__img' -%}
@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <div class="story__copy reveal">
+    <div class="story__copy" data-arrive="lines">
       {%- render 'icon', icon: 'makers', class: 'story__icon' -%}
       {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
       <h2 id="Story-{{ section.id }}">{{ s.heading }}</h2>

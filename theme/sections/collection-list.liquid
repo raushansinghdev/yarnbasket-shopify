@@ -9,13 +9,13 @@
 -%}
 
 <section class="section craft craft--{{ s.shape }} scheme-{{ s.scheme }}" aria-labelledby="Craft-{{ section.id }}">
-  <div class="section-head{% if s.center %} section-head--center{% endif %} reveal">
+  <div class="section-head{% if s.center %} section-head--center{% endif %}" data-arrive="lines">
     {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
     <h2 id="Craft-{{ section.id }}">{{ s.heading }}</h2>
     {%- if s.text != blank -%}<p class="section-head__sub muted">{{ s.text }}</p>{%- endif -%}
   </div>
 
-  <ul class="craft__list scroller reveal-group" role="list" style="--cols: {{ desktop_cols | at_least: 1 }}">
+  <ul class="craft__list scroller" role="list" data-arrive="stagger" style="--cols: {{ desktop_cols | at_least: 1 }}">
     {%- for block in section.blocks -%}
       {%- liquid
         assign c = block.settings.collection
@@ -101,6 +101,11 @@
     .craft__link:hover .craft__title .icon { opacity: 1; transform: translateX(3px); }
     .craft--circle .craft__link:hover .craft__media { outline-offset: 8px; outline-color: var(--rose); }
   }
+  /* Arriving circles settle while their rose ring opens out around them. */
+  @media (prefers-reduced-motion: no-preference) {
+    .craft--circle [data-arrive~="stagger"] > .is-arriving .craft__media { animation-name: settle-ring; }
+  }
+  @keyframes settle-ring { from { opacity: 0; scale: .9; outline-offset: -2px; outline-color: transparent; } }
 
   @media (min-width: 750px) {
     .craft__list { --scroller-item: 38%; }

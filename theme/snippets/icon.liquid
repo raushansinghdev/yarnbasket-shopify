@@ -1,11 +1,12 @@
 {%- doc -%}
   Renders an inline SVG icon.
 
-  UI icons use a 24px grid with 1.6px strokes in the current text colour.
+  UI icons use a 24px grid with 1.8px strokes in the current text colour. Header glyphs sit in a 20px live area,
+  so the round lens and the wide basket look the same size. Shapes marked .icon__fill take a soft tint on the current page.
   Brand icons come from the brand kit (Brand Kit/_source/brand.js and covers.js):
   a 40px grid with Rose accents. Tune them with --icon-accent, --icon-paper and --icon-leaf.
 
-  @param {string} icon - menu, search, basket, account, close, arrow, gift, pause, play, plus, chevron, instagram, whatsapp, star, or a brand icon: bouquets, keychains, hair-clips, reviews, how-to-order, bagcharm, makers, hook, care
+  @param {string} icon - menu, search, basket, account, close, arrow, gift, pause, play, plus, chevron, instagram, whatsapp, truck, help, star, or a brand icon: bouquets, keychains, hair-clips, reviews, how-to-order, bagcharm, makers, hook, care
   @param {string} [class] - Extra classes for the svg element
 
   @example
@@ -29,12 +30,12 @@
 {%- endcase -%}
 </svg>
 {%- else -%}
-<svg class="icon icon--{{ icon }} {{ class }}" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<svg class="icon icon--{{ icon }} {{ class }}" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
 {%- case icon -%}
-{%- when 'menu' -%}<path d="M3.5 8h17M3.5 16h11"/>
-{%- when 'search' -%}<circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/>
-{%- when 'basket' -%}<path d="M8 10V8.5a4 4 0 0 1 8 0V10"/><path d="M3.5 10h17l-1.6 8.4a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z"/><path d="M6 14.5h12" opacity=".45"/>
-{%- when 'account' -%}<circle cx="12" cy="8.5" r="3.75"/><path d="M4.75 20c.9-3.6 3.8-5.5 7.25-5.5s6.35 1.9 7.25 5.5"/>
+{%- when 'menu' -%}<path d="M3.5 6.5h17M3.5 12h17M3.5 17.5h17"/>
+{%- when 'search' -%}<circle class="icon__fill" cx="10.5" cy="10.5" r="7"/><path d="m15.6 15.6 4.9 4.9"/>
+{%- when 'basket' -%}<path d="M8 9V7.6a4 4 0 0 1 8 0V9"/><path class="icon__fill" d="M4.7 12.2 6.1 19a1.9 1.9 0 0 0 1.9 1.5h8a1.9 1.9 0 0 0 1.9-1.5l1.4-6.8"/><rect x="2.75" y="9" width="18.5" height="3.2" rx="1.6"/><path d="M6.4 16.3h11.2" opacity=".45"/>
+{%- when 'account' -%}<circle class="icon__fill" cx="12" cy="7.9" r="4"/><path class="icon__fill" d="M4.5 20.5c.8-3.9 3.8-6 7.5-6s6.7 2.1 7.5 6Z"/>
 {%- when 'close' -%}<path d="m6 6 12 12M18 6 6 18"/>
 {%- when 'arrow' -%}<path d="M4.5 12h15M14 6.5l5.5 5.5-5.5 5.5"/>
 {%- when 'gift' -%}<rect x="3.75" y="8.5" width="16.5" height="4" rx="1.2"/><path d="M5.25 12.5v6.25a1.5 1.5 0 0 0 1.5 1.5h10.5a1.5 1.5 0 0 0 1.5-1.5V12.5M12 8.5v11.75"/><path d="M12 8.5C10.6 5.2 6.6 4.4 6.6 6.6c0 1.5 2.4 1.9 5.4 1.9Zm0 0c1.4-3.3 5.4-4.1 5.4-1.9 0 1.5-2.4 1.9-5.4 1.9Z"/>
@@ -44,6 +45,8 @@
 {%- when 'chevron' -%}<path d="m6.5 9.5 5.5 5.5 5.5-5.5"/>
 {%- when 'instagram' -%}<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6" fill="currentColor"/>
 {%- when 'whatsapp' -%}<path d="M4 20l1.2-4A8.2 8.2 0 1 1 8.3 19Z"/><path d="M9.2 8.6c.3-.6.9-.6 1.1 0l.5 1.3c.1.3 0 .6-.2.8l-.4.4c.5 1.1 1.4 2 2.5 2.5l.4-.4c.2-.2.5-.3.8-.2l1.3.5c.6.2.6.8 0 1.1-.6.4-1.4.6-2.2.3a7 7 0 0 1-4.1-4.1c-.3-.8-.1-1.6.3-2.2Z" stroke-width="1.1"/>
+{%- when 'truck' -%}<path d="M13.5 16.5V7.2A1.2 1.2 0 0 0 12.3 6H3.7a1.2 1.2 0 0 0-1.2 1.2v8.1c0 .7.5 1.2 1.2 1.2h1.4M8.9 16.5h6.2M13.5 9.5h3.7l3.3 3.7v2.1c0 .7-.5 1.2-1.2 1.2h-.4"/><circle cx="7" cy="16.5" r="1.9"/><circle cx="17" cy="16.5" r="1.9"/>
+{%- when 'help' -%}<circle cx="12" cy="12" r="8.5"/><path d="M9.7 9.7a2.4 2.4 0 0 1 4.7.7c0 1.6-2.4 1.9-2.4 3.5"/><circle cx="12" cy="17" r=".4" fill="currentColor"/>
 {%- when 'star' -%}<path d="m12 3.6 2.5 5.2 5.7.8-4.1 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4.1-4 5.7-.8Z" fill="currentColor" stroke="none"/>
 {%- endcase -%}
 </svg>

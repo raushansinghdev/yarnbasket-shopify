@@ -34,8 +34,8 @@
   --strand: #D49488;
 
   /* Type */
-  --font-serif: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  --font-sans: "Jost", "Avenir Next", "Segoe UI", Roboto, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", "Cormorant Fallback", Georgia, serif;
+  --font-sans: "Jost", "Jost Fallback", Arial, system-ui, sans-serif;
   --fs-display: clamp(2.625rem, 1.9rem + 3.6vw, 4.75rem);
   --fs-h2: clamp(2rem, 1.6rem + 2vw, 3.125rem);
   --fs-h3: clamp(1.375rem, 1.25rem + .6vw, 1.75rem);
@@ -74,6 +74,9 @@
   --dur-enter: 560ms;
   --dur-hero: 900ms;
   --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-exit: cubic-bezier(.4, 0, 1, 1); /* things leaving; exits run at about 70% of the entry duration */
+  --stagger: 90ms; /* delay step between siblings arriving */
+  --rise: 24px; /* how far things travel as they arrive */
   --ease-in-out: cubic-bezier(.65, 0, .35, 1);
   --ease-spring: linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%, .975 57.1%, .997 69.8%, 1.003 76.9%, 1);
 
@@ -120,6 +123,8 @@ html {
   text-size-adjust: 100%;
   scroll-padding-top: calc(var(--header-height) + var(--space-4));
   interpolate-size: allow-keywords;
+  /* Keep room for the scrollbar, so locking scroll (drawers, the logo intro) never shifts the page sideways. */
+  scrollbar-gutter: stable;
 }
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
@@ -290,6 +295,9 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 }
 .btn .icon { width: 18px; height: 18px; transition: transform var(--dur-panel) var(--ease-out); }
 .btn:active { transform: scale(.97); transition-duration: var(--dur-press); }
+/* Shared press feedback for anything tappable that isn't a .btn (cards and chips have their own). */
+.tap { transition: scale var(--dur-press) ease; }
+.tap:active { scale: .96; }
 .scheme-cocoa .btn { --btn-bg: var(--cream); --btn-ink: var(--cocoa-deep); }
 
 /* Arrow sits in a small round "knob" at the end of the pill, like a button sewn onto fabric. */
@@ -360,8 +368,10 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
   position: relative;
   transition: background-color var(--dur-state) ease, transform var(--dur-press) ease;
 }
-.icon-btn:active { transform: scale(.92); }
-@media (hover: hover) { .icon-btn:hover { background: color-mix(in srgb, var(--color-heading) 7%, transparent); } }
+.icon-btn:active { transform: scale(.94); }
+@media (hover: hover) { .icon-btn:hover { background: color-mix(in srgb, var(--color-heading) 8%, transparent); } }
+/* The page you're on: the glyph takes a soft tint (aria-current says it to screen readers). */
+.icon-btn[aria-current] .icon__fill { fill: currentColor; fill-opacity: .22; }
 
 /* ---------- Media ---------- */
 .media {
@@ -424,47 +434,44 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 
 /* Photos fade in as they arrive instead of popping in (theme.js marks the ones still loading).
    The page's main hero photo is never held back, so it still paints first for LCP. */
+/* Lite mode (data saver, 2G, low-memory phones): no decorative loops. Feedback animations stay. */
+html.lite :is(.hero__flower, .footer__flower) { animation: none !important; }
+
 img.img-wait { opacity: 0; }
 img.img-in { animation: img-in 700ms var(--ease-out); }
 @keyframes img-in { from { opacity: 0; } }
 
-/* Arrivals: theme.js adds .is-pending only to things still below the screen at load, then swaps it for .is-arriving
-   when they come into view. Each kind of content arrives in its own way, all within about a second:
-   - blocks and grid items rise and fade in, staggered by --i;
-   - text that leads a section arrives line by line, and its heading rises from behind a line, like ink lifting off the page;
-   - photos settle from slightly smaller (a soft focus-pull); craft circles' rose rings open out around them;
-   - gift chips glide in from the side, the way that row swipes; promise icons pop; the footer rule draws itself;
-   - stitched borders sew themselves in (dots grow into stitches); review stars pop one by one.
-   Fill mode is "backwards": the start state holds during the stagger delay, and once finished the animation lets go,
-   so hover effects (like the craft ring opening out) keep working. Every end state equals the normal style. */
+/* ---------- Arrivals: data-arrive ----------
+   Any section opts in with an attribute; theme.js does the rest (only things still below the screen at load wait,
+   each plays once as it comes into view, the same in every browser):
+     data-arrive               the block rises in
+     data-arrive="lines"       its children arrive in turn; an h2 inside rises like ink lifting off the page
+     data-arrive="stagger"     its children arrive one after another (theme.js sets --i; a swipe row arrives as a whole)
+     data-arrive="stagger glide"  …gliding in from the side, for rows that swipe
+     data-arrive="settle"      the block's photos settle from slightly smaller (photos in stagger items do this too)
+   Section-specific touches (the craft ring, promise icons, footer rule) live in their own sections.
+   Fill mode "backwards": the start state holds during the stagger delay, then the animation lets go, so hover
+   effects keep working; every end state equals the normal style. */
 @media (prefers-reduced-motion: no-preference) {
   .is-pending { opacity: 0; }
-  .reveal.is-pending, .reveal-group > .is-pending { transform: translateY(24px); }
-  .reveal.is-arriving, .reveal-group > .is-arriving { animation: arrive 800ms var(--ease-out) calc(var(--i, 0) * 90ms) backwards; }
+  [data-arrive].is-pending, [data-arrive~="stagger"] > .is-pending { transform: translateY(var(--rise)); }
+  [data-arrive].is-arriving, [data-arrive~="stagger"] > .is-arriving { animation: arrive 800ms var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
 
-  /* Text groups: the block stays put and its lines arrive in turn. */
-  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-pending { opacity: 1; transform: none; }
-  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-pending > * { opacity: 0; }
-  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving { animation: none; }
-  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving > * { animation: arrive 760ms var(--ease-out) backwards; }
-  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving > :nth-child(2) { animation-delay: 90ms; }
-  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving > :nth-child(3) { animation-delay: 180ms; }
-  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving > :nth-child(4) { animation-delay: 270ms; }
-  :is(.section-head, .story__copy, .newsletter__inner, .footer__banner).is-arriving > :nth-child(n + 5) { animation-delay: 360ms; }
-  :is(.section-head, .story__copy, .newsletter__inner).is-arriving > h2 { animation-name: arrive-ink; animation-duration: 900ms; }
-  .footer__banner.is-arriving > .footer__rule { animation-name: rule-draw; animation-duration: 900ms; }
+  [data-arrive~="lines"].is-pending { opacity: 1; transform: none; }
+  [data-arrive~="lines"].is-pending > * { opacity: 0; }
+  [data-arrive~="lines"].is-arriving { animation: none; }
+  [data-arrive~="lines"].is-arriving > * { animation: arrive 760ms var(--ease-out) backwards; }
+  [data-arrive~="lines"].is-arriving > :nth-child(2) { animation-delay: var(--stagger); }
+  [data-arrive~="lines"].is-arriving > :nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
+  [data-arrive~="lines"].is-arriving > :nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
+  [data-arrive~="lines"].is-arriving > :nth-child(n + 5) { animation-delay: calc(var(--stagger) * 4); }
+  [data-arrive~="lines"].is-arriving > h2 { animation-name: arrive-ink; animation-duration: var(--dur-hero); }
 
-  /* Photos settle as their card or block arrives. */
-  .reveal-group > .is-arriving :is(.card__media, .craft__media),
-  .story__visual.is-arriving .story__media { animation: settle 1000ms var(--ease-out) calc(var(--i, 0) * 90ms) backwards; }
-  .craft--circle .reveal-group > .is-arriving .craft__media { animation-name: settle-ring; }
+  [data-arrive~="glide"] > .is-pending { transform: translateX(28px); }
+  [data-arrive~="glide"] > .is-arriving { animation-name: arrive-x; }
 
-  /* Gift chips glide in from the side. */
-  .occasions__list > .is-pending { transform: translateX(28px); }
-  .occasions__list > .is-arriving { animation-name: arrive-x; }
-
-  /* Promise icons pop once their item arrives. */
-  .promise__item.is-arriving .icon--brand { animation: pop-in 700ms var(--ease-spring) calc(120ms + var(--i, 0) * 90ms) backwards; }
+  [data-arrive~="settle"].is-arriving .media,
+  [data-arrive~="stagger"] > .is-arriving .media { animation: settle 1000ms var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
 
   .stitch.is-pending, .review__stars.is-pending { opacity: 1; }
   .stitch.is-pending rect { stroke-dasharray: 0 13; }
@@ -472,7 +479,7 @@ img.img-in { animation: img-in 700ms var(--ease-out); }
   .review__stars.is-pending .review__star { opacity: 0; }
   .review__stars.is-arriving .review__star { animation: star-in 520ms var(--ease-out) calc(200ms + var(--s, 0) * 90ms + var(--i, 0) * 120ms) backwards; }
 }
-@keyframes arrive { from { opacity: 0; transform: translateY(24px); } }
+@keyframes arrive { from { opacity: 0; transform: translateY(var(--rise)); } }
 @keyframes arrive-x { from { opacity: 0; transform: translateX(28px); } }
 /* Italic serif overhangs its box, so the mask is generous on every side except the one it rises from. */
 @keyframes arrive-ink {
@@ -480,9 +487,6 @@ img.img-in { animation: img-in 700ms var(--ease-out); }
   to { opacity: 1; transform: none; clip-path: inset(-20% -10% -30% -10%); }
 }
 @keyframes settle { from { opacity: 0; scale: .94; } }
-@keyframes settle-ring { from { opacity: 0; scale: .9; outline-offset: -2px; outline-color: transparent; } }
-@keyframes pop-in { from { opacity: 0; scale: .4; } }
-@keyframes rule-draw { from { opacity: 0; transform: scaleX(0); } }
 @keyframes stitch-in { from { stroke-dasharray: 0 13; } }
 
 /* Swipe rows on phones: cards grow from slightly smaller as they slide into the row (scale only, so text keeps

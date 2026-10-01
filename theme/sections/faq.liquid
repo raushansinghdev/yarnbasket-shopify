@@ -2,7 +2,7 @@
 
 <section class="section faq scheme-{{ s.scheme }}" aria-labelledby="Faq-{{ section.id }}">
   <div class="faq__grid">
-    <div class="section-head faq__head reveal">
+    <div class="section-head faq__head" data-arrive="lines">
       {%- render 'icon', icon: 'care' -%}
       {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
       <h2 id="Faq-{{ section.id }}">{{ s.heading }}</h2>
@@ -11,7 +11,7 @@
       {%- endif -%}
     </div>
 
-    <div class="faq__list reveal-group">
+    <div class="faq__list" data-arrive="stagger">
       {%- for block in section.blocks -%}
         <details class="faq__item" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
           <summary>
@@ -77,6 +77,7 @@
   }
   .faq__toggle .icon { width: 16px; height: 16px; }
   .faq__item[open] .faq__toggle { transform: rotate(45deg); background: var(--color-surface); }
+  .faq__item summary:active .faq__toggle { scale: .9; transition: scale var(--dur-press) ease; }
   .faq__answer { padding-bottom: var(--space-5); max-width: 40rem; color: var(--color-ink); }
 
   /* Smooth open and close where the browser supports animating to height: auto. */

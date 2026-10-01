@@ -1,7 +1,7 @@
 {%- assign s = section.settings -%}
 
 <section class="section newsletter scheme-{{ s.scheme }}" aria-labelledby="Newsletter-{{ section.id }}">
-  <div class="newsletter__inner reveal">
+  <div class="newsletter__inner" data-arrive="lines">
     {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
     <h2 id="Newsletter-{{ section.id }}">{{ s.heading }}</h2>
     {%- if s.text != blank -%}<p class="muted">{{ s.text }}</p>{%- endif -%}

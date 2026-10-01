@@ -3,7 +3,7 @@
 <section class="section promise scheme-{{ s.scheme }}" aria-label="{{ s.label | escape }}">
   <div class="promise__box{% if s.panel %} promise__box--panel panel-blush{% endif %}">
     {%- if s.panel -%}{%- render 'stitch', radius: 20 -%}{%- else -%}{%- render 'stitch', radius: 28 -%}{%- endif -%}
-    <ul class="promise__list reveal-group" role="list" style="--count: {{ section.blocks.size | at_least: 1 }}">
+    <ul class="promise__list" role="list" data-arrive="stagger" style="--count: {{ section.blocks.size | at_least: 1 }}">
       {%- for block in section.blocks -%}
         <li class="promise__item" style="--i: {{ forloop.index0 | times: 2 }}" {{ block.shopify_attributes }}>
           {%- render 'icon', icon: block.settings.icon -%}
@@ -35,6 +35,11 @@
     color: var(--color-heading);
   }
   .promise__text { font-size: var(--fs-small); color: var(--color-muted); max-width: 16rem; }
+  /* Each icon pops in with a soft spring once its promise arrives. */
+  @media (prefers-reduced-motion: no-preference) {
+    .promise__item.is-arriving .icon--brand { animation: pop-in 700ms var(--ease-spring) calc(120ms + var(--i, 0) * var(--stagger)) backwards; }
+  }
+  @keyframes pop-in { from { opacity: 0; scale: .4; } }
   @media (max-width: 989px) {
     .promise__item:last-child:nth-child(odd) { grid-column: 1 / -1; }
   }

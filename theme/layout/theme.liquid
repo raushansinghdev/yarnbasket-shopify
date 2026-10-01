@@ -3,6 +3,21 @@
   <head>
     {%- render 'meta-tags' -%}
 
+    {%- comment -%}
+      Lite mode for data saver, 2G and low-memory phones: decorative loops, the logo intro, photo fade-ins and the
+      hero autoplay are skipped; every tap and drawer animation stays. Decided before first paint.
+    {%- endcomment -%}
+    <script>
+      (function () {
+        try {
+          var c = navigator.connection || {};
+          if (c.saveData || /(^|-)2g$/.test(c.effectiveType || '') || (navigator.deviceMemory && navigator.deviceMemory <= 2)) {
+            document.documentElement.classList.add('lite');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     {{ 'cormorant-garamond-600-italic.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
     {{ 'jost-variable.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
     {%- render 'font-faces' -%}
