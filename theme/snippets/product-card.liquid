@@ -1,13 +1,11 @@
 {%- doc -%}
   Product card, modelled on the brand kit's Instagram photo frame: a rounded 4:5 photo on Oat,
-  the name in Cormorant italic, the price in Jost, then at most one quiet line: how many colours. Shows the second photo on hover (desktop)
-  and at most one badge. Renders a placeholder card when product is blank.
+  the name in Cormorant italic and the price in Jost, nothing more (simple, like an Instagram post).
+  Shows the second photo on hover (desktop) and at most one badge. Renders a placeholder card when product is blank.
 
-  Everything on the card is true data (docs/home-shop-plan.md §4):
-  - Badge: Sold out wins, then "Last few" (tracked stock of 3 or fewer), then the "new" tag, then the "bestseller" tag.
-  - Meta line: the number of colours (an option named Colour or Color), when there's more than one.
-    (No "Ships in X days": every order ships in 1–2 days, so it would say the same thing on every card.)
-  - Stars: only from Shopify's standard reviews.rating / reviews.rating_count metafields, which review apps fill in.
+  The badge is true data (docs/home-shop-plan.md §4): Sold out wins, then "Last few" (tracked stock of 3 or fewer),
+  then "Sale" (price below the compare-at price), then the "new" tag, then the "bestseller" tag. No colour count, dispatch time or stars under the price: Raushan
+  wants name and price only (2026-10-02).
   The badge comes after the name in the HTML (CSS places it on the photo), so the link reads name first.
   With no product, shows one of eight demo products (Theme settings → Demo content) or a plain placeholder.
 
@@ -21,7 +19,7 @@
 {%- liquid
   assign img_sizes = sizes | default: '(min-width: 990px) 25vw, 50vw'
   assign badge = blank
-  assign meta = blank
+  assign badge_class = ''
   if product != blank
     assign tracked = 0
     assign untracked = false
@@ -37,23 +35,14 @@
       assign badge = 'products.sold_out' | t
     elsif untracked == false and tracked > 0 and tracked <= 3
       assign badge = 'products.last_few' | t
+    elsif product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price
+      assign badge = 'products.sale' | t
+      assign badge_class = 'card__badge--sale'
     elsif product.tags contains 'new'
       assign badge = 'products.new' | t
     elsif product.tags contains 'bestseller' and skip_bestseller != true
       assign badge = 'products.bestseller' | t
     endif
-
-    for option in product.options_with_values
-      assign option_name = option.name | downcase
-      if option_name == 'colour' or option_name == 'color' or option_name == 'colours' or option_name == 'colors'
-        if option.values.size > 1
-          assign meta = 'products.colours' | t: count: option.values.size
-        endif
-      endif
-    endfor
-
-    assign rating = product.metafields.reviews.rating.value
-    assign rating_count = product.metafields.reviews.rating_count.value | default: 0
   endif
 -%}
 <article class="card" style="--i: {{ index | default: 0 | modulo: 4 }}">
@@ -73,15 +62,8 @@
       <div class="card__info">
         <h3 class="card__title">{{ product.title }}</h3>
         {%- render 'price', product: product -%}
-        {%- if rating_count > 0 -%}
-          <p class="card__rating">
-            <span aria-hidden="true">★ {{ rating.rating | round: 1 }} <span class="card__muted">({{ rating_count }})</span></span>
-            <span class="visually-hidden">{{ 'products.rating' | t: rating: rating.rating, count: rating_count }}</span>
-          </p>
-        {%- endif -%}
-        {%- if meta != blank -%}<p class="card__meta">{{ meta }}</p>{%- endif -%}
       </div>
-      {%- if badge != blank -%}<span class="card__badge">{{ badge }}</span>{%- endif -%}
+      {%- if badge != blank -%}<span class="card__badge {{ badge_class }}">{{ badge }}</span>{%- endif -%}
     </a>
   {%- elsif settings.demo_content -%}
     {%- comment -%} Demo product while the store has none (Theme settings → Demo content). {%- endcomment -%}
@@ -92,7 +74,6 @@
       endif
       assign d_compare = blank
       assign d_badge = blank
-      assign d_meta = blank
       case n
         when 1
           assign d_title = 'Sunflower Trio Crochet Bouquet'
@@ -103,11 +84,11 @@
         when 2
           assign d_title = 'Red Rose Crochet Bouquet'
           assign d_price = '₹1,199'
-          assign d_meta = 'products.colours' | t: count: 3
         when 3
           assign d_title = 'Pink Tulip & Daisy Bouquet'
           assign d_price = '₹999'
           assign d_compare = '₹1,199'
+          assign d_badge = 'products.sale' | t
         when 4
           assign d_title = 'Bee & Chick Keychain Set'
           assign d_price = '₹449'
@@ -115,7 +96,6 @@
         when 5
           assign d_title = 'Daisy Crochet Flower Pot'
           assign d_price = '₹599'
-          assign d_meta = 'products.colours' | t: count: 4
         when 6
           assign d_title = 'Flower Hair Clips, Set of 8'
           assign d_price = '₹399'
@@ -123,7 +103,6 @@
           assign d_title = 'Lily of the Valley Bag Charm'
           assign d_price = '₹349'
           assign d_badge = 'products.last_few' | t
-          assign d_meta = 'products.colours' | t: count: 2
         else
           assign d_title = 'Daisy Crochet Headband'
           assign d_price = '₹449'
@@ -148,9 +127,8 @@
             {{ d_price }}
           {%- endif -%}
         </p>
-        {%- if d_meta != blank -%}<p class="card__meta">{{ d_meta }}</p>{%- endif -%}
       </div>
-      {%- if d_badge != blank -%}<span class="card__badge">{{ d_badge }}</span>{%- endif -%}
+      {%- if d_badge != blank -%}<span class="card__badge{% if d_compare %} card__badge--sale{% endif %}">{{ d_badge }}</span>{%- endif -%}
     </a>
   {%- else -%}
     {%- assign art = index | default: 0 | modulo: 6 | plus: 1 -%}
@@ -203,6 +181,8 @@
     letter-spacing: .12em;
     text-transform: uppercase;
   }
+  /* Sale is the one badge that should catch the eye: Cream on Cocoa Deep, 9.9:1. */
+  .card__badge--sale { background: var(--cocoa-deep); color: var(--cream); }
   .card__info { display: grid; gap: 2px; padding-inline: 2px; }
   .card__title {
     font-family: var(--font-serif);
@@ -214,8 +194,4 @@
     color: var(--color-heading);
     text-wrap: balance;
   }
-  /* One quiet line: how many colours. Taupe Ink is 5.7:1 on Soft blush. */
-  .card__meta, .card__rating { font-size: .875rem; line-height: 1.35; color: var(--color-muted); }
-  .card__rating { color: var(--color-ink); font-variant-numeric: tabular-nums; }
-  .card__muted { color: var(--color-muted); }
 {% endstylesheet %}

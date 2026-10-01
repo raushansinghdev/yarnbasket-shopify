@@ -7,7 +7,7 @@ Status: **built 2026-10-02 (direction B).** Raushan approved the recommendations
 - **Phone circles** are 72px in a swipe row with **4½ visible**. Six won't fit at 5½ as the plan said.
 - **First product on a 390 × 844 phone: 1,304px**, down from 1,489 (−185px). The plan estimated about 1,250; the rest is the section's top padding, which is shared with every section.
 - **Demo:** the Favourites circle shows one bouquet, keychain, hair clip set and bag charm. Each craft shows its matching demo products; some crafts have only one, which is fine until real products exist.
-- **Card meta line:** only the colour count (when there's more than one colour). There's no "Ships in" line and no metafield to set up.
+- **Cards show name and price only** (Raushan: simple, like Instagram). There's no meta line, no colour count and no stars; §4 items 3–4 were reverted. Badges are Sold out, Last few, **Sale**, New, Bestseller, one at most. Sale is Cream on Cocoa Deep.
 - **Checks:**
   - theme check: clean
   - axe: 0 at 390, 768 and 1440, before and after switching
