@@ -6,10 +6,11 @@
     {{ 'cormorant-garamond-600-italic.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
     {{ 'jost-variable.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
     {%- render 'font-faces' -%}
+    {%- assign intro_pages = 'index,collection,list-collections,product,page,blog,article' | split: ',' -%}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
 
-    {%- if request.page_type == 'index' and settings.show_intro and request.design_mode == false -%}
+    {%- if intro_pages contains request.page_type and settings.show_intro and request.design_mode == false -%}
       {%- render 'splash', part: 'head' -%}
     {%- endif -%}
 
@@ -37,7 +38,7 @@
   <body class="template-{{ request.page_type | handle }}">
     <a class="skip-link" href="#MainContent">{{ 'accessibility.skip_to_content' | t }}</a>
 
-    {%- if request.page_type == 'index' and settings.show_intro and request.design_mode == false -%}
+    {%- if intro_pages contains request.page_type and settings.show_intro and request.design_mode == false -%}
       {%- render 'splash', part: 'body' -%}
     {%- endif -%}
 
