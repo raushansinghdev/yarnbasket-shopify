@@ -411,7 +411,14 @@
       const i = Math.round(stage.scrollLeft / stage.clientWidth);
       if (i !== index && slides[i]) show(i);
     }, { passive: true });
+    // In the swipe row the later photos sit off to the side, where lazy loading (Safari especially) never
+    // fetches them, so a swipe would land on an empty frame. Once the page has loaded, fetch them all.
+    const warm = () => stage.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; });
     const setMode = () => {
+      if (touch.matches) {
+        if (document.readyState === 'complete') warm();
+        else addEventListener('load', warm, { once: true });
+      }
       if (!touch.matches) stage.scrollLeft = 0;
       slides.forEach((slide, n) => { slide.inert = !touch.matches && n !== index; });
       schedule();
