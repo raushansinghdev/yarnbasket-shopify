@@ -206,8 +206,20 @@
   .footer__payments { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
   .footer__payments svg { width: 38px; height: 24px; }
 
-  /* Faint outline flowers in the corners, as on the banner. Still: they never move. */
+  /* Faint outline flowers in the corners, as on the banner. They drift up and turn into place as the footer
+     scrolls in, tied to the scroll, so they never move on their own; without support they simply sit still. */
   .footer__flower { position: absolute; color: var(--taupe); opacity: .3; pointer-events: none; }
+  .footer__flower--a { --fy: 46px; --fr: -48deg; }
+  .footer__flower--b { --fy: 30px; --fr: 36deg; }
+  .footer__flower--c { --fy: 56px; --fr: -30deg; }
+  .footer__flower--d { --fy: 38px; --fr: 54deg; }
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .footer { view-timeline-name: --footer; }
+      .footer__flower { animation: footer-drift linear both; animation-timeline: --footer; animation-range: entry 5% entry 100%; }
+    }
+  }
+  @keyframes footer-drift { from { transform: translateY(var(--fy)) rotate(var(--fr)); } to { transform: none; } }
   .footer__flower--a { width: 56px; top: var(--space-6); left: -14px; }
   .footer__flower--b { width: 40px; top: var(--space-7); right: 6px; }
   .footer__flower--c { width: 34px; top: 46%; left: 10px; opacity: .22; }

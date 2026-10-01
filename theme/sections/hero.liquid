@@ -320,11 +320,16 @@
     /* Copy rises in; the photo settles from a slight zoom (transform only, so it still counts as painted for LCP). */
     .hero__anim { animation: hero-rise var(--dur-hero) var(--ease-out) var(--d, 0ms) both; }
     .hero__img, .hero__media > .placeholder-svg { animation: hero-settle 1600ms var(--ease-out) both; }
-    /* Everything moves once on arrival, then the hero is still: under 5 seconds in total (WCAG 2.2.2). */
+    /* Arrival motion ends within 5 seconds (WCAG 2.2.2). */
     .hero__inset { animation: hero-float-in 1100ms var(--ease-out) 380ms both, hero-bob 1600ms ease-in-out 1480ms 2 alternate; }
     .hl__stitch path { animation: hl-sew 1100ms var(--ease-in-out) 700ms both; }
     .hero__flower { animation: hero-drift 2200ms ease-in-out 300ms 2 alternate; }
     .hero__flower--b { animation-duration: 1900ms; animation-delay: 600ms; }
+    /* With a slideshow there is a pause button, so the faint outline flowers may keep floating:
+       very slowly, a few pixels, each at its own pace. The pause button stops them too. */
+    .hero__visual:has([data-hero-slides]) .hero__flower { animation: hero-float 11s ease-in-out infinite alternate; }
+    .hero__visual:has([data-hero-slides]) .hero__flower--b { animation-duration: 13.5s; animation-delay: -6s; animation-direction: alternate-reverse; }
+    .hero__visual:has([data-paused]) .hero__flower { animation-play-state: paused; }
     /* While the logo intro plays, hold the entrance so it happens as the intro fades. */
     html.yb-intro :is(.hero__anim, .hero__img, .hero__inset, .hero__flower, .hl__stitch path) { animation-play-state: paused; }
   }
@@ -333,6 +338,11 @@
   @keyframes hero-float-in { from { opacity: 0; transform: translateY(28px); } }
   @keyframes hero-bob { to { translate: 0 -6px; } }
   @keyframes hl-sew { from { stroke-dasharray: 0 400; } to { stroke-dasharray: 7 6; } }
+  @keyframes hero-float {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+    40% { transform: translate3d(6px, -9px, 0) rotate(12deg); }
+    100% { transform: translate3d(-3px, -15px, 0) rotate(-8deg); }
+  }
   @keyframes hero-drift {
     from { transform: translate3d(0, 0, 0) rotate(0deg); }
     to { transform: translate3d(8px, -14px, 0) rotate(28deg); }

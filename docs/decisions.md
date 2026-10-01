@@ -10,7 +10,7 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **Products sooner on phones.** Section spacing went from 72 px to 56 px on phones, and the hero gap went from 64 px to 48 px. The round craft tiles are smaller (about three and a half per screen instead of two and a half) and show only the name on phones. The first product card now starts about 1,330 px down instead of 1,550 px.
 - **Hero: no rotating badge, both photos are links, motion ends.** Raushan found the spinning "Handmade with love" badge distracting. It also repeated the headline and moved forever, which goes against WCAG 2.2.2. So it's gone.
   - Both hero photos are now links, because a product photo you can't tap is a dead end on a phone. The main photo has a "Main photo link" setting that defaults to the button link. The round bee photo has a "Small photo link" setting. A white "Bee keychain →" label was tried, then removed at Raushan's request: the photo stands alone, and its alt text names the link for screen readers. The optional "Small photo label" setting stays, blank by default.
-  - The bee floats in, bobs twice and stops. The outline flowers drift twice and stop. All hero motion ends within about 4.7 s of load.
+  - The bee floats in, bobs twice and stops. Arrival motion ends within about 4.7 s of load. (Later the same day, the outline flowers became a slow continuous float, which the pause button stops: see below.)
 - **Hero buttons:** sentence case instead of spaced capitals. "Shop the collection" has its arrow in a round knob, and "Find a gift" is an outlined button with a gift icon. On phones the buttons stack full width.
 - **Hero slideshow (Raushan's idea):** the big frame now shows several products, so the hero shows the range without more text.
   - It's a slow cross-fade only, with no sliding or zooming. Each photo holds for 7 s and the slideshow keeps looping. The outgoing photo stays underneath while the new one fades in, so the background never flashes through.
@@ -39,6 +39,10 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   - Why not 30 days (the old rule): returning shoppers barely saw it. Why not every page or every session: a repeated intro turns from premium into a wait.
   - Never on: cart, account, search, checkout or the 404 page, for reduce-motion users, in the theme editor, or for search engine bots and speed tests, so Google always sees the page itself.
   - Tested in a real browser: plays on the first page; no replay on reload, the next page or the cart; plays again after 24 hours.
+- **Floating outline flowers (Raushan's idea, approach recommended by Claude):**
+  - **Hero:** the two faint flowers float continuously but very slowly. One gentle drift-and-turn takes 11 s and the other 13.5 s, moving only a few pixels, out of step with each other. This replaces "drift twice and stop". It only runs when the slideshow exists, because the slideshow's pause button also stops the flowers, which satisfies WCAG 2.2.2. Without a slideshow they drift twice and stop as before. They wait for the logo intro and never move with reduce motion.
+  - **Footer:** the four corner flowers drift up and turn into place as the footer scrolls in. They are tied to the scroll (a CSS scroll timeline), so they never move on their own while someone reads, and they come to rest when the footer is fully in view. Browsers without scroll timelines show them still.
+  - Tested: the hero flowers move, stop on pause and resume on play; the footer flowers go from offset (46px, -48°) to halfway to rest as the footer scrolls in.
 - Axe after round 3: 0 violations on mobile and desktop.
 
 ## 2026-10-01 (home page, round 2)
