@@ -430,6 +430,14 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
       animation-timeline: view();
       animation-range: entry calc(var(--i, 0) * 6%) entry calc(60% + var(--i, 0) * 6%);
     }
+    /* Inside a swipe row the items' own view() is measured against the row (which never scrolls vertically),
+       so it would never play. Use the row's timeline on the page instead. */
+    .scroller.reveal-group { view-timeline-name: --row; }
+    .scroller.reveal-group > * {
+      animation-timeline: --row;
+      /* Measured against the viewport (cover) rather than the row's own height, so even a short row of chips eases in over ~200px of scroll. */
+      animation-range: entry calc(var(--i, 0) * 4%) cover calc(24% + var(--i, 0) * 3%);
+    }
   }
 }
 @keyframes reveal {
@@ -448,7 +456,7 @@ img.img-in { animation: img-in 700ms var(--ease-out); }
 
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
-    /* Swipe rows on phones: cards ease in from slightly smaller as they slide into the row,
+    /* Swipe rows on phones: cards grow from slightly smaller as they slide into the row (scale only, so text keeps its contrast),
        so the half-visible card at the edge reads as "there's more this way". */
     .scroller > * > :first-child {
       animation: row-in linear both;
@@ -464,7 +472,7 @@ img.img-in { animation: img-in 700ms var(--ease-out); }
     }
   }
 }
-@keyframes row-in { from { opacity: .55; scale: .94; } }
+@keyframes row-in { from { scale: .94; } }
 @keyframes stitch-in { from { stroke-dasharray: 0 13; } }
 
 @media (prefers-reduced-motion: reduce) {

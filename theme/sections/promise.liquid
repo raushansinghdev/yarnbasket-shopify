@@ -1,7 +1,7 @@
 {%- assign s = section.settings -%}
 
 <section class="section promise scheme-{{ s.scheme }}" aria-label="{{ s.label | escape }}">
-  <div class="promise__box reveal{% if s.panel %} promise__box--panel panel-blush{% endif %}">
+  <div class="promise__box{% if s.panel %} promise__box--panel panel-blush{% endif %}">
     {%- if s.panel -%}{%- render 'stitch', radius: 20 -%}{%- else -%}{%- render 'stitch', radius: 28 -%}{%- endif -%}
     <ul class="promise__list reveal-group" role="list" style="--count: {{ section.blocks.size | at_least: 1 }}">
       {%- for block in section.blocks -%}
