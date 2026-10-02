@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stitched heading options</title>
+<style>
+  @font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 600; src: url("../../theme/assets/cormorant-garamond-600-italic.woff2") format("woff2"); }
+  @font-face { font-family: "Jost"; font-weight: 100 900; src: url("../../theme/assets/jost-variable.woff2") format("woff2"); }
+  :root { --cocoa: #6B4F43; --cocoa-deep: #4E3A31; --blush: #F2D4CC; --rose: #E3A69C; --strand: #D49488; --soft: #FBF1EE; --taupe-ink: #705B52; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--soft); color: var(--cocoa-deep); font-family: Jost, sans-serif; padding: 24px 20px 80px; }
+  .opt { max-width: 640px; margin: 0 auto 56px; }
+  .label { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--taupe-ink); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .label button { font: inherit; letter-spacing: .1em; border: 1px solid #c9b3aa; background: #fff; border-radius: 99px; padding: 4px 12px; cursor: pointer; color: var(--cocoa-deep); }
+  h1 { font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-weight: 600; font-size: clamp(2.375rem, 1.6rem + 3vw, 3.4rem); line-height: 1.08; }
+  .hl { position: relative; white-space: nowrap; display: inline-block; }
+  .deco { position: absolute; left: -2%; width: 104%; pointer-events: none; overflow: visible; }
+
+  /* A. Crochet chain: a row of chain stitches, the first thing every crocheter makes. Appears stitch by stitch. */
+  .chain { bottom: -.3em; height: .4em; }
+  .chain .loops { animation: reveal 1500ms steps(18, end) 500ms both; }
+  .chain .knot { transform-box: fill-box; transform-origin: center; animation: knot 500ms cubic-bezier(.22,1,.36,1) 2000ms both; }
+
+  /* B. A real strand of yarn: two plies twisted together, drawn once from a little yarn ball. */
+  .strand { bottom: -.34em; height: .5em; }
+  .strand .ply { fill: none; stroke-linecap: round; stroke-dasharray: 600; stroke-dashoffset: 600; animation: draw 1400ms cubic-bezier(.65,0,.35,1) 500ms forwards; }
+  .strand .twist { stroke-dasharray: 2.2 3.4; }
+  .strand .ball { transform-box: fill-box; transform-origin: center; animation: knot 500ms cubic-bezier(.22,1,.36,1) 300ms both; }
+
+  /* C. Sewn through: a running stitch that goes in and out of the "fabric" under the words, ending in a heart knot. */
+  .sewn { bottom: -.26em; height: .38em; }
+  .sewn .stitches { animation: reveal 1600ms steps(12, end) 500ms both; }
+  .sewn .knot { transform-box: fill-box; transform-origin: center; animation: knot 500ms cubic-bezier(.22,1,.36,1) 2100ms both; }
+
+  .today { bottom: -.04em; height: .26em; }
+  .today path { fill: none; stroke: var(--strand); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 7 6; vector-effect: non-scaling-stroke; }
+
+  @keyframes reveal { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes knot { from { opacity: 0; transform: scale(.4); } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } .strand .ply { stroke-dashoffset: 0; } }
+  .note { margin-top: 22px; font-size: 14px; line-height: 1.5; color: var(--taupe-ink); max-width: 34rem; }
+</style>
+</head>
+<body>
+
+<section class="opt" id="today">
+  <p class="label"><span>Today: dashed underline</span><button onclick="replay('today')">Replay</button></p>
+  <h1>Handmade crochet gifts, <span class="hl">stitched with love<svg class="deco today" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M3 9 C 40 4, 80 4, 110 7 S 170 11, 197 5"/></svg></span></h1>
+</section>
+
+<section class="opt" id="a">
+  <p class="label"><span>A · Crochet chain (recommended)</span><button onclick="replay('a')">Replay</button></p>
+  <h1>Handmade crochet gifts, <span class="hl">stitched with love<svg class="deco chain" aria-hidden="true"></svg></span></h1>
+  <p class="note">A row of crochet chain stitches under the words, appearing one stitch at a time (about 1.5 s, once), finished with a tiny heart knot. It's literally the first stitch of every crochet piece, so it says "crochet", not just "sewing".</p>
+</section>
+
+<section class="opt" id="b">
+  <p class="label"><span>B · Strand of yarn from a ball</span><button onclick="replay('b')">Replay</button></p>
+  <h1>Handmade crochet gifts, <span class="hl">stitched with love<svg class="deco strand" aria-hidden="true"></svg></span></h1>
+  <p class="note">A two-ply yarn strand (you can see the twist) unrolls from a little yarn ball with one loose loop, like yarn lying on a table. It's softer and more illustrative, but busier.</p>
+</section>
+
+<section class="opt" id="c">
+  <p class="label"><span>C · Running stitch, heart knot</span><button onclick="replay('c')">Replay</button></p>
+  <h1>Handmade crochet gifts, <span class="hl">stitched with love<svg class="deco sewn" aria-hidden="true"></svg></span></h1>
+  <p class="note">A thick thread sewn in and out of the "fabric" (long stitches with tiny gaps where it dips under), tied off with a heart knot after "love". It's the closest to today's line, just made of real thread.</p>
+</section>
+
+<script>
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); parent?.append(n); return n; };
+  const heart = (g, x, y, s, fill) => el('path', { d: `M${x} ${y + 3.2 * s} C${x - 4.4 * s} ${y + .4 * s} ${x - 4.2 * s} ${y - 3 * s} ${x - 1.8 * s} ${y - 3 * s} C${x - .7 * s} ${y - 3 * s} ${x} ${y - 2.2 * s} ${x} ${y - 1.4 * s} C${x} ${y - 2.2 * s} ${x + .7 * s} ${y - 3 * s} ${x + 1.8 * s} ${y - 3 * s} C${x + 4.2 * s} ${y - 3 * s} ${x + 4.4 * s} ${y + .4 * s} ${x} ${y + 3.2 * s}Z`, fill, class: 'knot' }, g);
+
+  function draw() {
+    document.querySelectorAll('.deco:not(.today)').forEach((svg) => {
+      svg.replaceChildren();
+      const w = svg.getBoundingClientRect().width, h = svg.getBoundingClientRect().height;
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      const mid = h / 2;
+      if (svg.classList.contains('chain')) {
+        // Chain stitches: overlapping teardrop loops, each drawn over the last so they read as linked.
+        const g = el('g', { class: 'loops' }, svg);
+        const step = Math.max(11, h * .78), rx = step * .74, ry = h * .3;
+        const end = w - step * 1.4;
+        for (let x = rx; x < end; x += step) {
+          el('ellipse', { cx: x, cy: mid, rx, ry, fill: 'var(--soft)', stroke: 'var(--strand)', 'stroke-width': Math.max(2, h * .12), transform: `rotate(-10 ${x} ${mid})` }, g);
+        }
+        heart(svg, w - step * .55, mid, Math.max(1.1, h * .13), 'var(--rose)');
+      } else if (svg.classList.contains('strand')) {
+        // Yarn ball at the start, then a wavy strand with one loose loop, two plies twisted.
+        const r = h * .4, bx = r + 1;
+        const ball = el('g', { class: 'ball' }, svg);
+        el('circle', { cx: bx, cy: mid, r, fill: 'var(--blush)', stroke: 'var(--cocoa)', 'stroke-width': 1.4 }, ball);
+        el('path', { d: `M${bx - r * .8} ${mid - r * .3} Q${bx} ${mid + r * .5} ${bx + r * .8} ${mid - r * .2} M${bx - r * .5} ${mid - r * .75} Q${bx + r * .2} ${mid} ${bx + r * .55} ${mid + r * .7}`, fill: 'none', stroke: 'var(--cocoa)', 'stroke-width': 1 }, ball);
+        const lx = w * .58;
+        const d = `M${bx + r} ${mid} C ${w * .2} ${mid + h * .35}, ${w * .35} ${mid - h * .3}, ${lx - h * .5} ${mid + h * .1} C ${lx + h * .5} ${mid + h * .6}, ${lx + h * .9} ${mid - h * .55}, ${lx} ${mid - h * .45} C ${lx - h * .7} ${mid - h * .35}, ${lx - h * .2} ${mid + h * .45}, ${lx + h * 1.4} ${mid + h * .15} S ${w * .9} ${mid - h * .25}, ${w - 2} ${mid}`;
+        const sw = Math.max(3.4, h * .26);
+        el('path', { d, class: 'ply', stroke: 'var(--strand)', 'stroke-width': sw }, svg);
+        el('path', { d, class: 'ply twist', stroke: '#B97C70', 'stroke-width': sw * .45, transform: 'translate(0 .6)' }, svg);
+      } else {
+        // Running stitch: long stitches on top, short gaps where the thread goes under.
+        const g = el('g', { class: 'stitches' }, svg);
+        const n = Math.max(6, Math.round(w / 34)), gap = 7, len = (w - 20 - (n - 1) * gap - 4) / n, sw = Math.max(3, h * .22);
+        for (let x = 4; x + len <= w - 16; x += len + gap) {
+          const wob = (Math.round(x) % 3 - 1) * h * .06;
+          el('path', { d: `M${x} ${mid + wob} Q ${x + len / 2} ${mid + wob - h * .12} ${x + len} ${mid - wob}`, fill: 'none', stroke: 'var(--strand)', 'stroke-width': sw, 'stroke-linecap': 'round' }, g);
+        }
+        heart(svg, w - 9, mid - 1, Math.max(1.2, h * .14), 'var(--rose)');
+      }
+    });
+  }
+  function replay(id) {
+    const s = document.getElementById(id);
+    s.querySelectorAll('svg, svg *').forEach((n) => { n.style.animation = 'none'; n.getBoundingClientRect(); n.style.animation = ''; });
+  }
+  document.fonts.ready.then(draw);
+  addEventListener('resize', draw);
+</script>
+</body>
+</html>
