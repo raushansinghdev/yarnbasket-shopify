@@ -303,6 +303,11 @@
     letter-spacing: -.01em;
     white-space: nowrap;
   }
+  /* Phones and tablets: the name alone, centred. A 34px basket beside the bold name read as uneven, and a new brand
+     is remembered by its name; the basket still appears in the drawer, footer, splash and favicon.
+     Desktop (below): basket and name in the brand kit's horizontal-logo proportions. */
+  .site-header .site-header__logo .logo-mark { display: none; }
+  .site-header .site-header__name { font-size: clamp(1.625rem, 1rem + 3vw, 1.75rem); }
   .site-header__nav { display: none; }
   .site-header__icons { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-right: -10px; }
   /* Header glyphs are 28px: big enough to find at a glance, still inside a 48px target. */
@@ -375,6 +380,9 @@
   @media (min-width: 1100px) {
     .site-header__row { grid-template-columns: auto 1fr auto; gap: var(--space-6); }
     .site-header__menu-btn { display: none; }
+    .site-header .site-header__logo { gap: 10px; }
+    .site-header .site-header__logo .logo-mark { display: block; width: 44px; height: 44px; }
+    .site-header .site-header__name { font-size: 1.625rem; }
     .site-header__search-form { display: none; }
     .site-header__search { display: inline-grid; }
 
