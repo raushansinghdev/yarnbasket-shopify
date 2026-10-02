@@ -35,7 +35,7 @@ Things to finish in the Shopify admin (Raushan) before the store opens. Deferred
 - [ ] Customs information → default country of origin: India
 
 ## Accounts and checkout
-- [ ] Sign in with Google (account-plan §11 step 2; needs the Google Cloud setup)
+- [ ] Sign in with Google: being set up now on the dev store (account-hub-plan §7). At launch, only add the `account.yarnbasket.in` origins and redirect URIs to the same OAuth client, then verify the brand and add the logo in Google Cloud.
 - [ ] Checkout & accounts branding: logo, colours, fonts (account-plan §11 step 3)
 - [ ] Customer accounts: sign-in links on; sign-in optional at checkout; shipping phone number required
 - [ ] Self-serve returns, with made-to-order pieces as final sale (return rules)

@@ -2,6 +2,21 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-02 (account page, round 2, docs/account-hub-plan.md)
+
+- **Our own "Your account" page in the theme (`/pages/account`), with Shopify's hosted pages kept for editing and full order details** (AH1). Shopify's hosted pages can only take a logo, colours and fonts; their layout and motion are fixed, and editing needs the Customer Account API, which a Liquid theme can't use.
+- **Sign out was missing, and that wasn't intentional.** Shopify's `<shopify-account>` sheet has no sign-out by design, and round 1 wrongly assumed it did.
+  - Sign out now goes in our desktop menu, the account page and Shopify's pages, never the phone drawer.
+  - No confirm step; a "You're signed out" pop-up afterwards.
+  - Shoppers land on the same page if Shopify allows it, otherwise home.
+  - Saved items are kept on the device; Recently viewed is cleared.
+- **Signed in, the header dropdown is ours** (greeting, icons, counts, Sign out). Shopify's sheet is used only for signing in, restyled through its variables (AH2).
+- **On phones, the drawer's "Hi, name" row opens the account page** (AH3). **The page is one scrolling page**, with jump tiles on phones and two columns on desktop, not tabs (AH4).
+- **Order cards:** two buttons chosen by the order's state (Track parcel or Buy again, plus Need help? on WhatsApp), plus a Details link to Shopify's order page. Raushan: "not much, not less".
+- **Extras on the account page:** "Ask for a custom piece", "Download or delete my data" (DPDP), email-offers status, and Recently viewed.
+- **Sign in with Google is set up now, on the dev store** (spike G0 first), which takes it off the launch list. Only the domain values are redone at launch. "Continue with Shop" is turned off if the admin allows it.
+- **Shopify's account pages are branded now on the dev store.** Shopify's account menu becomes Orders, Profile, Saved, Help.
+
 ## 2026-10-02 (header labels on desktop)
 
 - **From 1100px, "Account" and "Cart" both show their word beside the icon** (Raushan approved). One labelled icon next to an unlabelled one looked accidental. Labels match what Indian shoppers know (Flipkart, Amazon and Meesho label the cart on desktop). Phones stay icon-only.
