@@ -20,8 +20,9 @@
   assign item_count = 0
 
   if demo_menu
-    assign d_titles = 'Shop|Gifts|Bestsellers|Our story|Help' | split: '|'
-    assign d_urls = routes.collections_url | append: '|' | append: all_url | append: '|' | append: all_url | append: '|' | append: routes.root_url | append: '|/pages/contact' | split: '|'
+    # "Our story" lives under Help (last, after a divider), not at the top level: see docs/nav-plan.md §3.
+    assign d_titles = 'Shop|Gifts|Bestsellers|Help' | split: '|'
+    assign d_urls = routes.collections_url | append: '|' | append: all_url | append: '|' | append: all_url | append: '|/pages/contact' | split: '|'
     assign item_count = d_titles.size
     assign shop_here = false
     if request.page_type == 'collection' or request.page_type == 'list-collections'
@@ -48,10 +49,10 @@
           assign kh = 'birthday|anniversary|for-her|under-499'
           assign ku = all_url | append: '|' | append: all_url | append: '|' | append: all_url | append: '|' | append: all_url
           assign all_link = true
-        when 5
-          assign kt = 'FAQ|Shipping & delivery|Track order|Contact us'
-          assign kh = 'faq|shipping|track-order|contact'
-          assign ku = routes.root_url | append: '|/pages/contact|' | append: routes.account_url | append: '|/pages/contact'
+        when 4
+          assign kt = 'Track order|Shipping & delivery|FAQ|Contact us|Our story'
+          assign kh = 'track-order|shipping|faq|contact|our-story'
+          assign ku = routes.account_url | append: '|/pages/contact|' | append: routes.root_url | append: '|/pages/contact|' | append: routes.root_url
           if request.path == '/pages/contact'
             assign here = true
           endif
@@ -477,6 +478,8 @@
       transition-delay: 0s;
     }
     .site-header__sub-list { display: grid; gap: 2px; }
+    /* "Our story" / "About" sits last under Help, set apart by a row of stitches (nav-item adds .is-about). */
+    .site-header__sub-list > .is-about { margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px dashed var(--color-line-strong); }
     .site-header__sub-link, .site-header__sub-all {
       display: flex;
       align-items: center;
@@ -651,6 +654,7 @@
   }
   .drawer__group[open]::details-content { block-size: auto; }
   .drawer__sub { display: grid; gap: 2px; margin: 0 0 var(--space-3) 2px; padding: var(--space-1) 0 var(--space-1) var(--space-4); border-left: 1px dashed var(--color-line-strong); }
+  .drawer__sub > .is-about { margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px dashed var(--color-line-strong); }
   .drawer__sub a {
     display: flex;
     align-items: center;

@@ -8,9 +8,9 @@ Status: **Stages 1–3 built 2026-10-02.** Raushan approved the recommendations 
 - **Search is a real `<form action="/search">` field, not a button that looks like a field.** It shows at 768–1099px and from 1280px up. At 1100–1279px it's a 28px icon link. Typing and pressing Enter works with no JavaScript. It sends `options[prefix]=last`, so "bouq" finds "bouquet". Stage 4 adds results as you type on top of this.
 - **The tablet header** (768–1099px) shows the search field and an icon-only cart. With the word "Cart" too, the logo can't stay centred.
 - **The phone drawer scrolls on a 390 × 844 screen.** The craft tiles are 4:3 and come first, and Account / WhatsApp / Instagram sit below them. Seeing the products first mattered more than fitting everything on one screen.
-- **The phone drawer's top bar (logo and ×) is pinned (2026-10-02, Raushan).** Before, the × scrolled away, leaving only the thin dimmed strip, a swipe or Back as ways out, and none of them are obvious. A hairline and soft shadow appear under the bar once the list scrolls. The craft tiles are now 3 across as squares, with "Shop all" as the last tile (Blush, with an arrow) instead of a text link, so 5 crafts fill two rows. The whole menu almost fits a 390 × 844 screen (867px of content); on 360 × 740 it scrolls a little, with the × still visible.
+- **The phone drawer's top bar (logo and ×) is pinned (2026-10-02, Raushan).** Before, the × scrolled away, leaving only the thin dimmed strip, a swipe or Back as ways out, and none of them are obvious. A hairline and soft shadow appear under the bar once the list scrolls. The craft tiles are now 3 across as squares, with "Shop all" as the last tile (Blush, with an arrow) instead of a text link, so 5 crafts fill two rows. With Our story moved under Help (below), the whole menu fits a 390 × 844 screen exactly (844px of content, groups closed); on 360 × 740 it scrolls a little, with the × still visible.
 - **"Track order" is in the Help dropdown**, not in the drawer's bottom row. The bottom row is Account, then WhatsApp (once the number is set), then Instagram.
-- **Demo menu:** while Demo content is on and the main menu has no dropdowns, the header shows the planned menu (Shop / Gifts / Bestsellers / Our story / Help) with demo craft photos. Its links only go to pages that exist. Once a real menu with dropdowns is saved in the admin, the demo menu goes away.
+- **Demo menu:** while Demo content is on and the main menu has no dropdowns, the header shows the planned menu (Shop / Gifts / Bestsellers / Help, with Our story last under Help) with demo craft photos. Its links only go to pages that exist. Once a real menu with dropdowns is saved in the admin, the demo menu goes away.
 - **How photo tiles are chosen:** a dropdown whose children are all collection links (2 or more) shows them as photo tiles. A dropdown with any collection link gets a "Shop all" / "View all" link.
 - **Tooling:** `tools/cdp.mjs` gained `--tab N` (presses the real Tab key, so focus styles show) and `--forced-colors`.
 - **Checks on 2026-10-02:**
@@ -25,7 +25,8 @@ Status: **Stages 1–3 built 2026-10-02.** Raushan approved the recommendations 
 2. Go to **Content → Menus → Main menu** and delete Home, Catalog and Contact.
 3. Add **Shop**, linked to "Collections". Add the five craft collections, then drag each one to the right under Shop, so they become a photo dropdown.
 4. Add **Gifts**, linked to a collection, with occasion collections nested under it. Add **Bestsellers**, linked to its collection.
-5. Add **Our story** (a page) and **Help**, with FAQ / Shipping / Contact pages nested under it.
+5. Add **Help** with these nested under it, in this order: Track order, Shipping & delivery, FAQ, Contact us, and **Our story** (a page) last. Any item whose name or handle mentions "story" or "about" is set apart by a divider automatically.
+6. In the **Footer** menu, add **Our story** too, since that's where people look for "About".
 This plan covers the header bar, its icons, the desktop menu, the mobile menu drawer and search, on every page.
 It follows `motion-plan.md` (tokens, budgets) and `brand-direction.md` (stitch marks, line icons).
 
@@ -80,9 +81,10 @@ Proposed main menu (≤ 5 top-level items, so it fits one desktop row and one ph
 Shop ▾            → Bouquets · Keychains · Hair clips · Bag charms · Scrunchies · Home decor · [Shop all]
 Gifts ▾           → Birthday · Anniversary · For her · Under ₹499 · [All gifts]   (ties to the gifting differentiator)
 Bestsellers       → /collections/bestsellers
-Our story         → /pages/our-story
-Help ▾            → FAQ · Shipping & delivery · Track order · Contact us (WhatsApp)
+Help ▾            → Track order · Shipping & delivery · FAQ · Contact us (WhatsApp) · ── · Our story
 ```
+
+**Changed 2026-10-02 (Raushan): "Our story" left the top menu and is now the last item under Help, after a divider.** Few people click an "about" page from the main menu, and it took a top-level slot from shopping. It still matters for trust and for the "made by hand" story, so it stays in three places: under Help, as the home page's "One stitch at a time" section with its "Our story →" link, and in the footer. "Help" stays the label because people with a problem scan for that word.
 
 - **"Home" is removed.** The logo is the home link on every page (it's labelled "Yarn Basket, home" for screen readers). This is the norm on shop sites.
 - "Catalog" becomes **Shop**: a clear verb with the categories one level down.
@@ -233,8 +235,8 @@ It slides in from the left, as today. It's rebuilt so the first thing you see is
 │ Shop all  →                  │
 │──────────────────────────────│
 │ Gifts                      ⌄ │  26px serif rows, 56px tall
-│ Bestsellers                  │  (Gifts and Help open in place, like today)
-│ Our story                    │
+│ Bestsellers                  │  (Gifts and Help open in place, like today;
+│                              │   Our story is the last item under Help)
 │ Help                       ⌄ │
 │──────────────────────────────│
 │ 👤 Account    🚚 Track order  │  20px glyph and a 16px label, 48px rows

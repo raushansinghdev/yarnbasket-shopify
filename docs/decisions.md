@@ -3,6 +3,10 @@
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
 
+## 2026-10-02 (menu: Our story under Help)
+
+- **The top menu is Shop / Gifts / Bestsellers / Help (four items).** "Our story" is the last item under Help, set apart by a dashed divider (nav-item adds `.is-about` to any child whose handle or title mentions "story" or "about"). It also stays on the home page (the story section and its link) and goes in the footer menu. Raushan felt a top-level "Our story" wasn't useful to shoppers. It stays reachable because, for a new handmade brand, it builds trust and carries the "made by hand" differentiator.
+
 ## 2026-10-02 (header logo)
 
 - **Phones and tablets (under 1100px) show the name only, centred, at about 27–28px.** Raushan found the small basket beside the bold name uneven. In the brand kit the basket is about twice the name's cap height, so at 34px beside a 24px name it read as a thin doodle and pulled the name off-centre to the eye. Four options were mocked on the real header. Name-only won: calmest, readable, and a new brand is remembered by its name.

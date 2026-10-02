@@ -17,6 +17,9 @@
   @param {boolean} [tiles] - Show the children as photo tiles (a list of crafts)
   @param {boolean} [all_link] - Add a "Shop all" / "View all" link to the parent URL
 
+  A child whose handle or title mentions "story" or "about" gets .is-about: it's set apart at the end of its list
+  (Our story lives under Help, not in the top menu; docs/nav-plan.md §3).
+
   @example
   {% render 'nav-item', place: 'bar', index: forloop.index, title: link.title, url: link.url, kids: link.links %}
 {%- enddoc -%}
@@ -56,7 +59,14 @@
         <ul role="list" class="{% if tiles %}site-header__tiles{% else %}site-header__sub-list{% endif %}">
           {%- for kid_title in k_titles -%}
             {%- assign i = forloop.index0 -%}
-            <li style="--i: {{ forloop.index }}">
+            {%- liquid
+              assign kid_key = k_handles[i] | append: ' ' | append: kid_title | downcase
+              assign about = false
+              if kid_key contains 'story' or kid_key contains 'about'
+                assign about = true
+              endif
+            -%}
+            <li style="--i: {{ forloop.index }}"{% if about and tiles == false %} class="is-about"{% endif %}>
               {%- if tiles -%}
                 {%- render 'menu-tile', title: kid_title, url: k_urls[i], handle: k_handles[i], collection: kids[i].object, current: kids[i].current, sizes: '128px' -%}
               {%- else -%}
@@ -111,8 +121,11 @@
         </summary>
         <ul role="list" class="drawer__sub">
           {%- for kid_title in k_titles -%}
-            {%- assign i = forloop.index0 -%}
-            <li>
+            {%- liquid
+              assign i = forloop.index0
+              assign kid_key = k_handles[i] | append: ' ' | append: kid_title | downcase
+            -%}
+            <li{% if kid_key contains 'story' or kid_key contains 'about' %} class="is-about"{% endif %}>
               <a href="{{ k_urls[i] }}" {% if kids[i].current %}aria-current="page"{% endif %}>
                 {%- render 'menu-link-icon', handle: k_handles[i] -%}
                 <span>{{ kid_title }}</span>
