@@ -413,6 +413,19 @@ if (document.querySelector('.tip')) {
       tab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: animate ? 'smooth' : 'auto' });
     };
     tabs.forEach((tab) => tab.addEventListener('click', () => pick(tab)));
+
+    // The circle row fades softly on whichever side has more circles to scroll to (CSS: .can-left / .can-right).
+    const row = section.querySelector('.shop__crafts');
+    if (row) {
+      const edges = () => {
+        const max = row.scrollWidth - row.clientWidth;
+        row.classList.toggle('can-left', row.scrollLeft > 2);
+        row.classList.toggle('can-right', row.scrollLeft < max - 2);
+      };
+      row.addEventListener('scroll', edges, { passive: true });
+      new ResizeObserver(edges).observe(row);
+      edges();
+    }
   };
   document.querySelectorAll('[data-shop-crafts]').forEach(initShop);
   document.addEventListener('shopify:section:load', (event) => event.target.querySelectorAll('[data-shop-crafts]').forEach(initShop));

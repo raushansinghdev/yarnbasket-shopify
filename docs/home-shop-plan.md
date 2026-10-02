@@ -15,6 +15,12 @@ Status: **built 2026-10-02 (direction B).** Raushan approved the recommendations
   - with JavaScript off, every craft is listed under its own heading
   - `npm run check`: 25/25 in Chrome, Safari and Firefox (phone images on first load 696 KB, so hidden crafts' photos don't load early)
 - **`tools/cdp.mjs`** gained `--no-js`.
+- **The phone circle row is calm (2026-10-02, after Raushan found it jittery and attention-grabbing):**
+  - circles stay their real size while you swipe; the shared grow-as-it-slides effect is off for this row
+  - `scroll-snap-type: x proximity`, a soft settle instead of a hard snap
+  - no glide-in on arrival
+  - the circle photos load with the page, so nothing pops in mid-swipe
+  - "more this way" is a 36px fade on whichever side has more to scroll to (theme.js toggles `.can-left` / `.can-right`), so the end circles and their focus rings are never dimmed
 Sections: `sections/collection-list.liquid` (Shop by craft), `sections/featured-products.liquid` (Bestsellers), `snippets/product-card.liquid`.
 It follows `motion-plan.md` (arrivals, budgets), `nav-plan.md` (the Shop menu now shows the same crafts) and the UX-first rule: the shopper should see what we sell, fast.
 
