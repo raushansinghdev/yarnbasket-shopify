@@ -3,6 +3,10 @@
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
 
+## 2026-10-02 (craft row: selected line)
+
+- **Craft circles use the header's underline rule.** Selected = a short solid line (plus the dark ring and a bolder label); hover or keyboard focus = dashed stitches that draw in. Before, the selected craft had dashes, which the header uses to mean "pointing at", not "chosen".
+
 ## 2026-10-02 (menu: Our story under Help)
 
 - **The top menu is Shop / Gifts / Bestsellers / Help (four items).** "Our story" is the last item under Help, set apart by a dashed divider (nav-item adds `.is-about` to any child whose handle or title mentions "story" or "about"). It also stays on the home page (the story section and its link) and goes in the footer menu. Raushan felt a top-level "Our story" wasn't useful to shoppers. It stays reachable because, for a new handmade brand, it builds trust and carries the "made by hand" differentiator.

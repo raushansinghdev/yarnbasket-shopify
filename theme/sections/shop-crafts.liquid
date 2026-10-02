@@ -226,25 +226,34 @@
     text-align: center;
     padding-bottom: 6px;
   }
-  /* Chosen: a solid Cocoa Deep ring, a bolder label and a run of stitches under it (not colour alone, WCAG 1.4.1). */
-  .shop__craft[aria-pressed="true"] .shop__circle { outline: 2px solid var(--cocoa-deep); }
-  .shop__craft[aria-pressed="true"] .shop__label { font-weight: 600; }
-  .shop__craft[aria-pressed="true"] .shop__label::after {
+  /* The line under the label speaks the header's language: dashed stitches = hover or keyboard focus,
+     solid = chosen (like the page you're on). Chosen also gets a solid Cocoa Deep ring and a bolder label,
+     so the state never rests on colour alone (WCAG 1.4.1). */
+  .shop__label::after {
     content: "";
     position: absolute;
     left: 50%;
     bottom: 0;
     width: 28px;
     height: 2px;
-    translate: -50% 0;
+    margin-left: -14px;
+    border-radius: 2px;
     background: linear-gradient(90deg, currentColor 6px, transparent 0) 0 0 / 10px 2px round;
+    transform: scaleX(0);
+    transition: transform 380ms var(--ease-out);
+    pointer-events: none;
   }
+  .shop__craft:focus-visible .shop__label::after { transform: none; }
+  .shop__craft[aria-pressed="true"] .shop__circle { outline: 2px solid var(--cocoa-deep); }
+  .shop__craft[aria-pressed="true"] .shop__label { font-weight: 600; }
+  .shop__craft[aria-pressed="true"] .shop__label::after { height: 1.5px; background: currentColor; transform: none; transition: none; }
   .shop__craft:focus-visible { outline: none; box-shadow: none; }
   .shop__craft:focus-visible .shop__circle { outline: 2px solid var(--color-ink); outline-offset: 4px; box-shadow: 0 0 0 9px color-mix(in srgb, var(--rose) 45%, transparent); }
   .shop__craft:active .shop__circle { scale: .95; }
   @media (hover: hover) {
     .shop__craft:hover .shop__circle { outline-color: var(--rose); }
     .shop__craft:hover .shop__img { transform: scale(1.06); }
+    .shop__craft:hover .shop__label::after { transform: none; }
   }
 
   /* The panel title is for the no-JavaScript list and for the editor outline; the pressed circle already names it. */
