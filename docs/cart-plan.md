@@ -1,6 +1,34 @@
 # Cart plan (drawer and cart page)
 
-Status: **Plan only (2026-10-02). Waiting for Raushan's go on the decisions in §12.**
+Status: **Stages 1–4 built 2026-10-02 (not yet tested with items in the cart: the store has no products until `tools/test-products.csv` is imported).** Raushan approved the recommendations, except D2: adding shows a Flipkart-style "Added to cart · View cart" pop-up instead of opening the drawer.
+
+### As built (where it differs from the plan below)
+- **D2 changed (Raushan): adding to cart shows a pop-up and doesn't open the drawer.** Shoppers keep browsing; "View cart" in the pop-up opens the drawer.
+  - What it shows: the photo, "✓ Added to cart", the name (with the option picked), View cart and ×.
+  - Where it sits: at the bottom on phones; under the header's cart button from 768px.
+  - How long it stays: 8 seconds, 10 for an error. It pauses while a finger, pointer or keyboard focus is on it, and Esc closes it.
+  - It never takes focus: the header's status line says "Rose bouquet added to cart. 2 items." The header cart button does the same as View cart, so nothing is lost when the pop-up goes (WCAG 2.2.1).
+  - The drawer's "✓ … added" line from §4.1 was dropped, since the drawer no longer opens on add.
+- **Errors:** a product-page error (like the stock limit) shows under the button (`role=alert`). A Little extras error shows in the pop-up.
+- **Free shipping (D4):** set the amount in **Theme settings → Cart → Free shipping from (₹)**. It stays hidden at 0, the default. Gift note and Little extras can be switched off in the same place.
+- **`cart.js` is 20 KB raw (about 11 KB minified),** not the ≤10 KB estimated. It loads on every page as a deferred module, and `npm run check` holds it to a 20 KB budget. `theme.js` only gained a `quiet` flag on `cart:updated`, because cart.js makes its own, more useful announcement.
+- **Spoken updates while the drawer is open** go to a status line inside the drawer. The header's line is inert behind the modal and wouldn't be heard.
+- **Focus survives every refresh.** If you were on a line's + button, you're still on it after the update arrives. After a remove, focus is on Undo. After Undo, it's on the restored item's name, not its number field, so the phone keyboard doesn't pop up.
+- **Leaving from inside the drawer** (a product link, or Checkout) first steps back over the drawer's history entry. Back from the next page then returns to the page, not to a duplicate of it.
+- **Enter in a quantity box** saves that number and never submits the form (that would go to checkout).
+- **The empty cart's craft tiles** link to each craft's collection once it exists, otherwise to all products with a demo photo.
+- **The product page** got an interim Add to cart: a styled button with Adding…/Added, quantity, the option picker (sold-out options disabled) and the error line. The full page is still build-plan Phase 4.
+- **Tests:** `npm run check` section 8 covers:
+  - add → pop-up → View cart → drawer
+  - + and −, with focus kept
+  - bin → Undo
+  - Back closes the drawer
+  - the stock limit message
+  - axe on the drawer and the page
+  - the no-JS update
+
+  It's skipped while the store has no products.
+- **Checked so far:** theme check is clean; axe reports 0 violations on the empty drawer and the empty cart page at 390 and 1440px.
 This plan covers everything between "Add to cart" and Shopify's checkout:
 - the add-to-cart moment
 - the cart drawer
@@ -46,7 +74,7 @@ Phones come first: most shoppers will be on mid-range Android phones at 360–41
 ## 3. Where the cart lives
 
 **One cart, two places:**
-- **The drawer.** It slides in from the right, mirroring the menu drawer on the left. It opens when you add something and when you tap the header's cart button.
+- **The drawer.** It slides in from the right, mirroring the menu drawer on the left. It opens when you tap the header's cart button, or View cart in the added-to-cart pop-up (D2).
 - **The `/cart` page.** It's for direct links, no-JS shoppers, and anyone who opens the cart in a new tab. Shopify also sends people back here from checkout.
 
 Both are drawn from the same snippets (`cart-line`, `cart-summary`, `cart-empty`), so they can never look or behave differently.
@@ -133,9 +161,7 @@ There's no Checkout button on an empty cart.
 ### 6.1 Adding to cart (product page now; cards only if D9 says so)
 1. The button shows "Adding…" with a small spinner. It stays the same size, so nothing jumps. While it waits, repeat taps are ignored.
 2. One request does the work: `POST /cart/add.js` with `sections=cart-drawer` returns both the result and the drawer's new HTML (Shopify's Section Rendering API).
-3. The drawer opens with the line "✓ Rose bouquet added" at the top. The header count bumps.
-   - The status line says "Rose bouquet added to cart. 2 items."
-   - Focus moves to the drawer's heading.
+3. **(As built, D2)** The added-to-cart pop-up appears, with View cart. The header count bumps, and the status line says "Rose bouquet added to cart. 2 items." Focus stays on the button.
 4. The product page button shows "Added ✓" for 2 seconds, then goes back to "Add to cart".
 5. There's no flying-image animation: it's busy, it gets in the way, and it ignores reduced motion.
 
@@ -279,7 +305,7 @@ The full product page is build-plan Phase 4. For now, Stage 3 only upgrades Skel
 | # | Question | Options | Recommendation |
 |---|----------|---------|----------------|
 | D1 | Where does the cart open? | (a) a drawer, with `/cart` as the backup (b) the page only (c) the drawer only | **(a).** Shoppers never lose their place, and the page covers no-JS shoppers and direct links |
-| D2 | What happens after "Add to cart"? | (a) open the drawer (b) a small "Added, View cart" pop-up at the bottom | **(a).** Most gift orders are 1–2 items, so the clearest confirmation and the Checkout button come in the same step. "Keep shopping" is one tap on × or Back |
+| D2 | What happens after "Add to cart"? | (a) open the drawer (b) a small "Added, View cart" pop-up at the bottom | **Raushan chose (b)**, Flipkart-style, so shoppers aren't pulled into the cart on every add (see "As built") |
 | D3 | How do you remove an item? | (a) minus turns into a bin at 1, with an inline Undo (b) a separate "Remove" link on every line | **(a).** It's the Swiggy/Blinkit pattern Indian shoppers already know. Lines stay less cluttered, and Undo makes mistakes harmless |
 | D4 | Free-shipping progress line? | (a) yes: "₹151 away from free shipping" with a thin stitched bar (b) no | **(a), if you offer free shipping above an amount. Which amount?** If shipping is always free or always paid, (b) |
 | D5 | Gift note in the cart? | (a) yes, collapsed (b) no, use the checkout's order note | **(a).** Gifting is our likely differentiator, and the cart is where people think about it. Gift wrap as a paid add-on can come later as its own product |

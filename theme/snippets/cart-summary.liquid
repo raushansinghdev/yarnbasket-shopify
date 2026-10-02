@@ -1,0 +1,124 @@
+{%- doc -%}
+  The cart's totals and Checkout (docs/cart-plan.md §4, §6.5). In the drawer it's the pinned footer; on the cart page
+  it's the summary card. Checkout is a real submit button named "checkout", so the cart form (quantities, gift note)
+  is saved first and Shopify then sends the shopper to its checkout. It must stay the only way into checkout, so a
+  checkout app can take it over later.
+
+  @param {string} place - 'drawer' or 'page'. The page also shows express payment buttons and payment icons.
+
+  @example
+  {% render 'cart-summary', place: 'page' %}
+{%- enddoc -%}
+{%- liquid
+  assign threshold = settings.free_shipping_threshold | default: 0 | times: 100
+  assign blocked = false
+  for item in cart.items
+    if item.variant.available == false
+      assign blocked = true
+      break
+    endif
+  endfor
+-%}
+<div class="cart-summary cart-summary--{{ place }}">
+  {%- if threshold > 0 -%}
+    {%- liquid
+      assign away = threshold | minus: cart.total_price
+      assign pct = cart.total_price | times: 100 | divided_by: threshold
+      if pct > 100
+        assign pct = 100
+      endif
+    -%}
+    <div class="cart-free{% if away <= 0 %} is-done{% endif %}">
+      <p class="cart-free__text">
+        {%- if away > 0 -%}
+          {%- assign away_money = away | money -%}
+          {{- 'cart.free_away' | t: amount: away_money -}}
+        {%- else -%}
+          {%- render 'icon', icon: 'truck' -%}
+          {{- 'cart.free_done' | t -}}
+        {%- endif -%}
+      </p>
+      <span class="cart-free__bar" aria-hidden="true"><span style="--pct: {{ pct }}%"></span></span>
+    </div>
+  {%- endif -%}
+
+  <dl class="cart-summary__rows" data-total>
+    {%- for discount in cart.cart_level_discount_applications -%}
+      <div class="cart-summary__row cart-summary__row--deal">
+        <dt>{{ discount.title }}</dt>
+        <dd>−{{ discount.total_allocated_amount | money }}</dd>
+      </div>
+    {%- endfor -%}
+    <div class="cart-summary__row cart-summary__row--total">
+      <dt>{{ 'cart.subtotal' | t }}</dt>
+      <dd>{{ cart.total_price | money }}</dd>
+    </div>
+  </dl>
+  <p class="cart-summary__tax">
+    {%- if cart.taxes_included -%}{{ 'cart.taxes_included' | t }}{%- else -%}{{ 'cart.taxes_excluded' | t }}{%- endif -%}
+  </p>
+
+  <button
+    type="submit"
+    name="checkout"
+    class="btn cart-summary__checkout"
+    data-checkout
+    {% if blocked %}
+      disabled aria-describedby="CartBlocked-{{ place }}"
+    {% endif %}
+  >
+    {%- render 'icon', icon: 'lock' -%}
+    <span>{{ 'cart.checkout' | t }}</span>
+  </button>
+  {%- if blocked -%}
+    <p class="cart-summary__blocked" id="CartBlocked-{{ place }}">{{ 'cart.sold_out' | t }}</p>
+  {%- endif -%}
+
+  {%- if place == 'page' and additional_checkout_buttons -%}
+    <div class="cart-summary__express">{{ content_for_additional_checkout_buttons }}</div>
+  {%- endif -%}
+
+  <p class="cart-summary__ships">
+    {%- render 'icon', icon: 'truck' -%}
+    {{- 'cart.ships' | t -}}
+  </p>
+
+  {%- if place == 'page' and shop.enabled_payment_types.size > 0 -%}
+    <div class="cart-summary__pay">
+      <p class="visually-hidden">{{ 'cart.payments' | t }}</p>
+      <ul role="list">
+        {%- for type in shop.enabled_payment_types -%}
+          <li>{{ type | payment_type_svg_tag: class: 'cart-summary__pay-icon' }}</li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .cart-summary { display: grid; gap: var(--space-3); }
+  .cart-summary__rows { display: grid; gap: var(--space-1); transition: opacity var(--dur-state) ease; }
+  .cart-summary__row { display: flex; justify-content: space-between; gap: var(--space-4); font-variant-numeric: tabular-nums; }
+  .cart-summary__row dd { margin: 0; }
+  .cart-summary__row--deal { font-size: var(--fs-small); color: var(--color-muted); }
+  .cart-summary__row--total { font-weight: 500; font-size: 1.125rem; color: var(--color-heading); }
+  .cart-summary__tax { margin-top: calc(var(--space-2) * -1); font-size: var(--fs-small); color: var(--color-muted); }
+  .cart-summary__checkout { width: 100%; min-height: 56px; font-size: 1.0625rem; gap: var(--space-2); }
+  .cart-summary__checkout .icon { width: 20px; height: 20px; }
+  @media (hover: hover) { .cart-summary__checkout:hover .icon { transform: none; } }
+  .cart-summary__checkout:disabled { --btn-bg: var(--taupe-ink); cursor: not-allowed; transform: none; box-shadow: none; }
+  .cart-summary__blocked { font-size: var(--fs-small); color: #9A3B2E; font-weight: 500; text-align: center; }
+  .cart-summary__ships { display: flex; align-items: center; justify-content: center; gap: var(--space-2); font-size: var(--fs-small); color: var(--color-muted); }
+  .cart-summary__ships .icon { width: 20px; height: 20px; color: var(--color-heading); }
+  .cart-summary__express:empty { display: none; }
+  .cart-summary__pay ul { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
+  .cart-summary__pay-icon { width: 38px; height: 24px; }
+
+  /* Free shipping: one line of words, and a thin bar under it that is decoration only. */
+  .cart-free { display: grid; gap: var(--space-2); font-size: var(--fs-small); color: var(--color-heading); }
+  .cart-free__text { display: flex; align-items: center; gap: var(--space-2); }
+  .cart-free__text .icon { width: 20px; height: 20px; }
+  .cart-free__bar { display: block; height: 4px; border-radius: 4px; background: var(--color-line-strong); overflow: hidden; }
+  .cart-free__bar > span { display: block; height: 100%; width: var(--pct); border-radius: inherit; background: var(--cocoa); transition: width var(--dur-enter) var(--ease-out); }
+  .cart-free.is-done .cart-free__bar > span { background: var(--sage); }
+{% endstylesheet %}

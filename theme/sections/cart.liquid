@@ -1,33 +1,115 @@
-{% comment %}
-  This section is used in the cart template to render /cart page with an
-  overview of the items in customer's cart.
+{%- comment -%}
+  The cart page, /cart (docs/cart-plan.md §4.2, §5). Works fully without JavaScript: a plain form with a quantity
+  per line, an Update button and Checkout. cart.js makes the steppers instant, adds Undo and the gift-note autosave,
+  and shows the pinned Checkout bar on phones while the summary's own button is off screen.
+  The same snippets draw the cart drawer (sections/cart-drawer.liquid), so the two never differ.
+{%- endcomment -%}
+<div class="section cart-page scheme-white" data-cart-page data-section-id="{{ section.id }}">
+  <div class="cart-page__root" data-cart-root data-count="{{ cart.item_count }}">
+    <h1 class="cart-page__title">
+      {{- 'cart.title' | t -}}
+      {%- if cart.item_count > 0 %}
+        <span class="cart-page__count">({{ 'cart.count' | t: count: cart.item_count }})</span>
+      {%- endif -%}
+    </h1>
 
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/cart
-{% endcomment %}
+    {%- if cart.item_count > 0 -%}
+      <form action="{{ routes.cart_url }}" method="post" class="cart-page__grid" id="CartForm" data-cart-form novalidate>
+        <div class="cart-page__lines">
+          <ul class="cart-lines" role="list" data-lines>
+            {%- for item in cart.items -%}
+              {%- render 'cart-line', item: item, place: 'page', sizes: '(min-width: 990px) 112px, 96px' -%}
+            {%- endfor -%}
+          </ul>
+          <noscript>
+            <button type="submit" name="update" class="btn btn--ghost cart-page__update">{{ 'cart.update' | t }}</button>
+          </noscript>
+        </div>
 
-<h1>{{ 'cart.title' | t }}</h1>
+        <div class="cart-page__side">
+          <section class="cart-page__summary" aria-labelledby="CartSummaryTitle">
+            <h2 class="visually-hidden" id="CartSummaryTitle">{{ 'cart.summary' | t }}</h2>
+            {%- render 'cart-note', place: 'page' -%}
+            {%- render 'cart-summary', place: 'page' -%}
+          </section>
+        </div>
+      </form>
 
-<form action="{{ routes.cart_url }}" method="post">
-  <table>
-    {% for item in cart.items %}
-      <tr>
-        <td>
-          {% render 'image', image: item.image, url: item.url %}
-        </td>
-        <td>
-          <p>{{ item.product.title }}</p>
-          {{ 'cart.remove' | t | link_to: item.url_to_remove }}
-        </td>
-        <td>
-          <input type="text" name="updates[]" value="{{ item.quantity }}">
-          <input type="submit" value="{{ 'cart.update' | t }}">
-        </td>
-      </tr>
-    {% endfor %}
-  </table>
+      {%- comment -%} Phones: total and Checkout pinned to the bottom while the summary's button is off screen. {%- endcomment -%}
+      <div class="cart-bar" data-cart-bar>
+        <p class="cart-bar__total" data-total>
+          <span class="cart-bar__label">{{ 'cart.subtotal' | t }}</span>
+          <span>{{ cart.total_price | money }}</span>
+        </p>
+        <button type="submit" form="CartForm" name="checkout" class="btn cart-bar__btn" tabindex="-1" aria-hidden="true">
+          {%- render 'icon', icon: 'lock' -%}
+          <span>{{ 'cart.checkout' | t }}</span>
+        </button>
+      </div>
+    {%- else -%}
+      <ul class="cart-lines" role="list" data-lines></ul>
+      {%- render 'cart-empty', place: 'page', level: 2 -%}
+    {%- endif -%}
+  </div>
 
-  <input type="submit" name="checkout" value="{{ 'cart.checkout' | t }}">
-</form>
+  {%- if settings.cart_extras and cart.item_count > 0 -%}
+    {%- comment -%} "Little extras" (decision D7): cart.js fills this from sections/cart-extras.liquid. {%- endcomment -%}
+    <div
+      class="cart-extras-slot"
+      data-cart-extras
+      data-url="{{ routes.product_recommendations_url }}?product_id={{ cart.items.first.product_id }}&limit=10&section_id=cart-extras"
+    ></div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .cart-page { padding-top: clamp(var(--space-6), 1.5rem + 2vw, var(--space-8)); }
+  .cart-page__title { font-size: var(--fs-h2); line-height: 1.05; margin-bottom: var(--space-5); }
+  .cart-page__count { font-family: var(--font-sans); font-style: normal; font-weight: 400; font-size: 1.125rem; letter-spacing: 0; color: var(--color-muted); white-space: nowrap; }
+  .cart-page__grid { display: grid; gap: var(--space-6); align-items: start; }
+  .cart-page .cart-line { --photo: 96px; }
+  .cart-page__update { margin-top: var(--space-4); }
+  .cart-page__summary { display: grid; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-md); background: var(--color-surface); }
+  .cart-page__summary .cart-note { padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-line-strong); }
+  .cart-page .cart-empty { padding-block: var(--space-6) var(--space-4); }
+
+  /* Pinned Checkout bar (phones only). It's a shortcut to the summary's own button, so it stays out of the tab
+     order and away from screen readers; it only appears while that button is off screen. */
+  .cart-bar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4) max(var(--space-3), env(safe-area-inset-bottom));
+    background: var(--white);
+    border-top: 1px solid var(--color-line-strong);
+    box-shadow: 0 -12px 24px -20px rgb(78 58 49 / .45);
+    transform: translateY(110%);
+    visibility: hidden;
+    transition: transform var(--dur-panel) var(--ease-out), visibility 0s linear var(--dur-panel);
+  }
+  .cart-bar.is-shown { transform: none; visibility: visible; transition-delay: 0s; }
+  .cart-bar__total { display: grid; font-weight: 500; font-size: 1.125rem; line-height: 1.2; color: var(--color-heading); font-variant-numeric: tabular-nums; transition: opacity var(--dur-state) ease; }
+  .cart-bar__label { font-size: var(--fs-label); font-weight: 500; letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
+  .cart-bar__btn { flex: 1; max-width: 15rem; gap: var(--space-2); }
+  .cart-bar__btn .icon { width: 20px; height: 20px; }
+  [data-cart-root].is-busy .cart-bar__total { opacity: .55; }
+  @media (scripting: none) { .cart-bar { display: none; } }
+  @media (max-height: 500px) { .cart-bar { display: none; } }
+
+  @media (min-width: 990px) {
+    .cart-page__grid { grid-template-columns: minmax(0, 1fr) 22.5rem; gap: var(--space-8); }
+    .cart-page .cart-line { --photo: 112px; gap: var(--space-5); }
+    .cart-page .cart-line__body { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "info qty price" "note note note"; column-gap: var(--space-6); }
+    .cart-page .cart-line__qty { margin-top: 0; }
+    .cart-page .cart-line__price { min-width: 6rem; }
+    .cart-page__side { position: sticky; top: calc(var(--header-height) + var(--space-5)); }
+    .cart-bar { display: none; }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {

@@ -44,6 +44,7 @@
     </script>
 
     <script src="{{ 'theme.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'cart.js' | asset_url }}" type="module"></script>
 
     {{ content_for_header }}
 
@@ -64,5 +65,7 @@
     </main>
 
     {% sections 'footer-group' %}
+
+    {% section 'cart-drawer' %}
   </body>
 </html>

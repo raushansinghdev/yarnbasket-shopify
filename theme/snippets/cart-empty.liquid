@@ -1,0 +1,65 @@
+{%- doc -%}
+  The empty cart: never a dead end (docs/cart-plan.md §4.3). One button to the bestsellers, then the crafts as the
+  same photo tiles as the phone menu, with "Shop all" last so they fill two rows of three.
+
+  @param {string} place - 'drawer' or 'page'
+  @param {number} [level] - Heading level for "Your basket is empty". Defaults to 2.
+
+  @example
+  {% render 'cart-empty', place: 'page' %}
+{%- enddoc -%}
+{%- liquid
+  assign h = level | default: 2
+  assign best_url = collections['bestsellers'].url | default: routes.all_products_collection_url
+  assign titles = 'Bouquets|Keychains|Hair clips|Bag charms|Flower pots' | split: '|'
+  assign handles = 'bouquets|keychains|hair-clips|bag-charms|flower-pots' | split: '|'
+-%}
+<div class="cart-empty">
+  {%- render 'logo-mark', size: 72, id: place, class: 'cart-empty__mark' -%}
+  <h{{ h }} class="cart-empty__title">{{ 'cart.empty_title' | t }}</h{{ h }}>
+  <p class="cart-empty__text">{{ 'cart.empty_text' | t }}</p>
+  <a class="btn btn--knob cart-empty__btn" href="{{ best_url }}">
+    {{- 'cart.empty_cta' | t -}}
+    <span class="btn__knob">{%- render 'icon', icon: 'arrow' -%}</span>
+  </a>
+  <p class="eyebrow cart-empty__browse" id="CartBrowse-{{ place }}">{{ 'cart.empty_browse' | t }}</p>
+  <ul class="cart-empty__tiles" role="list" aria-labelledby="CartBrowse-{{ place }}">
+    {%- for handle in handles -%}
+      {%- liquid
+        # A collection that doesn't exist yet comes back as an empty object, not nil: pass nil so the tile uses its demo photo.
+        assign c = nil
+        assign c_url = routes.all_products_collection_url
+        if collections[handle].id != blank
+          assign c = collections[handle]
+          assign c_url = c.url
+        endif
+      -%}
+      <li>
+        {%- render 'menu-tile', title: titles[forloop.index0], url: c_url, handle: handle, collection: c, sizes: '(min-width: 480px) 120px, 28vw' -%}
+      </li>
+    {%- endfor -%}
+    <li>
+      <a href="{{ routes.all_products_collection_url }}" class="menu-tile cart-empty__all">
+        <span class="media menu-tile__media"><span class="cart-empty__all-art">{%- render 'icon', icon: 'arrow' -%}</span></span>
+        <span class="menu-tile__title">{{ 'header.shop_all' | t }}</span>
+      </a>
+    </li>
+  </ul>
+</div>
+
+{% stylesheet %}
+  .cart-empty { display: grid; justify-items: center; gap: var(--space-3); text-align: center; }
+  .cart-empty__mark { margin-bottom: var(--space-1); }
+  .cart-empty__title { font-size: var(--fs-h3); }
+  .cart-empty__text { color: var(--color-muted); }
+  .cart-empty__btn { margin-top: var(--space-2); padding-left: 1.75rem; }
+  .cart-empty__browse { margin-top: var(--space-6); }
+  .cart-empty__tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4) var(--space-3); width: 100%; max-width: 26rem; text-align: center; }
+  .cart-empty__tiles .menu-tile { gap: 6px; }
+  .cart-empty__tiles .menu-tile__media { --ratio: 1; }
+  .cart-empty__tiles .menu-tile__title { font-size: .875rem; line-height: 1.25; text-wrap: balance; }
+  .cart-empty__all .menu-tile__media { background: var(--blush); }
+  .cart-empty__all-art { position: absolute; inset: 0; display: grid; place-items: center; color: var(--cocoa-deep); }
+  .cart-empty__all-art .icon { width: 26px; height: 26px; transition: translate var(--dur-state) var(--ease-out); }
+  @media (hover: hover) { .cart-empty__all:hover .cart-empty__all-art .icon { translate: 4px 0; } }
+{% endstylesheet %}

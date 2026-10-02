@@ -80,6 +80,36 @@
     ]
   },
   {
+    "name": "Cart",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "The cart drawer and cart page. See docs/cart-plan.md."
+      },
+      {
+        "type": "number",
+        "id": "free_shipping_threshold",
+        "label": "Free shipping from (₹)",
+        "default": 0,
+        "info": "Shows \"You're ₹… away from free shipping\" in the cart. Leave at 0 to hide it. Set the same amount as a free rate in Settings → Shipping and delivery."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_note",
+        "label": "Show the gift note",
+        "default": true,
+        "info": "Saved as the order note, so you see it when packing."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_extras",
+        "label": "Show \"Little extras\" on the cart page",
+        "default": true,
+        "info": "Up to 4 small products from Shopify's product recommendations."
+      }
+    ]
+  },
+  {
     "name": "Demo content",
     "settings": [
       {

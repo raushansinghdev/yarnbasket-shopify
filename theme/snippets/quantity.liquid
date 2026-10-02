@@ -1,0 +1,123 @@
+{%- doc -%}
+  Quantity stepper: − / number / +, each cell 48px (docs/cart-plan.md §4.1, §6.2). The number is a real input, so
+  it can be typed into and it posts with the form when JavaScript is off (the buttons are hidden then).
+  At 1, the minus button becomes a bin labelled "Remove …". Both glyphs are always in the button; CSS shows one,
+  so cart.js only has to change data-value and the label when the number changes.
+
+  @param {string} id - Unique id for the input
+  @param {string} name - The input's name (cart: updates[line key])
+  @param {number} value - The current quantity
+  @param {string} title - Product title, escaped, for the labels
+  @param {number} [max] - Stock limit, when stock is tracked and overselling is off
+  @param {string} [describedby] - Id of a note about this line (stock limit, sold out)
+
+  @example
+  {% render 'quantity', id: 'CartQty-1', name: 'updates[]', value: item.quantity, title: title %}
+{%- enddoc -%}
+{%- liquid
+  assign at_max = false
+  if max != blank and value >= max
+    assign at_max = true
+  endif
+  assign label_remove = 'cart.remove' | t: title: title
+  assign label_decrease = 'cart.decrease' | t: title: title
+-%}
+<div class="qty" data-qty data-value="{{ value }}" {% if max != blank %}data-max="{{ max }}"{% endif %}>
+  <button
+    type="button"
+    class="qty__btn qty__minus"
+    data-step="-1"
+    data-label-remove="{{ label_remove }}"
+    data-label-decrease="{{ label_decrease }}"
+    aria-label="{% if value <= 1 %}{{ label_remove }}{% else %}{{ label_decrease }}{% endif %}"
+    aria-controls="{{ id }}"
+  >
+    {%- render 'icon', icon: 'minus' -%}
+    {%- render 'icon', icon: 'bin' -%}
+  </button>
+  <input
+    class="qty__input"
+    type="number"
+    inputmode="numeric"
+    id="{{ id }}"
+    name="{{ name }}"
+    value="{{ value }}"
+    min="0"
+    {% if max != blank %}
+      max="{{ max }}"
+    {% endif %}
+    aria-label="{{ 'cart.quantity' | t: title: title }}"
+    {% if describedby != blank %}
+      aria-describedby="{{ describedby }}"
+    {% endif %}
+  >
+  <button
+    type="button"
+    class="qty__btn qty__plus"
+    data-step="1"
+    aria-label="{{ 'cart.increase' | t: title: title }}"
+    aria-controls="{{ id }}"
+    {% if at_max %}
+      aria-disabled="true"
+    {% endif %}
+  >
+    {%- render 'icon', icon: 'plus' -%}
+  </button>
+</div>
+
+{% stylesheet %}
+  /* A pill with a 1.5px Cocoa outline; three 48px cells. The number uses tabular figures so it never shifts. */
+  .qty {
+    display: inline-grid;
+    grid-template-columns: var(--tap) minmax(2.75rem, auto) var(--tap);
+    align-items: center;
+    height: var(--tap);
+    border: 1.5px solid color-mix(in srgb, var(--cocoa) 55%, transparent);
+    border-radius: var(--radius-pill);
+    background: var(--white);
+    color: var(--color-heading);
+  }
+  .qty__btn {
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: calc(var(--tap) - 3px);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur-state) ease, scale var(--dur-press) ease;
+  }
+  .qty__btn .icon { width: 20px; height: 20px; }
+  .qty__btn:active { scale: .9; }
+  .qty__btn[aria-disabled="true"] { color: color-mix(in srgb, var(--color-heading) 35%, transparent); cursor: not-allowed; }
+  .qty__btn[aria-disabled="true"]:active { scale: none; }
+  @media (hover: hover) { .qty__btn:not([aria-disabled="true"]):hover { background: var(--blush-soft); } }
+  .qty__btn:focus-visible { outline-offset: -2px; }
+  .qty__minus .icon--bin, .qty[data-value="1"] .qty__minus .icon--minus, .qty[data-value="0"] .qty__minus .icon--minus { display: none; }
+  .qty[data-value="1"] .qty__minus .icon--bin, .qty[data-value="0"] .qty__minus .icon--bin { display: block; }
+  .qty__input {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: 500 1rem/1 var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  .qty__input::-webkit-inner-spin-button, .qty__input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .qty__input:focus-visible { outline-offset: -1px; border-radius: 6px; box-shadow: none; }
+  /* Without JavaScript the buttons can't do anything, so only the number shows (the form's Update button saves it). */
+  @media (scripting: none) {
+    .qty { grid-template-columns: 4.5rem; }
+    .qty__btn { display: none; }
+  }
+  @media (forced-colors: active) { .qty { border-color: CanvasText; } }
+{% endstylesheet %}

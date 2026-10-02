@@ -1,0 +1,86 @@
+{%- comment -%}
+  "Little extras" under the cart page (docs/cart-plan.md decision D7). Never placed on a page: cart.js asks Shopify's
+  product recommendations for this section, based on the first product in the cart. Shows the 4 lowest-priced
+  products that are in stock and not already in the cart; one-tap add for single-option products, "Choose" otherwise.
+  Nothing renders (and the slot stays empty) when there's nothing to suggest.
+{%- endcomment -%}
+{%- liquid
+  assign in_cart = cart.items | map: 'product_id'
+  assign shown = 0
+-%}
+{%- if recommendations.performed and recommendations.products_count > 0 -%}
+  {%- capture cards -%}
+    {%- assign by_price = recommendations.products | sort: 'price' -%}
+    {%- for product in by_price -%}
+      {%- if shown >= 4 -%}{%- break -%}{%- endif -%}
+      {%- if product.available == false or in_cart contains product.id -%}{%- continue -%}{%- endif -%}
+      {%- assign shown = shown | plus: 1 -%}
+      {%- assign variant = product.selected_or_first_available_variant -%}
+      <li class="extra">
+        <a href="{{ product.url }}" class="extra__media media" tabindex="-1" aria-hidden="true">
+          {%- if product.featured_media -%}
+            {%- render 'image', image: product.featured_media.preview_image, sizes: '(min-width: 990px) 200px, 40vw', width: 480 -%}
+          {%- endif -%}
+        </a>
+        <a href="{{ product.url }}" class="extra__title">{{ product.title }}</a>
+        {%- render 'price', product: product -%}
+        {%- if product.has_only_default_variant or product.variants.size == 1 -%}
+          <form action="{{ routes.cart_add_url }}" method="post" class="extra__form">
+            <input type="hidden" name="id" value="{{ variant.id }}">
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="extra__btn" aria-label="{{ 'cart.extras_add_label' | t: title: product.title | escape }}">
+              {%- render 'icon', icon: 'plus' -%}
+              <span aria-hidden="true">{{ 'cart.extras_add' | t }}</span>
+            </button>
+          </form>
+        {%- else -%}
+          <a href="{{ product.url }}" class="extra__btn" aria-label="{{ 'cart.extras_choose' | t }}: {{ product.title | escape }}">
+            {{- 'cart.extras_choose' | t -}}
+          </a>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- if shown > 0 -%}
+    <section class="extras" aria-labelledby="ExtrasTitle">
+      <div class="extras__head">
+        <h2 class="extras__title" id="ExtrasTitle">{{ 'cart.extras_title' | t }}</h2>
+        <p class="muted">{{ 'cart.extras_text' | t }}</p>
+      </div>
+      <ul class="extras__grid" role="list">{{ cards }}</ul>
+    </section>
+  {%- endif -%}
+{%- endif -%}
+
+{% stylesheet %}
+  .extras { margin-top: var(--section-space); padding-top: var(--space-6); border-top: 1px dashed var(--color-line-strong); }
+  .extras__head { display: grid; gap: var(--space-1); margin-bottom: var(--space-5); }
+  .extras__title { font-size: var(--fs-h3); }
+  .extras__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-4); }
+  .extra { display: grid; gap: var(--space-2); align-content: start; }
+  .extra__media { --ratio: 1; border-radius: var(--radius-sm); background: var(--oat); }
+  .extra__title { font-weight: 500; line-height: 1.35; color: var(--color-heading); text-decoration: none; }
+  @media (hover: hover) { .extra__title:hover { text-decoration: underline; text-decoration-color: var(--rose); text-underline-offset: 3px; } }
+  .extra .price { font-size: var(--fs-small); }
+  .extra__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    width: 100%;
+    min-height: var(--tap);
+    border: 1.5px solid color-mix(in srgb, var(--cocoa) 40%, transparent);
+    border-radius: var(--radius-pill);
+    background: var(--white);
+    color: var(--color-heading);
+    font: 500 .9375rem var(--font-sans);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--dur-state) ease, border-color var(--dur-state) ease, scale var(--dur-press) ease;
+  }
+  .extra__btn .icon { width: 18px; height: 18px; }
+  .extra__btn:active { scale: .97; }
+  .extra__btn[aria-busy="true"] { opacity: .6; }
+  @media (hover: hover) { .extra__btn:hover { border-color: var(--cocoa); background: var(--blush-soft); } }
+  @media (min-width: 990px) { .extras__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-6); } }
+{% endstylesheet %}

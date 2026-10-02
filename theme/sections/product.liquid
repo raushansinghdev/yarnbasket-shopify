@@ -18,28 +18,72 @@
 </div>
 
 <div class="product-form">
-  {% form 'product', product %}
-    {% assign current_variant = product.selected_or_first_available_variant %}
+  {%- comment -%}
+    Interim Add to cart until the full product page (build-plan Phase 4). cart.js adds without leaving the page and
+    shows the added-to-cart pop-up; without JavaScript the form posts to /cart. Errors (like the stock limit) show
+    under the button.
+  {%- endcomment -%}
+  {%- assign current_variant = product.selected_or_first_available_variant -%}
+  {% form 'product', product, class: 'product-form__form', novalidate: 'novalidate' %}
+    {%- if product.has_only_default_variant -%}
+      <input type="hidden" name="id" value="{{ current_variant.id }}">
+    {%- else -%}
+      <label class="product-form__label" for="ProductVariant-{{ section.id }}">{{ product.options | join: ' / ' }}</label>
+      <select class="product-form__field" id="ProductVariant-{{ section.id }}" name="id">
+        {%- for variant in product.variants -%}
+          <option value="{{ variant.id }}" {% if variant == current_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
+            {%- if variant.available -%}
+              {{ variant.title }} · {{ variant.price | money }}
+            {%- else -%}
+              {{ 'products.unavailable' | t: option: variant.title }}
+            {%- endif -%}
+          </option>
+        {%- endfor -%}
+      </select>
+    {%- endif -%}
 
-    <select name="id">
-      {% for variant in product.variants %}
-        <option
-          value="{{ variant.id }}"
-          {% if variant == current_variant %}
-            selected="selected"
-          {% endif %}
-        >
-          {{ variant.title }} - {{ variant.price | money }}
-        </option>
-      {% endfor %}
-    </select>
+    <label class="product-form__label" for="ProductQty-{{ section.id }}">{{ 'products.quantity' | t }}</label>
+    <input class="product-form__field product-form__qty" id="ProductQty-{{ section.id }}" type="number" inputmode="numeric" name="quantity" min="1" value="1">
 
-    <input type="text" name="quantity" min="1" value="1">
-
-    <input type="submit" value="Add to cart">
+    <button
+      type="submit"
+      class="btn product-form__add"
+      aria-describedby="ProductAddError-{{ section.id }}"
+      {% unless current_variant.available %}
+        disabled
+      {% endunless %}
+    >
+      {%- render 'icon', icon: 'cart' -%}
+      <span data-add-label>
+        {%- if current_variant.available %}{{ 'products.add_to_cart' | t }}{% else %}{{ 'products.sold_out' | t }}{% endif -%}
+      </span>
+    </button>
+    <p class="product-form__error" id="ProductAddError-{{ section.id }}" role="alert" data-add-error hidden></p>
     {{ form | payment_button }}
   {% endform %}
 </div>
+
+{% stylesheet %}
+  .product-form { max-width: 26rem; margin: var(--space-6) var(--gutter); }
+  .product-form__form { display: grid; gap: var(--space-2); }
+  .product-form__label { margin-top: var(--space-2); font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
+  .product-form__field {
+    min-height: var(--tap);
+    padding: 0 var(--space-4);
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--color-heading);
+    font: 400 1rem var(--font-sans);
+  }
+  .product-form__qty { width: 6rem; font-variant-numeric: tabular-nums; }
+  .product-form__add { width: 100%; margin-top: var(--space-4); }
+  .product-form__add .icon { width: 22px; height: 22px; }
+  @media (hover: hover) { .product-form__add:hover .icon { transform: translateX(2px); } }
+  .product-form__add:disabled { --btn-bg: var(--taupe-ink); cursor: not-allowed; transform: none; box-shadow: none; }
+  .product-form__add[aria-busy="true"] { cursor: progress; }
+  .product-form__error { padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--blush-soft); color: #9A3B2E; font-weight: 500; font-size: var(--fs-small); }
+{% endstylesheet %}
 
 {% schema %}
 {

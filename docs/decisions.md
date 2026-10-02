@@ -3,6 +3,17 @@
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
 
+## 2026-10-02 (cart)
+
+- **Cart: a drawer plus the `/cart` page, built from the same snippets** (docs/cart-plan.md). Raushan approved D1 and D3–D9 as recommended:
+  - minus turns into a bin, with an inline Undo
+  - free-shipping line, set in Theme settings and hidden at ₹0
+  - gift note in the cart
+  - no discount code box
+  - Little extras and payment icons on the cart page only
+  - no quick add on cards yet
+- **D2 changed by Raushan:** adding to cart shows a Flipkart-style "Added to cart · View cart" pop-up and doesn't open the drawer, so shoppers can keep exploring.
+
 ## 2026-10-02 (craft row: selected line)
 
 - **Craft circles use the header's underline rule.** Selected = a short solid line (plus the dark ring and a bolder label); hover or keyboard focus = dashed stitches that draw in. Before, the selected craft had dashes, which the header uses to mean "pointing at", not "chosen".

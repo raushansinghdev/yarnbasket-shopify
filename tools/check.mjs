@@ -10,7 +10,7 @@ const args = process.argv.slice(2);
 const URL = args.includes('--url') ? args[args.indexOf('--url') + 1] : 'http://127.0.0.1:9292/';
 const QUICK = args.includes('--quick');
 
-const BUDGET = { lcpMs: 2000, slowFrames: 0, phoneImagesKB: 1000, ownJsKB: 25 };
+const BUDGET = { lcpMs: 2000, slowFrames: 0, phoneImagesKB: 1000, ownJsKB: 25, cartJsKB: 20 };
 const results = [];
 const record = (name, ok, detail) => { results.push({ name, ok, detail }); console.log(`${ok ? 'PASS' : 'FAIL'}  ${name.padEnd(46)} ${detail}`); };
 
@@ -94,11 +94,13 @@ for (const [label, device] of [['desktop', devices['Desktop Chrome']], ['phone',
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   let imgKB = 0;
   let ownJsKB = 0;
+  let cartJsKB = 0;
   page.on('response', async (res) => {
     try {
       const kb = (await res.body()).length / 1024;
       if (res.request().resourceType() === 'image') imgKB += kb;
       if (/\/assets\/theme\.js/.test(res.url())) ownJsKB += kb;
+      if (/\/assets\/cart\.js/.test(res.url())) cartJsKB += kb;
     } catch {}
   });
   await page.goto(URL, { waitUntil: 'load' });
@@ -107,6 +109,7 @@ for (const [label, device] of [['desktop', devices['Desktop Chrome']], ['phone',
   record('LCP, phone (4x slower CPU)', lcp.t < BUDGET.lcpMs && /hero/.test(lcp.el), `${Math.round(lcp.t)}ms on "${lcp.el}" (budget ${BUDGET.lcpMs}ms, local server)`);
   record('Phone images on first load', imgKB < BUDGET.phoneImagesKB, `${Math.round(imgKB)} KB (budget ${BUDGET.phoneImagesKB} KB)`);
   record('Our JavaScript (theme.js)', ownJsKB < BUDGET.ownJsKB, `${ownJsKB.toFixed(1)} KB (budget ${BUDGET.ownJsKB} KB)`);
+  record('Cart JavaScript (cart.js)', cartJsKB < BUDGET.cartJsKB, `${cartJsKB.toFixed(1)} KB (budget ${BUDGET.cartJsKB} KB)`);
   await browser.close();
 }
 
@@ -177,6 +180,90 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
   record('Search results page, phone (axe)', v.length === 0, v.join(', ') || '0 violations');
   await browser.close();
+}
+
+// 8. Cart (docs/cart-plan.md): add from a product page → pop-up → drawer; +, bin, Undo; Back closes the drawer;
+//    the stock limit says why; axe on the drawer and the page; the page works without JavaScript. Needs products:
+//    import tools/test-products.csv first (skipped otherwise).
+{
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products, () => []);
+  const single = products.find((p) => p.variants.length === 1 && p.variants[0].available && !/lily/.test(p.handle));
+  const limited = products.find((p) => /lily-of-the-valley/.test(p.handle));
+  if (!single) console.log('SKIP  Cart checks                                    no products in the store (import tools/test-products.csv)');
+  for (const [label, device] of single ? [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]] : []) {
+    const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
+    const axeOn = async (sel) => {
+      await page.addScriptTag({ content: axe.source });
+      return page.evaluate(async (s) => (await window.axe.run(s ? document.querySelector(s) : document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`), sel);
+    };
+    const count = () => page.evaluate(() => +document.querySelector('[data-cart-root]')?.dataset.count);
+    await page.request.post(site('/cart/clear.js'));
+    await page.goto(site(`/products/${single.handle}`), { waitUntil: 'load' });
+    const url = page.url();
+    await page.click('.product-form__add');
+    const toast = await page.waitForSelector('.cart-toast', { timeout: 8000 }).then(() => true, () => false);
+    const badge = await page.textContent('[data-cart-count]').catch(() => '');
+    record(`Cart, ${label}: add shows the pop-up, stays on the page`, toast && page.url() === url && badge.trim() === '1', `pop-up: ${toast}, badge: "${badge.trim()}"`);
+
+    await page.click('.cart-toast [data-cart-view]');
+    await page.waitForTimeout(500);
+    const opened = await page.evaluate(() => ({ open: document.getElementById('CartDrawer').open, focus: document.activeElement?.id }));
+    record(`Cart, ${label}: View cart opens the drawer`, opened.open && opened.focus === 'CartDrawerTitle', `open: ${opened.open}, focus on: ${opened.focus}`);
+    const v1 = await axeOn('#CartDrawer');
+    record(`Cart, ${label}: drawer accessibility (axe)`, v1.length === 0, v1.join(', ') || '0 violations');
+
+    await page.click('#CartDrawer .qty__plus');
+    await page.waitForFunction(() => document.querySelector('#CartDrawer .cart-line')?.dataset.qty === '2', null, { timeout: 8000 }).catch(() => {});
+    const two = await page.evaluate(() => ({ qty: document.querySelector('#CartDrawer .cart-line')?.dataset.qty, focus: document.activeElement?.matches('.qty__plus') }));
+    await page.click('#CartDrawer .qty__minus');
+    await page.waitForFunction(() => document.querySelector('#CartDrawer .cart-line')?.dataset.qty === '1', null, { timeout: 8000 }).catch(() => {});
+    record(`Cart, ${label}: + and − update, focus stays put`, two.qty === '2' && two.focus, `after +: ${two.qty}, focus kept on +: ${two.focus}`);
+
+    await page.click('#CartDrawer .qty__minus');
+    const undoFocused = await page.evaluate(() => document.activeElement?.matches('.cart-undo__btn'));
+    await page.waitForFunction(() => document.querySelector('#CartDrawer [data-cart-root]')?.dataset.count === '0', null, { timeout: 8000 }).catch(() => {});
+    const empty = await count();
+    await page.click('#CartDrawer .cart-undo__btn');
+    await page.waitForFunction(() => document.querySelector('#CartDrawer [data-cart-root]')?.dataset.count === '1', null, { timeout: 8000 }).catch(() => {});
+    const back = await count();
+    record(`Cart, ${label}: bin removes, Undo brings it back`, undoFocused && empty === 0 && back === 1, `focus on Undo: ${undoFocused}, after remove: ${empty}, after Undo: ${back}`);
+
+    await page.goBack();
+    await page.waitForTimeout(600);
+    const closed = await page.evaluate(() => !document.getElementById('CartDrawer').open);
+    record(`Cart, ${label}: Back closes the drawer, page stays`, closed && page.url() === url, `closed: ${closed}, same page: ${page.url() === url}`);
+
+    if (limited && label === 'phone') {
+      await page.goto(site(`/products/${limited.handle}`), { waitUntil: 'load' });
+      await page.fill('.product-form__qty', '3');
+      await page.click('.product-form__add');
+      await page.waitForSelector('.cart-toast', { timeout: 8000 }).catch(() => {});
+      await page.click('.product-form__add');
+      const msg = await page.waitForSelector('[data-add-error]:not([hidden])', { timeout: 8000 }).then((el) => el.textContent(), () => '');
+      record('Cart, phone: the stock limit says why', !!msg.trim(), msg.trim() || 'no message');
+    }
+
+    await page.goto(site('/cart'), { waitUntil: 'load' });
+    await page.waitForTimeout(800);
+    const v2 = await axeOn();
+    record(`Cart page, ${label} (axe)`, v2.length === 0 && errors.length === 0, (v2.join(', ') || '0 violations') + (errors.length ? `; errors: ${errors[0]}` : ''));
+    await browser.close();
+  }
+  if (single) {
+    const browser = await chromium.launch();
+    const ctx = await browser.newContext({ ...devices['Pixel 7'], javaScriptEnabled: false });
+    const page = await ctx.newPage();
+    await page.request.post(site('/cart/add.js'), { data: { items: [{ id: single.variants[0].id, quantity: 1 }] } });
+    await page.goto(site('/cart'), { waitUntil: 'load' });
+    await page.fill('.cart-line .qty__input', '2');
+    await page.click('button[name="update"]');
+    await page.waitForLoadState('load');
+    const qty = await page.inputValue('.cart-line .qty__input').catch(() => '');
+    record('Cart page without JavaScript: update works', qty === '2', `quantity after Update: ${qty}`);
+    await page.request.post(site('/cart/clear.js'));
+    await browser.close();
+  }
 }
 
 const failed = results.filter((r) => !r.ok);

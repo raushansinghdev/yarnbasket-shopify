@@ -1,0 +1,200 @@
+{%- comment -%}
+  Cart drawer (docs/cart-plan.md §3, §4.1, §6). Rendered once by layout/theme.liquid on every page except /cart.
+  A native <dialog> from the right, mirroring the menu drawer on the left: focus trap, Esc and an inert page come
+  built in. cart.js opens it from the header's cart button (a plain tap; long-press and no-JS still go to /cart) and
+  from "View cart" in the added-to-cart pop-up, and refreshes [data-cart-root] after every change.
+  Pinned top bar · scrolling lines and gift note · pinned summary with Checkout.
+{%- endcomment -%}
+{%- unless request.page_type == 'cart' -%}
+  <dialog class="cart-drawer" id="CartDrawer" aria-labelledby="CartDrawerTitle" closedby="any" data-cart-drawer>
+    {%- comment -%} Spoken updates while the drawer is open (the page behind it, header included, is inert). Outside
+    the refreshed part, so screen readers keep listening to the same element. {%- endcomment -%}
+    <p class="visually-hidden" role="status" data-cart-live></p>
+    <div class="cart-drawer__root" data-cart-root data-count="{{ cart.item_count }}">
+      <div class="cart-drawer__top">
+        <h2 class="cart-drawer__title" id="CartDrawerTitle" tabindex="-1">
+          {{- 'cart.title' | t -}}
+          {%- if cart.item_count > 0 %}
+            <span class="cart-drawer__count">({{ 'cart.count' | t: count: cart.item_count }})</span>
+          {%- endif -%}
+        </h2>
+        <button type="button" class="icon-btn cart-drawer__close" data-cart-close aria-label="{{ 'cart.close' | t }}">
+          {%- render 'icon', icon: 'close' -%}
+        </button>
+      </div>
+
+      {%- if cart.item_count > 0 -%}
+        <form action="{{ routes.cart_url }}" method="post" class="cart-drawer__form" id="CartDrawerForm" data-cart-form novalidate>
+          <div class="cart-drawer__body" data-scroll>
+            <ul class="cart-lines" role="list" data-lines>
+              {%- for item in cart.items -%}
+                {%- render 'cart-line', item: item, place: 'drawer', sizes: '88px' -%}
+              {%- endfor -%}
+            </ul>
+            {%- render 'cart-note', place: 'drawer' -%}
+          </div>
+          <div class="cart-drawer__foot">
+            {%- render 'cart-summary', place: 'drawer' -%}
+          </div>
+        </form>
+      {%- else -%}
+        <div class="cart-drawer__body" data-scroll>
+          <ul class="cart-lines" role="list" data-lines></ul>
+          {%- render 'cart-empty', place: 'drawer', level: 3 -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </dialog>
+{%- endunless -%}
+
+{%- comment -%} Words cart.js needs, with [placeholders] it fills in. {%- endcomment -%}
+<script type="application/json" id="CartStrings">
+  {
+    "added": {{ 'cart.added_status' | t: title: '[title]', count: '[count]' | json }},
+    "updated": {{ 'cart.updated_status' | t: title: '[title]', quantity: '[quantity]', subtotal: '[subtotal]' | json }},
+    "removed": {{ 'cart.removed' | t: title: '[title]' | json }},
+    "removedStatus": {{ 'cart.removed_status' | t: title: '[title]' | json }},
+    "restored": {{ 'cart.restored_status' | t: title: '[title]' | json }},
+    "undo": {{ 'cart.undo' | t | json }},
+    "undoLabel": {{ 'cart.undo_label' | t: title: '[title]' | json }},
+    "max": {{ 'cart.max' | t | json }},
+    "error": {{ 'cart.error' | t | json }},
+    "adding": {{ 'cart.adding' | t | json }},
+    "addedButton": {{ 'cart.added_button' | t | json }},
+    "one": {{ 'cart.count' | t: count: 1 | json }},
+    "other": {{ 'cart.count' | t: count: 99 | json }}
+  }
+</script>
+
+{%- comment -%}
+  The added-to-cart pop-up (decision D2, cart-plan §6.1): photo, "Added to cart", the name, View cart and ×.
+  Phones: at the bottom, in thumb reach. Wider: under the header's cart button. It never takes focus; the header
+  status line says what happened, and the header cart button does the same as View cart, so nothing is lost when
+  it goes. It stays about 8 seconds and pauses while a finger, pointer or focus is on it.
+{%- endcomment -%}
+<template id="CartToastTemplate">
+  <div class="cart-toast" role="region" aria-label="{{ 'cart.added' | t }}">
+    <span class="cart-toast__media media"><img alt="" width="56" height="56" hidden></span>
+    <p class="cart-toast__text">
+      <span class="cart-toast__head">{%- render 'icon', icon: 'check' -%}{{ 'cart.added' | t }}</span>
+      <span class="cart-toast__title"></span>
+    </p>
+    {%- unless request.page_type == 'cart' -%}
+      <button type="button" class="btn cart-toast__view" data-cart-view>{{ 'cart.view_cart' | t }}</button>
+    {%- endunless -%}
+    <button type="button" class="icon-btn cart-toast__close" data-toast-close aria-label="{{ 'cart.dismiss' | t }}">
+      {%- render 'icon', icon: 'close' -%}
+    </button>
+  </div>
+</template>
+
+{% stylesheet %}
+  /* Mirrors the menu drawer (sections/header.liquid) from the right. Full width on phones, 440px from 480px up. */
+  .cart-drawer {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--white);
+    color: var(--color-ink);
+    transform: translateX(100%);
+    transition: transform var(--dur-panel) var(--ease-out), overlay var(--dur-panel) allow-discrete, display var(--dur-panel) allow-discrete;
+  }
+  @media (min-width: 480px) { .cart-drawer { width: 440px; } }
+  .cart-drawer[open] { transform: none; }
+  .cart-drawer[open][data-closing] { transform: translateX(100%); transition-timing-function: var(--ease-in-out); }
+  @starting-style { .cart-drawer[open] { transform: translateX(100%); } }
+  .cart-drawer::backdrop {
+    background: rgba(51, 37, 31, .32);
+    opacity: 0;
+    transition: opacity var(--dur-panel) ease, overlay var(--dur-panel) allow-discrete, display var(--dur-panel) allow-discrete;
+  }
+  .cart-drawer[open]::backdrop { opacity: 1; }
+  .cart-drawer[open][data-closing]::backdrop { opacity: 0; }
+  @starting-style { .cart-drawer[open]::backdrop { opacity: 0; } }
+
+  .cart-drawer__root { display: flex; flex-direction: column; height: 100%; }
+  .cart-drawer__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex: none;
+    min-height: 56px;
+    padding: max(var(--space-2), env(safe-area-inset-top)) var(--space-2) var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .cart-drawer__title { font-size: 1.625rem; line-height: 1.2; }
+  .cart-drawer__title:focus { outline: none; box-shadow: none; }
+  .cart-drawer__count { font-family: var(--font-sans); font-style: normal; font-weight: 400; font-size: 1rem; letter-spacing: 0; color: var(--color-muted); }
+  .cart-drawer__close .icon { transition: transform var(--dur-panel) var(--ease-spring); }
+  @media (hover: hover) { .cart-drawer__close:hover .icon { transform: rotate(90deg); } }
+  .cart-drawer__form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .cart-drawer__body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--space-4) var(--space-4); }
+  .cart-drawer__body .cart-note { margin-top: var(--space-2); }
+  .cart-drawer__body .cart-empty { padding-block: var(--space-6); }
+  .cart-drawer__foot {
+    flex: none;
+    padding: var(--space-4) var(--space-4) max(var(--space-4), env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-line-strong);
+    background: var(--white);
+    box-shadow: 0 -12px 24px -22px rgb(78 58 49 / .5);
+  }
+  /* At 400% zoom or on a short landscape phone, the pinned parts would cover most of the screen: let it all scroll. */
+  @media (max-height: 500px) {
+    .cart-drawer__root { display: block; height: auto; min-height: 100%; }
+    .cart-drawer { overflow-y: auto; }
+    .cart-drawer__body { overflow: visible; }
+  }
+
+  /* Added-to-cart pop-up. */
+  .cart-toast {
+    position: fixed;
+    inset: auto var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
+    z-index: 30;
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-1) var(--space-2) var(--space-2);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    color: var(--color-ink);
+    box-shadow: 0 18px 40px -18px rgb(78 58 49 / .45);
+    transition: opacity var(--dur-panel) var(--ease-out), transform var(--dur-panel) var(--ease-out);
+  }
+  @starting-style { .cart-toast { opacity: 0; transform: translateY(16px); } }
+  .cart-toast.is-leaving { opacity: 0; transform: translateY(16px); transition-timing-function: var(--ease-exit); }
+  .cart-toast__media { --ratio: 1; width: 56px; border-radius: var(--radius-sm); background: var(--oat); }
+  .cart-toast__text { display: grid; gap: 2px; min-width: 0; }
+  .cart-toast__head { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
+  .cart-toast__head .icon { width: 16px; height: 16px; }
+  .cart-toast__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); color: var(--color-muted); }
+  .cart-toast__view { min-height: var(--tap); padding: 0 var(--space-4); font-size: .9375rem; }
+  .cart-toast.is-error { grid-template-columns: minmax(0, 1fr) auto; padding-left: var(--space-4); }
+  .cart-toast.is-error :is(.cart-toast__media, .cart-toast__head, .cart-toast__view) { display: none; }
+  .cart-toast.is-error .cart-toast__title { white-space: normal; color: var(--color-heading); font-weight: 500; }
+  @media (min-width: 768px) {
+    .cart-toast { inset: calc(var(--header-height) + var(--space-2)) var(--gutter) auto auto; width: 25rem; }
+    @starting-style { .cart-toast { transform: translateY(-12px); } }
+    .cart-toast.is-leaving { transform: translateY(-12px); }
+  }
+  /* Reduced motion: base.css cuts every transition to 1ms, so the drawer simply appears; the pop-up doesn't travel. */
+  @media (prefers-reduced-motion: reduce) {
+    .cart-toast, .cart-toast.is-leaving { transform: none; }
+  }
+  @media (forced-colors: active) { .cart-toast, .cart-drawer { border: 1px solid CanvasText; } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Cart drawer",
+  "settings": []
+}
+{% endschema %}

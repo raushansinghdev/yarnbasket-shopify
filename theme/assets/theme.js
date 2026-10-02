@@ -458,7 +458,8 @@ document.addEventListener('cart:updated', (event) => {
     // Say it out loud: the badge is aria-hidden, so the status line is how screen readers hear the change.
     const status = document.querySelector('[data-cart-status]');
     const label = document.querySelector('[data-cart-label]');
-    if (status && label) {
+    // quiet: cart.js announces it itself
+    if (status && label && !event.detail.quiet) {
       status.textContent = '';
       setTimeout(() => (status.textContent = label.textContent.trim()), 60);
     }

@@ -1,0 +1,88 @@
+{%- doc -%}
+  "Add a gift note": closed until asked for (docs/cart-plan.md §6.4, decision D5). The note is the cart note, so it
+  reaches the order and shows up when packing. It posts with the cart form; cart.js also saves it as you type.
+  Turned off in Theme settings → Cart.
+
+  @param {string} place - 'drawer' or 'page' (keeps ids unique)
+
+  @example
+  {% render 'cart-note', place: 'drawer' %}
+{%- enddoc -%}
+{%- if settings.cart_note -%}
+  {%- liquid
+    assign max = 200
+    assign left = cart.note.size | default: 0 | minus: max | abs
+    assign left_template = 'cart.note_left' | t: count: 999
+  -%}
+  <details class="cart-note" data-cart-note {% if cart.note != blank %}open{% endif %}>
+    <summary class="cart-note__toggle">
+      {%- render 'icon', icon: 'gift' -%}
+      <span>{% if cart.note != blank %}{{ 'cart.note_open' | t }}{% else %}{{ 'cart.note_toggle' | t }}{% endif %}</span>
+      {%- render 'icon', icon: 'chevron', class: 'cart-note__chevron' -%}
+    </summary>
+    <div class="cart-note__body">
+      <label class="visually-hidden" for="CartNote-{{ place }}">{{ 'cart.note_label' | t }}</label>
+      <textarea
+        class="cart-note__field"
+        id="CartNote-{{ place }}"
+        name="note"
+        rows="3"
+        maxlength="{{ max }}"
+        aria-describedby="CartNoteHint-{{ place }}"
+        data-note
+      >{{ cart.note }}</textarea>
+      <p class="cart-note__foot">
+        <span id="CartNoteHint-{{ place }}">{{ 'cart.note_hint' | t }}</span>
+        <span class="cart-note__left" data-note-left data-template="{{ left_template | escape }}">
+          {{- 'cart.note_left' | t: count: left -}}
+        </span>
+        <span class="cart-note__saved" data-note-saved hidden>
+          {%- render 'icon', icon: 'check' -%}
+          {{- 'cart.note_saved' | t -}}
+        </span>
+      </p>
+    </div>
+  </details>
+{%- endif -%}
+
+{% stylesheet %}
+  .cart-note { border-radius: var(--radius-sm); }
+  .cart-note__toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--tap);
+    font-weight: 500;
+    color: var(--color-heading);
+    cursor: pointer;
+    list-style: none;
+  }
+  .cart-note__toggle::-webkit-details-marker { display: none; }
+  .cart-note__toggle .icon { width: 22px; height: 22px; }
+  .cart-note__chevron { margin-left: auto; transition: transform var(--dur-panel) var(--ease-out); }
+  .cart-note[open] .cart-note__chevron { transform: rotate(180deg); }
+  .cart-note::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition: block-size var(--dur-panel) var(--ease-out), content-visibility var(--dur-panel) allow-discrete;
+  }
+  .cart-note[open]::details-content { block-size: auto; }
+  .cart-note__body { display: grid; gap: var(--space-2); padding: var(--space-1) 2px var(--space-3); }
+  .cart-note__field {
+    width: 100%;
+    min-height: 5.5rem;
+    padding: var(--space-3);
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--color-heading);
+    font: 400 1rem/1.5 var(--font-sans);
+    resize: vertical;
+  }
+  .cart-note__field:focus-visible { border-color: var(--cocoa); outline-offset: 2px; }
+  .cart-note__foot { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); font-size: var(--fs-small); color: var(--color-muted); }
+  .cart-note__left { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .cart-note__saved { display: inline-flex; align-items: center; gap: 4px; color: var(--color-heading); }
+  .cart-note__saved .icon { width: 16px; height: 16px; }
+  .cart-note__saved:not([hidden]) + .cart-note__left, .cart-note__left:has(+ .cart-note__saved:not([hidden])) { display: none; }
+{% endstylesheet %}
