@@ -7,18 +7,25 @@
   - Until the component is ready, or without JavaScript, a plain link to the account stands in its place.
   - Under 900px it isn't shown (beside the search field it would crowd the centred name): the drawer's account row
     opens the same sheet (saved.js).
+  - From 1100px it shows the word "Account" beside the glyph, like "Cart" next to it. The word is "Account", not
+    "Sign in": Shopify's button is named "Account" (aria-label, inside its shadow root), and the visible label must
+    match the spoken name (WCAG 2.5.3) so voice control ("click Account") works. Signed in, Shopify's initial circle
+    replaces it (a full page load, so nothing jumps). The fallback link is the same pill, so nothing moves when the
+    component arrives.
   The colours, fonts and corners below are the component's own CSS variables; its layout and wording are Shopify's.
 {%- enddoc -%}
 {%- comment -%} The menu is used once it exists in the admin; until then Shopify shows Orders and Profile (and logs a warning). {%- endcomment -%}
 <shopify-account class="account-btn" {% if linklists['customer-account-main-menu'].links.size > 0 %}menu="customer-account-main-menu"{% endif %} data-account>
   <span slot="signed-out-avatar" class="account-btn__glyph">
     {%- render 'icon', icon: 'account' -%}
+    <span class="account-btn__word" aria-hidden="true">{{ 'header.account' | t }}</span>
     <span class="tip" aria-hidden="true">{{ 'header.account' | t }}</span>
   </span>
 </shopify-account>
 <a href="{{ routes.account_url }}" class="icon-btn site-header__account">
   {%- render 'icon', icon: 'account' -%}
   <span class="visually-hidden">{{ 'header.account' | t }}</span>
+  <span class="account-btn__word" aria-hidden="true">{{ 'header.account' | t }}</span>
 </a>
 
 {% stylesheet %}
@@ -57,6 +64,23 @@
   @media (min-width: 900px) {
     .account-btn:defined { display: block; }
     .account-btn:not(:defined) + .site-header__account { display: inline-grid; }
+  }
+  .account-btn__word { display: none; }
+  /* From 1100px: a pill with the word, the same shape as the cart beside it (sections/header.liquid). The tooltip
+     would only repeat the word, so it goes. */
+  @media (min-width: 1100px) {
+    .account-btn::part(signed-out-avatar) { width: auto; padding: 0 14px 0 10px; border-radius: var(--radius-pill); }
+    .account-btn__glyph { display: inline-flex; align-items: center; gap: 10px; }
+    .account-btn__glyph .icon { width: 26px; height: 26px; }
+    .account-btn__glyph .tip { display: none; }
+    /* Text slotted into Shopify's button inherits the button's own font, so ours is set here, matching "Cart". */
+    .account-btn__word { display: inline; font-family: var(--font-sans); font-size: .9375rem; font-weight: 500; line-height: 1; letter-spacing: 0; color: var(--color-heading); white-space: nowrap; }
+    .site-header__account { align-items: center; gap: 10px; width: auto; padding: 0 14px 0 10px; border-radius: var(--radius-pill); text-decoration: none; }
+    .account-btn:not(:defined) + .site-header__account { display: inline-flex; }
+    .site-header__account > .icon { width: 26px; height: 26px; }
+  }
+  @media (min-width: 1100px) and (hover: hover) {
+    .account-btn::part(signed-out-avatar):hover { background: color-mix(in srgb, var(--color-heading) 8%, transparent); }
   }
   /* Under 900px: opened from the drawer's account row. Its sheet lives in the top layer, so the host only needs to exist,
      not to show. */

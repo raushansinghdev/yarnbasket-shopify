@@ -2,6 +2,13 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-02 (header labels on desktop)
+
+- **From 1100px, "Account" and "Cart" both show their word beside the icon** (Raushan approved). One labelled icon next to an unlabelled one looked accidental. Labels match what Indian shoppers know (Flipkart, Amazon and Meesho label the cart on desktop). Phones stay icon-only.
+- **Sentence case ("Cart", "Account"), not spaced capitals,** so the tools don't read as more menu items next to SHOP / GIFTS / BESTSELLERS / HELP.
+- **The account word is "Account", not "Sign in".** Shopify's `<shopify-account>` button is named "Account" (aria-label in its shadow root), and the visible label must match the spoken name (WCAG 2.5.3, so voice control's "click Account" works). Session 63 caught it, and it was checked in the accessibility tree. Signed in, Shopify's initial circle replaces the word.
+- The fallback link (before the component loads) is the same pill (116 vs 114px), so the row doesn't shift. The word sets its own font, because text slotted into Shopify's button inherits Shopify's font.
+
 ## 2026-10-02 (cart look and rewards, docs/cart-look-plan.md; built)
 
 - **C1. The cart count sits on the cart icon's corner on desktop too**, the same as phones. The CART word now has 14px of room.
