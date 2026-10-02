@@ -343,6 +343,6 @@
     "faq_ship": "Shipping is free on orders over {{ amount }}.",
     "faq_fee": "Below that, it's {{ amount }}.",
     "faq_cod": "Cash on delivery is available.",
-    "faq_gift": "Orders over {{ amount }} get a free {{ gift }}, one per order, while stocks last."
+    "faq_gift": "Orders over {{ amount }} get a free {{ gift }}, one per order, while stocks last. If part of an order is refunded and it falls under {{ amount }}, the gift is yours to keep."
   }
 }

@@ -59,7 +59,7 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
 - [ ] **Theme settings → Cart:** Free shipping from 999, Standard shipping fee 79, Free gift from 1499, Free gift product, and Cash on delivery only once COD works at checkout.
 - [ ] Run `npm run check`: "Offers: shipping rates match Theme settings" and "Offers: the free gift arrives free" must pass. Changing an amount later means changing it in three places: Theme settings, the shipping rate and the discount. Then run the check.
 - [ ] **CA question:** how to treat free gifts under GST (input tax credit on goods given away free may need reversing, Section 17(5)(h)).
-- [ ] **FAQ:** one line: "Free gift while stocks last, one per order. If part of an order is refunded and it falls under ₹1,499, the gift is yours to keep." (Done in the Terms draft, §5 "Free gift". It has no amount, so changing the threshold won't need a Terms edit.)
+- [x] **FAQ:** the gift line, with the amount, is in the automatic "Shipping and offers" answer (`offers.faq_gift`, so it follows the threshold). The Terms draft has it in §5 "Free gift", with no amount, so changing the threshold won't need a Terms edit.
 
 ## Store setup
 - [ ] Currency format `₹{{amount_no_decimals}}` (Settings → General → Store currency)
