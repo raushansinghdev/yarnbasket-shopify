@@ -40,16 +40,16 @@ if (cart) {
     const d = info();
     if (!d?.giftVariant || busy) return;
     const earned = +d.total >= +d.giftAt;
-    if (d.giftKey && +d.giftPaid > 0) {
+    // Below the amount first: Shopify charges for the gift the moment the order drops under it, and that's not a
+    // missing discount.
+    if (!earned && d.giftKey) {
+      change({ updates: { [d.giftVariant]: 0 } }, S.giftLost.replace('[amount]', d.giftAtMoney));
+    } else if (d.giftKey && +d.giftPaid > 0) {
       stuck = true;
       console.warn('Yarn Basket: the free gift has no discount (docs/offers-plan.md §5.4), so it was taken out.');
       change({ updates: { [d.giftVariant]: 0 } });
-    } else if (stuck) {
-      return;
-    } else if (earned && !d.giftKey && !('giftDeclined' in d) && 'giftAvailable' in d) {
+    } else if (!stuck && earned && !d.giftKey && !('giftDeclined' in d) && 'giftAvailable' in d) {
       change({ updates: { [d.giftVariant]: 1 } }, S.giftAdded);
-    } else if (!earned && d.giftKey) {
-      change({ updates: { [d.giftVariant]: 0 } }, S.giftLost.replace('[amount]', d.giftAtMoney));
     }
   };
 

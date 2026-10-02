@@ -12,7 +12,7 @@ const drawer = document.getElementById('CartDrawer');
 const page = document.querySelector('[data-cart-page]');
 const sectionId = page ? page.dataset.sectionId : 'cart-drawer';
 const S = JSON.parse(document.getElementById('CartStrings')?.textContent || '{}');
-// Liquid's t filter escapes apostrophes (&#39;); these go into textContent, so turn them back into characters.
+// Undo the t filter's &#39; escapes (these go into textContent).
 for (const k in S) S[k] = new DOMParser().parseFromString(S[k], 'text/html').body.textContent;
 const fmt = (s = '', o = {}) => s.replace(/\[(\w+)\]/g, (_, k) => o[k] ?? '');
 const countLabel = (n) => (n === 1 ? S.one : S.other.replace('99', n));
@@ -57,8 +57,7 @@ const send = (url, body) =>
     return data;
   });
 const withSections = (body) => Object.assign(body, { sections: sectionId, sections_url: location.pathname });
-// A product form as one item. Sent as `items`: Shopify only enforces the stock limit for that shape
-// (a plain id + quantity add goes past it).
+// A product form as one item, sent as `items`: only that shape keeps Shopify's stock limit.
 const asItems = (form) => {
   const data = new FormData(form);
   const item = { id: +data.get('id'), quantity: +data.get('quantity') || 1 };
@@ -77,7 +76,7 @@ const fresh = () => fetch(`${location.pathname}?sections=${sectionId}`).then((r)
    Lines with taps not yet sent keep their own element; other lines keep their photo (no flash). Undo rows stay
    after the line they followed. Scroll position and focus are put back. */
 const dirty = new Set();
-// Where focus is, said in a way that survives the refresh: "this line's + button", or an element id.
+// Where focus is, in a form that survives the refresh ("this line's +", or an id).
 const PARTS = ['.qty__minus', '.qty__plus', '.qty__input', '.cart-line__title', '.cart-undo__btn'];
 const focusPath = (el) => {
   const line = el.closest?.('.cart-line, .cart-undo');
@@ -167,9 +166,13 @@ const commit = (key, quantity) => {
   timers.delete(key);
   dirty.delete(key);
   const li = lineOf(key);
-  const title = li?.dataset.title;
+  const { title, variant, properties } = li?.dataset || {};
   li?.classList.add('is-busy');
-  return enqueue(() => send('cart/change.js', withSections({ id: key, quantity })))
+  // Shopify re-keys a line when its discounts change (gift amount crossed): find it again by what it is.
+  return enqueue(() => {
+    if (!lineOf(key)) key = [...box().querySelectorAll(`.cart-line[data-variant="${variant}"]`)].find((l) => l.dataset.properties === properties)?.dataset.key || key;
+    return send('cart/change.js', withSections({ id: key, quantity }));
+  })
     .then((cart) => {
       render(cart.sections?.[sectionId]);
       counted(cart.item_count);
@@ -269,7 +272,7 @@ document.addEventListener('change', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
-  // Enter in a quantity saves that number; it must never submit the form (that would go to checkout).
+  // Enter in a quantity saves it; never submits the form (that goes to checkout).
   if (event.key === 'Enter' && event.target.matches('.cart-line .qty__input')) {
     event.preventDefault();
     event.target.dispatchEvent(new Event('change', { bubbles: true }));
@@ -333,8 +336,8 @@ const toast = (title, image, error) => {
   runToast();
 };
 
-// Go to checkout with the cart as it is now. Waiting for a change can redraw the cart, so the button that was
-// pressed may be gone: always submit the current form with its current Checkout button.
+// Checkout with the cart as it is now. A change can redraw the cart and replace the pressed button, so
+// submit the current form with its current Checkout button.
 const checkout = () => {
   const form = box()?.querySelector('[data-cart-form]');
   form?.requestSubmit(form.querySelector('[name="checkout"]'));
@@ -344,7 +347,7 @@ const checkout = () => {
 document.addEventListener('submit', (event) => {
   const form = event.target;
 
-  // Cart forms: let queued changes land first, so a removed line can't sneak into checkout.
+  // Cart forms: queued changes land first, so a removed line can't reach checkout.
   if (form.matches('[data-cart-form]')) {
     if (event.defaultPrevented) return;
     if (pending || timers.size || noteTimer) {
@@ -466,7 +469,7 @@ if (drawer) {
   drawer.addEventListener('click', (event) => {
     if (event.target === drawer) closeDrawer();
   });
-  // Leaving from inside the drawer (a product link, Checkout): first step back over its history entry.
+  // Leaving from the drawer (a link, Checkout): step back over its history entry first.
   drawer.addEventListener('click', (event) => {
     const link = event.target.closest('a[href]');
     if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || !history.state?.cartDrawer) return;
@@ -501,7 +504,7 @@ document.addEventListener('click', (event) => {
   if (target.closest('[data-cart-close]')) return closeDrawer();
   if (target.closest('[data-toast-close]')) return hideToast();
   if (target.closest('[data-cart-view]')) return openDrawer(returnFocus || document.querySelector('.site-header__cart'));
-  // The header's cart button opens the drawer on a plain click; long-press, new-tab clicks and no-JS go to /cart.
+  // A plain click on the header's cart opens the drawer; new-tab clicks and no-JS go to /cart.
   const cartLink = target.closest('.site-header__cart');
   if (cartLink && drawer && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
     event.preventDefault();
@@ -509,7 +512,7 @@ document.addEventListener('click', (event) => {
   }
 });
 
-// Drawer photos are lazy (the drawer is closed on most visits): start them as soon as a finger or pointer heads for it.
+// Drawer photos are lazy: start them when a finger or pointer heads for the cart.
 const warm = (event) => {
   if (!event.target.closest?.('.site-header__cart, [data-cart-view]')) return;
   drawer?.querySelectorAll('img[loading="lazy"]').forEach((img) => (img.loading = 'eager'));
