@@ -37,7 +37,7 @@
   Search results are endless thin pages: keep them out of search engines (robots.txt also blocks /search). The Saved
   and Track pages are personal (docs/account-plan.md), so they stay out too.
 {%- endcomment -%}
-{%- if request.page_type == 'search' or template.suffix == 'saved' or template.suffix == 'track-order' %}
+{%- if request.page_type == 'search' or template.suffix == 'saved' or template.suffix == 'track-order' or page.handle == 'saved' or page.handle == 'track-order' %}
   <meta name="robots" content="noindex, follow">
 {%- endif %}
 
