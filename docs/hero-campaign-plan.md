@@ -67,13 +67,23 @@ Normal days (as now)                  Campaign live (e.g. Diwali)
 - **Speed:** the banner becomes the LCP image (eager, high priority, about 60–90 KB WebP at phone size). The pill is text, so it shows before the photo arrives. Same 2.0s budget, checked.
 - **The campaign card in the product row (as built) goes away on phones.** The banner replaces it, so a campaign appears once, not twice.
 
-### 5.2 Desktop: the campaign takes over the words and the first photo
+### 5.2 Desktop: a wide banner replaces the hero (revised after mockups, 2026-10-03)
 
-The desktop hero already has words on the left and a square photo frame on the right (M6). While a campaign is live:
-- **Left:** the occasion as the big line ("Diwali gifts, handmade"), the deadline or offer line, and the campaign button. The h1 stays as a small eyebrow above it.
-- **Right:** the campaign's **square** photo leads the frame (as built), and the product photos follow.
+Mockups at 1280 × 800 on the real page, with the sunflower photo standing in for a festive one: `docs/mockups/campaign-desktop-today.png`, `-A-split.png`, `-B-wide.png`.
 
-There's no extra strip, and nothing gets taller. Desktop gets a square image and phones get a 16:9 one, both set in the same block.
+| | A: split (first proposal) | **B: wide banner (recommended)** |
+|---|---|---|
+| Layout | Today's hero: festive words on the left, the campaign photo on the right | One full-width photo (about 1184 × 440, 2.7:1) with the pill, and Bestsellers right below |
+| Feels like an event? | Hardly. It reads as the normal page with new words, so returning visitors may not notice | **Yes**, at a glance |
+| Products on the first screen | No: Bestsellers starts at 888px, below the fold (as today) | **Yes**: the category circles and the tops of the cards show at 800px. The page gets about 150px shorter |
+| Same idea as phones | Partly | **Yes**: on both, "a banner replaces the top" |
+| Photo needed | Square (what you have today) | **Landscape**, shot for it (§5.4). A square photo cropped to 2.7:1 keeps only the middle 37% and looks blown up |
+
+- **B, with A as the fallback:** if a campaign has a wide desktop photo, desktop shows B. If it only has a square one, desktop shows A automatically. Nothing breaks when a wide photo is missing.
+- In B the h1 stays in the page, visually hidden, as on phones. The pill sits lower left, so leave calm space there in the photo.
+- In A the frame shows only the campaign photo and doesn't cross-fade to products, so the words and the picture always match.
+
+**Shooting one photo for both:** hold the phone sideways (landscape, 4:3 or 16:9). Put the pieces in the right half, and keep the left third calm (a plain table, cloth, soft light) for the pill. Leave space above and below. One shot then crops to 16:9 for phones and 2.7:1 for desktop.
 
 ### 5.3 One campaign at a time
 
@@ -130,7 +140,7 @@ Traffic is too low for a real A/B test yet, so:
 | **D2** | How many live banners: (a) one (b) up to two, swiped by hand | **(a) one.** Slide 2 is rarely seen, and two banners mean two photos to make |
 | **D3** | Normal days: (a) keep today's headline (b) an always-on "brand banner" (a wide lifestyle photo with the headline on a pill) | **(a) for now.** Switch to (b) when you have a great wide photo, or real proof worth showing ("4.8★ from 1,200 Meesho buyers"). It's the same block with no end date, so no extra build |
 | **D4** | Banner words: (a) real text on a pill (b) allow designed artwork with text in the image, with alt text required | **(a).** Sharp, readable, translatable, and you can change it in 10 seconds without Canva |
-| **D5** | Desktop: the campaign takes over the words and the first photo (5.2) | **Yes** |
+| **D5** | Desktop: (A) festive words plus a square photo (B) a wide banner replacing the hero, falling back to A without a wide photo (5.2) | **(B)**, after seeing the mockups |
 | **D6** | Build the click counter (7) | **Yes**, small |
 
 ## 9. Build stages (after the go)
@@ -138,12 +148,12 @@ Traffic is too low for a real A/B test yet, so:
 | Stage | What | Files | Check |
 |---|---|---|---|
 | C1 | Phone banner takeover: 16:9 image, pill text (occasion, line), knob, hidden h1, LCP rules, remove the phone campaign card | `sections/hero.liquid`, `locales/en.default.json` | 320/360/390/768: no horizontal scroll, page height ≈ unchanged, products on the first screen, axe 0, LCP ≤ 2.0s |
-| C2 | Desktop takeover of the words (5.2) | `sections/hero.liquid` | 1024/1280/1440: same height as today, axe 0 |
+| C2 | Desktop wide banner, with the split fallback (5.2) | `sections/hero.liquid` | 1024/1280/1440: no taller than today, Bestsellers on the first screen with B, axe 0, LCP ≤ 2.0s |
 | C3 | Click event (7) | `sections/hero.liquid` or `assets/theme.js` (≤ 25 KB) | The event fires once per click |
 | C4 | check.mjs §12 updated: a dated campaign shows/hides, banner height, pill contrast | `tools/check.mjs` | `npm run check` green |
 | C5 | Docs: as-built notes, the decisions log, the checklist (5.5) in launch-checklist.md | `docs/` | — |
 
-**For Diwali:** if you say go this week, C1 and C2 can be live before Navratri. What you need to provide: one landscape and one square festive photo of our pieces, a "Diwali gifts" collection, and your real last order date for Diwali delivery.
+**For Diwali:** if you say go this week, C1 and C2 can be live before Navratri. What you need to provide: one landscape festive photo of our pieces (shot as in §5.2), a "Diwali gifts" collection, and your real last order date for Diwali delivery.
 
 ## Sources
 - [Baymard: 10 UX requirements for homepage carousels](https://baymard.com/blog/homepage-carousel)
