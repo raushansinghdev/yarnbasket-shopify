@@ -1,6 +1,44 @@
 # Offers plan: announcement bar and cart rewards
 
-Status: **proposed 2026-10-02.** Waiting for Raushan's answers to §9 and a go. Nothing is built yet.
+Status: **approved and built 2026-10-02** (O1–O10 as recommended). Stages R1–R4 and the automated part of R5 are done. R0 (the admin) is Raushan's: see `launch-checklist.md` "Offers". Everything stays hidden until Theme settings → Cart turns it on.
+
+### As built (where it differs from the plan below)
+- **One line, decided for good:** see `decisions.md` 2026-10-02 (offers) for why one message beats several.
+  - The standing line has two parts on phones and three from 768px: free shipping, COD, ships in 1–3 days, handmade in India, in that order of priority.
+  - With no offer on, it's "Handmade in India · Ships in 1–3 days".
+  - Max 2 dated message blocks; the first live one replaces the line. A message without a date stays until it's removed.
+  - The old fixed "terms" block in `header-group.json` was removed, because it would have overridden the line forever.
+  - The bar keeps only its ResizeObserver (for `--announce-h`). `[data-announce-track]` is still on the message, so check §10's "plain text" test holds.
+- **Rewards** (`snippets/cart-rewards.liquid`, rendered by `cart-summary`):
+  - States: ship / gift / ready / declined / done / charged.
+  - The amounts show under the markers (O10). The first amount hides when the markers are closer than 20% of the bar.
+  - In the drawer, "Small add-ons" sits on the amounts row, left of the first marker, so it costs no extra line. It only shows when that marker is past 40% of the bar, and it links to all products sorted by price.
+  - A hidden sentence gives screen readers both amounts.
+- **The bar's motion** is a CSS transition (600ms `--ease-out`). cart.js sets the old width for one frame after a refresh, and it's off under reduced motion and `html.lite`.
+- **Spoken updates:** cart.js speaks a changed step after its own message, for example "…Subtotal ₹1,298. Free shipping unlocked · ₹201 more for a free gift". The pop-up gets the same rewards line.
+- **cart.js budget:** it's at 21.9 of 22 KB. It only gained a `window.ybCart` hook, a `cart:rendered` event, the spoken step and the pop-up line, with no gift logic. **Any further cart.js work needs minifying or a split first.**
+- **rewards.js** (3.4 KB):
+  - It loads only when a gift product is set and its amount is above free shipping.
+  - All changes go through `/cart/update.js` keyed by the gift's variant, with `_gift_declined` as a hidden cart attribute.
+  - Its click handler runs in the capture phase, so the drawer's "leave via Back" link handling never sees "Add it".
+  - **Charged-gift guard:** if the gift arrives still charged (the discount is missing), it's taken straight out, a console warning is logged, and it isn't auto-added again on that page. The cart line shows the badge and "Free" only when the line really is ₹0.
+- **No JavaScript:** "Add it" is a link to `/cart/add?id=…&quantity=1`, which Shopify adds and returns to /cart. The gift's remove button submits the cart form with that line at 0.
+- **Product page** (`snippets/offer-terms.liquid`, agreed with session 63 as the one trust row for the coming product page):
+  - a 2 × 2 grid (two rows at most), 13px
+  - "Replacement if damaged", linked to the refund policy once it exists, instead of "Easy returns"
+  - new icons: `cash`, `replace`
+- **Little extras:** pieces that would reach the next step come first, and the gift is never suggested. The heading text stays generic, because the section isn't redrawn as the cart changes and a "₹151 more…" line would go stale.
+- **FAQ:** a new "Shipping and offers" block whose answer (and FAQPage JSON-LD) is written from the settings and hides while nothing is on. It's added to the home FAQ.
+- **The fee line (O8):** "Taxes included. Shipping ₹79." below the amount, "Taxes included. Free shipping." from it. It stays "calculated at checkout" while the fee is 0.
+- **Tests:**
+  - `npm run check` section 11: the bar is one line at 360, there's no bar on /cart, the product terms are ≤ 2 rows, and axe passes on the cart with rewards.
+  - Admin drift: Shopify's real Delhi rates against the theme amounts and fee, and the gift arriving free. These skip while the offers are off.
+  - Section 8's cart-page axe check now waits for the cart to settle.
+  - Results with test values on (₹999 / ₹79 / ₹1,499, the ₹249 keychain as a stand-in gift): every state works and axe is 0. The two admin checks fail correctly: the rates are ₹379 at every total, and there's no gift discount yet.
+  - With the real settings (all off): 73/73 quick.
+- **Not testable until R0:** the gift's "done" look (badge, "Free ~~₹149~~"), because it needs the real discount.
+
+Original plan below, kept as written.
 
 This plan covers two connected things:
 - **the announcement bar:** what goes in it, and how it stays one quiet line as offers grow
@@ -258,7 +296,7 @@ There's no "Hurry!", no exclamation marks and no countdowns.
 
 **Tax:** ask the CA how to treat free gifts under GST. Input tax credit on goods given away free may need reversing (Section 17(5)(h)). Add this to the CA questions in `launch-checklist.md`.
 
-**Terms:** one line in the Terms of service and FAQ: "Free gift while stocks last, one per order. If items are returned and the order falls under ₹1,499, the gift is yours to keep." It's simple, and nobody has to post a gift back.
+**Terms:** one line in the Terms of service and FAQ: "Free gift while stocks last, one per order. If part of an order is refunded and it falls under ₹1,499, the gift is yours to keep." It's simple, and nobody has to post a gift back. (There are no change-of-mind returns, only refunds for damaged, wrong or missing items.)
 
 **Prepaid nudge (separate):** a flat "₹50 off with UPI" belongs to the payment gateway decision and is shown at checkout. It isn't a third step on our bar.
 

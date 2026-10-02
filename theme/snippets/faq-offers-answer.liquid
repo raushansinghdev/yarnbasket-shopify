@@ -1,0 +1,40 @@
+{%- doc -%}
+  The FAQ's "Shipping and offers" answer (docs/offers-plan.md §6), written from Theme settings → Cart so it always
+  matches the cart, the product pages and the announcement bar. Renders nothing while no offer is switched on.
+
+  @param {string} [extra] - The block's own rich text, added after
+
+  @example
+  {% render 'faq-offers-answer', extra: block.settings.extra %}
+{%- enddoc -%}
+{%- liquid
+  assign ship_at = settings.free_shipping_threshold | default: 0 | times: 100
+  assign fee = settings.shipping_fee | default: 0 | times: 100
+  assign gift_at = settings.gift_threshold | default: 0 | times: 100
+  assign gift = settings.gift_product
+  assign text = ''
+  if ship_at > 0
+    assign amount = ship_at | money_without_trailing_zeros
+    assign text = 'offers.faq_ship' | t: amount: amount
+    if fee > 0
+      assign amount = fee | money_without_trailing_zeros
+      assign fee_line = 'offers.faq_fee' | t: amount: amount
+      assign text = text | append: ' ' | append: fee_line
+    endif
+  endif
+  if settings.cod_available
+    assign cod = 'offers.faq_cod' | t
+    assign text = text | append: ' ' | append: cod
+  endif
+  if gift != blank and gift_at > ship_at and gift.available
+    assign amount = gift_at | money_without_trailing_zeros
+    assign gift_name = gift.title | escape
+    assign line = 'offers.faq_gift' | t: amount: amount, gift: gift_name
+    assign text = text | append: ' ' | append: line
+  endif
+  assign text = text | strip
+-%}
+{%- if text != blank -%}
+  <p>{{ text }}</p>
+  {{- extra -}}
+{%- endif -%}

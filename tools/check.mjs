@@ -272,6 +272,8 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 
     await page.goto(site('/cart'), { waitUntil: 'load' });
     await page.waitForTimeout(800);
+    // With a free gift set up, rewards.js may be adding it; a change on its way dims prices (not a contrast fault).
+    await page.waitForFunction(() => !document.querySelector('[data-cart-root].is-busy'), null, { timeout: 10000 }).catch(() => {});
     const v2 = await axeOn();
     record(`Cart page, ${label} (axe)`, v2.length === 0 && errors.length === 0, (v2.join(', ') || '0 violations') + (errors.length ? `; errors: ${errors[0]}` : ''));
     await browser.close();
@@ -419,6 +421,87 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
     return { pill: !!cta && getComputedStyle(cta).backgroundColor !== 'rgba(0, 0, 0, 0)', h: Math.round(cta?.getBoundingClientRect().height ?? 0), ways: document.querySelectorAll('.hero__actions a').length };
   });
   record('Home, desktop: one way in, a pill button', d.pill && d.ways === 1 && d.h >= 48, `${d.ways} link(s), pill: ${d.pill}, ${d.h}px`);
+  await browser.close();
+}
+
+// 11. Offers (docs/offers-plan.md): the announcement bar is one line on a 360px phone and absent on /cart; the product
+//     page's delivery terms are two rows at most. With offers switched on in Theme settings → Cart, the cart's rewards
+//     line is there and passes axe, and the admin agrees with the theme: Shopify's real shipping rates (Delhi) have a
+//     ₹0 rate from the free-shipping amount and none below it, the flat fee matches, and the gift arrives free.
+//     Needs products; the admin checks are skipped while the offers are off.
+{
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const phone = { viewport: { width: 360, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+  const { browser, page, errors } = await open(chromium, phone, { reducedMotion: 'reduce' });
+  const bar = await page.evaluate(() => {
+    const b = document.querySelector('.announce');
+    const line = parseFloat(getComputedStyle(b?.querySelector('.announce__msg') || document.body).lineHeight);
+    return b ? { lines: Math.round(b.querySelector('.announce__msg').getBoundingClientRect().height / line), links: b.querySelectorAll('a, button').length } : null;
+  });
+  if (bar) record('Offers, phone 360: announcement bar is one line', bar.lines === 1, `${bar.lines} line(s)`);
+  await page.goto(site('/cart'), { waitUntil: 'load' });
+  record('Offers: no announcement bar on /cart', !(await page.$('.announce')), 'the rewards line says it there');
+
+  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products, () => []);
+  const cheap = products.filter((p) => p.variants[0].available).sort((a, b) => a.variants[0].price - b.variants[0].price);
+  if (!cheap.length) console.log('SKIP  Offers checks                                   no products in the store');
+  else {
+    await page.goto(site(`/products/${cheap[0].handle}`), { waitUntil: 'load' });
+    const rows = await page.evaluate(() => new Set([...document.querySelectorAll('.offer-terms li')].map((li) => Math.round(li.getBoundingClientRect().top))).size);
+    record('Offers, phone 360: product terms in two rows at most', rows > 0 && rows <= 2, `${rows} row(s)`);
+
+    // A cart with one cheap piece that isn't the gift itself (rewards.js would take a charged gift straight out),
+    // read once the cart has settled (a change on its way dims the prices, which axe would count as low contrast).
+    const settled = () => page.waitForFunction(() => !document.querySelector('[data-cart-root].is-busy'), null, { timeout: 10000 }).catch(() => {});
+    const fill = async (product) => {
+      await page.request.post(site('/cart/clear.js'));
+      await page.request.post(site('/cart/add.js'), { data: { items: [{ id: product.variants[0].id, quantity: 1 }] } });
+      await page.goto(site('/cart'), { waitUntil: 'load' });
+      await page.waitForTimeout(1500);
+      await settled();
+      return page.evaluate(() => ({ ...document.querySelector('[data-rewards]')?.dataset }));
+    };
+    let r = await fill(cheap[0]);
+    // The cheapest piece may be the gift: alone it's still charged, so it's taken out and the cart ends up empty.
+    while (!r.state && cheap.length > 1 && (await page.evaluate(() => !document.querySelector('.cart-line')))) cheap.shift(), (r = await fill(cheap[0]));
+    if (!r.state) console.log('SKIP  Offers admin checks                             free shipping and the gift are off in Theme settings');
+    else {
+      await page.addScriptTag({ content: axe.source });
+      const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+      record('Offers: cart page with the rewards line (axe)', v.length === 0, v.join(', ') || '0 violations');
+      const q = 'shipping_address[zip]=110001&shipping_address[country]=India&shipping_address[province]=Delhi';
+      const rates = async () => {
+        await page.request.post(site(`/cart/prepare_shipping_rates.json?${q}`));
+        for (let i = 0; i < 15; i++) {
+          const j = await page.request.get(site(`/cart/async_shipping_rates.json?${q}`)).then((x) => x.json(), () => null);
+          if (j?.shipping_rates) return j.shipping_rates.map((x) => Math.round(+x.price * 100));
+          await page.waitForTimeout(1000);
+        }
+        return [];
+      };
+      const shipAt = +r.shipAt;
+      const fee = +r.fee;
+      if (shipAt > 0) {
+        const below = await rates();
+        const unit = cheap[0].variants[0].price * 100;
+        await page.request.post(site('/cart/change.js'), { data: { line: 1, quantity: Math.ceil(shipAt / unit) } });
+        const above = await rates();
+        const ok = below.length > 0 && !below.includes(0) && above.includes(0) && (!fee || below.includes(fee));
+        record('Offers: shipping rates match Theme settings', ok, `below the amount: ₹${below.map((x) => x / 100).join(', ₹') || ' none'}; from it: ₹${above.map((x) => x / 100).join(', ₹') || ' none'}${fee ? `; theme fee ₹${fee / 100}` : ''}`);
+      }
+      if (r.giftVariant) {
+        const unit = cheap.at(-1).variants[0].price * 100;
+        await page.request.post(site('/cart/add.js'), { data: { items: [{ id: cheap.at(-1).variants[0].id, quantity: Math.ceil(+r.giftAt / unit) }] } });
+        await page.goto(site('/cart'), { waitUntil: 'load' });
+        await page.waitForTimeout(3000);
+        await settled();
+        const g = await page.evaluate(() => ({ free: !!document.querySelector('.cart-line.is-gift'), state: document.querySelector('[data-rewards]')?.dataset.state }));
+        record('Offers: the free gift arrives free', g.free && g.state === 'done', `gift line free: ${g.free}, state: ${g.state}${g.free ? '' : ' (is the "Buy X get Y" discount set up?)'}`);
+      }
+    }
+    await page.request.post(site('/cart/clear.js'));
+  }
+  record('Offers: no script errors', errors.length === 0, errors[0] || 'none');
   await browser.close();
 }
 

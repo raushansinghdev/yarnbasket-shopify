@@ -61,10 +61,18 @@
     "error": {{ 'cart.error' | t | json }},
     "adding": {{ 'cart.adding' | t | json }},
     "addedButton": {{ 'cart.added_button' | t | json }},
+    "giftAdded": {{ 'rewards.spoken_added' | t | json }},
+    "giftRemoved": {{ 'rewards.spoken_removed' | t | json }},
+    "giftLost": {{ 'rewards.spoken_lost' | t: amount: '[amount]' | json }},
     "one": {{ 'cart.count' | t: count: 1 | json }},
     "other": {{ 'cart.count' | t: count: 99 | json }}
   }
 </script>
+
+{%- comment -%} The free gift (docs/offers-plan.md §5.4): only when one is set up, so other shops pay nothing for it. {%- endcomment -%}
+{%- if settings.gift_product != blank and settings.gift_threshold > settings.free_shipping_threshold -%}
+  <script src="{{ 'rewards.js' | asset_url }}" type="module"></script>
+{%- endif -%}
 
 {%- comment -%}
   The added-to-cart pop-up (decision D2, cart-plan §6.1): photo, "Added to cart", the name, View cart and ×.
@@ -78,6 +86,7 @@
     <p class="cart-toast__text">
       <span class="cart-toast__head">{%- render 'icon', icon: 'check' -%}{{ 'cart.added' | t }}</span>
       <span class="cart-toast__title"></span>
+      <span class="cart-toast__reward" hidden></span>
     </p>
     {%- unless request.page_type == 'cart' -%}
       <button type="button" class="btn cart-toast__view" data-cart-view>{{ 'cart.view_cart' | t }}</button>
@@ -176,6 +185,9 @@
   .cart-toast__head { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
   .cart-toast__head .icon { width: 16px; height: 16px; }
   .cart-toast__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); color: var(--color-muted); }
+  /* The rewards line from the cart ("Add ₹151 more for free shipping"), docs/offers-plan.md §6. */
+  .cart-toast__reward { font-size: .8125rem; line-height: 1.35; color: var(--color-heading); }
+  .cart-toast.is-error .cart-toast__reward { display: none; }
   .cart-toast__view { min-height: var(--tap); padding: 0 var(--space-4); font-size: .9375rem; }
   .cart-toast.is-error { grid-template-columns: minmax(0, 1fr) auto; padding-left: var(--space-4); }
   .cart-toast.is-error :is(.cart-toast__media, .cart-toast__head, .cart-toast__view) { display: none; }

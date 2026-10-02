@@ -5,10 +5,31 @@
   Until Shopify has worked out recommendations (it takes a while for new products), it falls back to the store's
   lowest-priced products.
   Nothing renders (and the slot stays empty) when there's nothing to suggest.
+  While a reward step is still ahead (docs/offers-plan.md §6), the cheapest pieces that would reach it come first; the
+  cart's rewards line says how much is left (this section isn't redrawn as the cart changes, so it doesn't repeat it).
+  The free gift itself is never suggested.
 {%- endcomment -%}
 {%- liquid
   assign in_cart = cart.items | map: 'product_id'
   assign shown = 0
+
+  # The next reward step, measured the same way as the cart's rewards line (snippets/cart-rewards.liquid).
+  assign gap = 0
+  assign ship_at = settings.free_shipping_threshold | default: 0 | times: 100
+  assign gift_at = settings.gift_threshold | default: 0 | times: 100
+  assign gift_id = settings.gift_product.id
+  assign gift_variant = settings.gift_product.variants.first
+  assign total = cart.total_price
+  for item in cart.items
+    if gift_variant and item.variant_id == gift_variant.id
+      assign total = total | minus: item.final_line_price
+    endif
+  endfor
+  if ship_at > 0 and cart.total_price < ship_at
+    assign gap = ship_at | minus: cart.total_price
+  elsif gift_variant and gift_variant.available and gift_at > ship_at and total < gift_at
+    assign gap = gift_at | minus: total
+  endif
 -%}
 {%- liquid
   if recommendations.performed and recommendations.products_count > 0
@@ -19,9 +40,17 @@
 -%}
 {%- if by_price.size > 0 -%}
   {%- capture cards -%}
+    {%- comment -%} Two passes when a step is ahead: first the pieces that would reach it, then the rest. {%- endcomment -%}
+    {%- for pass in (1..2) -%}
     {%- for product in by_price -%}
       {%- if shown >= 4 -%}{%- break -%}{%- endif -%}
-      {%- if product.available == false or in_cart contains product.id -%}{%- continue -%}{%- endif -%}
+      {%- if product.available == false or in_cart contains product.id or product.id == gift_id -%}{%- continue -%}{%- endif -%}
+      {%- if gap > 0 -%}
+        {%- if pass == 1 and product.price < gap -%}{%- continue -%}{%- endif -%}
+        {%- if pass == 2 and product.price >= gap -%}{%- continue -%}{%- endif -%}
+      {%- elsif pass == 2 -%}
+        {%- break -%}
+      {%- endif -%}
       {%- assign shown = shown | plus: 1 -%}
       {%- assign variant = product.selected_or_first_available_variant -%}
       <li class="extra">
@@ -47,6 +76,7 @@
           </a>
         {%- endif -%}
       </li>
+    {%- endfor -%}
     {%- endfor -%}
   {%- endcapture -%}
   {%- if shown > 0 -%}

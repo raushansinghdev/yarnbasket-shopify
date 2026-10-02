@@ -3,6 +3,9 @@
   Photo · name · options · price · quantity stepper. The photo repeats the name link, so it's hidden from screen
   readers and skipped by Tab; the name is the one link. cart.js keeps the photo element when it refreshes a line
   (only [data-line-body] is swapped), so photos never flash.
+  The free gift (docs/offers-plan.md §5.4) gets a "Free gift" badge, "Free" with its worth struck through, and a
+  remove button instead of the stepper, but only while it really is free. If its discount is missing it's an ordinary
+  line at its real price (rewards.js takes it out), so nothing is given away and nothing is mislabelled.
 
   @param {object} item - The cart line item
   @param {string} place - 'drawer' or 'page' (keeps ids unique when both are on a page)
@@ -28,6 +31,11 @@
     assign note = 'cart.max' | t
   endif
 
+  assign is_gift = false
+  if settings.gift_product != blank and settings.gift_threshold > 0 and item.variant_id == settings.gift_product.variants.first.id and item.final_line_price == 0
+    assign is_gift = true
+  endif
+
   # The struck-through price is the higher of the sale's "compare at" and the price before discounts.
   assign was = item.original_line_price
   if item.variant.compare_at_price > item.original_price
@@ -35,7 +43,7 @@
   endif
 -%}
 <li
-  class="cart-line{% if item.variant.available == false %} is-sold-out{% endif %}"
+  class="cart-line{% if item.variant.available == false %} is-sold-out{% endif %}{% if is_gift %} is-gift{% endif %}"
   data-key="{{ item.key }}"
   data-title="{{ title }}"
   data-variant="{{ item.variant_id }}"
@@ -52,6 +60,7 @@
   </a>
   <div class="cart-line__body" data-line-body>
     <div class="cart-line__info">
+      {%- if is_gift -%}<p class="cart-line__badge">{%- render 'icon', icon: 'gift' -%}{{ 'rewards.badge' | t }}</p>{%- endif -%}
       <a href="{{ item.url }}" class="cart-line__title" id="CartTitle-{{ uid }}">{{ item.product.title }}</a>
       {%- unless item.product.has_only_default_variant -%}
         <p class="cart-line__meta">{{ item.variant.options | join: ' · ' }}</p>
@@ -63,6 +72,7 @@
         {%- endif -%}
       {%- endfor -%}
       {%- for allocation in item.line_level_discount_allocations -%}
+        {%- if is_gift -%}{%- continue -%}{%- endif -%}
         <p class="cart-line__meta cart-line__deal">
           {{- allocation.discount_application.title }} (−{{ allocation.amount | money -}})
         </p>
@@ -73,7 +83,12 @@
       {%- endif -%}
     </div>
     <p class="cart-line__price">
-      {%- if was > item.final_line_price -%}
+      {%- if is_gift -%}
+        <span>{{ 'rewards.free' | t }}</span>
+        {%- assign worth = item.original_line_price | money -%}
+        <span class="visually-hidden">{{ 'rewards.worth' | t: price: worth }}</span>
+        <s aria-hidden="true">{{ worth }}</s>
+      {%- elsif was > item.final_line_price -%}
         <span class="visually-hidden">{{ 'products.sale_price' | t }}</span>
         <span>{{ item.final_line_price | money }}</span>
         <span class="visually-hidden">{{ 'products.regular_price' | t }}</span>
@@ -83,6 +98,14 @@
       {%- endif -%}
     </p>
     <div class="cart-line__qty">
+      {%- if is_gift -%}
+        {%- comment -%} Without JavaScript this submits the cart form with the gift at 0; rewards.js remembers the
+        "no thanks" so it isn't added again. {%- endcomment -%}
+        <button type="submit" name="updates[{{ item.key }}]" value="0" class="cart-line__gift-remove" data-gift-remove>
+          {%- render 'icon', icon: 'bin' -%}
+          <span>{{ 'rewards.remove' | t }}</span>
+        </button>
+      {%- else -%}
       {%- liquid
         assign note_id = blank
         if note != blank
@@ -92,6 +115,7 @@
         assign qty_id = 'CartQty-' | append: uid
         render 'quantity', id: qty_id, name: qty_name, value: item.quantity, title: title, max: max, describedby: note_id
       -%}
+      {%- endif -%}
     </div>
     <p class="cart-line__note" id="CartLineNote-{{ uid }}" data-line-note {% if note == blank %}hidden{% endif %}>
       {{- note -}}
@@ -149,6 +173,24 @@
   .cart-line__qty { grid-area: qty; margin-top: var(--space-3); }
   .cart-line__note { grid-area: note; margin-top: var(--space-2); font-size: var(--fs-small); color: var(--color-heading); }
   .cart-line__note.is-error { color: #9A3B2E; font-weight: 500; }
+  /* The free gift: a small badge over its name, and a plain remove button where the stepper would be. */
+  .cart-line__badge { display: inline-flex; align-items: center; gap: 4px; justify-self: start; margin-bottom: 2px; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--blush); color: var(--cocoa-deep); font-size: .75rem; font-weight: 500; }
+  .cart-line__badge .icon { width: 14px; height: 14px; }
+  .cart-line__gift-remove {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    padding: 0 var(--space-4) 0 var(--space-3);
+    border: 1.5px solid color-mix(in srgb, var(--cocoa) 40%, transparent);
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--color-heading);
+    font: 500 var(--fs-small) var(--font-sans);
+    cursor: pointer;
+  }
+  .cart-line__gift-remove .icon { width: 20px; height: 20px; }
+  @media (hover: hover) { .cart-line__gift-remove:hover { background: var(--blush-soft); } }
   .cart-line.is-sold-out .cart-line__media img { filter: grayscale(.7); opacity: .7; }
   /* While a change is on its way, the line's price and the totals dim; nothing else moves. */
   .cart-line.is-busy .cart-line__price, [data-cart-root].is-busy [data-total] { opacity: .55; }

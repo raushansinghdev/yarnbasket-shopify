@@ -43,8 +43,6 @@
     "note_hint": "We'll include it with your order.",
     "note_left": "{{ count }} characters left",
     "note_saved": "Saved",
-    "free_away": "You're {{ amount }} away from free shipping",
-    "free_done": "You've got free shipping",
     "payments": "We accept",
     "empty_title": "Your basket is empty",
     "empty_text": "Handmade pieces are waiting for you.",
@@ -64,7 +62,11 @@
     "extras_text": "Add a little something to go with it.",
     "extras_add": "Add",
     "extras_add_label": "Add {{ title }} to cart",
-    "extras_choose": "Choose"
+    "extras_choose": "Choose",
+    "taxes_included_fee": "Taxes included. Shipping {{ amount }}.",
+    "taxes_included_free": "Taxes included. Free shipping.",
+    "taxes_excluded_fee": "Shipping {{ amount }}. Taxes calculated at checkout.",
+    "taxes_excluded_free": "Free shipping. Taxes calculated at checkout."
   },
   "customers": {
     "login": {
@@ -230,9 +232,10 @@
     "success": "Thank you! You're on the list."
   },
   "announcement": {
-    "previous": "Previous message",
-    "next": "Next message",
-    "label": "Announcements"
+    "label": "Announcements",
+    "free_shipping": "Free shipping over {{ amount }}",
+    "cod": "Cash on delivery",
+    "handmade": "Handmade in India"
   },
   "hero": {
     "slideshow": "Featured products",
@@ -310,5 +313,36 @@
     "whatsapp": "WhatsApp us",
     "whatsapp_message": "Hi Yarn Basket! I have a question about my order #",
     "contact": "Contact us"
+  },
+  "rewards": {
+    "ship_away": "Add {{ amount }} more for free shipping",
+    "gift_away": "Add {{ amount }} more for a free gift",
+    "ship_done_gift_away": "Free shipping unlocked · {{ amount }} more for a free gift",
+    "ship_done": "You've got free shipping",
+    "all_done": "Free shipping and a free {{ gift }} are yours",
+    "gift_done": "A free {{ gift }} is yours",
+    "gift_ready": "Your free gift is ready",
+    "gift_declined": "Free gift available",
+    "add": "Add it",
+    "add_back": "Add it back",
+    "add_label": "Add your free {{ gift }}",
+    "steps_ship": "Free shipping from {{ amount }}.",
+    "steps_gift": "Free gift from {{ amount }}.",
+    "more": "Small add-ons",
+    "badge": "Free gift",
+    "free": "Free",
+    "worth": "Worth {{ price }}",
+    "remove": "Remove free gift",
+    "spoken_added": "Free gift added.",
+    "spoken_removed": "Free gift removed.",
+    "spoken_lost": "Your total is under {{ amount }} now, so the free gift was removed."
+  },
+  "offers": {
+    "label": "Delivery and payment",
+    "replace": "Replacement if damaged",
+    "faq_ship": "Shipping is free on orders over {{ amount }}.",
+    "faq_fee": "Below that, it's {{ amount }}.",
+    "faq_cod": "Cash on delivery is available.",
+    "faq_gift": "Orders over {{ amount }} get a free {{ gift }}, one per order, while stocks last."
   }
 }

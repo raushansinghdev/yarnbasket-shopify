@@ -193,12 +193,20 @@
             "question": "How do I care for my crochet?",
             "answer": "<p>Hand wash in cool water. Press gently, don't wring. Dry flat in the shade.</p>"
           }
+        },
+        "offers": {
+          "type": "offers",
+          "settings": {
+            "question": "Do you offer free shipping or cash on delivery?",
+            "extra": ""
+          }
         }
       },
       "block_order": [
         "q1",
         "q2",
-        "q3"
+        "q3",
+        "offers"
       ]
     },
     "newsletter": {

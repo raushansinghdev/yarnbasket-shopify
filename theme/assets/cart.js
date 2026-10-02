@@ -21,7 +21,11 @@ const total = () => box()?.querySelector('.cart-summary__row--total dd')?.textCo
 
 /* ---------- Saying what happened ----------
    While the drawer is open everything behind it is inert, the header's status line included, so it has its own. */
+// A reward step that changed is said after the change itself (offers-plan §5.6).
+let rewardNews = '';
 const say = (msg) => {
+  if (msg && rewardNews) msg += ` ${rewardNews}`;
+  rewardNews = '';
   const live = drawer?.open ? drawer.querySelector('[data-cart-live]') : document.querySelector('[data-cart-status]');
   if (!live || !msg) return;
   live.textContent = '';
@@ -107,6 +111,8 @@ const render = (html) => {
       prev = el.dataset.key;
     });
   }
+  const was = root.querySelector('[data-rewards]');
+  const wasPct = was?.querySelector('[data-rewards-fill]')?.style.getPropertyValue('--pct');
   const note = root.querySelector('[data-cart-note]');
   const nextNote = next.querySelector('[data-cart-note]');
   if (note && nextNote) nextNote.replaceWith(note);
@@ -116,7 +122,17 @@ const render = (html) => {
   if (scroller && top) scroller.scrollTop = top;
   if (focusAt) root.querySelector(focusAt)?.focus({ preventScroll: true });
   if (!pending) root.classList.remove('is-busy');
+  // Rewards: the bar moves from where it was (CSS transition); a step reached or lost is said.
+  const now = root.querySelector('[data-rewards]');
+  if (now && now.dataset.state !== was?.dataset.state) rewardNews = now.querySelector('[data-rewards-text]').textContent;
+  const fill = wasPct && now?.querySelector('[data-rewards-fill]');
+  if (fill) {
+    fill.style.width = wasPct;
+    fill.offsetWidth;
+    fill.style.width = '';
+  }
   setupBar();
+  document.dispatchEvent(new CustomEvent('cart:rendered'));
 };
 
 /* ---------- Quantity ---------- */
@@ -365,6 +381,13 @@ document.addEventListener('submit', (event) => {
       const variant = item.product_has_only_default_variant ? '' : item.variant_title;
       say(fmt(S.added, { title: item.product_title, count: countLabel(count) }));
       toast(variant ? `${item.product_title} · ${variant}` : item.product_title, item.image);
+      // "₹151 away from free shipping", in the pop-up.
+      const news = box()?.querySelector('[data-rewards-text]')?.textContent;
+      const line = toastEl?.querySelector('.cart-toast__reward');
+      if (news && line) {
+        line.textContent = news;
+        line.hidden = false;
+      }
       if (label) {
         label.textContent = S.addedButton;
         setTimeout(() => (label.textContent = original), 2000);
@@ -518,3 +541,6 @@ if (slot) {
     })
     .catch(() => {});
 }
+
+// For rewards.js (the free gift).
+window.ybCart = { enqueue, send, withSections, render, say, counted, box, sectionId, S, fmt };

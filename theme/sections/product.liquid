@@ -62,6 +62,7 @@
     {{ form | payment_button }}
   {% endform %}
   {%- render 'save-button', product: product, style: 'page' -%}
+  {%- render 'offer-terms' -%}
 </div>
 {%- comment -%} Recently viewed (docs/account-plan.md §8.5): saved.js notes this product's handle. {%- endcomment -%}
 <span hidden data-viewed="{{ product.handle }}"></span>

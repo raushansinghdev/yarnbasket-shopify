@@ -91,7 +91,34 @@
         "id": "free_shipping_threshold",
         "label": "Free shipping from (₹)",
         "default": 0,
-        "info": "Shows \"You're ₹… away from free shipping\" in the cart. Leave at 0 to hide it. Set the same amount as a free rate in Settings → Shipping and delivery."
+        "info": "Shows \"Add ₹… more for free shipping\" in the cart, and \"Free shipping over ₹…\" in the announcement bar and on product pages. Leave at 0 to hide it. Set the same amount as a free rate in Settings → Shipping and delivery (docs/offers-plan.md)."
+      },
+      {
+        "type": "number",
+        "id": "shipping_fee",
+        "label": "Standard shipping fee (₹)",
+        "default": 0,
+        "info": "Optional. Under the free-shipping amount the cart says \"Shipping ₹…\" instead of \"Shipping calculated at checkout\". Must match your paid rate in Settings → Shipping and delivery."
+      },
+      {
+        "type": "number",
+        "id": "gift_threshold",
+        "label": "Free gift from (₹)",
+        "default": 0,
+        "info": "The second step on the cart's progress bar. Must be higher than the free-shipping amount. Leave at 0 to hide it."
+      },
+      {
+        "type": "product",
+        "id": "gift_product",
+        "label": "Free gift product",
+        "info": "Give it its real price, track its stock and keep it out of collections. An automatic \"Buy X get Y\" discount makes it free (docs/offers-plan.md §5.4). The cart adds it once the order reaches the amount above, and the step hides itself when the gift is sold out."
+      },
+      {
+        "type": "checkbox",
+        "id": "cod_available",
+        "label": "Cash on delivery available",
+        "default": false,
+        "info": "Says \"Cash on delivery\" in the announcement bar and on product pages. Only turn it on once COD works at checkout."
       },
       {
         "type": "checkbox",

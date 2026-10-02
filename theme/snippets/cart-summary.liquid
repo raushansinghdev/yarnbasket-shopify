@@ -10,7 +10,6 @@
   {% render 'cart-summary', place: 'page' %}
 {%- enddoc -%}
 {%- liquid
-  assign threshold = settings.free_shipping_threshold | default: 0 | times: 100
   assign blocked = false
   for item in cart.items
     if item.variant.available == false
@@ -18,29 +17,25 @@
       break
     endif
   endfor
+
+  # With a flat fee set, say what shipping costs instead of "calculated at checkout" (docs/offers-plan.md O8).
+  assign threshold = settings.free_shipping_threshold | default: 0 | times: 100
+  assign fee = settings.shipping_fee | default: 0 | times: 100
+  assign tax_key = 'cart.taxes_excluded'
+  if cart.taxes_included
+    assign tax_key = 'cart.taxes_included'
+  endif
+  if threshold > 0 and cart.total_price >= threshold
+    assign tax_line = tax_key | append: '_free' | t
+  elsif fee > 0
+    assign fee_money = fee | money_without_trailing_zeros
+    assign tax_line = tax_key | append: '_fee' | t: amount: fee_money
+  else
+    assign tax_line = tax_key | t
+  endif
 -%}
 <div class="cart-summary cart-summary--{{ place }}">
-  {%- if threshold > 0 -%}
-    {%- liquid
-      assign away = threshold | minus: cart.total_price
-      assign pct = cart.total_price | times: 100 | divided_by: threshold
-      if pct > 100
-        assign pct = 100
-      endif
-    -%}
-    <div class="cart-free{% if away <= 0 %} is-done{% endif %}">
-      <p class="cart-free__text">
-        {%- if away > 0 -%}
-          {%- assign away_money = away | money -%}
-          {{- 'cart.free_away' | t: amount: away_money -}}
-        {%- else -%}
-          {%- render 'icon', icon: 'truck' -%}
-          {{- 'cart.free_done' | t -}}
-        {%- endif -%}
-      </p>
-      <span class="cart-free__bar" aria-hidden="true"><span style="--pct: {{ pct }}%"></span></span>
-    </div>
-  {%- endif -%}
+  {%- render 'cart-rewards', place: place -%}
 
   <dl class="cart-summary__rows" data-total>
     {%- for discount in cart.cart_level_discount_applications -%}
@@ -54,9 +49,7 @@
       <dd>{{ cart.total_price | money }}</dd>
     </div>
   </dl>
-  <p class="cart-summary__tax">
-    {%- if cart.taxes_included -%}{{ 'cart.taxes_included' | t }}{%- else -%}{{ 'cart.taxes_excluded' | t }}{%- endif -%}
-  </p>
+  <p class="cart-summary__tax">{{ tax_line }}</p>
 
   <button
     type="submit"
@@ -113,12 +106,4 @@
   .cart-summary__express:empty { display: none; }
   .cart-summary__pay ul { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
   .cart-summary__pay-icon { width: 38px; height: 24px; }
-
-  /* Free shipping: one line of words, and a thin bar under it that is decoration only. */
-  .cart-free { display: grid; gap: var(--space-2); font-size: var(--fs-small); color: var(--color-heading); }
-  .cart-free__text { display: flex; align-items: center; gap: var(--space-2); }
-  .cart-free__text .icon { width: 20px; height: 20px; }
-  .cart-free__bar { display: block; height: 4px; border-radius: 4px; background: var(--color-line-strong); overflow: hidden; }
-  .cart-free__bar > span { display: block; height: 100%; width: var(--pct); border-radius: inherit; background: var(--cocoa); transition: width var(--dur-enter) var(--ease-out); }
-  .cart-free.is-done .cart-free__bar > span { background: var(--sage); }
 {% endstylesheet %}

@@ -13,32 +13,58 @@
 
     <div class="faq__list" data-arrive="stagger">
       {%- for block in section.blocks -%}
+        {%- liquid
+          if block.type == 'offers'
+            capture answer
+              render 'faq-offers-answer', extra: block.settings.extra
+            endcapture
+          else
+            assign answer = block.settings.answer
+          endif
+          if answer == blank
+            continue
+          endif
+        -%}
         <details class="faq__item" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
           <summary>
             <span>{{ block.settings.question }}</span>
             <span class="faq__toggle" aria-hidden="true">{%- render 'icon', icon: 'plus' -%}</span>
           </summary>
-          <div class="faq__answer rte">{{ block.settings.answer }}</div>
+          <div class="faq__answer rte">{{ answer }}</div>
         </details>
       {%- endfor -%}
     </div>
   </div>
 </section>
 
-{%- if section.blocks.size > 0 -%}
+{%- capture questions -%}
+  {%- for block in section.blocks -%}
+    {%- liquid
+      if block.type == 'offers'
+        capture answer
+          render 'faq-offers-answer', extra: block.settings.extra
+        endcapture
+      else
+        assign answer = block.settings.answer
+      endif
+      if answer == blank
+        continue
+      endif
+    -%}
+    {
+      "@type": "Question",
+      "name": {{ block.settings.question | strip_html | json }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ answer | strip_html | strip | json }} }
+    },
+  {%- endfor -%}
+{%- endcapture -%}
+{%- assign questions = questions | strip | remove_last: ',' -%}
+{%- if questions != blank -%}
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "FAQPage",
-      "mainEntity": [
-        {%- for block in section.blocks -%}
-          {
-            "@type": "Question",
-            "name": {{ block.settings.question | strip_html | json }},
-            "acceptedAnswer": { "@type": "Answer", "text": {{ block.settings.answer | strip_html | json }} }
-          }{% unless forloop.last %},{% endunless %}
-        {%- endfor -%}
-      ]
+      "mainEntity": [{{ questions }}]
     }
   </script>
 {%- endif -%}
@@ -127,6 +153,16 @@
       "settings": [
         { "type": "text", "id": "question", "label": "Question" },
         { "type": "richtext", "id": "answer", "label": "Answer" }
+      ]
+    },
+    {
+      "type": "offers",
+      "name": "Shipping and offers",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question", "default": "Do you offer free shipping or cash on delivery?" },
+        { "type": "paragraph", "content": "The answer writes itself from Theme settings → Cart (free shipping, shipping fee, cash on delivery, free gift), so it always matches the cart. It hides while none of them is on." },
+        { "type": "richtext", "id": "extra", "label": "Anything to add" }
       ]
     }
   ],

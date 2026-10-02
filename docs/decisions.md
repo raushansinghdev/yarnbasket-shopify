@@ -2,6 +2,27 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-02 (offers: announcement bar and cart rewards, docs/offers-plan.md; built)
+
+- **Raushan approved O1–O10 as recommended** ("go ahead with your recommended options").
+- **The announcement bar is one line, forever.** Raushan wasn't sure between one message and several, so here is why it's one:
+  - Several messages would need rotation, which WCAG 2.2.2 rules out without a pause button, or arrows. Both are the clutter Raushan was worried about, and the line would keep moving as offers are added.
+  - Baymard found 27% of shoppers miss offers that live only in a site-wide banner. The bar can't do the job alone anyway, so every offer is also said where the decision happens: the product page, the added-to-cart pop-up and the cart.
+  - One line that's still useful (free shipping and COD are what Indian shoppers check before trusting a new shop) earns its 33px. A second message doesn't.
+- **How the one line works:**
+  - It's built from Theme settings, so it can't disagree with the cart: "Free shipping over ₹999 · Cash on delivery" once they're on, "Handmade in India · Ships in 1–3 days" until then.
+  - Phones show two parts and 768px+ shows three, all static.
+  - A dated message (a Diwali cut-off, a sale) replaces it until its "Show until" day. Max 2 message blocks; the first live one wins.
+  - Hidden on /cart. The carousel, its arrows and its JS are gone.
+- **Cart rewards: free shipping first, then a free gift.**
+  - Provisional amounts are ₹999 / ₹1,499, pending the Meesho average order value. Raushan's gift ₹999 / shipping ₹1,299 wasn't used, because a ₹1,299 bouquet would unlock both steps at once.
+  - One bar with two markers and the amounts under them (taken from Floreal's cart), in the cart footer: about 60px against Floreal's about 340px.
+- **The gift:**
+  - It's a real product at its real price, made free by an automatic Buy X Get Y discount. rewards.js adds and removes it, because Shopify never auto-adds the "get" item. No gift app.
+  - **If it arrives still charged, rewards.js takes it straight out.** The tests showed that with no discount, an auto-added gift would sit in the cart at ₹249 while the text said "free". Nobody should find a charged item they didn't choose.
+- **Product page row:** "Replacement if damaged", not "Easy returns". There are no change-of-mind returns (Terms §6); session 63 flagged it.
+- **Found while testing:** the store's only shipping rate is Shopify's default "मानक" at ₹379. `npm run check` section 11 now compares Shopify's real rates and the gift's price with Theme settings, once the offers are switched on.
+
 ## 2026-10-02 (home first screen, docs/home-hero-plan.md; built)
 
 - **Raushan approved plan v2 with the recommended options** ("go with your recommended/best options"):

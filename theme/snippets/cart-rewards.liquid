@@ -1,0 +1,263 @@
+{%- doc -%}
+  The cart's rewards (docs/offers-plan.md §5): one line of words and a thin bar with a marker per step, free shipping
+  first, then a free gift. The words are the truth; the bar and its amounts are decoration, and the amounts are said in
+  a hidden sentence instead. Drawn by the server, so it's right without JavaScript; rewards.js adds and removes the
+  gift and reads its state from the data attributes here.
+
+  Shipping uses the cart total as Shopify's free rate sees it (after discounts). The gift step uses the total without
+  the gift itself, so a gift that's still charged (its discount is missing) can't pay for its own step.
+
+  @param {string} place - 'drawer' or 'page'. The drawer offers "Small add-ons" while a step is still ahead; the
+    page has Little extras for that.
+
+  @example
+  {% render 'cart-rewards', place: 'drawer' %}
+{%- enddoc -%}
+{%- liquid
+  assign ship_at = settings.free_shipping_threshold | default: 0 | times: 100
+  assign gift_at = settings.gift_threshold | default: 0 | times: 100
+  assign gift = settings.gift_product
+  assign gift_variant = gift.variants.first
+  assign gift_line = nil
+  assign gift_paid = 0
+  if gift_variant
+    for item in cart.items
+      if item.variant_id == gift_variant.id
+        assign gift_line = item
+        assign gift_paid = gift_paid | plus: item.final_line_price
+      endif
+    endfor
+  endif
+
+  # The gift step needs an amount above free shipping and a gift that's in the cart or can still be had.
+  assign gift_on = false
+  if gift_variant and gift_at > ship_at
+    if gift_line or gift_variant.available
+      assign gift_on = true
+    endif
+  endif
+
+  assign total = cart.total_price | minus: gift_paid
+  assign top = ship_at
+  if gift_on
+    assign top = gift_at
+  endif
+  assign declined = false
+  if cart.attributes._gift_declined == '1'
+    assign declined = true
+  endif
+  assign gift_name = gift.title | escape
+-%}
+{%- if top > 0 and cart.item_count > 0 -%}
+  {%- liquid
+    assign pct = total | times: 100 | divided_by: top
+    if pct > 100
+      assign pct = 100
+    endif
+    assign button = blank
+    assign ahead = false
+    if ship_at > 0 and cart.total_price < ship_at
+      assign state = 'ship'
+      assign ahead = true
+      assign away = ship_at | minus: cart.total_price | money_without_trailing_zeros
+      assign text = 'rewards.ship_away' | t: amount: away
+    elsif gift_on and total < gift_at
+      assign state = 'gift'
+      assign ahead = true
+      assign away = gift_at | minus: total | money_without_trailing_zeros
+      if ship_at > 0
+        assign text = 'rewards.ship_done_gift_away' | t: amount: away
+      else
+        assign text = 'rewards.gift_away' | t: amount: away
+      endif
+    elsif gift_on and gift_line and gift_paid > 0
+      # The gift is in the cart but still charged: its discount is missing. Never call it free (rewards.js takes it out).
+      assign state = 'charged'
+      assign text = 'rewards.ship_done' | t
+    elsif gift_on and gift_line
+      assign state = 'done'
+      if ship_at > 0
+        assign text = 'rewards.all_done' | t: gift: gift_name
+      else
+        assign text = 'rewards.gift_done' | t: gift: gift_name
+      endif
+    elsif gift_on
+      if declined
+        assign state = 'declined'
+        assign text = 'rewards.gift_declined' | t
+        assign button = 'rewards.add_back' | t
+      else
+        assign state = 'ready'
+        assign text = 'rewards.gift_ready' | t
+        assign button = 'rewards.add' | t
+      endif
+    else
+      assign state = 'done'
+      assign text = 'rewards.ship_done' | t
+    endif
+  -%}
+  <div
+    class="rewards{% unless ahead %} is-done{% endunless %}"
+    data-rewards
+    data-state="{{ state }}"
+    data-ship-at="{{ ship_at }}"
+    data-fee="{{ settings.shipping_fee | default: 0 | times: 100 }}"
+    {% if gift_on %}
+      data-gift-variant="{{ gift_variant.id }}"
+      data-gift-name="{{ gift_name }}"
+      data-gift-at="{{ gift_at }}"
+      data-gift-at-money="{{ gift_at | money_without_trailing_zeros | escape }}"
+      data-total="{{ total }}"
+      data-gift-key="{{ gift_line.key }}"
+      data-gift-paid="{{ gift_paid }}"
+      {% if gift_variant.available %}data-gift-available{% endif %}
+      {% if declined %}data-gift-declined{% endif %}
+    {% endif %}
+  >
+    <p class="rewards__text">
+      {%- unless ahead -%}{%- render 'icon', icon: 'check' -%}{%- endunless -%}
+      <span data-rewards-text>{{ text }}</span>
+      {%- if button != blank -%}
+        {%- comment -%} A link, so it works without JavaScript too (Shopify adds the item and returns to the cart). {%- endcomment -%}
+        <a
+          class="rewards__btn"
+          href="{{ routes.cart_add_url }}?id={{ gift_variant.id }}&quantity=1"
+          aria-label="{{ 'rewards.add_label' | t: gift: gift_name }}"
+          data-gift-add
+          >{{ button }}</a
+        >
+      {%- endif -%}
+    </p>
+    {%- liquid
+      assign ship_money = ship_at | money_without_trailing_zeros
+      assign gift_money = gift_at | money_without_trailing_zeros
+    -%}
+    <p class="visually-hidden">
+      {%- if ship_at > 0 -%}{{ 'rewards.steps_ship' | t: amount: ship_money }} {% endif -%}
+      {%- if gift_on -%}{{ 'rewards.steps_gift' | t: amount: gift_money }}{%- endif -%}
+    </p>
+    <div class="rewards__track" aria-hidden="true">
+      <span class="rewards__fill" style="--pct: {{ pct }}%" data-rewards-fill></span>
+      {%- if ship_at > 0 -%}
+        {%- assign at = ship_at | times: 100 | divided_by: top -%}
+        <span class="rewards__step{% if cart.total_price >= ship_at %} is-reached{% endif %}{% if at == 100 %} is-last{% endif %}" style="--at: {{ at }}%">
+          {%- render 'icon', icon: 'truck' -%}
+        </span>
+      {%- endif -%}
+      {%- if gift_on -%}
+        <span class="rewards__step is-last{% if total >= gift_at %} is-reached{% endif %}" style="--at: 100%">
+          {%- render 'icon', icon: 'gift' -%}
+        </span>
+      {%- endif -%}
+    </div>
+    {%- comment -%}
+      "Small add-ons" sits in the empty space left of the first amount (drawer only, while a step is ahead), so it
+      costs no extra line. Only when that space is wide enough: the first marker past 40% of the bar.
+    {%- endcomment -%}
+    {%- liquid
+      assign first_at = 100
+      if ship_at > 0
+        assign first_at = ship_at | times: 100 | divided_by: top
+      endif
+    -%}
+    {%- if ahead and place == 'drawer' and first_at >= 40 -%}
+      <a class="rewards__more" href="{{ routes.all_products_collection_url }}?sort_by=price-ascending">
+        {{- 'rewards.more' | t -}}
+      </a>
+    {%- endif -%}
+    <div class="rewards__amounts" aria-hidden="true">
+      {%- if ship_at > 0 -%}
+        {%- assign at = ship_at | times: 100 | divided_by: top -%}
+        {%- comment -%} Two amounts closer than about a fifth of the bar would overlap; the words say it anyway. {%- endcomment -%}
+        <span class="{% if at == 100 %}is-last{% elsif at > 80 %}is-near{% endif %}" style="--at: {{ at }}%">{{ ship_money }}</span>
+      {%- endif -%}
+      {%- if gift_on -%}
+        <span class="is-last" style="--at: 100%">{{ gift_money }}</span>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  /* One line of words, then a 4px bar with a small round marker per step, then the amounts in 12px under the markers.
+     The last marker sits at the bar's right end; the others are centred on their share of the top amount. */
+  .rewards { display: grid; gap: var(--space-2); font-size: var(--fs-small); color: var(--color-heading); }
+  .rewards__text { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-2); row-gap: 2px; line-height: 1.4; }
+  .rewards__text > .icon { width: 18px; height: 18px; flex: none; }
+  .rewards__btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    margin-block: calc((var(--tap) - 1.4em) / -2);
+    color: var(--color-heading);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--rose);
+  }
+  /* Shares the amounts row: lifted onto it, with a tap area taller than the 16px row (WCAG 2.5.8). */
+  .rewards__more {
+    position: relative;
+    z-index: 1;
+    justify-self: start;
+    grid-row: 3;
+    grid-column: 1;
+    margin-top: -4px;
+    font-size: .75rem;
+    line-height: 16px;
+    color: var(--color-muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .rewards__more::after { content: ""; position: absolute; inset: -14px -8px; }
+  .rewards__amounts { grid-row: 3; grid-column: 1; }
+  @media (hover: hover) { .rewards__btn:hover, .rewards__more:hover { text-decoration-thickness: 2px; } }
+  /* Explicit rows, so the link and the amounts share row 3. */
+  .rewards__text { grid-row: 1; }
+  .rewards__track { grid-row: 2; }
+
+  .rewards__track { position: relative; height: 22px; margin-inline-end: 0; }
+  .rewards__track::before, .rewards__fill {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 9px;
+    height: 4px;
+    border-radius: 4px;
+  }
+  .rewards__track::before { inset-inline-end: 0; background: var(--color-line-strong); }
+  /* cart.js sets the old width for a frame after a refresh, so the bar moves from where it was (motion-plan "Progress"). */
+  .rewards__fill { width: var(--pct); background: var(--cocoa); transition: width 600ms var(--ease-out), background-color var(--dur-state) ease; }
+  @media (prefers-reduced-motion: reduce) { .rewards__fill { transition: none; } }
+  html.lite .rewards__fill { transition: none; }
+  .rewards.is-done .rewards__fill { background: var(--sage); }
+  .rewards__step {
+    position: absolute;
+    top: 0;
+    inset-inline-start: var(--at);
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--color-muted);
+    transform: translateX(-50%);
+    transition: background-color var(--dur-state) ease, border-color var(--dur-state) ease, color var(--dur-state) ease;
+  }
+  .rewards__step.is-last { transform: translateX(-100%); }
+  .rewards__step .icon { width: 14px; height: 14px; stroke-width: 2; }
+  .rewards__step.is-reached { background: var(--sage); border-color: var(--sage); color: var(--cocoa-deep); }
+
+  .rewards__amounts { position: relative; height: 16px; margin-top: -4px; font-size: .75rem; line-height: 16px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+  .rewards__amounts > span { position: absolute; inset-inline-start: var(--at); transform: translateX(-50%); white-space: nowrap; }
+  .rewards__amounts > .is-last { transform: translateX(-100%); }
+  .rewards__amounts > .is-near { display: none; }
+
+  @media (forced-colors: active) {
+    .rewards__track::before { border: 1px solid CanvasText; }
+    .rewards__fill { background: Highlight; }
+    .rewards__step { border-color: CanvasText; }
+  }
+{% endstylesheet %}
