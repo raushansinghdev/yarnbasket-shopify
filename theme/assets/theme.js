@@ -301,6 +301,7 @@ if (document.querySelector('.tip')) {
 
     const finish = (refocus) => {
       panel.close();
+      panel.classList.remove('is-leaving');
       delete panel.dataset.closing;
       scrim.hidden = true;
       setExpanded(false);
@@ -311,7 +312,7 @@ if (document.querySelector('.tip')) {
         quiet = false;
       }
     };
-    // Fade out first (220ms), then close; instantly when following a link or with reduced motion.
+    // Fade out first (220ms), then close; instantly when the layout switches or with reduced motion.
     const close = ({ refocus = false, instant = false } = {}) => {
       if (!panel.open || 'closing' in panel.dataset) return;
       if (instant || reduceMotion.matches) return finish(refocus);
@@ -331,7 +332,7 @@ if (document.querySelector('.tip')) {
     });
     pill?.addEventListener('focus', () => !quiet && open(pill));
     pill?.addEventListener('input', () => !panel.open && open(pill));
-    panel.querySelector('[data-search-close]')?.addEventListener('click', () => close({ refocus: true }));
+    panel.querySelectorAll('[data-search-close]').forEach((button) => button.addEventListener('click', () => close({ refocus: true })));
 
     // Esc: clears the text first, then closes. preventDefault also stops the dialog's own close.
     const onKey = (event) => {
@@ -354,10 +355,14 @@ if (document.querySelector('.tip')) {
     const away = (event) => panel.open && !panel.matches(':modal') && !inside(event.target) && close();
     document.addEventListener('pointerdown', away);
     document.addEventListener('focusin', away);
-    // Following a result closes the panel at once, so Back returns to a clean page.
+    // Following a link: the panel stays until the next page replaces it, so the page underneath never flashes
+    // in between; it dims so the tap is acknowledged. If Back restores this page from the back-forward cache,
+    // the panel is shut before it shows.
     panel.addEventListener('click', (event) => {
-      if (event.target.closest('a[href]') && !(event.metaKey || event.ctrlKey || event.shiftKey)) close({ instant: true });
+      const link = event.target.closest('a[href]');
+      if (link && !link.target && !(event.metaKey || event.ctrlKey || event.shiftKey)) panel.classList.add('is-leaving');
     });
+    addEventListener('pageshow', (event) => event.persisted && panel.open && finish(false));
     phone.addEventListener('change', () => close({ instant: true }));
 
     // Warm up: fetch search.js as soon as a pointer or finger heads for search.

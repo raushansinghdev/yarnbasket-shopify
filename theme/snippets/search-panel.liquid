@@ -18,6 +18,14 @@
 >
   <form action="{{ routes.search_url }}" method="get" role="search" class="search-panel__head">
     <label for="SearchPanelInput" class="search-panel__label" id="SearchPanelLabel">{{ 'search.label' | t }}</label>
+    {%- comment -%}
+      Phones: a back arrow beside the field, as in Flipkart, Amazon and Meesho; one row, so more results fit above
+      the keyboard. Not an ×: the field already has one that clears the text. The wider panel keeps "Cancel".
+    {%- endcomment -%}
+    <button type="button" class="search-panel__back" data-search-close>
+      {%- render 'icon', icon: 'back' -%}
+      <span class="visually-hidden">{{ 'search.close' | t }}</span>
+    </button>
     <button type="button" class="search-panel__cancel" data-search-close>{{ 'search.cancel' | t }}</button>
     {%- render 'search-field', id: 'SearchPanelInput', live: true -%}
     <input type="hidden" name="options[prefix]" value="last">
@@ -44,26 +52,56 @@
     border: 0;
     background: var(--blush-soft);
     color: var(--color-ink);
+    display: flex;
+    flex-direction: column;
     opacity: 1;
     translate: 0 0;
-    transition: opacity var(--dur-panel) var(--ease-out), translate var(--dur-panel) var(--ease-out), overlay var(--dur-panel) allow-discrete, display var(--dur-panel) allow-discrete;
+    /* Its own layer in page-to-page transitions, so it fades out by itself instead of riding along with the header. */
+    view-transition-name: search-panel;
+    /* Exits are timed by theme.js (data-closing, then close), so display is never transitioned: a closing panel
+       can't linger half-styled once [open] is gone. */
+    transition: opacity var(--dur-panel) var(--ease-out), translate var(--dur-panel) var(--ease-out);
   }
-  .search-panel[open] { display: flex; flex-direction: column; }
+  .search-panel:not([open]) { display: none; }
   .search-panel[open][data-closing] { opacity: 0; translate: 0 -8px; transition-duration: 220ms; transition-timing-function: var(--ease-exit); }
   @starting-style { .search-panel[open] { opacity: 0; translate: 0 -12px; } }
   .search-panel::backdrop { background: transparent; }
   html:has(.search-panel:modal) { overflow: hidden; }
 
+  /* Phones: [←][ field ] in one row. The "Search" label stays for screen readers only. */
   .search-panel__head {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr;
     align-items: center;
-    gap: var(--space-1) var(--space-3);
-    padding: max(var(--space-2), env(safe-area-inset-top)) var(--gutter) var(--space-4);
+    gap: var(--space-1);
+    padding: max(var(--space-3), env(safe-area-inset-top)) var(--gutter) var(--space-3) calc(var(--gutter) - 12px);
     border-bottom: 1px solid var(--color-line);
   }
-  .search-panel__label { font-family: var(--font-serif); font-style: italic; font-weight: 600; font-size: 1.625rem; line-height: 1; color: var(--color-heading); }
+  .search-panel__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .search-panel__back {
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--color-heading);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .search-panel__back .icon { width: 26px; height: 26px; }
+  .search-panel__back:active { background: color-mix(in srgb, var(--cocoa) 8%, transparent); }
   .search-panel__cancel {
+    display: none;
     min-height: var(--tap);
     padding: 0 var(--space-2);
     margin-right: calc(var(--space-2) * -1);
@@ -77,7 +115,6 @@
     -webkit-tap-highlight-color: transparent;
   }
   .search-panel__cancel:active { background: color-mix(in srgb, var(--cocoa) 8%, transparent); }
-  .search-panel__head .search-field { grid-column: 1 / -1; }
 
   .search-panel__body {
     container: search-body / inline-size;
@@ -92,6 +129,8 @@
   .search-panel__results > .ps { animation: ps-in 150ms ease; }
   @keyframes ps-in { from { opacity: 0; } }
   .search-panel__note { margin-top: var(--space-4); color: var(--color-muted); }
+  /* A link was followed: the panel stays until the next page replaces it, dimmed so the tap is acknowledged. */
+  .search-panel.is-leaving .search-panel__body { opacity: .6; transition: opacity 150ms ease; }
 
   /* Wider screens: a panel hanging from the header, right-aligned with the page content. */
   @media (min-width: 768px) {
@@ -111,8 +150,24 @@
     }
     .search-panel[open][data-closing] { translate: 0 -6px; }
     @starting-style { .search-panel[open] { opacity: 0; translate: 0 -8px; } }
-    .search-panel__head { padding: var(--space-4) var(--space-5); }
-    .search-panel__label { font-size: 1.375rem; }
+    /* Wider panel (1100–1279px, no header pill): "Search" and Cancel on top, the field below. */
+    .search-panel__head { grid-template-columns: 1fr auto; gap: var(--space-1) var(--space-3); padding: var(--space-4) var(--space-5); }
+    .search-panel__label {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 600;
+      font-size: 1.375rem;
+      line-height: 1;
+      color: var(--color-heading);
+    }
+    .search-panel__back { display: none; }
+    .search-panel__cancel { display: block; }
+    .search-panel__head .search-field { grid-column: 1 / -1; }
     .search-panel.is-attached .search-panel__head { display: none; }
     .search-panel__body { padding: var(--space-5); }
   }
@@ -123,7 +178,8 @@
     inset: 0;
     z-index: 0;
     background: rgb(51 37 31 / .2);
-    transition: opacity var(--dur-panel) ease, display var(--dur-panel) allow-discrete;
+    view-transition-name: search-scrim;
+    transition: opacity var(--dur-panel) ease;
   }
   @starting-style { .search-scrim { opacity: 0; } }
 

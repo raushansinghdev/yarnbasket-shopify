@@ -20,6 +20,8 @@ Status: **Built 2026-10-02 (stages S-1, S-2, S-3 and the automated part of S-5).
   - no JavaScript: the lens is a link to /search and the pill submits
   - forced colours; Firefox (desktop and phone); WebKit iPhone (opens focused, scroll locked)
   - sort in place updates the URL
+- **Phones close with a back arrow, not "Cancel" (Raushan, 2026-10-02).** The sheet's top is one row, `[←][ field ✕ ]`, as in Flipkart, Amazon and Meesho. An × would sit next to the field's own clear ×, and a visible "Search" title plus Cancel cost a row the keyboard then covers. The label is still there for screen readers, and the arrow is a 48px button named "Close search". The wider panel at 1100–1279px keeps "Search" and Cancel. This replaces the §5.2 wireframe.
+- **Following a link from the panel (fix, 2026-10-02):** the panel stays up, dimmed, until the next page replaces it. Closing it at once used to flash a half-styled panel and then the old page for about 0.4s before the results faded in. The panel and scrim have their own view-transition names, so they fade out by themselves. A page restored by Back has its panel shut first (`pageshow`). The panel's layout no longer depends on `[open]`, and `display` is never transitioned.
 - **Not tested yet:** "Load more" (needs more than 24 results), query suggestion chips and real collections/pages in the panel (both need real store data), real iOS keyboard opening and Android Back (real phones).
 
 It expands `nav-plan.md` §7 (the search panel, Stage 4 there) and the Search line in `motion-plan.md` §5. Where they disagree, this plan wins (the changes are listed in §15).

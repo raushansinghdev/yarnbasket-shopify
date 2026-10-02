@@ -49,6 +49,7 @@
     "submit": "Search",
     "clear": "Clear search",
     "cancel": "Cancel",
+    "close": "Close search",
     "recent": "Recent",
     "clear_recent": "Clear",
     "clear_recent_label": "Clear recent searches",

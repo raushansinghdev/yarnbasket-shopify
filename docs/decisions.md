@@ -17,6 +17,8 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 ## 2026-10-02 (search, docs/search-plan.md)
 
 Raushan accepted every recommendation in search-plan §13.
+- **Phone search closes with a back arrow (←) beside the field (Raushan chose it from Cancel / × / arrow).** It's what Flipkart, Amazon and Meesho use, it matches Android's Back, and it doesn't clash with the field's clear ×. It also saves a row above the keyboard. The 1100–1279px desktop panel keeps Cancel.
+- **Fix: tapping a chip or result no longer jitters.** The panel stays up (dimmed) until the results page replaces it, instead of closing and flashing the old page.
 - **Built the same day (stages S-1 to S-3, see "As built" in search-plan.md).** The panel is one column at every size, so the keyboard order matches the reading order. "See all" has no count, because predictive search doesn't return one. The open/close code stays in theme.js (2.0 KB gzipped) so the phone keyboard opens on the first tap. Search runs on demo products until real ones exist.
 - **S1 Scope:** search covers products, collections and help pages (blog posts once the blog exists). Products always come first.
 - **S2 Phones:** search opens as a full-screen sheet with the keyboard up at once. Tablet and desktop get a dropdown panel under the header.
