@@ -10,6 +10,11 @@ import { join } from 'node:path';
 
 const args = process.argv.slice(2);
 const [url, w, h, out] = args;
+// A missing output argument once wrote a screenshot to a file called "--eval" in the repo root.
+if (!url || !+w || !+h || !out || (out.startsWith('--') && out !== '-')) {
+  console.error('usage: node tools/cdp.mjs <url> <width> <height> <out.png|-> [flags]');
+  process.exit(1);
+}
 const flag = (n) => args.includes(n);
 const opt = (n, d) => (args.indexOf(n) > -1 ? args[args.indexOf(n) + 1] : d);
 const mobile = flag('--mobile');

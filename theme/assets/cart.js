@@ -317,6 +317,13 @@ const toast = (title, image, error) => {
   runToast();
 };
 
+// Go to checkout with the cart as it is now. Waiting for a change can redraw the cart, so the button that was
+// pressed may be gone: always submit the current form with its current Checkout button.
+const checkout = () => {
+  const form = box()?.querySelector('[data-cart-form]');
+  form?.requestSubmit(form.querySelector('[name="checkout"]'));
+};
+
 /* ---------- Add to cart, anywhere (product page, Little extras) ---------- */
 document.addEventListener('submit', (event) => {
   const form = event.target;
@@ -329,7 +336,7 @@ document.addEventListener('submit', (event) => {
       timers.forEach((_, key) => commit(key, +lineOf(key)?.querySelector('.qty__input').value || 0));
       const note = form.querySelector('[data-note]');
       if (noteTimer && note) saveNote(note);
-      chain.then(() => form.requestSubmit(event.submitter));
+      chain.then(checkout);
     }
     return;
   }
@@ -419,10 +426,10 @@ const closeDrawer = (fromHistory) => {
 };
 addEventListener('popstate', () => {
   if (goTo) {
-    const [where, form, submitter] = goTo;
+    const [where] = goTo;
     goTo = null;
-    if (form) form.requestSubmit(submitter);
-    else location.href = where;
+    if (where) location.href = where;
+    else checkout();
   } else if (drawer?.open) closeDrawer(true);
 });
 // Coming back to a page whose entry was "drawer open" (bfcache): start closed and clean.
@@ -447,7 +454,7 @@ if (drawer) {
   drawer.addEventListener('submit', (event) => {
     if (event.defaultPrevented || !history.state?.cartDrawer) return;
     event.preventDefault();
-    goTo = [null, event.target, event.submitter];
+    goTo = [null];
     history.back();
   });
 }

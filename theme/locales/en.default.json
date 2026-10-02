@@ -180,7 +180,9 @@
     "view_all": "View all",
     "tagged": "tagged \"{{ tags }}\"",
     "page": "Page {{ page }}",
-    "payment_methods": "Payment methods"
+    "payment_methods": "Payment methods",
+    "pagination": "Pages",
+    "collection_empty": "Nothing here yet. New pieces are on the hook!"
   },
   "header": {
     "menu": "Menu",

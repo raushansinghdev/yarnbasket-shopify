@@ -10,6 +10,7 @@ Status: **Built 2026-10-02.** Raushan approved all the recommendations (directio
 - **"More to love" and "Our makes" use `snippets/product-row`:** a swipe row (40% cards) below 990px, and 6 across from 990px.
 - **A pages-only search** (for example "contact") says "No products for “contact”", lists the page under Help & stories first, then the picks row.
 - **On /search the lens isn't announced as a pop-up:** the header lens and the menu's Search row drop `aria-haspopup`, `aria-controls` and `aria-expanded` there, because they jump to the page's box instead of opening the panel (caught by the search session).
+- **Only the newest sort or chip counts** (audit, 2026-10-02): a slower, older reply can't overwrite a newer one, and a failed old reply doesn't reload the page.
 - **Long queries** are cut to 2 lines in the heading. The whole query is still read aloud.
 - **Not tested yet:**
   - Craft chips: they need Search & Discovery → Filters → Product type (§11). The code is the earlier tested chip markup plus in-place swapping.

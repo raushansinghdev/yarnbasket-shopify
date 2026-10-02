@@ -15,7 +15,8 @@
   assign handles = 'bouquets|keychains|hair-clips|bag-charms|flower-pots' | split: '|'
 -%}
 <div class="cart-empty">
-  {%- render 'logo-mark', size: 72, id: place, class: 'cart-empty__mark' -%}
+  {%- assign mark_id = 'cart-empty-' | append: place -%}
+  {%- render 'logo-mark', size: 72, id: mark_id, class: 'cart-empty__mark' -%}
   <h{{ h }} class="cart-empty__title">{{ 'cart.empty_title' | t }}</h{{ h }}>
   <p class="cart-empty__text">{{ 'cart.empty_text' | t }}</p>
   <a class="btn btn--knob cart-empty__btn" href="{{ best_url }}">

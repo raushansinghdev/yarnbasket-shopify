@@ -33,6 +33,10 @@ Status: **Stages 1–4 built and tested with real items 2026-10-02** (11 test pr
 - **Drawer photos** are lazy, so they cost nothing on pages where the drawer isn't opened. They start loading as soon as a finger or pointer heads for the cart button or View cart.
 - **"Buy it now"** (Shopify's dynamic checkout button on the product page) is restyled as our outlined pill instead of its default blue.
 - **Prices show as "Rs. 1,299.00"** because that's the store's money format. To show ₹1,299 instead, change it in **Settings → General → Store defaults → Currency display → Change formatting** and use `₹{{amount_no_decimals}}`.
+- **Audit fixes (2026-10-02, docs/audit-2026-10-02.md):**
+  - Pressing Checkout while a change is still saving now waits, then submits the current form; before, it did nothing.
+  - The drawer locks the page scroll behind it.
+  - The empty cart's logo has its own id.
 - **Checked on 2026-10-02:**
   - theme check is clean
   - `npm run check` section 8 passes 16/16 (phone and desktop, against a dev server that has the storefront password)

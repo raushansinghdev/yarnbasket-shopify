@@ -1,42 +1,57 @@
-{% comment %}
-  This section is used in the collection template to render collection page
-  listing all products within a collection.
+{%- comment -%}
+  Collection page: INTERIM until build-plan Phase 3. It replaces Skeleton's starter, whose 500px-wide grid columns
+  made phones scroll sideways, and links like "Shop all" and the empty cart's tiles already lead here.
+  For now: the title, the compact product cards (search-results-plan D8: search and collections share them),
+  2 / 3 / 4 / 5 across, and Shopify's page links. Phase 3 adds filters, sort and "Load more".
+{%- endcomment -%}
+<div class="section collection-page scheme-white">
+  <h1 class="collection-page__title">{{ collection.title }}</h1>
+  {%- if collection.description != blank -%}
+    <div class="collection-page__intro rte">{{ collection.description }}</div>
+  {%- endif -%}
 
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
-{% endcomment %}
-
-<h1>{{ collection.title }}</h1>
-
-<div class="collection-products">
-  {% paginate collection.products by 20 %}
-    {% for product in collection.products %}
-      <div class="collection-product">
-        {% if product.featured_image %}
-          {% render 'image',
-            class: 'collection-product__image',
-            image: product.featured_image,
-            url: product.url,
-            width: 400,
-            height: 400,
-            crop: 'center'
-          %}
-        {% endif %}
-        <div class="collection-product__content">
-          <p>{{ product.title | escape | link_to: product.url }}</p>
-          <p>{{ product.price | money }}</p>
-        </div>
-      </div>
-    {% endfor %}
-
-    {{ paginate | default_pagination }}
-  {% endpaginate %}
+  {%- paginate collection.products by 36 -%}
+    {%- if collection.products.size > 0 -%}
+      <h2 class="visually-hidden">{{ 'search.products' | t }}</h2>
+      <ul class="product-grid collection-page__grid" role="list" data-arrive="stagger">
+        {%- for product in collection.products -%}
+          {%- liquid
+            assign load = 'lazy'
+            if paginate.current_page == 1 and forloop.index <= 4
+              assign load = 'eager'
+            endif
+          -%}
+          <li style="--i: {{ forloop.index0 | modulo: 5 }}">
+            {%- render 'product-card', product: product, index: forloop.index0, loading: load, sizes: '(min-width: 1280px) 240px, (min-width: 990px) 22vw, (min-width: 768px) 30vw, calc(50vw - 24px)', compact: true -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+      {%- if paginate.pages > 1 -%}
+        <nav class="collection-page__pages" aria-label="{{ 'general.pagination' | t }}">
+          {{- paginate | default_pagination -}}
+        </nav>
+      {%- endif -%}
+    {%- else -%}
+      <p class="collection-page__empty">{{ 'general.collection_empty' | t }}</p>
+      <a class="btn btn--knob collection-page__all" href="{{ routes.all_products_collection_url }}">
+        {{- 'header.shop_all' | t -}}
+        <span class="btn__knob">{%- render 'icon', icon: 'arrow' -%}</span>
+      </a>
+    {%- endif -%}
+  {%- endpaginate -%}
 </div>
 
 {% stylesheet %}
-  .collection-products {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-  }
+  .collection-page { padding-top: clamp(var(--space-6), 1.5rem + 2vw, var(--space-8)); }
+  .collection-page__title { font-size: var(--fs-h2); line-height: 1.05; margin-bottom: var(--space-5); }
+  .collection-page__intro { max-width: 40rem; margin: calc(var(--space-3) * -1) 0 var(--space-6); color: var(--color-muted); }
+  .collection-page .collection-page__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-3); }
+  @media (min-width: 768px) { .collection-page .collection-page__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6) var(--space-5); } }
+  @media (min-width: 990px) { .collection-page .collection-page__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 1280px) { .collection-page .collection-page__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+  .collection-page__pages { display: flex; justify-content: center; margin-top: var(--space-7); }
+  .collection-page__pages :is(a, .current) { display: inline-grid; place-items: center; min-width: var(--tap); min-height: var(--tap); padding: 0 var(--space-2); color: var(--color-heading); }
+  .collection-page__empty { margin-bottom: var(--space-5); color: var(--color-muted); }
 {% endstylesheet %}
 
 {% schema %}

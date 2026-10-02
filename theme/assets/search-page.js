@@ -40,6 +40,8 @@ if (page) {
     box.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
   }, true);
 
+  // Only the newest sort or chip counts: an older reply that arrives late is dropped.
+  let latest = 0;
   const fetchSection = async (href) => {
     const url = new URL(href, location.href);
     url.searchParams.set('section_id', page.dataset.sectionId);
@@ -55,8 +57,10 @@ if (page) {
     const form = event.target.closest('[data-search-sort]');
     if (!form) return;
     const href = `${form.action}?${new URLSearchParams(new FormData(form))}`;
+    const mine = ++latest;
     try {
       const doc = await fetchSection(href);
+      if (mine !== latest) return;
       const fresh = doc.querySelector('[data-search-page-results]');
       const old = page.querySelector('[data-search-page-results]');
       if (!fresh || !old) throw new Error('missing results');
@@ -66,7 +70,7 @@ if (page) {
       window.ybArrive?.(fresh);
       tell(page.dataset.sorted.replace('[sort]', event.target.selectedOptions[0]?.text.trim()));
     } catch {
-      location.assign(href);
+      if (mine === latest) location.assign(href);
     }
   });
 
@@ -76,8 +80,10 @@ if (page) {
     if (!chip || event.metaKey || event.ctrlKey || event.shiftKey) return;
     event.preventDefault();
     page.querySelector('[data-search-page-results]')?.classList.add('is-busy');
+    const mine = ++latest;
     try {
       const doc = await fetchSection(chip.href);
+      if (mine !== latest) return;
       const fresh = doc.querySelector('[data-search-body]');
       const old = page.querySelector('[data-search-body]');
       if (!fresh || !old) throw new Error('missing results');
@@ -90,7 +96,7 @@ if (page) {
       now?.focus({ preventScroll: true });
       tell(`${now?.getAttribute('aria-label') || now?.textContent.trim() || ''}. ${fresh.querySelector('[data-search-count]')?.textContent.trim() || ''}`);
     } catch {
-      location.assign(chip.href);
+      if (mine === latest) location.assign(chip.href);
     }
   });
 

@@ -6,7 +6,7 @@
   Pinned top bar · scrolling lines and gift note · pinned summary with Checkout.
 {%- endcomment -%}
 {%- unless request.page_type == 'cart' -%}
-  <dialog class="cart-drawer" id="CartDrawer" aria-labelledby="CartDrawerTitle" closedby="any" data-cart-drawer>
+  <dialog class="cart-drawer" id="CartDrawer" aria-labelledby="CartDrawerTitle" data-scroll-lock closedby="any" data-cart-drawer>
     {%- comment -%} Spoken updates while the drawer is open (the page behind it, header included, is inert). Outside
     the refreshed part, so screen readers keep listening to the same element. {%- endcomment -%}
     <p class="visually-hidden" role="status" data-cart-live></p>
