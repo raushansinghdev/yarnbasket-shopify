@@ -7,6 +7,13 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **Shopify's sign-in, profile and order pages get styled, not replaced** (no theme can host them with current accounts). Colours, logo and fonts are set in the checkout and accounts editor to match our account page: Soft blush page, white cards, Cocoa Deep buttons and links, our horizontal logo, Jost (plus Cormorant if listed). The desktop sign-in photo is the pink tulips and daisy bouquet. Done now on the dev store with Raushan; the `account.` domain follows at launch.
 - **Help is out of the account dropdown.** The navigation's Help menu (Track order, Shipping & delivery, FAQ, Contact, Our story) stays as it is. It's the customer-service menu for everyone, including guests. Order problems go through each order card's "Need help?", and Shopify's account menu keeps Help because those pages have no store navigation.
 
+## 2026-10-03 (home calm-down, docs/home-calm-plan.md)
+
+- **Phone hero: one statement per screen.** The description is hidden on phones when there's a photo row (desktop keeps it), with a little more air around the heading and a 64px pause before Bestsellers. The first screen goes from 8 text styles to 5, and the photos start 46px sooner.
+- **No "LOVED MOST" eyebrow on Bestsellers** (phone and desktop): the heading already says it. The setting stays in the editor, empty by default. An audit of the other sections' eyebrows is a possible follow-up.
+- **One button style:** Bestsellers ends in the solid Cocoa "Shop all gifts →", centred and sized to its words, matching the hero. It replaces the full-width outlined box on phones and the far-right outlined pill on desktop.
+- Kept: the name and price labels on hero photos, the bar, the header, and desktop's hero layout.
+
 ## 2026-10-03 (hero button, revisits 2026-10-01 "Blush pill with a white knob")
 
 - **The Blush pill with a white knob is gone.** Raushan said it "feels odd", and the reasons are clear:

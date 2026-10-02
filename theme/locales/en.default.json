@@ -250,6 +250,7 @@
   },
   "shop": {
     "choose_craft": "Choose a craft",
+    "shop_all": "Shop all gifts",
     "see_all": "See all {{ craft }}",
     "status": "Showing {{ craft }}, {{ shown }} of {{ total }}"
   },

@@ -379,7 +379,9 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //     first screen; the next hero photo peeks in and has loaded; one way in (decisions.md 2026-10-03, hero button): on
 //     phones with a photo row the photos are the way in, no button, and the row ends in a "See all" card ≥48px (with a
 //     single photo, the button: a text link on a Blush hero); on desktop a solid pill button; every photo link has a
-//     name; the trust line is plain text, not a tab stop; no sideways scroll from 320 to 412 wide.
+//     name; the trust line is plain text, not a tab stop; no sideways scroll from 320 to 412 wide. A calmer first
+//     screen (docs/home-calm-plan.md): on phones with a photo row the hero description is hidden, and Bestsellers ends
+//     in one solid button, centred, phone and desktop.
 {
   const phone = { viewport: { width: 360, height: 780 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
   for (const [label, engine] of QUICK ? [['Chrome', chromium]] : [['Chrome', chromium], ['Safari', webkit]]) {
@@ -395,6 +397,8 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
         peeks: !!second && second.left < innerWidth && second.right > innerWidth,
         loaded: !!img2 && img2.complete && img2.naturalWidth > 0,
         row: !!document.querySelector('[data-hero-slides]'),
+        textHidden: !document.querySelector('.hero__text') || document.querySelector('.hero__text').getClientRects().length === 0,
+        shelf: (() => { const a = document.querySelector('[data-shop-crafts] .shop__panel:not([hidden]) .shop__all'); if (!a) return null; const r = a.getBoundingClientRect(); return { centred: Math.abs(r.left + r.width / 2 - innerWidth / 2) <= 2, solid: getComputedStyle(a).backgroundColor !== 'rgba(0, 0, 0, 0)' && !getComputedStyle(a).backgroundColor.includes('/ 0.'), h: Math.round(r.height) }; })(),
         ctaShown: !!cta && cta.getClientRects().length > 0,
         all: (() => { const a = document.querySelector('.hero__all'); return a && a.getClientRects().length ? { h: Math.round(a.getBoundingClientRect().height), name: a.textContent.trim(), last: a === a.parentElement.lastElementChild } : null; })(),
         ctaH: Math.round(cta?.getBoundingClientRect().height ?? 0),
@@ -406,6 +410,8 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
     });
     record(`Home, ${label} 360 × 780: craft circles on the first screen`, r.crafts < 780, `circles start at ${r.crafts}px`);
     record(`Home, ${label}: next hero photo peeks in, loaded`, r.peeks && r.loaded, `peeks: ${r.peeks}, loaded: ${r.loaded}`);
+    if (r.row) record(`Home, ${label}: calm first screen, no description on phones`, r.textHidden, `description hidden: ${r.textHidden}`);
+    record(`Home, ${label}: Bestsellers ends in one solid, centred button`, !!r.shelf && r.shelf.centred && r.shelf.solid && r.shelf.h >= 48, r.shelf ? `centred: ${r.shelf.centred}, solid: ${r.shelf.solid}, ${r.shelf.h}px` : 'missing');
     if (r.row) record(`Home, ${label}: way in is the photo row, ending in "See all"`, !r.ctaShown && !!r.all && r.all.h >= 48 && r.all.last && !!r.all.name, `button shown: ${r.ctaShown}, end card: ${r.all ? `"${r.all.name}", ${r.all.h}px, last: ${r.all.last}` : 'missing'}`);
     else record(`Home, ${label}: one way in, ≥48px, the right shape`, r.ctaShown && r.ctaH >= 48 && r.shape, `${r.ctaH}px, pill or link as expected: ${r.shape}`);
     record(`Home, ${label}: every hero photo link has a name`, r.unnamed === 0, `${r.unnamed} unnamed`);
@@ -423,9 +429,11 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   const { browser, page } = await open(chromium, devices['Desktop Chrome']);
   const d = await page.evaluate(() => {
     const cta = document.querySelector('.hero__cta');
-    return { pill: !!cta && getComputedStyle(cta).backgroundColor !== 'rgba(0, 0, 0, 0)', h: Math.round(cta?.getBoundingClientRect().height ?? 0), ways: document.querySelectorAll('.hero__actions a').length };
+    const all = document.querySelector('[data-shop-crafts] .shop__panel:not([hidden]) .shop__all')?.getBoundingClientRect();
+    return { pill: !!cta && getComputedStyle(cta).backgroundColor !== 'rgba(0, 0, 0, 0)', h: Math.round(cta?.getBoundingClientRect().height ?? 0), ways: document.querySelectorAll('.hero__actions a').length, shelfCentred: !!all && Math.abs(all.left + all.width / 2 - innerWidth / 2) <= 2, text: getComputedStyle(document.querySelector('.hero__text')).display !== 'none' };
   });
   record('Home, desktop: one way in, a pill button', d.pill && d.ways === 1 && d.h >= 48, `${d.ways} link(s), pill: ${d.pill}, ${d.h}px`);
+  record('Home, desktop: description shown, Bestsellers button centred', d.text && d.shelfCentred, `description: ${d.text}, button centred: ${d.shelfCentred}`);
   await browser.close();
 }
 

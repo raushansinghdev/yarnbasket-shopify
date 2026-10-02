@@ -610,8 +610,8 @@
   .hero__pill-knob .icon { width: 18px; height: 18px; transition: transform var(--dur-panel) var(--ease-out); }
   @media (max-width: 989px) {
     /* A little tighter above and below, so the product row still fits on a small phone's first screen. */
-    .hero--banner { padding-top: .75rem; }
-    .hero--banner .hero__grid { gap: var(--space-4); }
+    .hero.hero--banner { padding-top: .75rem; }
+    .hero.hero--banner .hero__grid { gap: var(--space-4); }
   }
   /* Short phones (an iPhone SE in Safari): a slightly wider banner, so the product row still shows whole. */
   @media (max-width: 599px) and (max-height: 620px) {
@@ -645,15 +645,19 @@
      Square photos, phone and desktop (docs/home-media-plan.md §2): the product photos are square, so nothing is
      cropped, and the row is about 50px shorter than at 4:5. */
   @media (max-width: 989px) {
-    .hero { padding-top: 1.25rem; padding-bottom: var(--space-2); }
+    /* A calmer first screen (docs/home-calm-plan.md S2): a little more air around the heading. */
+    .hero { padding-top: 1.75rem; padding-bottom: var(--space-2); }
     .hero.scheme-blush { --hero-fade: 64px; }
-    .hero__grid { gap: 1.25rem; }
+    .hero__grid { gap: 1.5rem; }
     .hero__copy { gap: .625rem; }
     .hero__title { font-size: clamp(2.375rem, 1.6rem + 3vw, 3.25rem); line-height: 1.02; }
     .hero__text { font-size: 1rem; line-height: 1.5; }
     .hero__actions { margin-top: 0; }
     /* With the photo row right below, the products are the way in: no button, and the row ends in "See all". */
     .hero__grid:has([data-hero-slides]) .hero__actions { display: none; }
+    /* The photos right below show what we make, so the description waits for desktop (home-calm-plan S1): one
+       statement per screen. It stays in the page for Google. */
+    .hero__grid:has([data-hero-slides]) .hero__text { display: none; }
 
     /* On a Blush hero the pill becomes a text link: Bestsellers starts right below, so the way in doesn't need to shout. */
     .hero.scheme-blush .hero__cta.btn {
@@ -739,7 +743,8 @@
   }
   /* When Bestsellers follows the hero, it moves up too: the hero already gives it room. */
   @media (max-width: 989px) {
-    .shopify-section:has(> .hero) + .shopify-section > [data-shop-crafts] { padding-top: var(--space-6); }
+    /* A clear pause after the photo row (home-calm-plan S4), so the hero and Bestsellers read as two chapters. */
+    .shopify-section:has(> .hero) + .shopify-section > [data-shop-crafts] { padding-top: 3.5rem; }
     .shopify-section:has(> .hero) + .shopify-section > [data-shop-crafts] .section-head { gap: var(--space-1); }
   }
 

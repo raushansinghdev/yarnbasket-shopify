@@ -14,7 +14,7 @@
     "shop": {
       "type": "shop-crafts",
       "settings": {
-        "eyebrow": "Loved most",
+        "eyebrow": "",
         "heading": "Bestsellers",
         "favourites_label": "All",
         "limit": 4,
