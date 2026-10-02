@@ -45,19 +45,27 @@ const enqueue = (job, quiet) => {
 const send = (url, body) =>
   fetch(base + url, {
     method: 'POST',
-    headers: body instanceof FormData ? { Accept: 'application/json' } : { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: body instanceof FormData ? body : JSON.stringify(body)
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body)
   }).then(async (r) => {
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw data;
     return data;
   });
-const withSections = (body) => {
-  if (body instanceof FormData) {
-    body.append('sections', sectionId);
-    body.append('sections_url', location.pathname);
-  } else Object.assign(body, { sections: sectionId, sections_url: location.pathname });
-  return body;
+const withSections = (body) => Object.assign(body, { sections: sectionId, sections_url: location.pathname });
+// A product form as one item. Sent as `items`: Shopify only enforces the stock limit for that shape
+// (a plain id + quantity add goes past it).
+const asItems = (form) => {
+  const data = new FormData(form);
+  const item = { id: +data.get('id'), quantity: +data.get('quantity') || 1 };
+  const properties = {};
+  for (const [k, v] of data) {
+    const m = k.match(/^properties\[(.+)\]$/);
+    if (m && v !== '') properties[m[1]] = v;
+  }
+  if (Object.keys(properties).length) item.properties = properties;
+  if (data.get('selling_plan')) item.selling_plan = +data.get('selling_plan');
+  return { items: [item] };
 };
 const fresh = () => fetch(`${location.pathname}?sections=${sectionId}`).then((r) => r.json()).then((s) => render(s[sectionId]));
 
@@ -341,9 +349,10 @@ document.addEventListener('submit', (event) => {
   if (error) error.hidden = true;
   returnFocus = button;
 
-  enqueue(() => send('cart/add.js', withSections(new FormData(form))))
-    .then((item) => {
-      render(item.sections?.[sectionId]);
+  enqueue(() => send('cart/add.js', withSections(asItems(form))))
+    .then((res) => {
+      const item = res.items[0];
+      render(res.sections?.[sectionId]);
       const count = +box()?.dataset.count;
       counted(count);
       const variant = item.product_has_only_default_variant ? '' : item.variant_title;
@@ -469,6 +478,15 @@ document.addEventListener('click', (event) => {
     openDrawer(cartLink);
   }
 });
+
+// Drawer photos are lazy (the drawer is closed on most visits): start them as soon as a finger or pointer heads for it.
+const warm = (event) => {
+  if (!event.target.closest?.('.site-header__cart, [data-cart-view]')) return;
+  drawer?.querySelectorAll('img[loading="lazy"]').forEach((img) => (img.loading = 'eager'));
+};
+addEventListener('pointerover', warm, { passive: true });
+addEventListener('pointerdown', warm, { passive: true });
+addEventListener('focusin', warm);
 
 /* ---------- Cart page: pinned Checkout bar on phones, and Little extras ---------- */
 let barWatch;

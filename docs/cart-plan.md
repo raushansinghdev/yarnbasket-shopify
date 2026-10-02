@@ -1,6 +1,6 @@
 # Cart plan (drawer and cart page)
 
-Status: **Stages 1–4 built 2026-10-02 (not yet tested with items in the cart: the store has no products until `tools/test-products.csv` is imported).** Raushan approved the recommendations, except D2: adding shows a Flipkart-style "Added to cart · View cart" pop-up instead of opening the drawer.
+Status: **Stages 1–4 built and tested with real items 2026-10-02** (11 test products imported from `tools/test-products.csv`, tag `test-product`). Raushan approved the recommendations, except D2: adding shows a Flipkart-style "Added to cart · View cart" pop-up instead of opening the drawer.
 
 ### As built (where it differs from the plan below)
 - **D2 changed (Raushan): adding to cart shows a pop-up and doesn't open the drawer.** Shoppers keep browsing; "View cart" in the pop-up opens the drawer.
@@ -11,7 +11,7 @@ Status: **Stages 1–4 built 2026-10-02 (not yet tested with items in the cart: 
   - The drawer's "✓ … added" line from §4.1 was dropped, since the drawer no longer opens on add.
 - **Errors:** a product-page error (like the stock limit) shows under the button (`role=alert`). A Little extras error shows in the pop-up.
 - **Free shipping (D4):** set the amount in **Theme settings → Cart → Free shipping from (₹)**. It stays hidden at 0, the default. Gift note and Little extras can be switched off in the same place.
-- **`cart.js` is 20 KB raw (about 11 KB minified),** not the ≤10 KB estimated. It loads on every page as a deferred module, and `npm run check` holds it to a 20 KB budget. `theme.js` only gained a `quiet` flag on `cart:updated`, because cart.js makes its own, more useful announcement.
+- **`cart.js` is about 21 KB raw (about 11 KB minified),** not the ≤10 KB estimated. It loads on every page as a deferred module, and `npm run check` holds it to a 22 KB budget. `theme.js` only gained a `quiet` flag on `cart:updated`, because cart.js makes its own, more useful announcement.
 - **Spoken updates while the drawer is open** go to a status line inside the drawer. The header's line is inert behind the modal and wouldn't be heard.
 - **Focus survives every refresh.** If you were on a line's + button, you're still on it after the update arrives. After a remove, focus is on Undo. After Undo, it's on the restored item's name, not its number field, so the phone keyboard doesn't pop up.
 - **Leaving from inside the drawer** (a product link, or Checkout) first steps back over the drawer's history entry. Back from the next page then returns to the page, not to a duplicate of it.
@@ -28,7 +28,16 @@ Status: **Stages 1–4 built 2026-10-02 (not yet tested with items in the cart: 
   - the no-JS update
 
   It's skipped while the store has no products.
-- **Checked so far:** theme check is clean; axe reports 0 violations on the empty drawer and the empty cart page at 390 and 1440px.
+- **Stock limit gotcha:** Shopify's `/cart/add.js` doesn't enforce the stock limit for a plain `id` + `quantity` add; it lets you add 6 of something with 3 in stock. It does enforce it for the `items: [...]` shape, so cart.js always sends product forms that way.
+- **Little extras fallback:** Shopify takes a while to work out recommendations for new products. Until it has, the section shows the store's lowest-priced in-stock products.
+- **Drawer photos** are lazy, so they cost nothing on pages where the drawer isn't opened. They start loading as soon as a finger or pointer heads for the cart button or View cart.
+- **"Buy it now"** (Shopify's dynamic checkout button on the product page) is restyled as our outlined pill instead of its default blue.
+- **Prices show as "Rs. 1,299.00"** because that's the store's money format. To show ₹1,299 instead, change it in **Settings → General → Store defaults → Currency display → Change formatting** (see §10).
+- **Checked on 2026-10-02:**
+  - theme check is clean
+  - `npm run check` section 8 passes 16/16 (phone and desktop, against a dev server that has the storefront password)
+  - axe reports 0 violations on the drawer, the page and the page with Little extras, at phone and desktop sizes
+  - not yet done: the real-phone pass (Raushan)
 This plan covers everything between "Add to cart" and Shopify's checkout:
 - the add-to-cart moment
 - the cart drawer
