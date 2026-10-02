@@ -158,7 +158,8 @@
     text-decoration: none;
     -webkit-touch-callout: none;
   }
-  .card__media { --ratio: 4 / 5; border-radius: var(--radius-md); background: var(--blush); }
+  /* Square, like the photos are shot and like the collection page, so a product looks the same wherever it shows. */
+  .card__media { --ratio: 1; border-radius: var(--radius-md); background: var(--blush); }
   /* Hover (desktop): the second photo slowly crossfades in while both drift a little closer, in the site's even
      ease-in-out rhythm, never a quick swap. A short pause before the fade means sweeping the pointer across the
      grid doesn't flicker photos. Leaving eases back at about 70% of the entry time, like every exit on the site. */

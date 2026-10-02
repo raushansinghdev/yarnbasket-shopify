@@ -2,6 +2,14 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-02 (product cards are square)
+
+- **Every product card photo is square (1:1)**, the big home cards as well as the compact ones on the collection, search and saved pages. They were 4:5 before.
+  - The photos are shot square (1200×1200), so 4:5 cropped about 20% off their sides.
+  - A product now looks the same on the home page and on the collection page it opens. The hero is square too (home-media-plan).
+  - On a 360px phone the cards are shorter, so the craft circles start at 644px instead of about 692px.
+- **Bestsellers shows demo cards until collections exist.** Demo cards (Theme settings → Demo content) aren't real products, so they link to "Shop all" and have no heart. The store has no craft collections yet, only "Home page". Once a "Bestsellers" collection and one collection per craft are set on the section, the cards open their product page, show live prices and get the heart.
+
 ## 2026-10-02 (home hero colour: Soft blush leads, Blush supports)
 
 - **Raushan's direction:** the whitish **Soft blush #FBF1EE** is the main colour and the pinkish **Blush #F2D4CC** is the supporting colour, as the page below the hero already does ("Our promise" and "How it's made" are Blush cards on Soft blush). He calls them "Soft blush" and "Blush".
