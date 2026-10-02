@@ -29,13 +29,11 @@
     assign account_url = account_page | default: routes.account_url
     if account_page
       assign details_url = account_page | append: '#details'
-      assign help_url = account_page | append: '#help'
     else
       assign details_url = routes.account_addresses_url
-      assign help_url = pages['track-order'].url | default: '/pages/contact'
     endif
   -%}
-  {%- render 'account-menu', account_url: account_url, saved_url: pages['saved'].url, details_url: details_url, help_url: help_url, demo: demo_menu -%}
+  {%- render 'account-menu', account_url: account_url, saved_url: pages['saved'].url, details_url: details_url, demo: demo_menu -%}
 {%- else -%}
 {%- comment -%} The menu is used once it exists in the admin; until then Shopify shows Orders and Profile (and logs a warning). {%- endcomment -%}
 <shopify-account class="account-btn" {% if linklists['customer-account-main-menu'].links.size > 0 %}menu="customer-account-main-menu"{% endif %} data-account>

@@ -7,7 +7,7 @@ Status: **B1–B3 and B5 built 2026-10-03** (theme side). Still to do: things th
 - **Signed-in header menu** (`snippets/account-menu`):
   - a native popover anchored under the button (CSS anchor positioning; other browsers put it under the header's right edge)
   - focus stays on the button when it opens, and Tab goes straight into the list; Esc and click-away close it and return focus
-  - the top row (initial, greeting, email, ›) is the link to the account page (Raushan, 2026-10-03, like Google and Amazon), so there's no separate "Your account ›" row. Then Orders (with "#1050 · Confirmed" from the latest order), Saved (count), Your details, Help, and Sign out last
+  - the top row (initial, greeting, email, ›) is the link to the account page (Raushan, 2026-10-03, like Google and Amazon), so there's no separate "Your account ›" row. Then Orders (with "#1050 · Confirmed" from the latest order), Saved (count), Your details, and Sign out last. Help was removed on 2026-10-03 (account-branding-plan.md §4)
 - **Signed out,** Shopify's sheet is restyled: Cocoa text everywhere (the menu text was black), one white surface, a softer shadow, larger corners. The border is `#A08A80` (3.26:1 on white), because the same variable draws the email field's edge.
 - **Sign out** goes to `/account/logout?return_url=<this page>`. Shopify honours `return_url` (checked signed out, 2026-10-03; check it once signed in). saved.js clears Recently viewed on the click, and the next page shows "You're signed out" once, adding "Your saved items stay on this device" plus "View saved" when there are any.
 - **Order card changes:**

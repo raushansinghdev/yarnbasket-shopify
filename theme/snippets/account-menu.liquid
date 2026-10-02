@@ -3,7 +3,8 @@
   sheet has no Sign out, icons or counts, and its layout can't be changed, so signed in we draw our own: the initial
   on a Blush circle (plus "Account" from 1100px, like "Cart"), opening a small panel. Its top row (initial, greeting,
   email, ›) opens the account page; then Orders (with the latest order's state), Saved (its count, from saved.js),
-  Your details, Help, and Sign out last.
+  Your details, and Sign out last. No Help: the navigation's Help is right beside it, and each order card has its
+  own "Need help?" (account-branding-plan.md §4).
   - A native popover: Esc, click-away, the top layer and aria-expanded come from the browser, with no script.
   - A list of links, not an ARIA menu, so Tab and screen readers work the way they do everywhere else.
   - Under 900px it isn't shown: the drawer's account row goes to the account page instead.
@@ -11,7 +12,6 @@
 
   @param {string} account_url - The account page (or Shopify's account when that page doesn't exist yet)
   @param {string} [saved_url] - The Saved page, when it exists
-  @param {string} help_url - Where "Help" goes
   @param {string} details_url - Where "Your details" goes
   @param {boolean} [demo] - The account-demo page's made-up shopper (nobody signed in, Demo content on)
 {%- enddoc -%}
@@ -85,12 +85,6 @@
           <a href="{{ details_url }}">
             {%- render 'icon', icon: 'account' -%}
             <span class="account-menu__label">{{ 'account.details' | t }}</span>
-          </a>
-        </li>
-        <li>
-          <a href="{{ help_url }}">
-            {%- render 'icon', icon: 'help' -%}
-            <span class="account-menu__label">{{ 'account.help' | t }}</span>
           </a>
         </li>
       </ul>

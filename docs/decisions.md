@@ -2,6 +2,11 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-03 (account round 3, docs/account-branding-plan.md)
+
+- **Shopify's sign-in, profile and order pages get styled, not replaced** (no theme can host them with current accounts). Colours, logo and fonts are set in the checkout and accounts editor to match our account page: Soft blush page, white cards, Cocoa Deep buttons and links, our horizontal logo, Jost (plus Cormorant if listed). The desktop sign-in photo is the pink tulips and daisy bouquet. Done now on the dev store with Raushan; the `account.` domain follows at launch.
+- **Help is out of the account dropdown.** The navigation's Help menu (Track order, Shipping & delivery, FAQ, Contact, Our story) stays as it is. It's the customer-service menu for everyone, including guests. Order problems go through each order card's "Need help?", and Shopify's account menu keeps Help because those pages have no store navigation.
+
 ## 2026-10-03 (hero campaign banners, docs/hero-campaign-plan.md)
 
 - **Festival banners: yes, but only while a campaign is live, one at a time, swiped by hand only.** The rest of the year the hero is the headline plus products. Baymard advises against carousels on phones, and slides after the first are rarely seen. The four reference sites all use Dawn's stock slideshow, which shows the layout is common, not that it sells.
