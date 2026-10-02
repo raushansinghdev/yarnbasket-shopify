@@ -60,7 +60,8 @@
     <h2 class="saved__empty-title">{{ 'saved.empty_title' | t }}</h2>
     <p class="saved__empty-text">{{ 'saved.empty_text' | t }}</p>
     {%- if buyable.size > 0 -%}
-      {%- render 'product-row', title: picks_label, id: 'SavedPicks', products: buyable -%}
+      {%- capture gift_skip -%}{%- render 'gift-skip', products: buyable -%}{%- endcapture -%}
+      {%- render 'product-row', title: picks_label, id: 'SavedPicks', products: buyable, exclude: gift_skip -%}
     {%- endif -%}
   </div>
   <noscript>

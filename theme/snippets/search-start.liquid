@@ -30,7 +30,19 @@
     assign buyable = collections.all.products | where: 'available'
     assign picks_label = 'search.picks_all' | t
   endif
-  assign pick_count = buyable.size
+  # The free gift is never a suggestion (snippets/gift-skip).
+  capture gift_skip
+    render 'gift-skip', products: buyable
+  endcapture
+  assign gift_skip = gift_skip | strip
+  assign exclude = exclude | default: ',' | append: gift_skip
+  assign pick_count = 0
+  for product in buyable
+    assign key = product.id | prepend: ',' | append: ','
+    unless gift_skip contains key
+      assign pick_count = pick_count | plus: 1
+    endunless
+  endfor
   assign demo = false
   if settings.demo_content and shop.products_count == 0
     assign demo = true
@@ -133,8 +145,13 @@
       <h2 class="search-start__title eyebrow">{{ picks_label }}</h2>
       <ul class="{% if context == 'panel' %}search-start__products{% else %}product-grid{% endif %}" role="list">
         {%- if pick_count > 0 -%}
-          {%- for product in buyable limit: 4 -%}
-            <li>{%- render 'product-card', product: product, index: forloop.index0, sizes: card_sizes, skip_bestseller: true -%}</li>
+          {%- assign shown = 0 -%}
+          {%- for product in buyable -%}
+            {%- if shown >= 4 -%}{%- break -%}{%- endif -%}
+            {%- assign key = product.id | prepend: ',' | append: ',' -%}
+            {%- if gift_skip contains key -%}{%- continue -%}{%- endif -%}
+            <li>{%- render 'product-card', product: product, index: shown, sizes: card_sizes, skip_bestseller: true -%}</li>
+            {%- assign shown = shown | plus: 1 -%}
           {%- endfor -%}
         {%- else -%}
           {%- assign d_picks = '1,2,4,6' | split: ',' -%}

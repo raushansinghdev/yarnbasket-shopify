@@ -23,6 +23,11 @@
     assign buyable = collections.all.products | where: 'available'
     assign picks_label = 'search.picks_all' | t
   endif
+  # The free gift is never shown as something to shop (snippets/gift-skip).
+  capture gift_skip
+    render 'gift-skip', products: buyable
+  endcapture
+  assign gift_skip = gift_skip | strip
   assign grid_sizes = '(min-width: 1280px) 240px, (min-width: 990px) 22vw, (min-width: 768px) 30vw, calc(50vw - 24px)'
 -%}
 {%- assign sorted_template = 'search.status_sorted' | t: sort: '[sort]' -%}
@@ -41,7 +46,7 @@
         assign shown = paginate.current_offset | plus: search.results.size
         assign product_count = 0
         assign page_count = 0
-        assign result_ids = ','
+        assign result_ids = gift_skip
         if demo
           capture ids
             render 'search-demo', what: 'products', terms: terms
@@ -60,6 +65,9 @@
           {%- endfor -%}
         {%- else -%}
           {%- for result in search.results -%}
+            {%- assign key = result.id | prepend: ',' | append: ',' -%}
+            {%- if result.object_type == 'product' and result.tags contains 'free-gift' -%}{%- continue -%}{%- endif -%}
+            {%- if result.object_type == 'product' and gift_skip contains key -%}{%- continue -%}{%- endif -%}
             {%- if result.object_type == 'product' -%}
               {%- liquid
                 assign product_count = product_count | plus: 1
@@ -212,7 +220,7 @@
                 echo help_block
               elsif paginate.pages <= 1
                 if buyable.size > 0
-                  render 'product-row', title: picks_label, id: 'SearchMore', products: buyable
+                  render 'product-row', title: picks_label, id: 'SearchMore', products: buyable, exclude: gift_skip
                 endif
               else
                 echo help_block

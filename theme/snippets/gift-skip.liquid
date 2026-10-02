@@ -1,0 +1,12 @@
+{%- doc -%}
+  The free gift (Theme settings → Cart → Free gift product, or any product tagged "free-gift") isn't something to
+  shop, so product lists leave it out (docs/offers-plan.md). Prints the ids to skip as ",123,456," for product-row's
+  `exclude` and for `contains` checks. Capture it and strip.
+
+  @param {object} [products] - Products to look through for the "free-gift" tag
+
+  @example
+  {%- capture gift_skip -%}{% render 'gift-skip', products: buyable %}{%- endcapture -%}
+{%- enddoc -%}
+,{%- if settings.gift_product != blank -%}{{ settings.gift_product.id }},{%- endif -%}
+{%- for p in products -%}{%- if p.tags contains 'free-gift' -%}{{ p.id }},{%- endif -%}{%- endfor -%}
