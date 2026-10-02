@@ -49,14 +49,14 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
 - [ ] **Shipping rates** (Settings → Shipping and delivery → India). Today there's one rate, "मानक" at **₹379**, which is Shopify's default.
   - "Standard": the real fee (for example ₹79), condition "order price" ₹0 – ₹998.99
   - "Free shipping": ₹0, condition "order price" ₹999 and up
-- [ ] **Gift product:** its real price (for example ₹149), stock tracked, 30+ made. Online Store channel on, so it can be added to the cart, but in no collection; hide it from search (Search & Discovery, or the `seo.hidden` metafield set to 1).
+- [ ] **Gift product: import `tools/gift-product.csv`** (Products → Import → upload it → "Upload and preview" → "Import products"). It's a separate product, "Sunflower Keychain" (handle `sunflower-keychain-free-gift`, tag `free-gift`, type "Free gift", ₹249, 30 in stock, 40 g), with the single-sunflower photo. It isn't the keychain you sell, so paid keychains are never mistaken for the gift. Then on the product page, check the weight and stock, and keep it out of every collection. **Theme settings already point at it** (Free gift from 1499; settings_data.json, 2026-10-02).
 - [ ] **Collection "Shop"** (automated): every product except the gift (for example "Tag is not equal to free-gift", and tag the gift `free-gift`).
 - [ ] **Discount** (Discounts → Create → Buy X get Y, Automatic):
   - Customer buys: minimum purchase amount ₹1,499, from the collection "Shop"
   - Customer gets: 1 × the gift, "Free"
   - Maximum uses per order: 1
   - Combinations: allow product discounts and shipping discounts
-- [ ] **Theme settings → Cart:** Free shipping from 999, Standard shipping fee 79, Free gift from 1499, Free gift product, and Cash on delivery only once COD works at checkout.
+- [ ] **Theme settings → Cart:** Free shipping from 999 ✓, Free gift from 1499 ✓ and the gift product ✓ are set. Still to do: Standard shipping fee (the same as your paid rate), and Cash on delivery only once COD works at checkout.
 - [ ] Run `npm run check`: "Offers: shipping rates match Theme settings" and "Offers: the free gift arrives free" must pass. Changing an amount later means changing it in three places: Theme settings, the shipping rate and the discount. Then run the check.
 - [ ] **CA question:** how to treat free gifts under GST (input tax credit on goods given away free may need reversing, Section 17(5)(h)).
 - [x] **FAQ:** the gift line, with the amount, is in the automatic "Shipping and offers" answer (`offers.faq_gift`, so it follows the threshold). The Terms draft has it in §5 "Free gift", with no amount, so changing the threshold won't need a Terms edit.

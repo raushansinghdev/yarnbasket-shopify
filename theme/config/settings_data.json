@@ -3,6 +3,8 @@
     "show_intro": true,
     "social_meesho": "https://www.meesho.com/SSCreator",
     "demo_content": true,
-    "free_shipping_threshold": 999
+    "free_shipping_threshold": 999,
+    "gift_threshold": 1499,
+    "gift_product": "sunflower-keychain-free-gift"
   }
 }
