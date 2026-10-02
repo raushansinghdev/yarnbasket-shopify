@@ -147,7 +147,27 @@
     "filter_craft": "Filter by craft",
     "all": "All",
     "load_more": "Load more",
-    "showing": "Showing {{ shown }} of {{ total }}"
+    "showing": "Showing {{ shown }} of {{ total }}",
+    "form_label": "Search the shop",
+    "results_for": "Search results for",
+    "no_products": "No products for “{{ terms }}”",
+    "count_products": {
+      "one": "{{ count }} product",
+      "other": "{{ count }} products"
+    },
+    "count_pages": {
+      "one": "{{ count }} help page",
+      "other": "{{ count }} help pages"
+    },
+    "count_results": {
+      "one": "{{ count }} result",
+      "other": "{{ count }} results"
+    },
+    "best_match": "Best match",
+    "more_to_love": "More to love",
+    "status_sorted": "Sorted by {{ sort }}.",
+    "status_filtered": "Showing {{ label }}. {{ count }}.",
+    "go_to_field": "Search again"
   },
   "accessibility": {
     "skip_to_content": "Skip to content",

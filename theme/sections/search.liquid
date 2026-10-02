@@ -1,9 +1,13 @@
 {%- comment -%}
-  Search results page (docs/search-plan.md §8). Works fully without JavaScript; search.js adds in-place sorting
-  and "Load more". One Shopify search returns products, pages and blog posts together: products go into the
-  product card grid (same as collections), pages and posts into "Help & stories" below it.
-  Craft chips come from the search filters (Search & Discovery app → Filters → Product type).
-  While Demo content is on and the store has no products, the demo products are searched instead.
+  Search results page (docs/search-results-plan.md, built on docs/search-plan.md §8). Works fully without JavaScript;
+  search.js sorts and filters by craft in place, loads more, and makes the header's lens jump to the box here.
+  - One search box: this one. On /search the header's pill steps back to the lens (sections/header.liquid).
+  - The h1 says what was searched; the count and Sort share one row; craft chips only when results span 2+ crafts
+    (Search & Discovery app → Filters → Product type).
+  - Results are compact cards (square photo, plain name): 2 across on phones, up to 5 on wide screens.
+  - 1–4 products: a slim "More to love" row. No products but pages matched: those first. Nothing: §6.1 of the plan.
+  One Shopify search returns products, pages and blog posts together: products go into the grid, pages and posts
+  into "Help & stories". While Demo content is on and the store has no products, the demo products are searched.
 {%- endcomment -%}
 {%- liquid
   assign terms = search.terms
@@ -11,22 +15,33 @@
   if settings.demo_content and shop.products_count == 0
     assign demo = true
   endif
+  # Suggestions for "More to love" and the pages-only state: the same picks as the search panel.
+  assign picks = settings.search_products | default: collections['bestsellers'] | default: collections['our-favourites']
+  assign picks_label = 'search.picks' | t
+  assign buyable = picks.products | where: 'available'
+  if buyable.size == 0 and shop.products_count > 0
+    assign buyable = collections.all.products | where: 'available'
+    assign picks_label = 'search.picks_all' | t
+  endif
+  assign grid_sizes = '(min-width: 1280px) 240px, (min-width: 990px) 22vw, (min-width: 768px) 30vw, calc(50vw - 24px)'
 -%}
-<div class="section search-page scheme-soft" data-search-page data-section-id="{{ section.id }}">
-  <div class="search-page__head">
-    <h1 class="search-page__title">{{ 'search.title' | t }}</h1>
-    <form action="{{ routes.search_url }}" method="get" role="search" class="search-page__form">
-      <label for="SearchPageInput" class="visually-hidden">{{ 'search.label' | t }}</label>
-      {%- render 'search-field', id: 'SearchPageInput', value: terms -%}
-      <input type="hidden" name="options[prefix]" value="last">
-    </form>
-  </div>
+{%- assign sorted_template = 'search.status_sorted' | t: sort: '[sort]' -%}
+<div class="section search-page scheme-soft" data-search-page data-section-id="{{ section.id }}" data-sorted="{{ sorted_template | escape }}">
+  <form action="{{ routes.search_url }}" method="get" role="search" class="search-page__form" aria-label="{{ 'search.form_label' | t }}">
+    <label for="SearchPageInput" class="visually-hidden">{{ 'search.label' | t }}</label>
+    {%- render 'search-field', id: 'SearchPageInput', value: terms -%}
+    <input type="hidden" name="options[prefix]" value="last">
+  </form>
+  <p class="visually-hidden" role="status" data-search-page-status></p>
 
   {%- if search.performed -%}
-    {%- paginate search.results by 24 -%}
+    {%- paginate search.results by 36 -%}
       {%- liquid
         assign total = search.results_count
         assign shown = paginate.current_offset | plus: search.results.size
+        assign product_count = 0
+        assign page_count = 0
+        assign result_ids = ','
         if demo
           capture ids
             render 'search-demo', what: 'products', terms: terms
@@ -34,24 +49,27 @@
           assign demo_ids = ids | strip | split: ','
           assign total = demo_ids.size
           assign shown = total
+          assign product_count = total
         endif
       -%}
       {%- capture product_items -%}
         {%- if demo -%}
           {%- for id in demo_ids -%}
             {%- assign d_n = id | plus: 0 -%}
-            <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: blank, index: forloop.index0, demo: d_n -%}</li>
+            <li style="--i: {{ forloop.index0 | modulo: 5 }}">{%- render 'product-card', product: blank, index: forloop.index0, demo: d_n, sizes: grid_sizes, compact: true -%}</li>
           {%- endfor -%}
         {%- else -%}
           {%- for result in search.results -%}
             {%- if result.object_type == 'product' -%}
               {%- liquid
+                assign product_count = product_count | plus: 1
+                assign result_ids = result_ids | append: result.id | append: ','
                 assign load = 'lazy'
-                if paginate.current_page == 1 and forloop.index0 < 4
+                if paginate.current_page == 1 and product_count <= 4
                   assign load = 'eager'
                 endif
               -%}
-              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: result, index: forloop.index0, loading: load -%}</li>
+              <li style="--i: {{ forloop.index0 | modulo: 5 }}">{%- render 'product-card', product: result, index: forloop.index0, loading: load, sizes: grid_sizes, compact: true -%}</li>
             {%- endif -%}
           {%- endfor -%}
         {%- endif -%}
@@ -60,6 +78,7 @@
         {%- unless demo -%}
           {%- for result in search.results -%}
             {%- if result.object_type == 'page' or result.object_type == 'article' -%}
+              {%- assign page_count = page_count | plus: 1 -%}
               <li>
                 <a class="search-help__link" href="{{ result.url }}">
                   <span class="search-help__title">{{ result.title | escape }}</span>
@@ -73,126 +92,233 @@
           {%- endfor -%}
         {%- endunless -%}
       {%- endcapture -%}
+      {%- capture help_block -%}
+        {%- if help_items != blank -%}
+          <section class="search-page__help" aria-labelledby="SearchHelpTitle">
+            <h2 class="search-page__help-title eyebrow" id="SearchHelpTitle">{{ 'search.help_stories' | t }}</h2>
+            <ul class="search-help" role="list" data-search-help>
+              {{- help_items -}}
+            </ul>
+          </section>
+        {%- endif -%}
+      {%- endcapture -%}
 
       {%- if total == 0 -%}
+        <h1 class="search-page__title">{{ 'search.no_results' | t: terms: terms | remove_last: '.' }}</h1>
         {%- render 'search-start', context: 'page', mode: 'none', terms: terms -%}
       {%- else -%}
-        <div class="search-page__bar">
-          <p class="search-page__count">{{ 'search.results_count' | t: count: total, terms: terms }}</p>
-
-          {%- if search.sort_options.size > 1 -%}
-            <form class="search-sort" action="{{ routes.search_url }}" method="get" data-search-sort>
-              <input type="hidden" name="q" value="{{ terms | escape }}">
-              <input type="hidden" name="options[prefix]" value="last">
-              {%- for filter in search.filters -%}
-                {%- for value in filter.active_values -%}
-                  <input type="hidden" name="{{ value.param_name }}" value="{{ value.value | escape }}">
-                {%- endfor -%}
-              {%- endfor -%}
-              <label for="SearchSort" class="search-sort__label">{{ 'search.sort' | t }}</label>
-              <select id="SearchSort" name="sort_by" class="search-sort__select">
-                {%- for option in search.sort_options -%}
-                  <option value="{{ option.value }}" {% if option.value == search.sort_by %}selected{% endif %}>{{ option.name }}</option>
-                {%- endfor -%}
-              </select>
-              <button type="submit" class="btn btn--ghost search-sort__apply" data-search-sort-apply>{{ 'search.sort_apply' | t }}</button>
-            </form>
+        <h1 class="search-page__title">
+          {%- if product_count == 0 and paginate.pages <= 1 -%}
+            {{ 'search.no_products' | t: terms: terms }}
+          {%- else -%}
+            <span class="search-page__for">{{ 'search.results_for' | t }}</span>
+            <span class="search-page__q">“{{ terms | escape }}”</span>
           {%- endif -%}
+        </h1>
 
-          {%- for filter in search.filters -%}
-            {%- if filter.param_name == 'filter.p.product_type' and filter.type == 'list' and filter.values.size > 1 -%}
-              <nav class="search-page__crafts" aria-label="{{ 'search.filter_craft' | t }}">
-                <ul class="search-start__chips" role="list">
-                  <li>
-                    <a class="search-chip" href="{{ filter.url_to_remove }}" {% if filter.active_values.size == 0 %}aria-current="true"{% endif %}>
-                      {{- 'search.all' | t -}}
-                    </a>
-                  </li>
-                  {%- for value in filter.values -%}
+        <div class="search-page__body" data-search-body>
+          {%- if product_count > 0 or paginate.pages > 1 -%}
+            <div class="search-page__bar">
+              <p class="search-page__count" data-search-count>
+                {%- if paginate.pages > 1 -%}
+                  {{ 'search.count_results' | t: count: total }}
+                {%- else -%}
+                  {{ 'search.count_products' | t: count: product_count }}
+                  {%- if page_count > 0 %} · {{ 'search.count_pages' | t: count: page_count }}{% endif -%}
+                {%- endif -%}
+              </p>
+
+              {%- if search.sort_options.size > 1 and product_count > 1 -%}
+                <form class="search-sort" action="{{ routes.search_url }}" method="get" data-search-sort>
+                  <input type="hidden" name="q" value="{{ terms | escape }}">
+                  <input type="hidden" name="options[prefix]" value="last">
+                  {%- for filter in search.filters -%}
+                    {%- for value in filter.active_values -%}
+                      <input type="hidden" name="{{ value.param_name }}" value="{{ value.value | escape }}">
+                    {%- endfor -%}
+                  {%- endfor -%}
+                  <div class="search-sort__pill">
+                    <label for="SearchSort" class="search-sort__label">{{ 'search.sort' | t }}:</label>
+                    <select id="SearchSort" name="sort_by" class="search-sort__select">
+                      {%- for option in search.sort_options -%}
+                        <option value="{{ option.value }}" {% if option.value == search.sort_by %}selected{% endif %}>
+                          {%- if option.value == 'relevance' %}{{ 'search.best_match' | t }}{% else %}{{ option.name }}{% endif -%}
+                        </option>
+                      {%- endfor -%}
+                    </select>
+                    {%- render 'icon', icon: 'chevron', class: 'search-sort__chevron' -%}
+                  </div>
+                  <button type="submit" class="btn btn--ghost search-sort__apply" data-search-sort-apply>{{ 'search.sort_apply' | t }}</button>
+                </form>
+              {%- endif -%}
+            </div>
+
+            {%- for filter in search.filters -%}
+              {%- if filter.param_name == 'filter.p.product_type' and filter.type == 'list' and filter.values.size > 1 -%}
+                <nav class="search-page__crafts" aria-label="{{ 'search.filter_craft' | t }}" data-search-chips>
+                  <ul class="search-page__chips" role="list">
                     <li>
-                      <a class="search-chip" href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}" {% if value.active %}aria-current="true"{% endif %}>
-                        {{- value.label | escape }} <span class="search-chip__count">{{ value.count }}</span>
+                      <a class="search-chip" href="{{ filter.url_to_remove }}" data-chip="" {% if filter.active_values.size == 0 %}aria-current="true"{% endif %}>
+                        {{- 'search.all' | t -}}
                       </a>
                     </li>
-                  {%- endfor -%}
-                </ul>
-              </nav>
-            {%- endif -%}
-          {%- endfor -%}
-        </div>
-
-        <div class="search-page__results" data-search-page-results>
-          {%- if product_items != blank -%}
-            <h2 class="visually-hidden">{{ 'search.products' | t }}</h2>
-            <ul class="product-grid" role="list" data-search-grid data-arrive="stagger">
-              {{- product_items -}}
-            </ul>
+                    {%- for value in filter.values -%}
+                      {%- assign chip_count = 'search.count_products' | t: count: value.count -%}
+                      <li>
+                        <a
+                          class="search-chip"
+                          href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}"
+                          data-chip="{{ value.value | escape }}"
+                          aria-label="{{ value.label | escape }}, {{ chip_count }}"
+                          {% if value.active %}aria-current="true"{% endif %}
+                        >
+                          {{- value.label | escape }} <span class="search-chip__count" aria-hidden="true">{{ value.count }}</span>
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </nav>
+              {%- endif -%}
+            {%- endfor -%}
           {%- endif -%}
 
-          {%- if paginate.next -%}
-            <div class="search-page__more" data-search-more>
-              <p class="search-page__showing">{{ 'search.showing' | t: shown: shown, total: total }}</p>
-              <a class="btn btn--ghost" href="{{ paginate.next.url }}" data-load-more>{{ 'search.load_more' | t }}</a>
-            </div>
-          {%- endif -%}
-
-          {%- if help_items != blank -%}
-            <div class="search-page__help">
-              <h2 class="h3">{{ 'search.help_stories' | t }}</h2>
-              <ul class="search-help" role="list" data-search-help>
-                {{- help_items -}}
+          <div class="search-page__results" data-search-page-results>
+            {%- if product_items != blank -%}
+              <h2 class="visually-hidden">{{ 'search.products' | t }}</h2>
+              <ul class="product-grid search-page__grid" role="list" data-search-grid data-arrive="stagger">
+                {{- product_items -}}
               </ul>
-            </div>
-          {%- endif -%}
+            {%- elsif paginate.pages <= 1 -%}
+              {{- help_block -}}
+            {%- endif -%}
+
+            {%- if paginate.next -%}
+              <div class="search-page__more" data-search-more>
+                <p class="search-page__showing">{{ 'search.showing' | t: shown: shown, total: total }}</p>
+                <a class="btn btn--ghost" href="{{ paginate.next.url }}" data-load-more>{{ 'search.load_more' | t }}</a>
+              </div>
+            {%- endif -%}
+
+            {%- liquid
+              assign more_label = 'search.more_to_love' | t
+              if product_items != blank
+                if product_count <= 4 and paginate.pages <= 1
+                  if buyable.size > 0
+                    render 'product-row', title: more_label, id: 'SearchMore', products: buyable, exclude: result_ids
+                  elsif demo
+                    render 'product-row', title: more_label, id: 'SearchMore', demo: true
+                  endif
+                endif
+                echo help_block
+              elsif paginate.pages <= 1
+                if buyable.size > 0
+                  render 'product-row', title: picks_label, id: 'SearchMore', products: buyable
+                endif
+              else
+                echo help_block
+              endif
+            -%}
+          </div>
         </div>
       {%- endif -%}
     {%- endpaginate -%}
   {%- else -%}
+    <h1 class="search-page__title">{{ 'search.title' | t }}</h1>
     <p class="search-page__empty">{{ 'search.empty_heading' | t }}</p>
     {%- render 'search-start', context: 'page' -%}
   {%- endif -%}
 </div>
 
 <script src="{{ 'search.js' | asset_url }}" type="module"></script>
+<script src="{{ 'search-page.js' | asset_url }}" type="module"></script>
 
 {% stylesheet %}
-  .search-page { padding-block: var(--space-6) var(--section-space); }
-  .search-page__head { display: grid; gap: var(--space-4); max-width: 40rem; margin-bottom: var(--space-6); }
-  .search-page__title { font-size: var(--fs-h2); line-height: 1.05; }
-  .search-page__empty { margin-bottom: var(--space-5); font-size: var(--fs-lead); color: var(--color-heading); }
+  .search-page { padding-block: var(--space-3) var(--section-space); }
+  .search-page__form { max-width: 36rem; margin-bottom: var(--space-4); }
 
+  /* The heading says what was searched: a small label, then the words in the brand serif. */
+  .search-page__title {
+    display: grid;
+    gap: var(--space-1);
+    margin-bottom: var(--space-2);
+    font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+  .search-page__for {
+    font-family: var(--font-sans);
+    font-style: normal;
+    font-weight: 500;
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .search-page__q { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .search-page__empty { margin: calc(var(--space-2) * -1) 0 var(--space-5); color: var(--color-muted); }
+
+  /* Count left, Sort right, on one row at every size. */
   .search-page__bar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-3) var(--space-5);
-    margin-bottom: var(--space-6);
+    gap: var(--space-2) var(--space-4);
+    margin-bottom: var(--space-3);
   }
   .search-page__count { font-weight: 500; color: var(--color-heading); }
-  .search-page__crafts { flex-basis: 100%; }
-
   .search-sort { display: flex; align-items: center; gap: var(--space-2); }
-  .search-sort__label { font-size: .9375rem; color: var(--color-muted); }
-  .search-sort__select {
-    min-height: 44px;
-    padding: 0 42px 0 var(--space-4);
+  .search-sort__pill {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: var(--tap);
+    padding-left: var(--space-4);
     border: 1px solid color-mix(in srgb, var(--cocoa) 75%, transparent);
     border-radius: var(--radius-pill);
-    background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234E3A31' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6.5 9.5 5.5 5.5 5.5-5.5'/%3E%3C/svg%3E") no-repeat right 14px center / 18px;
+    background: var(--white);
+  }
+  .search-sort__pill:focus-within { outline: 2px solid var(--color-ink); outline-offset: 3px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--rose) 45%, transparent); }
+  .search-sort__label { font-size: .9375rem; color: var(--color-muted); white-space: nowrap; cursor: pointer; }
+  .search-sort__select {
+    min-height: calc(var(--tap) - 2px);
+    padding: 0 40px 0 6px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
     color: var(--color-heading);
-    font: inherit;
-    font-size: .9375rem;
+    font: 500 .9375rem var(--font-sans);
     -webkit-appearance: none;
     appearance: none;
     cursor: pointer;
   }
-  .search-sort__apply { min-height: 44px; padding-inline: var(--space-4); }
+  .search-sort__select:focus-visible { outline: none; box-shadow: none; }
+  .search-sort__chevron { position: absolute; right: 14px; width: 18px; height: 18px; color: var(--color-heading); pointer-events: none; }
+  .search-sort__apply { min-height: var(--tap); padding-inline: var(--space-4); }
 
-  .search-page__more { display: grid; justify-items: center; gap: var(--space-3); margin-top: var(--space-7); }
+  /* Craft chips: one swipe row on phones, wrapping from 768px. */
+  .search-page__crafts { margin-bottom: var(--space-5); }
+  .search-page__chips { display: flex; gap: var(--space-2); }
+  @media (max-width: 767px) {
+    .search-page__chips { overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding: 4px var(--gutter); }
+    .search-page__chips::-webkit-scrollbar { display: none; }
+  }
+  @media (min-width: 768px) { .search-page__chips { flex-wrap: wrap; } }
+  .search-page__chips .search-chip { min-height: 44px; }
+
+  /* Compact results: 2 across, 3 from 768px, 4 from 990px, 5 from 1280px. */
+  .search-page .search-page__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-3); }
+  @media (min-width: 768px) { .search-page .search-page__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6) var(--space-5); } }
+  @media (min-width: 990px) { .search-page .search-page__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 1280px) { .search-page .search-page__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+  .search-page__results { display: grid; gap: var(--space-7); transition: opacity var(--dur-state) ease; }
+  .search-page__results.is-busy { opacity: .6; }
+
+  .search-page__more { display: grid; justify-items: center; gap: var(--space-3); }
   .search-page__showing { font-size: .9375rem; color: var(--color-muted); }
 
-  .search-page__help { display: grid; gap: var(--space-4); margin-top: var(--space-8); }
+  .search-page__help { display: grid; gap: var(--space-3); }
+  .search-page__help-title { margin: 0; }
   .search-help { display: grid; border-top: 1px solid var(--color-line); }
   .search-help__link {
     display: flex;
@@ -213,6 +339,7 @@
   @media (min-width: 768px) {
     .search-help { grid-template-columns: 1fr 1fr; column-gap: var(--space-6); }
   }
+  @media (forced-colors: active) { .search-sort__pill { border-color: CanvasText; } }
 {% endstylesheet %}
 
 {% schema %}

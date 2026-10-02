@@ -700,6 +700,11 @@
   }
   .drawer__secondary .icon { width: 20px; height: 20px; }
   .drawer__sign { margin-top: auto; }
+
+  /* The search page has its own box (docs/search-results-plan.md §4.3): the header's pill steps back to the lens,
+     marked "you are here", at every width, so there's never a second box showing the same words. */
+  .template-search .site-header__search-form { display: none; }
+  .template-search .site-header__search:not([hidden]) { display: inline-grid; }
 {% endstylesheet %}
 
 {% schema %}

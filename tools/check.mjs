@@ -181,6 +181,32 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   record('Search results page, phone (axe)', v.length === 0, v.join(', ') || '0 violations');
   await browser.close();
 }
+// Results page (docs/search-results-plan.md): one search box (the header's pill steps back), the lens jumps to it,
+// sort works in place and is announced with focus kept, and no results still has a way on. Phone and desktop.
+for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
+  const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
+  const results = (q) => new globalThis.URL(`/search?q=${q}&options%5Bprefix%5D=last`, URL).href;
+  await page.goto(results('bouquet'), { waitUntil: 'load' });
+  await page.waitForTimeout(1000);
+  const boxes = await page.evaluate(() => [...document.querySelectorAll('form[role="search"]')].filter((f) => f.checkVisibility()).length);
+  await page.click('.site-header__search:not([hidden])');
+  await page.waitForTimeout(300);
+  const lens = await page.evaluate(() => ({ focus: document.activeElement?.id, panel: !!document.getElementById('SearchPanel')?.open }));
+  record(`Search page, ${label}: one box, the lens jumps to it`, boxes === 1 && lens.focus === 'SearchPageInput' && !lens.panel, `${boxes} visible box(es), focus: ${lens.focus}, panel open: ${lens.panel}`);
+  const sortable = await page.isVisible('#SearchSort');
+  if (sortable) {
+    await page.focus('#SearchSort');
+    await page.selectOption('#SearchSort', { index: 1 });
+    await page.waitForTimeout(1500);
+  }
+  const sorted = await page.evaluate(() => ({ url: location.search, focus: document.activeElement?.id, said: document.querySelector('[data-search-page-status]')?.textContent || '' }));
+  record(`Search page, ${label}: sort in place, said aloud`, !sortable || (/sort_by=/.test(sorted.url) && sorted.focus === 'SearchSort' && sorted.said.length > 0), sortable ? `focus: ${sorted.focus}, said: "${sorted.said}"` : 'skipped (fewer than 2 products)');
+  await page.goto(results('zzqx'), { waitUntil: 'load' });
+  await page.waitForTimeout(800);
+  const none = await page.evaluate(() => ({ h1: document.querySelector('h1')?.textContent.trim(), ways: document.querySelectorAll('.search-chip, .search-custom__btn, .product-row .card__link').length, tall: Math.round(document.querySelector('.search-page .search-start').getBoundingClientRect().bottom + scrollY) }));
+  record(`Search page, ${label}: no results has a way on`, /zzqx/.test(none.h1) && none.ways > 2 && errors.length === 0, `h1: "${none.h1}", ${none.ways} ways on, ends at ${none.tall}px${errors.length ? `, errors: ${errors[0]}` : ''}`);
+  await browser.close();
+}
 
 // 8. Cart (docs/cart-plan.md): add from a product page → pop-up → drawer; +, bin, Undo; Back closes the drawer;
 //    the stock limit says why; axe on the drawer and the page; the page works without JavaScript. Needs products:

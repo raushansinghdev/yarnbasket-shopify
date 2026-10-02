@@ -1,6 +1,31 @@
 # Search results page plan (`/search`)
 
-Status: **Plan (2026-10-02). Raushan chose four directions up front (§2); the smaller decisions in §13 wait for a go.**
+Status: **Built 2026-10-02.** Raushan approved all the recommendations (directions in §2, D5–D10 in §13).
+
+### As built (where it differs from the plan below)
+- **The page's box submits on Enter; it doesn't show suggestions as you type.** That would need the header pill's code in theme.js, which is at its budget. The page already shows full results, so a dropdown on top adds little. (§4.3 planned the dropdown.)
+- **The results-page script is its own file, `assets/search-page.js`** (2.0 KB gzipped), loaded only by the search page. Adding the chips, the lens jump and the spoken updates to search.js pushed it to 4.3 KB, over its 4 KB budget. search.js now keeps the panel, recent searches and remembering the page's search (3.1 KB gzipped).
+- **The heading block:** the box comes first (at the top, where people look to change a search), then "SEARCH RESULTS FOR" and the query as one h1, then the count and "Sort: Best match ▾" on one row. The first product starts about 260px down on a 360–390px phone (347px before) and about 275px on desktop.
+- **The custom-order row** is about 120px tall on phones, not 88. The title wraps to 2 lines and "Ask us" sits under it with a full 44px tap height. On desktop it's one 48px line.
+- **"More to love" and "Our makes" use `snippets/product-row`:** a swipe row (40% cards) below 990px, and 6 across from 990px.
+- **A pages-only search** (for example "contact") says "No products for “contact”", lists the page under Help & stories first, then the picks row.
+- **Long queries** are cut to 2 lines in the heading. The whole query is still read aloud.
+- **Not tested yet:**
+  - Craft chips: they need Search & Discovery → Filters → Product type (§11). The code is the earlier tested chip markup plus in-place swapping.
+  - Load more: it needs more than 36 results.
+  - Recent searches on the empty page: they're still panel only.
+- **Checks (2026-10-02):**
+  - theme check is clean
+  - axe reports 0 violations at phone and desktop sizes in every state: results, few, none, empty, one letter, pages-only. It's also clean at 320px wide (like 400% zoom).
+  - no sideways scroll at 320, 360, 768, 1100 and 1280px; columns are 2/3/4/5
+  - exactly one visible search box at every width
+  - the header lens and the phone menu's Search both jump to the page's box (the panel never opens on /search)
+  - sort works in place, focus stays on Sort, and it's announced ("Sorted by Price, low to high.")
+  - Tab order is box → clear → Sort → first card
+  - without JavaScript: Apply sorts, and the lens is a link
+  - forced colours keep every control visible
+  - the search panel on other pages still works
+  - `npm run check:quick` passes 48/49. The one fail is the home page's LCP on a cold local server (2,372ms). Repeated runs measure about 800ms with or without cart.js, so it isn't caused by this work.
 This plan covers the page you land on after a search, at every state:
 - results
 - few results

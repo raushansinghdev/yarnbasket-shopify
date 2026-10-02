@@ -1,0 +1,69 @@
+{%- doc -%}
+  One slim row of small product cards (docs/search-results-plan.md §7): "Bestsellers" / "Our makes" on a search
+  with no results and on the empty search page, and "More to love" under a short list of results.
+  Phones and tablets: the site's calm swipe row (about 2.5 cards in view). Desktop: 6 across, no scrolling.
+  Skips sold-out products and any product id listed in exclude. Renders nothing when there's nothing to show.
+
+  @param {string} title - Row heading (an h2 styled as the small uppercase label)
+  @param {string} id - Unique id for the heading
+  @param {object} [products] - Products to choose from, in order
+  @param {string} [exclude] - Product ids to leave out, as ",123,456," (commas around every id)
+  @param {number} [limit] - At most this many cards. Defaults to 6.
+  @param {boolean} [demo] - Show demo cards instead (Demo content on, no products in the store)
+
+  @example
+  {% render 'product-row', title: 'Bestsellers', id: 'SearchPicks', products: collections.bestsellers.products %}
+{%- enddoc -%}
+{%- liquid
+  assign max = limit | default: 6
+  assign shown = 0
+  assign row_sizes = '(min-width: 990px) 190px, (min-width: 768px) 28vw, 40vw'
+-%}
+{%- capture items -%}
+  {%- if demo -%}
+    {%- assign d_picks = '1,2,4,6,5,3' | split: ',' -%}
+    {%- for n in d_picks limit: max -%}
+      {%- assign d_n = n | plus: 0 -%}
+      {%- assign shown = shown | plus: 1 -%}
+      <li>{%- render 'product-card', product: blank, index: forloop.index0, demo: d_n, sizes: row_sizes, skip_bestseller: true, compact: true -%}</li>
+    {%- endfor -%}
+  {%- else -%}
+    {%- for product in products -%}
+      {%- if shown >= max -%}{%- break -%}{%- endif -%}
+      {%- assign key = product.id | prepend: ',' | append: ',' -%}
+      {%- if product.available == false or exclude contains key -%}{%- continue -%}{%- endif -%}
+      {%- assign shown = shown | plus: 1 -%}
+      <li>{%- render 'product-card', product: product, index: forloop.index0, sizes: row_sizes, skip_bestseller: true, compact: true -%}</li>
+    {%- endfor -%}
+  {%- endif -%}
+{%- endcapture -%}
+{%- if shown > 0 -%}
+  <section class="product-row" aria-labelledby="{{ id }}">
+    <h2 class="product-row__title eyebrow" id="{{ id }}">{{ title }}</h2>
+    <ul class="product-row__list scroller" role="list">
+      {{- items -}}
+    </ul>
+  </section>
+{%- endif -%}
+
+{% stylesheet %}
+  .product-row { display: grid; gap: var(--space-3); }
+  .product-row__title { margin: 0; }
+  .product-row__list { --scroller-item: 40%; --scroller-gap: var(--space-3); }
+  .product-row .card__title { font-size: .9375rem; }
+  @media (min-width: 768px) { .product-row__list { --scroller-item: 28%; } }
+  /* Desktop: everything fits, so it's a plain row: no scrolling, no edge fade. */
+  @media (min-width: 990px) {
+    .product-row__list {
+      display: grid;
+      grid-auto-flow: row;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: var(--space-5);
+      overflow: visible;
+      padding: 0;
+      margin: 0;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+{% endstylesheet %}

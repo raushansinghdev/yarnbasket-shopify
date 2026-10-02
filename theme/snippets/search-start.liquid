@@ -11,6 +11,10 @@
   @param {string} context - 'panel' or 'page'
   @param {string} [mode] - 'start' (default) or 'none' (nothing matched)
   @param {string} [terms] - What was searched, for the no-matches message
+  @param {string} [exclude] - Page only: product ids to leave out of the picks, as ",123,456,"
+
+  On the results page (docs/search-results-plan.md §6.1) the page's h1 says "No matches for …", so the title here is
+  left out; the picks are one slim row (snippets/product-row); the custom-order card is a slim row.
 {%- enddoc -%}
 {%- liquid
   assign none = false
@@ -53,7 +57,7 @@
 <div class="search-start search-start--{{ context }}">
   {%- if none -%}
     <div class="search-start__none">
-      <p class="search-start__none-title">{{ 'search.no_results' | t: terms: terms }}</p>
+      {%- if context == 'panel' -%}<p class="search-start__none-title">{{ 'search.no_results' | t: terms: terms }}</p>{%- endif -%}
       <p class="search-start__none-tip">{% if has_chips %}{{ 'search.no_results_tip' | t }}{% else %}{{ 'search.no_results_tip_plain' | t }}{% endif %}</p>
     </div>
   {%- elsif context == 'panel' -%}
@@ -116,7 +120,15 @@
     </div>
   {%- endif -%}
 
-  {%- if pick_count > 0 or demo -%}
+  {%- if context == 'page' -%}
+    {%- liquid
+      if pick_count > 0
+        render 'product-row', title: picks_label, id: 'SearchPicks', products: buyable, exclude: exclude
+      elsif demo
+        render 'product-row', title: picks_label, id: 'SearchPicks', demo: true
+      endif
+    -%}
+  {%- elsif pick_count > 0 or demo -%}
     <div class="search-start__group">
       <h2 class="search-start__title eyebrow">{{ picks_label }}</h2>
       <ul class="{% if context == 'panel' %}search-start__products{% else %}product-grid{% endif %}" role="list">
@@ -229,4 +241,28 @@
   .search-custom__body { font-size: .9375rem; color: var(--cocoa-deep); }
   .search-custom__btn { grid-column: 1 / -1; justify-self: start; position: relative; min-height: 48px; }
   @media (min-width: 768px) { .search-custom__btn { grid-column: 2; } }
+
+  /* Results page: the custom-order card as a slim row (the title says it all), on Soft blush. */
+  .search-start--page .search-custom {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--white);
+  }
+  .search-start--page .search-custom::before { inset: 5px; border-color: var(--color-line-strong); }
+  .search-start--page .search-custom > .icon { width: 32px; height: 32px; }
+  .search-start--page .search-custom__title { font-size: 1.125rem; }
+  .search-start--page .search-custom__body { display: none; }
+  .search-start--page .search-custom__btn { grid-column: 2; min-height: 44px; padding-inline: var(--space-4); font-size: .9375rem; }
+  @media (min-width: 768px) {
+    .search-start--page .search-custom { grid-template-columns: auto minmax(0, 1fr) auto; padding-block: var(--space-2); }
+    .search-start--page .search-custom__btn { grid-column: 3; }
+  }
+  .search-start--page { gap: var(--space-5); }
+  /* Phones: the chips are one swipe row instead of wrapping into several. */
+  @media (max-width: 767px) {
+    .search-start--page .search-start__chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding: 4px var(--gutter); }
+    .search-start--page .search-start__chips::-webkit-scrollbar { display: none; }
+  }
 {% endstylesheet %}

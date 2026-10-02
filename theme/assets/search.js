@@ -226,67 +226,8 @@ if (panel) {
   if (panel.open) run(field().value);
 }
 
-/* ---------- Results page: sort in place, "Load more" ---------- */
+/* ---------- Results page: remember the search (the rest is in search-page.js) ---------- */
 if (page) {
   const q = new URLSearchParams(location.search).get('q');
   if (q) remember(q);
-
-  const fetchSection = async (href) => {
-    const url = new URL(href, location.href);
-    url.searchParams.set('section_id', page.dataset.sectionId);
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return new DOMParser().parseFromString(await response.text(), 'text/html');
-  };
-  const transition = (update) => (document.startViewTransition && !reduceMotion.matches && !root.classList.contains('lite') ? document.startViewTransition(update) : update());
-
-  // Sorting swaps the results in place (no reload), so the Apply button is only for when this script isn't running.
-  page.querySelectorAll('[data-search-sort-apply]').forEach((button) => (button.hidden = true));
-  page.addEventListener('change', async (event) => {
-    const form = event.target.closest('[data-search-sort]');
-    if (!form) return;
-    const href = `${form.action}?${new URLSearchParams(new FormData(form))}`;
-    try {
-      const doc = await fetchSection(href);
-      const fresh = doc.querySelector('[data-search-page-results]');
-      const old = page.querySelector('[data-search-page-results]');
-      if (!fresh || !old) throw new Error('missing results');
-      transition(() => old.replaceWith(fresh));
-      history.replaceState(history.state, '', href);
-      fadeIn(fresh);
-      window.ybArrive?.(fresh);
-    } catch {
-      location.assign(href);
-    }
-  });
-
-  page.addEventListener('click', async (event) => {
-    const more = event.target.closest('[data-load-more]');
-    if (!more || event.metaKey || event.ctrlKey || event.shiftKey) return;
-    event.preventDefault();
-    if (more.getAttribute('aria-disabled') === 'true') return;
-    more.setAttribute('aria-disabled', 'true');
-    try {
-      const doc = await fetchSection(more.href);
-      const results = page.querySelector('[data-search-page-results]');
-      const box = more.closest('[data-search-more]');
-      const added = [...doc.querySelectorAll('[data-search-grid] > li')];
-      const grid = page.querySelector('[data-search-grid]');
-      if (grid) grid.append(...added);
-      else if (added.length) box.before(doc.querySelector('[data-search-grid]'));
-      const help = [...doc.querySelectorAll('[data-search-help] > li')];
-      const list = page.querySelector('[data-search-help]');
-      if (list) list.append(...help);
-      else if (help.length) results.append(doc.querySelector('.search-page__help'));
-      const nextBox = doc.querySelector('[data-search-more]');
-      if (nextBox) box.replaceWith(nextBox);
-      else box.remove();
-      fadeIn(results);
-      window.ybArrive?.(results);
-      // Keyboard and screen-reader users land on the first new product.
-      (added[0] || help[0])?.querySelector('a')?.focus();
-    } catch {
-      location.assign(more.href);
-    }
-  });
 }

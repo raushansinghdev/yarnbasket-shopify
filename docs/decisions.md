@@ -14,7 +14,7 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   - a 2-across grid on phones
   - suggestions as one slim row
   - one search box on `/search` (the page's own; the header pill steps back to the lens)
-- D5–D10 wait for a go.
+- D5–D10 approved as recommended (2026-10-02): More to love for 1–4 results; no word highlighting; 5/4/3/2 columns; compact cards on collection pages too (Phase 3); the lens jumps to the page box; "Best match" instead of "Relevance".
 
 ## 2026-10-02 (cart)
 
