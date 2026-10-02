@@ -3,6 +3,12 @@
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
 
+## 2026-10-02 (header logo)
+
+- **Phones and tablets (under 1100px) show the name only, centred, at about 27–28px.** Raushan found the small basket beside the bold name uneven. In the brand kit the basket is about twice the name's cap height, so at 34px beside a 24px name it read as a thin doodle and pulled the name off-centre to the eye. Four options were mocked on the real header. Name-only won: calmest, readable, and a new brand is remembered by its name.
+- **Desktop shows the basket at 44px with the name at 26px**, the brand kit's horizontal-logo proportions.
+- **The basket stays in the menu drawer, footer, logo intro, favicon and the "All" circle.** The logo link reads "Yarn Basket, home" to screen readers.
+
 ## 2026-10-02 (home page shop section, docs/home-shop-plan.md)
 
 - **"Shop by craft" and "Bestsellers" are merged into one section** (`shop-crafts`). The craft circles are toggle buttons that switch the product grid below them, like opening an Instagram highlight. On phones, products show 185px sooner. The home page has one section fewer, and it no longer repeats the header's Shop menu. Every craft's "See all" link stays in the HTML for SEO.
