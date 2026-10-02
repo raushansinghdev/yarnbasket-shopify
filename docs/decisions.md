@@ -15,6 +15,15 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **Blush hero still works:** with the Background setting on Blush, the old behaviour returns (header tinted to match, a text link on phones, a dark pill on desktop), because a Blush pill would vanish on Blush.
 - **Checks:** full `npm run check` 88/88. Section 10 now expects the pill on a light hero and the link on a Blush one.
 
+## 2026-10-02 (home media, docs/home-media-plan.md; plan only)
+
+- **The "Made by hand" video autoplays on phones too** (Raushan): muted, inline, looping, only while at least half of it is on screen, and paused off screen.
+  - Loading starts only when the section is near, with a 720p copy on phones.
+  - It never autoplays with reduced motion, lite mode, data saver or Low Power Mode.
+  - The pause button stays.
+  - This is a deliberate exception to motion-plan §8 for this one clip. Every other "no autoplay on phones" rule stands, including the hero, which stays swipe-only.
+- **Hero photos are square on phones and desktop** (Raushan): no cropping of the square product photos, and a shorter hero on both. A campaign's desktop photo is square too.
+
 ## 2026-10-02 (announcement wording)
 
 - **The announcement bar says "Free shipping over ₹999 · Partial COD available"**, Raushan's exact words. It's a message block in `header-group.json`, so it overrides the line built from settings until it's removed. It's one line from 360px; at 320px it splits into two lines at the dot.

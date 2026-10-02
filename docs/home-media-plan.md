@@ -2,6 +2,10 @@
 
 Status: **proposed 2026-10-02, plan only.** Raushan approved the direction in chat (the recommended options): square hero photos every day, a dated campaign mode built now, video in "Made by hand", and trying "Made by hand" right after Bestsellers. This document turns that into a buildable spec. **Nothing is built until Raushan reviews this plan and says go.**
 
+**Revised after review (2026-10-02):**
+- **M4:** the video **autoplays on phones too** when it's in view, with guards (§4). This is a deliberate exception to motion-plan §8.
+- **M6:** the hero is **square on desktop as well**, so a campaign's desktop photo is square too.
+
 It builds on:
 - `home-hero-plan.md`: the peek row, the H1 rules, the Soft blush hero (v3)
 - `motion-plan.md`: §6 budgets, §3.7 lite mode, §8 "what we will not do"
@@ -44,10 +48,10 @@ On phones and tablets (below 990px), the swipe-row photos go from **4:5 to 1:1**
 | Row height | ~254px | ~203px (**−51px**) |
 | "Loved most / Bestsellers" | starts ~644px down (decisions.md, 390 × 844) | about 50px higher. Measured before/after at 360 and 390 when built |
 
-### Desktop (990px and up)
-**Unchanged:** the two columns with the framed 4:5 cross-fade. Desktop has room, and the frame is balanced against the heading.
-
-Small call while building: try a square frame on desktop and show Raushan both. Only change it if it looks better.
+### Desktop (990px and up): square too (M6, Raushan)
+- The two columns, the Rose frame and the slow cross-fade stay. Only the frame's shape changes, from **4:5 to 1:1**, so the photos are uncropped everywhere and phone and desktop look like one brand.
+- The frame gets about 20% shorter. For example, at 1280 × 800 the photo column goes from about 590 × 740 to about 590 × 590, so more of the hero fits on a laptop screen.
+- While building: check the heading column still lines up with the shorter photo (screenshots at 1100, 1280 and 1440). If the text side looks top-heavy, align both columns to the centre.
 
 ### Photo guidance (theme editor info text)
 - "Square, at least 1200px. One product, centred, with space around it; the label sits along the bottom."
@@ -82,8 +86,8 @@ The campaign card is **4:3 and exactly as tall as the square photos**, so it's s
 - The row height doesn't change during a campaign: **0px added**.
 
 ### Desktop
-- The campaign is the first slide inside the existing frame, so it needs a **portrait 4:5 image** to fit it.
-- **Correction from chat:** I said "desktop 16:9" there. A 16:9 image doesn't fit the hero's photo frame, so the desktop image is 4:5.
+- The campaign is the first slide inside the (now square) frame, so it needs a **square 1:1 image**.
+- **Correction from chat:** I said "desktop 16:9" there. A 16:9 image doesn't fit the hero's photo frame.
 - If no desktop image is given, the phone image is shown whole (`contain`) on a Soft blush mat inside the frame, never cropped.
 
 ### Text is real text, never baked into the photo
@@ -96,7 +100,7 @@ The campaign card is **4:3 and exactly as tall as the square photos**, so it's s
 | Setting | Type | Notes |
 |---|---|---|
 | Phone photo | image | **4:3 landscape**, at least 1600px wide; "no text in the photo; keep the bottom-left clear for the label" |
-| Desktop photo | image | **4:5 portrait**, at least 1200px wide; optional (see fallback) |
+| Desktop photo | image | **1:1 square**, at least 1200px wide; optional (see fallback) |
 | Label on the photo | text | about 30 characters, for example "Diwali gifts · Order by 26 Oct" |
 | Link | url | usually a collection |
 | Button label | text | optional; replaces the hero button while live |
@@ -121,9 +125,9 @@ The campaign card is **4:3 and exactly as tall as the square photos**, so it's s
 
 | Situation | Behaviour |
 |---|---|
-| **Phone** | **A still frame (poster) with a round play button.** Nothing downloads until it's tapped. It then plays inline, muted, looping, with a pause button. **This follows motion-plan §8: no autoplay anywhere on phones** |
-| **Desktop** | Plays muted and looping **only while at least half of it is on screen**, and pauses when scrolled away. It starts loading only when it comes near (`preload="none"` until then) |
+| **Phone and desktop** (M4, Raushan) | Plays **muted, inline and looping only while at least half of it is on screen**, and pauses when scrolled away. Until then it's `preload="none"`, and loading starts when the section is within about one screen. Phones get the 720p copy (about 1–2 MB for 15s), desktop up to 1080p. **This is a deliberate exception to motion-plan §8** ("no autoplay on phones"), approved by Raushan for this one clip, with every guard below |
 | Reduced motion, lite mode or data saver | Never plays by itself; poster plus play button, on every device |
+| iPhone in Low Power Mode, or autoplay refused by the browser | `play()` is refused; the poster and play button show instead, with no error and no retry loop |
 | Any loop over 5s | A visible pause/play button (WCAG 2.2.2), 48px, keyboard reachable, and it says what it does ("Pause video" / "Play video") |
 | Sound | Never; no audio track is needed |
 
@@ -136,7 +140,7 @@ The campaign card is **4:3 and exactly as tall as the square photos**, so it's s
 ### Weight and speed
 - The section is below the first screen, so it can't affect LCP.
 - The poster is a normal lazy image, about 60–90 KB on phones.
-- The video itself costs nothing until it's played (phones) or about to come on screen (desktop).
+- The video itself costs nothing until the section is about to come on screen, and nothing at all in data saver or lite mode.
 - Upload guide: 1080p at most, 10–20 seconds. Shopify re-encodes it, and a typical clip ends up about 2–4 MB.
 - **JavaScript:** a small `assets/story-video.js` (target ≤ 2 KB), loaded only when a video is set. `theme.js` is at 24.9 of 25 KB, so nothing goes there.
 
@@ -174,9 +178,9 @@ The campaign card is **4:3 and exactly as tall as the square photos**, so it's s
 | M1 | Hero photos square on phones and tablets | **Approved** |
 | M2 | Campaign mode, built now | **Approved** |
 | M3 | Video in "Made by hand", moved to after Bestsellers | **Approved** (judge the move on the phone) |
-| M4 | Video on phones: (a) tap to play, as motion-plan §8 says (b) an exception: autoplay muted when in view | **(a) recommended.** It keeps the rule you approved and spends no data until wanted. Desktop plays in view either way |
+| M4 | Video on phones: (a) tap to play, as motion-plan §8 says (b) an exception: autoplay muted when in view | **Raushan chose (b)**, with the guards in §4. motion-plan §8 gets a line noting the exception |
 | M5 | Campaign on phones: (a) the first card in the row, same height (b) a full-width banner above the row | **(a) recommended.** No extra height, and products stay on the first screen |
-| M6 | Desktop hero frame: (a) keep 4:5 (b) square like phones | **(a), unless the side-by-side screenshots say otherwise.** I'll show both |
+| M6 | Desktop hero frame: (a) keep 4:5 (b) square like phones | **Raushan chose (b): square everywhere** |
 
 ---
 
@@ -184,9 +188,9 @@ The campaign card is **4:3 and exactly as tall as the square photos**, so it's s
 
 | Stage | What | Files | Done when |
 |---|---|---|---|
-| A | Square hero photos | `sections/hero.liquid` (phone/tablet CSS, editor info text) | Before/after screenshots at 360 and 390; "Loved most" position measured; LCP and slow frames unchanged |
+| A | Square hero photos, phone and desktop | `sections/hero.liquid` (CSS, editor info text) | Before/after screenshots at 360, 390, 1280 and 1440; "Loved most" position measured; LCP and slow frames unchanged |
 | B | Campaign block | `sections/hero.liquid` (block, dates, slide 1, label, button switch, desktop fallback), `locales/en.default.json` | Tested with a live, an expired, a future-dated and a missing-desktop-photo campaign at 360/390/768/1280; axe 0; LCP ≤ 2.0s with a campaign live |
-| C | Video in "Made by hand" | `sections/story.liquid`, new `assets/story-video.js`, locales | Phone: nothing downloads before the tap, then play/pause works. Desktop: plays only in view. Reduced motion and lite never autoplay. axe 0 |
+| C | Video in "Made by hand" | `sections/story.liquid`, new `assets/story-video.js`, locales; one line in `docs/motion-plan.md` §8 (agreed with session 7f, its author) | Phone and desktop: nothing downloads before the section is near, it plays only in view, pauses off screen, and the pause button works. Reduced motion, lite and a refused autoplay show the poster plus play. Slow frames during the scroll stay at 0. axe 0 |
 | D | Order change | `templates/index.json` | Raushan judges it on his phone |
 | E | Checks | `tools/check.mjs`: a new section 12 "Home media", plus §10's hero measurements updated **with session 79** (it owns §10) | Full `npm run check` passes |
 
