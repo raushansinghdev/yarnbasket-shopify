@@ -7,6 +7,15 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 
 - **The menu sits beside the logo, and the header is 64px tall.** Raushan felt the bar was too wide. Measured at 1470px, the centred menu left about 167px of empty space on each side, so the logo, menu and tools read as three islands. Of the mocked options, he chose B: menu beside the logo, tools on the right, and from 1280px a wider search field (up to 360px) where the menu used to float. Search is a main way into a shop with many small products. The phone header is unchanged.
 
+## 2026-10-02 (search results page)
+
+- **Search results page directions** (docs/search-results-plan.md §2; Raushan chose the recommended option for all four):
+  - compact, easy-read result cards: square photo, Jost name
+  - a 2-across grid on phones
+  - suggestions as one slim row
+  - one search box on `/search` (the page's own; the header pill steps back to the lens)
+- D5–D10 wait for a go.
+
 ## 2026-10-02 (cart)
 
 - **Cart: a drawer plus the `/cart` page, built from the same snippets** (docs/cart-plan.md). Raushan approved D1 and D3–D9 as recommended:
