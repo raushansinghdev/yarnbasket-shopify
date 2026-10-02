@@ -10,8 +10,20 @@
     },
     "announcement": {
       "type": "announcement-bar",
-      "blocks": {},
-      "block_order": [],
+      "blocks": {
+        "offer": {
+          "type": "message",
+          "settings": {
+            "text": "Free shipping over ₹999 · Partial COD available",
+            "icon": "truck",
+            "link": "",
+            "show_until": ""
+          }
+        }
+      },
+      "block_order": [
+        "offer"
+      ],
       "settings": {
         "terms": true
       }

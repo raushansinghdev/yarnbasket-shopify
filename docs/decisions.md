@@ -2,6 +2,11 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-02 (announcement wording)
+
+- **The announcement bar says "Free shipping over ₹999 · Partial COD available"**, Raushan's exact words. It's a message block in `header-group.json`, so it overrides the line built from settings until it's removed. It's one line from 360px; at 320px it splits into two lines at the dot.
+- **Before this theme goes live:** checkout has to match it. The store's only shipping rate is still ₹379, and partial COD needs the payment gateway (launch-checklist "Offers"). After that, either keep this block, or remove it and let the line build itself from Theme settings.
+
 ## 2026-10-02 (offers: announcement bar and cart rewards, docs/offers-plan.md; built)
 
 - **Raushan approved O1–O10 as recommended** ("go ahead with your recommended options").
