@@ -4,7 +4,7 @@ Status: **Stages 1–3 built 2026-10-02.** Raushan approved the recommendations 
 
 ### As built (where it differs from the plan below)
 - **The desktop layout starts at 1100px, not 990.** Five menu items at 14px don't fit beside the logo and tools below that. Between 768 and 1099px the header uses the phone layout.
-- **The desktop header is 72px and doesn't shrink.** Shrinking a sticky header changes its layout height, and the page jumps under it. A steady height is calmer.
+- **The desktop header is 64px (was 72px) and doesn't shrink. The menu sits beside the logo (2026-10-02, Raushan).** With the menu centred, the bar split into three islands with about 167px gaps at 1470px (logo | menu | tools). Now it reads as two groups: where to go on the left, tools on the right. From 1280px the search field fills the space, at clamp(260px, 24vw, 360px) instead of 240px. The height is now one value (`--header-height: 64px`) at every size; a shrinking sticky header still makes the page jump, so it stays steady.
 - **Search is a real `<form action="/search">` field, not a button that looks like a field.** It shows at 768–1099px and from 1280px up. At 1100–1279px it's a 28px icon link. Typing and pressing Enter works with no JavaScript. It sends `options[prefix]=last`, so "bouq" finds "bouquet". Stage 4 adds results as you type on top of this.
 - **The tablet header** (768–1099px) shows the search field and an icon-only cart. With the word "Cart" too, the logo can't stay centred.
 - **The phone drawer scrolls on a 390 × 844 screen.** The craft tiles are 4:3 and come first, and Account / WhatsApp / Instagram sit below them. Seeing the products first mattered more than fitting everything on one screen.
