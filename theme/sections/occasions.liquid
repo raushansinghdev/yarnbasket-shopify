@@ -8,7 +8,7 @@
     {%- if s.text != blank -%}<p class="section-head__sub muted">{{ s.text }}</p>{%- endif -%}
   </div>
 
-  <ul class="occasions__list scroller" role="list" data-arrive="stagger glide">
+  <ul class="occasions__list scroller" role="list">
     {%- for block in section.blocks -%}
       <li style="--i: {{ forloop.index0 | modulo: 6 }}" {{ block.shopify_attributes }}>
         <a class="chip" href="{{ block.settings.link | default: routes.collections_url }}">

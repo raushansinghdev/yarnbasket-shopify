@@ -185,23 +185,8 @@
   .shop__head .section-head { margin-bottom: 0; }
 
   /* The craft circles: a swipe row on phones, one line beside the heading on desktop. */
-  /* The circle row stays still and calm: no grow-as-it-slides (the shared swipe-row effect made the rings wobble),
-     a soft snap that settles near a circle instead of jerking to one, and no glide-in on arrival. "There's more"
-     is said by a quiet fade on whichever side has more to scroll to (theme.js sets .can-left / .can-right), so the
-     first and last circles, and their focus rings, are never dimmed once you reach them. */
-  .shop__crafts {
-    --scroller-item: 80px;
-    --scroller-gap: var(--space-3);
-    padding-block: 6px var(--space-2);
-    scroll-snap-type: x proximity;
-    --fade-l: 0px;
-    --fade-r: 0px;
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
-    mask-image: linear-gradient(90deg, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
-  }
-  .shop__crafts.can-left { --fade-l: 36px; }
-  .shop__crafts.can-right { --fade-r: 36px; }
-  .shop .shop__crafts > * > :first-child { animation: none; }
+  /* A calm swipe row like every other (base.css .scroller): still under the finger, soft snap, edge fade. */
+  .shop__crafts { --scroller-item: 80px; --scroller-gap: var(--space-3); }
   .shop__craft {
     display: grid;
     justify-items: center;
@@ -282,8 +267,6 @@
   @media (min-width: 990px) {
     .shop__head { grid-template-columns: auto 1fr; align-items: end; column-gap: var(--space-7); }
     .shop__crafts {
-      -webkit-mask-image: none;
-      mask-image: none;
       grid-auto-flow: column;
       grid-auto-columns: 96px;
       justify-content: end;

@@ -263,23 +263,37 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
   .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-8) var(--space-6); }
 }
 
-/* Horizontal swipe rows on mobile */
+/* Horizontal swipe rows on mobile. They stay still and calm under the finger: nothing scales, slides or pops in
+   while you swipe, and the snap is soft (it settles near an item instead of jerking to one). "There's more this way"
+   is a quiet fade on whichever side has more to scroll to: theme.js sets .can-left / .can-right only while the row
+   actually overflows, so the first and last items are never dimmed once you reach them, and rows that fit never fade.
+   The row has room above and below so focus rings aren't cut off, and its own focus ring is drawn inside it. */
 .scroller {
+  --fade-l: 0px;
+  --fade-r: 0px;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: var(--scroller-item, 72%);
   gap: var(--scroller-gap, var(--space-4));
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
+  scroll-snap-type: x proximity;
   scroll-padding-inline: var(--gutter);
   padding-inline: var(--gutter);
   margin-inline: calc(var(--gutter) * -1);
-  padding-bottom: var(--space-2);
+  padding-block: 10px;
+  margin-top: -10px;
   scrollbar-width: none;
 }
 .scroller::-webkit-scrollbar { display: none; }
 .scroller > * { scroll-snap-align: start; min-width: 0; }
+.scroller.can-left { --fade-l: 36px; }
+.scroller.can-right { --fade-r: 36px; }
+.scroller:is(.can-left, .can-right) {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+}
+.scroller:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 5px color-mix(in srgb, var(--rose) 45%, transparent); }
 
 /* ---------- Buttons and links ---------- */
 .btn {
@@ -460,7 +474,6 @@ img.img-in { animation: img-in 700ms var(--ease-out); }
      data-arrive               the block rises in
      data-arrive="lines"       its children arrive in turn; an h2 inside rises like ink lifting off the page
      data-arrive="stagger"     its children arrive one after another (theme.js sets --i; a swipe row arrives as a whole)
-     data-arrive="stagger glide"  …gliding in from the side, for rows that swipe
      data-arrive="settle"      the block's photos settle from slightly smaller (photos in stagger items do this too)
    Section-specific touches (the craft ring, promise icons, footer rule) live in their own sections.
    Fill mode "backwards": the start state holds during the stagger delay, then the animation lets go, so hover
@@ -480,9 +493,6 @@ img.img-in { animation: img-in 700ms var(--ease-out); }
   [data-arrive~="lines"].is-arriving > :nth-child(n + 5) { animation-delay: calc(var(--stagger) * 4); }
   [data-arrive~="lines"].is-arriving > h2 { animation-name: arrive-ink; animation-duration: var(--dur-hero); }
 
-  [data-arrive~="glide"] > .is-pending { transform: translateX(28px); }
-  [data-arrive~="glide"] > .is-arriving { animation-name: arrive-x; }
-
   [data-arrive~="settle"].is-arriving .media,
   [data-arrive~="stagger"] > .is-arriving .media { animation: settle 1000ms var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
 
@@ -493,7 +503,6 @@ img.img-in { animation: img-in 700ms var(--ease-out); }
   .review__stars.is-arriving .review__star { animation: star-in 520ms var(--ease-out) calc(200ms + var(--s, 0) * 90ms + var(--i, 0) * 120ms) backwards; }
 }
 @keyframes arrive { from { opacity: 0; transform: translateY(var(--rise)); } }
-@keyframes arrive-x { from { opacity: 0; transform: translateX(28px); } }
 /* Italic serif overhangs its box, so the mask is generous on every side except the one it rises from. */
 @keyframes arrive-ink {
   from { opacity: 0; transform: translateY(.5em); clip-path: inset(-20% -10% 100% -10%); }
@@ -502,19 +511,6 @@ img.img-in { animation: img-in 700ms var(--ease-out); }
 @keyframes settle { from { opacity: 0; scale: .94; } }
 @keyframes stitch-in { from { stroke-dasharray: 0 13; } }
 
-/* Swipe rows on phones: cards grow from slightly smaller as they slide into the row (scale only, so text keeps
-   its contrast), so the half-visible card at the edge reads as "there's more this way". This one is tied to the
-   finger on purpose: it follows a touch swipe, which is continuous. */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .scroller > * > :first-child {
-      animation: row-in linear both;
-      animation-timeline: view(inline);
-      animation-range: entry 0% entry 100%;
-    }
-  }
-}
-@keyframes row-in { from { scale: .94; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

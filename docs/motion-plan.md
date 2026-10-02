@@ -39,7 +39,7 @@ search, content pages, 404), so new pages inherit the feel instead of each being
 | Navigation | Speculation Rules prerender on hover (moderate); cross-document View Transitions, 260ms cross-fade; header keeps its place |
 | LCP | Hero photo, ~0.9s on a 4x-throttled phone (local dev; real numbers come after publish) |
 | Scroll | 0 slow frames, desktop and phone, 4x CPU throttle; no layout shifts while scrolling |
-| Arrivals | Time-based on arrival (IntersectionObserver + CSS): lines in turn, ink-rise headings, photos settle, chips glide, icons pop, stitches sew, stars pop |
+| Arrivals | Time-based on arrival (IntersectionObserver + CSS): lines in turn, ink-rise headings, photos settle, icons pop, stitches sew, stars pop. Swipe rows don't animate (below) |
 | Accessibility | axe 0 on phone and desktop; reduced motion static |
 | Pages not designed yet | Product, collection, cart, search, content, 404 (Skeleton starters) |
 
@@ -82,10 +82,17 @@ Replace the hard-coded selector lists with attributes any section can use:
 <div data-arrive>                  <!-- block rises in -->
 <div data-arrive="lines">          <!-- children arrive in turn; an h2 inside gets the ink rise -->
 <ul data-arrive="stagger">         <!-- items stagger by index (no more hand-written --i) -->
-<ul data-arrive="stagger glide">   <!-- items glide in from the side (for rows) -->
 <figure data-arrive="settle">      <!-- photo settles from 94% -->
 ```
 
+- **Swipe rows (`.scroller`) are calm (Raushan, 2026-10-02: the old ones were jittery and pulled the eye):**
+  - nothing in a row scales, slides or pops while you swipe; the grow-as-it-slides effect and the `glide` arrival were removed
+  - the snap is `proximity`, not `mandatory`
+  - stars on cards inside a row just show
+  - a row's lazy photos start loading when the row is within 600px, so none pops in mid-swipe
+  - "there's more" is a 36px edge fade on whichever side has more to scroll to (`.can-left` / `.can-right`, set by theme.js only while the row overflows)
+  - the row has 10px room top and bottom for focus rings, and its own focus ring is drawn inside it
+  - choice rows (craft circles, occasion chips) have no arrival animation; content rows (reviews) still rise in as a whole
 - `theme.js` sets `--i` automatically and handles swipe rows as a whole. It also re-scans when Shopify re-renders a
   section (theme editor, `shopify:section:load`) and when content is injected (filters, load more, cart).
 - Same behaviour as today (below-the-fold only, plays once, `backwards` fill so hovers keep working).
