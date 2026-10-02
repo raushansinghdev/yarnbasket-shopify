@@ -214,10 +214,10 @@
   "order": [
     "hero",
     "shop",
-    "story",
     "occasions",
-    "reviews",
     "promise",
+    "reviews",
+    "story",
     "faq",
     "newsletter"
   ]
