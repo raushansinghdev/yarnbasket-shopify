@@ -212,13 +212,18 @@
     {%- assign i = item_count -%}
     <ul class="drawer__secondary" role="list">
       {%- comment -%}
-        You first (docs/account-plan.md §4.2): a two-line row that opens the account sheet (saved.js), or goes to the
-        account without JavaScript. Then Saved items, with its count.
+        You first (docs/account-plan.md §4.2): a two-line row. Signed out it opens Shopify's sign-in sheet (saved.js), or
+        goes to the account without JavaScript. Signed in it goes to the account page (account-hub-plan.md §5.3): a
+        whole page is easier on a phone than a menu over the drawer. Then Saved items, with its count.
       {%- endcomment -%}
       {%- if shop.customer_accounts_enabled -%}
         {%- assign i = i | plus: 1 -%}
         <li style="--i: {{ i }}">
-          <a href="{{ routes.account_url }}" class="drawer__account" data-account-open>
+          {%- assign account_page = pages['account'].url -%}
+          <a
+            {% if customer %}href="{{ account_page | default: routes.account_url }}"{% if account_page and request.path == account_page %} aria-current="page"{% endif %}{% else %}href="{{ routes.account_url }}" data-account-open{% endif %}
+            class="drawer__account"
+          >
             {%- if customer -%}
               {%- assign who = customer.first_name | default: customer.email | strip -%}
               <span class="drawer__avatar" aria-hidden="true">{{ who | slice: 0 | upcase }}</span>

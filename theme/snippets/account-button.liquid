@@ -13,7 +13,30 @@
     replaces it (a full page load, so nothing jumps). The fallback link is the same pill, so nothing moves when the
     component arrives.
   The colours, fonts and corners below are the component's own CSS variables; its layout and wording are Shopify's.
+  Signed in, our own menu replaces it (snippets/account-menu, docs/account-hub-plan.md §5): Shopify's sheet has no
+  Sign out, icons or counts. So Shopify's sheet is only ever the sign-in sheet.
 {%- enddoc -%}
+{%- liquid
+  # The account-demo page shows the signed-in menu too, with its made-up shopper, so it can be judged.
+  assign demo_menu = false
+  if customer == blank and settings.demo_content and template.suffix == 'account-demo'
+    assign demo_menu = true
+  endif
+-%}
+{%- if customer or demo_menu -%}
+  {%- liquid
+    assign account_page = pages['account'].url
+    assign account_url = account_page | default: routes.account_url
+    if account_page
+      assign details_url = account_page | append: '#details'
+      assign help_url = account_page | append: '#help'
+    else
+      assign details_url = routes.account_addresses_url
+      assign help_url = pages['track-order'].url | default: '/pages/contact'
+    endif
+  -%}
+  {%- render 'account-menu', account_url: account_url, saved_url: pages['saved'].url, details_url: details_url, help_url: help_url, demo: demo_menu -%}
+{%- else -%}
 {%- comment -%} The menu is used once it exists in the admin; until then Shopify shows Orders and Profile (and logs a warning). {%- endcomment -%}
 <shopify-account class="account-btn" {% if linklists['customer-account-main-menu'].links.size > 0 %}menu="customer-account-main-menu"{% endif %} data-account>
   <span slot="signed-out-avatar" class="account-btn__glyph">
@@ -27,6 +50,7 @@
   <span class="visually-hidden">{{ 'header.account' | t }}</span>
   <span class="account-btn__word" aria-hidden="true">{{ 'header.account' | t }}</span>
 </a>
+{%- endif -%}
 
 {% stylesheet %}
   .account-btn {
@@ -35,7 +59,16 @@
     --shopify-account-color-background: var(--white);
     --shopify-account-color-text: var(--cocoa-deep);
     --shopify-account-color-text-subdued: var(--taupe-ink);
-    --shopify-account-color-border: var(--color-line-strong);
+    /* One white surface, Cocoa text throughout (the menu box's text fell back to black), a softer shadow. The border
+       also draws the email field's edge, so it stays strong enough to see (3:1 on white). */
+    --shopify-account-color-border: #A08A80;
+    --shopify-account-color-card-background: var(--white);
+    --shopify-account-color-card-text: var(--cocoa-deep);
+    --shopify-account-color-background-subdued: var(--blush-soft);
+    --shopify-account-color-control-background: var(--white);
+    --shopify-account-color-control-text: var(--cocoa-deep);
+    --shopify-account-color-shadow: rgb(78 58 49 / .22);
+    --shopify-account-radius-dialog: var(--radius-lg);
     --shopify-account-font-body: var(--font-sans);
     --shopify-account-font-heading: var(--font-sans);
     --shopify-account-font-heading-weight: 500;

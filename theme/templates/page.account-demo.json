@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "main": {
+      "type": "account",
+      "settings": {
+        "demo": true
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

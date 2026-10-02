@@ -1,6 +1,34 @@
 # Account plan, round 2: the account page, the account menu, signing out
 
-Status: **Approved 2026-10-02. Waiting for Raushan's go to start B0 / G0.** Nothing is built yet.
+Status: **B1–B3 and B5 built 2026-10-03** (theme side). Still to do: things that need a real sign-in (B0, below), the Google setup (§7, G0, with Raushan), Shopify's branding (§8, admin), and the admin steps in `launch-checklist.md` "Account page".
+
+### As built (where it differs from the plan below)
+- **Preview without signing in:** `/pages/contact?view=account-demo` shows the signed-in page and header menu with a made-up shopper and three orders (Confirmed, Shipped with Track parcel, an older one with Buy again). This needs Demo content on, and it's deleted before launch. `?view=account` is the real page; once Raushan creates the `account` page, it's `/pages/account`.
+- **Signed-in header menu** (`snippets/account-menu`):
+  - a native popover anchored under the button (CSS anchor positioning; other browsers put it under the header's right edge)
+  - focus stays on the button when it opens, and Tab goes straight into the list; Esc and click-away close it and return focus
+  - rows: Orders (with "#1050 · Confirmed" from the latest order), Saved (count), Your details, Help, Sign out, then "Your account ›"
+- **Signed out,** Shopify's sheet is restyled: Cocoa text everywhere (the menu text was black), one white surface, a softer shadow, larger corners. The border is `#A08A80` (3.26:1 on white), because the same variable draws the email field's edge.
+- **Sign out** goes to `/account/logout?return_url=<this page>`. Shopify honours `return_url` (checked signed out, 2026-10-03; check it once signed in). saved.js clears Recently viewed on the click, and the next page shows "You're signed out" once, adding "Your saved items stay on this device" plus "View saved" when there are any.
+- **Order card changes:**
+  - **"Details ›" sits at the card's top right,** not under the buttons. On phones the two buttons share the row equally, so every card lines up the same way.
+  - **States are the ones Liquid can see:** Confirmed ("We're getting it ready"), Confirmed · pay on delivery, Shipped, Partly shipped, Cancelled, Refunded. No Packed or Delivered, since Liquid has no delivery status. The second line says "Shipped 1 Oct · Delhivery".
+  - **Track parcel only for 14 days after shipping;** after that the card offers Buy again.
+- **Buy again** is a real form (`items[][id]`, `items[][quantity]`). Without JavaScript it adds and goes to the cart (checked). With it, account-page.js adds through cart.js's queue and the card says "Added 2 pieces to your cart. 1 piece is sold out, so it was left out. View cart". It skips the free gift and draft-order lines.
+- **Your details:** one "Edit your details ›" button (Shopify's Profile, through `/account/addresses`), not an Edit link per row, since every row goes to the same place. The phone number isn't masked: it's the shopper's own page.
+- **"Download or delete my data"** is a `mailto:` to the store email, with the subject and request written out.
+- **Help panel:**
+  - **Without a WhatsApp number** (as today), it shows "Contact us" and "Ask for a custom piece" (contact page). With the number, both open WhatsApp.
+  - **Links:** Track your order, the Shipping and Refund policies once they exist, and Contact.
+- **Page order:** Recently viewed follows Saved in the main column (phones: orders → saved → recently viewed → details → help → sign out).
+- **Signed out on desktop,** the page is one column (a sign-in card, then help), because two columns left one side empty.
+- **Found while building:** the logo intro played on any page, including Saved, Track and the account page. It's now skipped on all three (`layout/theme.liquid`), as decisions.md "Logo intro" says.
+- **Sizes:** `account-page.js` is 2.0 KB gzipped (account page only); `saved.js` grew to 2.8 KB gzipped; theme.js is unchanged.
+- **Checks:**
+  - `npm run check` §13: axe on the signed-out page and the signed-in demo (phone and desktop, best-practice included), menu keyboard behaviour, Sign out present, and the signed-out pop-up once
+  - quick run 91/91 on 2026-10-03
+  - scratch tests: Saved and Recently viewed rows, demo Buy again, real Buy again through cart.js, and the no-JS form
+- **B0, still to do signed in** (Raushan signs in once on the preview link): real orders render (`customer.orders`, `line_item.fulfillment`, `customer_url`), Your details (`accepts_marketing`, `default_address`), sign-out `return_url`, and whether Shopify's account script still loads when the sheet isn't on the page.
 
 ### Raushan's answers (2026-10-02)
 - **Every recommendation in §14 (AH1–AH20) is approved.** He chose AH1–AH4, AH9–AH11, AH14, AH15, AH17 and AH20 directly, and left the rest to my recommendation.

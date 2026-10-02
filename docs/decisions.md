@@ -16,6 +16,11 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **Extras on the account page:** "Ask for a custom piece", "Download or delete my data" (DPDP), email-offers status, and Recently viewed.
 - **Sign in with Google is set up now, on the dev store** (spike G0 first), which takes it off the launch list. Only the domain values are redone at launch. "Continue with Shop" is turned off if the admin allows it.
 - **Shopify's account pages are branded now on the dev store.** Shopify's account menu becomes Orders, Profile, Saved, Help.
+- **Built 2026-10-03 (theme side),** with two changes from the plan:
+  - Order cards put "Details" at the top right, and the phone buttons share the row equally.
+  - Cards show only the states Liquid can see, never "Delivered".
+
+  Also fixed: the logo intro no longer plays on the account, Saved or Track pages. The preview is `/pages/contact?view=account-demo`. Details are in account-hub-plan.md "As built".
 
 ## 2026-10-02 (header labels on desktop)
 

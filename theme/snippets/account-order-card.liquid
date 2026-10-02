@@ -1,0 +1,94 @@
+{%- doc -%}
+  One order on the account page (docs/account-hub-plan.md §4.2). The state is said in words (never colour alone), and
+  there are at most two buttons, chosen by the state ("not much, not less"):
+  - on its way, with a courier link: Track parcel + Need help?
+  - shipped earlier, cancelled or refunded: Buy again (when something in it is still for sale) + Need help?
+  - confirmed, not shipped yet: Need help?
+  "Details" (top right) opens Shopify's own order page (full timeline, items, invoice).
+  Buy again is a real form (/cart/add); account-page.js adds without leaving the page. Liquid can't see deliveries,
+  so a card never claims "Delivered".
+  Takes plain values so the demo preview (sections/account, Demo content) uses the same card.
+
+  @param {string} name - "#1042"
+  @param {string} date - The order date, already formatted
+  @param {string} state - confirmed, cod, shipped, partial, cancelled or refunded
+  @param {string} [note] - A second line under the state ("Shipped 3 Oct · Delhivery")
+  @param {string} [image] - A photo URL (the first piece)
+  @param {string} items - "Sunflower bouquet + 1 more"
+  @param {string} [track_url] - The courier's tracking page, while it's on its way
+  @param {string} [buy] - The pieces still for sale, as "variant_id:qty,variant_id:qty"
+  @param {number} [skipped] - How many pieces are sold out (left out of Buy again)
+  @param {string} details_url - Shopify's order page
+  @param {string} help_url - WhatsApp (prefilled with the order number) or the contact page
+  @param {boolean} [help_new_tab] - true when help_url is WhatsApp
+{%- enddoc -%}
+{%- liquid
+  assign label_key = 'account.status_' | append: state
+  if state == 'cod'
+    assign label_key = 'account.status_cod'
+  endif
+  assign tone = 'wait'
+  case state
+    when 'shipped', 'partial'
+      assign tone = 'go'
+    when 'cancelled', 'refunded'
+      assign tone = 'stop'
+  endcase
+  assign id = name | handleize | prepend: 'Order-'
+-%}
+<article class="order-card" aria-labelledby="{{ id }}">
+  <div class="order-card__top">
+    <span class="order-card__media media" aria-hidden="true">
+      {%- if image != blank -%}<img src="{{ image }}" alt="" width="160" height="160" loading="lazy">{%- endif -%}
+    </span>
+    <div class="order-card__text">
+      <h3 class="order-card__name" id="{{ id }}">{{ 'account.order' | t: name: name }}</h3>
+      <p class="order-card__date">{{ date }}</p>
+      <p class="order-card__state order-card__state--{{ tone }}">
+        {%- case tone -%}
+          {%- when 'go' -%}{%- render 'icon', icon: 'truck' -%}
+          {%- when 'stop' -%}{%- render 'icon', icon: 'close' -%}
+          {%- else -%}{%- render 'icon', icon: 'check' -%}
+        {%- endcase -%}
+        {{- label_key | t -}}
+      </p>
+      {%- if note != blank -%}<p class="order-card__note">{{ note }}</p>{%- endif -%}
+      <p class="order-card__items">{{ items }}</p>
+    </div>
+    <a class="order-card__details" href="{{ details_url }}">
+      {{- 'account.details_link' | t -}}
+      <span class="visually-hidden">, {{ 'account.for_order' | t: name: name }}</span>
+      {%- render 'icon', icon: 'arrow' -%}
+    </a>
+  </div>
+
+  <div class="order-card__actions">
+    {%- if track_url != blank -%}
+      <a class="btn order-card__btn" href="{{ track_url }}" rel="noopener" target="_blank">
+        {%- render 'icon', icon: 'truck' -%}
+        {{- 'account.track_parcel' | t -}}
+        <span class="visually-hidden">, {{ 'account.for_order' | t: name: name }} ({{ 'accessibility.new_window' | t }})</span>
+      </a>
+    {%- elsif buy != blank -%}
+      {%- assign pairs = buy | split: ',' -%}
+      <form class="order-card__form" action="{{ routes.cart_add_url }}" method="post" data-buy-again data-skipped="{{ skipped | default: 0 }}">
+        {%- for pair in pairs -%}
+          {%- assign bits = pair | split: ':' -%}
+          <input type="hidden" name="items[][id]" value="{{ bits[0] }}">
+          <input type="hidden" name="items[][quantity]" value="{{ bits[1] }}">
+        {%- endfor -%}
+        <button type="submit" class="btn order-card__btn">
+          {%- render 'icon', icon: 'replace' -%}
+          <span data-buy-label>{{ 'account.buy_again' | t }}</span>
+          <span class="visually-hidden">, {{ 'account.for_order' | t: name: name }}</span>
+        </button>
+      </form>
+    {%- endif -%}
+    <a class="btn btn--ghost order-card__btn" href="{{ help_url }}" {% if help_new_tab %}rel="noopener" target="_blank"{% endif %}>
+      {%- render 'icon', icon: 'whatsapp' -%}
+      {{- 'account.need_help' | t -}}
+      <span class="visually-hidden"> {{ 'account.for_order' | t: name: name }}{% if help_new_tab %} ({{ 'accessibility.new_window' | t }}){% endif %}</span>
+    </a>
+  </div>
+  <p class="order-card__added" data-buy-note role="status"></p>
+</article>

@@ -559,6 +559,62 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   }
 }
 
+// 13. Account page (docs/account-hub-plan.md): axe on the signed-out page and on the signed-in demo (made-up orders;
+//     signing in for real needs an email code, so it's checked by hand), phone and desktop; the signed-in menu opens
+//     with Enter, Tab goes into it, Esc closes it and returns focus; Sign out is in the menu and on the page; after
+//     signing out the next page says so, once. Until Raushan creates the "account" page, it's /pages/contact?view=.
+{
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const acct = (await fetch(site('/pages/account'))).ok ? site('/pages/account') : site('/pages/contact?view=account');
+  const demoUrl = site('/pages/contact?view=account-demo');
+  const hasDemo = await fetch(demoUrl).then((r) => r.text()).then((t) => t.includes('order-card'), () => false);
+  for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
+    const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
+    const axeOn = async () => {
+      await page.addScriptTag({ content: axe.source });
+      return page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+    };
+    await page.goto(acct, { waitUntil: 'load' });
+    await page.waitForTimeout(800);
+    const v1 = await axeOn();
+    record(`Account page, ${label}: signed out (axe)`, v1.length === 0, v1.join(', ') || '0 violations');
+    if (!hasDemo) console.log(`SKIP  Account page, ${label}: signed-in demo            Demo content is off`);
+    else {
+      await page.goto(demoUrl, { waitUntil: 'load' });
+      await page.waitForTimeout(800);
+      const v2 = await axeOn();
+      const out = await page.locator('.account [data-sign-out]').count();
+      record(`Account page, ${label}: signed-in demo (axe)`, v2.length === 0 && out === 1, `${v2.join(', ') || '0 violations'}; Sign out on the page: ${out}`);
+      if (label === 'desktop') {
+        await page.focus('.account-menu__btn');
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(400);
+        const opened = await page.evaluate(() => document.querySelector('#AccountMenu')?.matches(':popover-open'));
+        await page.keyboard.press('Tab');
+        const inside = await page.evaluate(() => !!document.activeElement.closest('#AccountMenu'));
+        const signOut = await page.locator('#AccountMenu [data-sign-out]').count();
+        const v3 = await axeOn();
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(400);
+        const back = await page.evaluate(() => !document.querySelector('#AccountMenu').matches(':popover-open') && document.activeElement.matches('.account-menu__btn'));
+        record('Account menu: Enter, Tab inside, Esc back (axe)', opened && inside && back && signOut === 1 && v3.length === 0, `opens: ${opened}, Tab inside: ${inside}, Esc returns: ${back}, Sign out: ${signOut}; ${v3.join(', ') || '0 violations'}`);
+      }
+    }
+    if (label === 'phone') {
+      await page.evaluate(() => sessionStorage.setItem('yb-signed-out', '1'));
+      await page.goto(site('/'), { waitUntil: 'load' });
+      await page.waitForTimeout(600);
+      const said = await page.evaluate(() => document.querySelector('.saved-toast')?.textContent.replace(/\s+/g, ' ').trim() || '');
+      await page.reload({ waitUntil: 'load' });
+      await page.waitForTimeout(600);
+      const again = await page.evaluate(() => !!document.querySelector('.saved-toast'));
+      record('Signed out: the next page says so, once', /signed out/.test(said) && !said.includes('&#') && !again, `"${said}"; shown again on reload: ${again}`);
+    }
+    record(`Account page, ${label}: no script errors`, errors.length === 0, errors[0] || 'none');
+    await browser.close();
+  }
+}
+
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
 process.exit(failed.length ? 1 : 0);

@@ -1,0 +1,17 @@
+{%- comment -%} The page itself is snippets/account-body (sections/page also renders it for a page with the handle 'account'). {%- endcomment -%}
+{%- render 'account-body', demo: section.settings.demo -%}
+
+{% schema %}
+{
+  "name": "Your account",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "demo",
+      "label": "Preview the signed-in page",
+      "info": "Shows made-up orders while nobody is signed in and Demo content is on. Only for judging the layout.",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

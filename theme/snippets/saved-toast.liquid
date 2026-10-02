@@ -1,7 +1,8 @@
 {%- doc -%}
   The pop-up for saved items (docs/account-plan.md §8.1): "♥ Saved · Rose bouquet · View saved", or on the Saved page
-  "Removed · Undo". It looks and sits like the added-to-cart pop-up (sections/cart-drawer): bottom of the screen on
-  phones, under the header on wider screens. It never takes focus, and waits while a finger, pointer or focus is on it.
+  "Removed · Undo"; also "You're signed out" (no heart) after signing out (account-hub-plan.md §6). It looks and
+  sits like the added-to-cart pop-up (sections/cart-drawer): bottom of the screen on phones, under the header on
+  wider screens. It never takes focus, and waits while a finger, pointer or focus is on it.
   saved.js clones it.
 
   @param {string} [saved_url] - The Saved page, when it exists
@@ -11,6 +12,8 @@
   data-head="{{ 'saved.added' | t | escape }}"
   data-said-saved="{{ 'saved.said_saved' | t | escape }}"
   data-said-removed="{{ 'saved.said_removed' | t | escape }}"
+  data-signed-out="{{ 'account.signed_out_head' | t }}"
+  data-signed-out-text="{{ 'account.signed_out_text' | t }}"
 >
   <div class="saved-toast" role="region" aria-label="{{ 'saved.title' | t }}">
     <span class="saved-toast__media media"><img alt="" width="56" height="56" hidden></span>

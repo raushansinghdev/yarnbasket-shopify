@@ -1,7 +1,7 @@
 /*
   Yarn Basket · saved.js (docs/account-plan.md)
   Saved items, kept only in this browser: the hearts on cards and the product page, the Saved counts, the "Saved"
-  pop-up, recently viewed, and the drawer's account row opening Shopify's account sheet. The header loads it on
+  pop-up, recently viewed, the drawer's account row opening Shopify's account sheet, and signing out. The header loads it on
   every page; the Saved page adds saved-page.js, which uses window.ybSaved below.
 */
 
@@ -66,7 +66,7 @@ const hideToast = () => {
   t.classList.add('is-leaving');
   setTimeout(() => t.remove(), 320);
 };
-const toast = ({ head, title = '', image, action, onAction }) => {
+const toast = ({ head, title = '', image, action, onAction, plain = false, link = true }) => {
   if (!template) return;
   toastEl?.remove();
   clearTimeout(toastTimer);
@@ -78,10 +78,13 @@ const toast = ({ head, title = '', image, action, onAction }) => {
     img.src = image;
     img.hidden = false;
   } else t.querySelector('.saved-toast__media').remove();
-  const link = t.querySelector('[data-toast-view]');
+  // plain: a message that isn't about one product (signed out), so no heart.
+  if (plain) t.querySelector('.saved-toast__head .icon')?.remove();
+  const view = t.querySelector('[data-toast-view]');
   const button = t.querySelector('[data-toast-action]');
+  if (!link) view.remove();
   if (action) {
-    link.remove();
+    view.remove();
     button.textContent = action;
     button.addEventListener('click', () => {
       onAction();
@@ -154,6 +157,30 @@ if (account) {
     document.querySelector('[data-menu-open]')?.focus();
   });
 }
+
+/* ---------- Signing out (docs/account-hub-plan.md §6) ----------
+   Recently viewed is cleared, so a shared family phone doesn't show the last person's browsing; Saved stays (guests
+   save too). The page Shopify brings them back to says "You're signed out", once nobody is signed in there. */
+const OUT = 'yb-signed-out';
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('[data-sign-out]');
+  if (!link || link.getAttribute('href') === '#') return;
+  write(VIEWED, []);
+  try {
+    sessionStorage.setItem(OUT, '1');
+  } catch {}
+});
+try {
+  if (sessionStorage.getItem(OUT)) {
+    sessionStorage.removeItem(OUT);
+    if (!document.querySelector('[data-signed-in]') && template) {
+      const has = read(KEY).length > 0;
+      const { signedOut, signedOutText } = template.dataset;
+      say(has ? `${signedOut}. ${signedOutText}` : signedOut);
+      toast({ head: signedOut, title: has ? signedOutText : '', plain: true, link: has });
+    }
+  }
+} catch {}
 
 window.ybSaved = { read: () => read(KEY), set, sync, viewed: () => read(VIEWED), clearViewed: () => write(VIEWED, []), toast, hideToast, say };
 sync();

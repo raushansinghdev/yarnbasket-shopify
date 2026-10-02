@@ -1,0 +1,227 @@
+{%- doc -%}
+  The header's account menu when someone is signed in (docs/account-hub-plan.md §5.1). Shopify's <shopify-account>
+  sheet has no Sign out, icons or counts, and its layout can't be changed, so signed in we draw our own: the initial
+  on a Blush circle (plus "Account" from 1100px, like "Cart"), opening a small panel with the greeting, Orders (with
+  the latest order's state), Saved (its count, from saved.js), Your details, Help, Sign out and "Your account".
+  - A native popover: Esc, click-away, the top layer and aria-expanded come from the browser, with no script.
+  - A list of links, not an ARIA menu, so Tab and screen readers work the way they do everywhere else.
+  - Under 900px it isn't shown: the drawer's account row goes to the account page instead.
+  Signed out, snippets/account-button renders Shopify's sheet (signing in without leaving the page).
+
+  @param {string} account_url - The account page (or Shopify's account when that page doesn't exist yet)
+  @param {string} [saved_url] - The Saved page, when it exists
+  @param {string} help_url - Where "Help" goes
+  @param {string} details_url - Where "Your details" goes
+  @param {boolean} [demo] - The account-demo page's made-up shopper (nobody signed in, Demo content on)
+{%- enddoc -%}
+{%- liquid
+  assign first_name = customer.first_name
+  assign email = customer.email
+  assign last = customer.last_order
+  assign last_name = last.name
+  assign last_state = blank
+  if demo
+    assign first_name = 'Sneha'
+    assign email = 'sneha@example.com'
+    assign last_name = '#1050'
+    assign last_state = 'account.status_confirmed' | t
+  endif
+  assign who = first_name | default: email | strip
+  assign initial = who | slice: 0 | upcase
+  if last
+    if last.cancelled
+      assign last_state = 'account.status_cancelled' | t
+    elsif last.fulfillment_status == 'fulfilled'
+      assign last_state = 'account.status_shipped' | t
+    elsif last.fulfillment_status == 'partial'
+      assign last_state = 'account.status_partial' | t
+    else
+      assign last_state = 'account.status_confirmed' | t
+    endif
+  endif
+  # Sign out brings people back to the page they were on (Shopify honours return_url; checked 2026-10-03).
+  assign back = request.path | default: routes.root_url | url_encode
+  assign logout_url = routes.account_logout_url | append: '?return_url=' | append: back
+-%}
+<div class="account-menu" data-signed-in>
+  <button type="button" class="account-menu__btn" popovertarget="AccountMenu" aria-describedby="AccountMenuWho">
+    <span class="account-menu__avatar" aria-hidden="true">{{ initial }}</span>
+    <span class="account-btn__word" aria-hidden="true">{{ 'header.account' | t }}</span>
+    <span class="visually-hidden">{{ 'header.account' | t }}</span>
+  </button>
+  <div id="AccountMenu" class="account-menu__panel" popover>
+    <p class="account-menu__who" id="AccountMenuWho">
+      <span class="account-menu__avatar account-menu__avatar--lg" aria-hidden="true">{{ initial }}</span>
+      <span class="account-menu__text">
+        <span class="account-menu__name">
+          {%- if first_name != blank -%}{{ 'account.greeting' | t: name: first_name }}{%- else -%}{{ 'account.your_account' | t }}{%- endif -%}
+        </span>
+        <span class="account-menu__email">{{ email }}</span>
+      </span>
+    </p>
+    <nav aria-label="{{ 'account.menu_label' | t }}">
+      <ul class="account-menu__list" role="list">
+        <li>
+          <a href="{{ account_url }}#orders">
+            {%- render 'icon', icon: 'package' -%}
+            <span class="account-menu__label">{{ 'account.orders' | t }}</span>
+            {%- if last_state != blank -%}<span class="account-menu__hint"><span class="visually-hidden">, </span>{{ last_name }} · {{ last_state }}</span>{%- endif -%}
+          </a>
+        </li>
+        {%- if saved_url -%}
+          <li>
+            <a href="{{ saved_url }}">
+              {%- render 'icon', icon: 'heart' -%}
+              <span class="account-menu__label">{{ 'account.saved' | t }}</span>
+              <span class="account-menu__count" data-saved-count hidden></span>
+            </a>
+          </li>
+        {%- endif -%}
+        <li>
+          <a href="{{ details_url }}">
+            {%- render 'icon', icon: 'account' -%}
+            <span class="account-menu__label">{{ 'account.details' | t }}</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ help_url }}">
+            {%- render 'icon', icon: 'help' -%}
+            <span class="account-menu__label">{{ 'account.help' | t }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <a class="account-menu__out" href="{% if demo %}#{% else %}{{ logout_url }}{% endif %}" data-sign-out>
+      {%- render 'icon', icon: 'sign-out' -%}
+      <span class="account-menu__label">{{ 'account.sign_out' | t }}</span>
+    </a>
+    <a class="account-menu__all" href="{{ account_url }}">
+      {{- 'account.view_account' | t -}}
+      {%- render 'icon', icon: 'arrow' -%}
+    </a>
+  </div>
+</div>
+
+{% stylesheet %}
+  .account-menu { display: none; position: relative; }
+  @media (min-width: 900px) { .account-menu { display: block; } }
+
+  .account-menu__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: var(--tap);
+    height: var(--tap);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--color-heading);
+    font: inherit;
+    cursor: pointer;
+    anchor-name: --account-menu;
+    transition: background-color var(--dur-state) ease;
+  }
+  .account-menu__avatar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--blush);
+    color: var(--cocoa-deep);
+    font-family: var(--font-sans);
+    font-size: .9375rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .account-menu__avatar--lg { width: 44px; height: 44px; font-size: 1.125rem; }
+  @media (min-width: 1100px) {
+    .account-menu__btn { padding: 0 14px 0 8px; }
+    .account-menu__btn .account-btn__word { display: inline; }
+  }
+  @media (hover: hover) { .account-menu__btn:hover { background: color-mix(in srgb, var(--color-heading) 8%, transparent); } }
+  .account-menu__btn:has(+ :popover-open) { background: color-mix(in srgb, var(--color-heading) 8%, transparent); }
+
+  /* The panel hangs under the button, right edges lined up. Browsers without anchoring put it under the header's
+     right edge, which is the same place. */
+  .account-menu__panel {
+    position: fixed;
+    inset: auto;
+    top: calc(var(--header-height) + var(--space-2));
+    right: max(var(--gutter), (100vw - var(--page-width)) / 2);
+    width: min(320px, 100vw - 2 * var(--gutter));
+    margin: 0;
+    padding: var(--space-3);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    color: var(--color-ink);
+    box-shadow: 0 24px 48px -24px rgb(78 58 49 / .35), 0 2px 6px rgb(78 58 49 / .06);
+    opacity: 0;
+    translate: 0 -6px;
+    transition:
+      opacity calc(var(--dur-panel) * .7) var(--ease-exit),
+      translate calc(var(--dur-panel) * .7) var(--ease-exit),
+      overlay calc(var(--dur-panel) * .7) allow-discrete,
+      display calc(var(--dur-panel) * .7) allow-discrete;
+  }
+  @supports (position-anchor: --a) {
+    .account-menu__panel { position-anchor: --account-menu; top: calc(anchor(bottom) + var(--space-2)); right: anchor(right); }
+  }
+  .account-menu__panel:popover-open {
+    opacity: 1;
+    translate: 0 0;
+    transition-duration: var(--dur-panel);
+    transition-timing-function: var(--ease-out);
+  }
+  @starting-style { .account-menu__panel:popover-open { opacity: 0; translate: 0 -6px; } }
+  @media (prefers-reduced-motion: reduce) { .account-menu__panel, .account-menu__panel:popover-open { translate: none; transition-duration: 120ms; } }
+  html.lite .account-menu__panel { translate: none; transition-duration: 120ms; }
+
+  .account-menu__who { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-2) var(--space-3); }
+  .account-menu__text { display: grid; gap: 1px; min-width: 0; }
+  .account-menu__name { font-weight: 500; color: var(--color-heading); }
+  .account-menu__email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); color: var(--color-muted); }
+
+  .account-menu__list { display: grid; padding: var(--space-2) 0; border-block: 1px solid var(--color-line); }
+  .account-menu__list a, .account-menu__out, .account-menu__all {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--tap);
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-sm);
+    color: var(--color-heading);
+    text-decoration: none;
+    transition: background-color var(--dur-state) ease;
+  }
+  .account-menu__panel .icon { width: 22px; height: 22px; color: var(--cocoa); }
+  .account-menu__panel .icon__fill { fill: none; }
+  .account-menu__label { flex: 1; }
+  .account-menu__hint { font-size: var(--fs-small); color: var(--color-muted); white-space: nowrap; }
+  .account-menu__count {
+    min-width: 24px;
+    padding: 1px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--blush);
+    color: var(--cocoa-deep);
+    font-size: .8125rem;
+    font-weight: 500;
+    text-align: center;
+  }
+  .account-menu__out { margin-top: var(--space-2); }
+  .account-menu__all { justify-content: space-between; margin-top: var(--space-1); padding-block: 0; font-weight: 500; }
+  .account-menu__all .icon { width: 18px; height: 18px; transition: transform var(--dur-panel) var(--ease-out); }
+  .account-menu__panel a:focus-visible { outline-offset: -2px; }
+  @media (hover: hover) {
+    .account-menu__panel a:hover { background: var(--blush-soft); }
+    .account-menu__all:hover .icon { transform: translateX(3px); }
+  }
+  @media (forced-colors: active) {
+    .account-menu__panel { border-color: CanvasText; }
+    .account-menu__avatar { border: 1px solid CanvasText; }
+  }
+{% endstylesheet %}

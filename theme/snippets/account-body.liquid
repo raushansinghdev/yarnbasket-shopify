@@ -1,0 +1,505 @@
+{%- doc -%}
+  "Your account" (docs/account-hub-plan.md §4), on a page using the "account" template (or any page with the handle
+  "account"). One scrolling page in the store's own look; Shopify's hosted pages are only for editing details and an
+  order's full page.
+  Signed in: greeting, shortcuts (phones), the latest 3 orders, Saved and Recently viewed (filled by account-page.js
+  from this browser), Your details, Need help? (WhatsApp, a custom piece, policies), Sign out, and "Download or
+  delete my data".
+  Signed out: a sign-in card (Shopify's sheet; without it, Shopify's sign-in page), Track an order, Saved, help.
+  Demo (the account-demo template with Demo content on, nobody signed in): the signed-in page with made-up orders, so
+  the layout can be judged and tested without a real sign-in. Remove with the other demo files before launch.
+
+  @param {boolean} [demo] - Show the signed-in page with demo data when nobody is signed in
+{%- enddoc -%}
+{%- liquid
+  assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
+  assign saved_url = pages['saved'].url
+  assign track_url = pages['track-order'].url
+  assign signed_in = false
+  assign is_demo = false
+  if customer
+    assign signed_in = true
+  elsif demo and settings.demo_content
+    assign signed_in = true
+    assign is_demo = true
+  endif
+
+  if is_demo
+    assign first_name = 'Sneha'
+    assign full_name = 'Sneha Sharma'
+    assign email = 'sneha@example.com'
+    assign phone = '+91 98765 43210'
+    assign address_line = 'Patna 800001'
+    assign offers = true
+    assign order_count = 3
+  elsif customer
+    assign first_name = customer.first_name
+    assign full_name = customer.name | strip
+    assign email = customer.email
+    assign phone = customer.phone | default: customer.default_address.phone
+    assign address_line = blank
+    if customer.default_address
+      assign address_line = customer.default_address.city | append: ' ' | append: customer.default_address.zip | strip
+    endif
+    assign offers = customer.accepts_marketing
+    assign order_count = customer.orders_count
+  endif
+  assign who = first_name | default: email | strip
+  assign initial = who | slice: 0 | upcase
+
+  # Sign out comes back here (signed out), which says it worked.
+  assign back = request.path | url_encode
+  assign logout_url = routes.account_logout_url | append: '?return_url=' | append: back
+
+  if whatsapp != blank
+    assign help_base = 'https://wa.me/' | append: whatsapp | append: '?text='
+  endif
+-%}
+<div
+  class="section account scheme-soft{% unless signed_in %} account--out{% endunless %}"
+  data-account-page
+  data-t-added-one="{{ 'account.added_one' | t }}"
+  data-t-added-other="{{ 'account.added_other' | t: count: 99 }}"
+  data-t-skipped-one="{{ 'account.skipped_one' | t }}"
+  data-t-skipped-other="{{ 'account.skipped_other' | t: count: 99 }}"
+  data-t-adding="{{ 'account.adding' | t }}"
+  data-t-view-cart="{{ 'account.view_cart' | t }}"
+  {% if is_demo %}data-demo{% endif %}
+>
+  <div class="account__grid">
+    {%- if signed_in -%}
+      <header class="account__hello" data-arrive="lines">
+        <span class="account__avatar" aria-hidden="true">{{ initial }}</span>
+        <h1 class="account__title">
+          {%- if first_name != blank -%}{{ 'account.greeting' | t: name: first_name }}{%- else -%}{{ 'account.your_account' | t }}{%- endif -%}
+        </h1>
+        <p class="account__email">{{ email }}</p>
+      </header>
+
+      <nav class="account__jump" aria-label="{{ 'account.jump_label' | t }}">
+        <ul role="list">
+          <li><a class="tap" href="#orders">{%- render 'icon', icon: 'package' -%}<span>{{ 'account.orders' | t }}</span></a></li>
+          {%- if saved_url -%}
+            <li><a class="tap" href="{{ saved_url }}">{%- render 'icon', icon: 'heart' -%}<span>{{ 'account.saved' | t }}</span><span class="account__jump-count" data-saved-count hidden></span></a></li>
+          {%- endif -%}
+          <li><a class="tap" href="#help">{%- render 'icon', icon: 'help' -%}<span>{{ 'account.help' | t }}</span></a></li>
+        </ul>
+      </nav>
+    {%- else -%}
+      <header class="account__hello account__hello--out" data-arrive="lines">
+        <span class="account__avatar account__avatar--out" aria-hidden="true">{%- render 'icon', icon: 'account' -%}</span>
+        <h1 class="account__title">{{ 'account.title_out' | t }}</h1>
+        <p class="account__lead">{{ 'account.lead_out' | t }}</p>
+        <p class="account__signin">
+          <a class="btn" href="{{ routes.account_login_url }}" data-account-open>{{ 'account.sign_in' | t }}</a>
+          {%- if track_url -%}
+            <a class="account__quiet-link" href="{{ track_url }}">{{ 'account.track_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+          {%- endif -%}
+        </p>
+      </header>
+    {%- endif -%}
+
+    <div class="account__main">
+      {%- if signed_in -%}
+        <section class="account__block" id="orders" aria-labelledby="AccountOrders" tabindex="-1" data-arrive>
+          <div class="account__head">
+            <h2 class="account__h2" id="AccountOrders">{{ 'account.orders_title' | t }}</h2>
+            {%- if order_count > 0 -%}
+              <a class="account__see-all" href="{{ routes.account_url }}">{{ 'account.all_orders' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+            {%- endif -%}
+          </div>
+
+          {%- if is_demo -%}
+            <div class="account__orders">
+              {%- capture demo_help -%}{%- if help_base -%}{{ help_base }}{{ 'account.help_message' | t: name: '#1050' | url_encode }}{%- else -%}/pages/contact{%- endif -%}{%- endcapture -%}
+              {%- assign demo_note = 'account.status_confirmed_note' | t -%}
+              {%- assign demo_image = 'demo-p3-a-600.webp' | asset_url -%}
+              {%- render 'account-order-card', name: '#1050', date: '2 Oct 2026', state: 'confirmed', note: demo_note, image: demo_image, items: 'Lavender bunch', details_url: '#orders', help_url: demo_help, help_new_tab: help_base -%}
+              {%- capture demo_note -%}{{ 'account.shipped_on' | t: date: '1 Oct' }} · Delhivery{%- endcapture -%}
+              {%- assign demo_image = 'demo-p1-a-600.webp' | asset_url -%}
+              {%- render 'account-order-card', name: '#1042', date: '30 Sep 2026', state: 'shipped', note: demo_note, image: demo_image, items: 'Sunflower bouquet + 1 more', track_url: 'https://www.delhivery.com/', details_url: '#orders', help_url: demo_help, help_new_tab: help_base -%}
+              {%- capture demo_note -%}{{ 'account.shipped_on' | t: date: '13 Sep' }} · Blue Dart{%- endcapture -%}
+              {%- assign demo_image = 'demo-p2-a-600.webp' | asset_url -%}
+              {%- render 'account-order-card', name: '#1031', date: '12 Sep 2026', state: 'shipped', note: demo_note, image: demo_image, items: 'Bunny keychain', buy: 'demo:1', details_url: '#orders', help_url: demo_help, help_new_tab: help_base -%}
+            </div>
+          {%- elsif customer.orders.size > 0 -%}
+            <div class="account__orders">
+              {%- assign now = 'now' | date: '%s' | plus: 0 -%}
+              {%- for order in customer.orders limit: 3 -%}
+                {%- liquid
+                  assign first = order.line_items.first
+                  assign image = blank
+                  if first.image
+                    assign image = first.image | image_url: width: 160, height: 160, crop: 'center'
+                  endif
+                  if order.line_items.size > 1
+                    assign more = order.line_items.size | minus: 1
+                    assign items = 'account.items_more' | t: title: first.title, count: more
+                  else
+                    assign items = first.title
+                  endif
+
+                  if order.cancelled
+                    assign state = 'cancelled'
+                  elsif order.financial_status == 'refunded'
+                    assign state = 'refunded'
+                  elsif order.fulfillment_status == 'fulfilled'
+                    assign state = 'shipped'
+                  elsif order.fulfillment_status == 'partial'
+                    assign state = 'partial'
+                  elsif order.financial_status == 'pending'
+                    assign state = 'cod'
+                  else
+                    assign state = 'confirmed'
+                  endif
+
+                  # The latest shipment: its date, courier and tracking link (a link only for the first 14 days).
+                  assign note = blank
+                  assign track = blank
+                  assign shipped_at = 0
+                  for li in order.line_items
+                    assign f = li.fulfillment
+                    if f
+                      assign at = f.created_at | date: '%s' | plus: 0
+                      if at > shipped_at
+                        assign shipped_at = at
+                        assign company = f.tracking_company
+                        assign track = f.tracking_url
+                        assign shipped_on = f.created_at | date: '%-d %b'
+                      endif
+                    endif
+                  endfor
+                  if shipped_at > 0
+                    assign note = 'account.shipped_on' | t: date: shipped_on
+                    if company != blank
+                      assign note = note | append: ' · ' | append: company
+                    endif
+                    assign age = now | minus: shipped_at
+                    if age > 1209600
+                      assign track = blank
+                    endif
+                  elsif state == 'confirmed' or state == 'cod'
+                    assign note = 'account.status_confirmed_note' | t
+                  endif
+
+                  # Buy again: what's still for sale (never the free gift), once the order is done with.
+                  assign buy = ''
+                  assign skipped = 0
+                  if track == blank and state != 'confirmed' and state != 'cod'
+                    for li in order.line_items
+                      if li.variant == blank or li.product == blank
+                        continue
+                      endif
+                      if li.product.tags contains 'free-gift' or li.product.id == settings.gift_product.id
+                        continue
+                      endif
+                      if li.variant.available
+                        assign buy = buy | append: ',' | append: li.variant.id | append: ':' | append: li.quantity
+                      else
+                        assign skipped = skipped | plus: 1
+                      endif
+                    endfor
+                    assign buy = buy | remove_first: ','
+                  endif
+
+                  if help_base
+                    assign help_url = 'account.help_message' | t: name: order.name | url_encode | prepend: help_base
+                  else
+                    assign help_url = '/pages/contact'
+                  endif
+                  assign ordered_on = order.created_at | date: '%-d %b %Y'
+                  assign order_url = order.customer_url | default: routes.account_url
+                -%}
+                {%- render 'account-order-card',
+                  name: order.name,
+                  date: ordered_on,
+                  state: state,
+                  note: note,
+                  image: image,
+                  items: items,
+                  track_url: track,
+                  buy: buy,
+                  skipped: skipped,
+                  details_url: order_url,
+                  help_url: help_url,
+                  help_new_tab: help_base
+                -%}
+              {%- endfor -%}
+            </div>
+          {%- else -%}
+            {%- liquid
+              assign picks = collections['bestsellers'].products | where: 'available'
+              if picks.size == 0
+                assign picks = collections.all.products | where: 'available'
+              endif
+              assign demo_row = false
+              if picks.size == 0 and settings.demo_content
+                assign demo_row = true
+              endif
+            -%}
+            <div class="account__empty">
+              <p class="account__empty-title">{{ 'account.no_orders_title' | t }}</p>
+              <p class="account__empty-text">{{ 'account.no_orders_text' | t }}</p>
+            </div>
+            {%- capture gift_skip -%}{%- render 'gift-skip', products: picks -%}{%- endcapture -%}
+            {%- assign picks_label = 'saved.bestsellers' | t -%}
+            {%- render 'product-row', title: picks_label, id: 'AccountPicks', products: picks, exclude: gift_skip, limit: 4, demo: demo_row -%}
+          {%- endif -%}
+        </section>
+      {%- endif -%}
+
+      {%- comment -%} Filled from this browser's lists by account-page.js; hidden while empty. {%- endcomment -%}
+      <section class="account__block product-row" id="saved" aria-labelledby="AccountSaved" data-account-row="saved" hidden>
+        <div class="account__head">
+          <h2 class="account__h2" id="AccountSaved">{{ 'account.saved_title' | t }}</h2>
+          {%- if saved_url -%}
+            <a class="account__see-all" href="{{ saved_url }}">{{ 'account.see_all' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+          {%- endif -%}
+        </div>
+        <ul class="product-row__list scroller" role="list" data-account-list></ul>
+      </section>
+      <section class="account__block product-row" aria-labelledby="AccountRecent" data-account-row="recent" hidden>
+        <div class="account__head">
+          <h2 class="account__h2" id="AccountRecent">{{ 'account.recent_title' | t }}</h2>
+        </div>
+        <ul class="product-row__list scroller" role="list" data-account-list></ul>
+      </section>
+    </div>
+
+    <div class="account__side">
+      {%- if signed_in -%}
+        <section class="account__block account__details" id="details" aria-labelledby="AccountDetails" tabindex="-1" data-arrive>
+          <h2 class="account__h2" id="AccountDetails">{{ 'account.details_title' | t }}</h2>
+          <dl class="account__dl">
+            <div><dt>{{ 'account.name' | t }}</dt><dd>{{ full_name | default: '—' }}</dd></div>
+            <div><dt>{{ 'account.email' | t }}</dt><dd>{{ email }}</dd></div>
+            <div><dt>{{ 'account.phone' | t }}</dt><dd>{%- if phone != blank -%}{{ phone }}{%- else -%}<span class="account__muted">{{ 'account.not_added' | t }}</span>{%- endif -%}</dd></div>
+            <div><dt>{{ 'account.address' | t }}</dt><dd>{%- if address_line != blank -%}{{ address_line }}{%- else -%}<span class="account__muted">{{ 'account.not_added' | t }}</span>{%- endif -%}</dd></div>
+            <div><dt>{{ 'account.emails' | t }}</dt><dd>{%- if offers -%}{{ 'account.emails_on' | t }}{%- else -%}{{ 'account.emails_off' | t }}{%- endif -%}</dd></div>
+          </dl>
+          <a class="btn btn--ghost account__edit" href="{{ routes.account_addresses_url }}">{{ 'account.edit_details' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+        </section>
+      {%- endif -%}
+
+      <section class="account__block account__help panel-blush" id="help" aria-labelledby="AccountHelp" tabindex="-1" data-arrive>
+        <h2 class="account__h2" id="AccountHelp">{{ 'account.help_title' | t }}</h2>
+        <p>{{ 'account.help_text' | t }}</p>
+        <div class="account__help-btns">
+          {%- if help_base -%}
+            <a class="btn" href="{{ help_base }}{{ 'header.whatsapp_message' | t | url_encode }}" rel="noopener" target="_blank">
+              {%- render 'icon', icon: 'whatsapp' -%}{{ 'account.whatsapp' | t }}
+              <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
+            </a>
+            <a class="btn btn--ghost" href="{{ help_base }}{{ 'account.custom_message' | t | url_encode }}" rel="noopener" target="_blank">
+              {%- render 'icon', icon: 'gift' -%}{{ 'account.custom' | t }}
+              <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
+            </a>
+          {%- else -%}
+            <a class="btn" href="/pages/contact">{{ 'account.contact' | t }}</a>
+            <a class="btn btn--ghost" href="/pages/contact">{%- render 'icon', icon: 'gift' -%}{{ 'account.custom' | t }}</a>
+          {%- endif -%}
+        </div>
+        <ul class="account__help-links" role="list">
+          {%- if track_url -%}<li><a href="{{ track_url }}">{{ 'track.title' | t }}</a></li>{%- endif -%}
+          {%- if shop.shipping_policy -%}<li><a href="{{ shop.shipping_policy.url }}">{{ shop.shipping_policy.title }}</a></li>{%- endif -%}
+          {%- if shop.refund_policy -%}<li><a href="{{ shop.refund_policy.url }}">{{ shop.refund_policy.title }}</a></li>{%- endif -%}
+          {%- if help_base -%}<li><a href="/pages/contact">{{ 'account.contact' | t }}</a></li>{%- endif -%}
+        </ul>
+      </section>
+
+      {%- if signed_in -%}
+        <div class="account__out">
+          <a class="btn btn--ghost account__sign-out" href="{% if is_demo %}#{% else %}{{ logout_url }}{% endif %}" data-sign-out>
+            {%- render 'icon', icon: 'sign-out' -%}{{ 'account.sign_out' | t }}
+          </a>
+          {%- if shop.email != blank -%}
+            {%- capture data_body -%}{{ 'account.data_body' | t: email: email }}{%- endcapture -%}
+            <a class="account__quiet-link" href="mailto:{{ shop.email }}?subject={{ 'account.data_subject' | t | url_encode | replace: '+', '%20' }}&amp;body={{ data_body | url_encode | replace: '+', '%20' }}">
+              {{- 'account.data_link' | t -}}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'account-page.js' | asset_url }}" type="module"></script>
+
+{% stylesheet %}
+  .account { padding-block: var(--space-6) var(--section-space); }
+  .account__grid { display: grid; gap: var(--space-7); }
+  .account__main, .account__side { display: grid; gap: var(--space-7); align-content: start; min-width: 0; }
+  @media (min-width: 900px) {
+    .account__grid { grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem); gap: var(--space-7) clamp(var(--space-6), 4vw, var(--space-8)); align-items: start; }
+    .account__hello { grid-column: 1 / -1; }
+    .account__side { position: sticky; top: calc(var(--header-height) + var(--space-5)); gap: var(--space-5); }
+  }
+  /* Signed out there's little to show: one calm column instead of a half-empty two. */
+  @media (min-width: 900px) {
+    .account--out .account__grid { grid-template-columns: minmax(0, 46rem); }
+    .account--out .account__side { position: static; }
+    .account--out .account__help { max-width: 34rem; }
+  }
+  .account__block { scroll-margin-top: calc(var(--header-height) + var(--space-4)); }
+  .account__block:focus { outline: none; }
+
+  /* Greeting: the initial on Blush, the serif h1, the email under it. */
+  .account__hello { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: var(--space-4); row-gap: 2px; }
+  .account__avatar {
+    grid-row: span 2;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--blush);
+    color: var(--cocoa-deep);
+    font-size: 1.375rem;
+    font-weight: 500;
+  }
+  .account__avatar--out .icon { width: 28px; height: 28px; }
+  .account__avatar--out .icon__fill { fill: none; }
+  .account__title { font-size: clamp(2rem, 1.5rem + 2vw, 3rem); line-height: 1.05; overflow-wrap: anywhere; }
+  .account__email { color: var(--color-muted); font-size: var(--fs-small); overflow-wrap: anywhere; }
+  .account__hello--out .account__lead, .account__hello--out .account__signin { grid-column: 1 / -1; }
+  .account__lead { max-width: 34rem; margin-top: var(--space-3); font-size: var(--fs-lead); line-height: 1.5; }
+  .account__signin { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-top: var(--space-4); }
+
+  /* Phones: three shortcuts under the greeting. Desktop shows everything at once, so they go. */
+  .account__jump { margin-top: calc(var(--space-7) * -1 + var(--space-5)); }
+  .account__jump ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: var(--space-2); }
+  .account__jump a {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    min-height: 72px;
+    padding: var(--space-3) var(--space-2);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    color: var(--color-heading);
+    font-size: var(--fs-small);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .account__jump .icon { width: 24px; height: 24px; color: var(--cocoa); }
+  .account__jump .icon__fill { fill: none; }
+  .account__jump-count {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    min-width: 22px;
+    padding: 1px 6px;
+    border-radius: var(--radius-pill);
+    background: var(--blush);
+    font-size: .75rem;
+    text-align: center;
+  }
+  @media (min-width: 900px) { .account__jump { display: none; } }
+
+  .account__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+  .account__h2 { font-size: var(--fs-h3); }
+  .account__see-all, .account__quiet-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--tap);
+    color: var(--color-heading);
+    font-size: var(--fs-small);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: var(--rose);
+    text-underline-offset: 4px;
+  }
+  .account__see-all .icon, .account__quiet-link .icon { width: 16px; height: 16px; transition: transform var(--dur-panel) var(--ease-out); }
+  @media (hover: hover) { :is(.account__see-all, .account__quiet-link):hover .icon { transform: translateX(3px); } }
+
+  .account__orders { display: grid; gap: var(--space-4); }
+  .order-card { display: grid; gap: var(--space-4); padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--white); }
+  .order-card__top { display: grid; grid-template-columns: 80px minmax(0, 1fr) auto; gap: var(--space-4); align-items: start; }
+  .order-card__media { --ratio: 1; border-radius: var(--radius-sm); background: var(--oat); }
+  .order-card__text { display: grid; gap: 2px; min-width: 0; }
+  .order-card__name { font-family: var(--font-sans); font-style: normal; font-size: 1rem; font-weight: 500; line-height: 1.4; color: var(--color-heading); }
+  .order-card__date, .order-card__items { font-size: var(--fs-small); color: var(--color-muted); }
+  .order-card__items { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .order-card__state {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: var(--space-1);
+    padding: 3px 10px 3px 8px;
+    border-radius: var(--radius-pill);
+    font-size: .8125rem;
+    font-weight: 500;
+    color: var(--cocoa-deep);
+  }
+  .order-card__state .icon { width: 16px; height: 16px; }
+  .order-card__state--wait { background: var(--blush); }
+  .order-card__state--go { background: color-mix(in srgb, var(--sage) 45%, var(--white)); }
+  .order-card__state--stop { background: none; border: 1px solid var(--color-line-strong); }
+  .order-card__note { font-size: var(--fs-small); color: var(--color-ink); }
+  .order-card__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+  .order-card__form { display: contents; }
+  .order-card__btn { min-height: var(--tap); padding-inline: var(--space-4); font-size: .9375rem; }
+  .order-card__btn[aria-busy="true"] { opacity: .7; }
+  .order-card__details {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--tap);
+    margin: calc(var(--space-3) * -1) calc(var(--space-2) * -1) 0 0;
+    padding-inline: var(--space-2);
+    color: var(--color-heading);
+    font-size: var(--fs-small);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: var(--rose);
+    text-underline-offset: 4px;
+  }
+  .order-card__details .icon { width: 16px; height: 16px; transition: transform var(--dur-panel) var(--ease-out); }
+  @media (hover: hover) { .order-card__details:hover .icon { transform: translateX(3px); } }
+  .order-card__added { font-size: var(--fs-small); color: var(--color-heading); }
+  .order-card__added:empty { display: none; }
+  .order-card__added a { color: inherit; text-decoration-color: var(--rose); text-underline-offset: 3px; }
+  /* Phones: the buttons share the row equally, so every card lines up the same way. */
+  @media (max-width: 599px) {
+    .order-card__top { grid-template-columns: 64px minmax(0, 1fr) auto; gap: var(--space-3); }
+    .order-card__actions .order-card__btn { flex: 1 1 0; padding-inline: var(--space-3); }
+  }
+
+  .account__empty { display: grid; gap: var(--space-1); margin-bottom: var(--space-5); padding: var(--space-5); border: 1px dashed var(--color-line-strong); border-radius: var(--radius-md); background: var(--white); }
+  .account__empty-title { font-weight: 500; color: var(--color-heading); }
+  .account__empty-text { color: var(--color-muted); }
+
+  /* Saved and Recently viewed: the swipe row, cards only (no buttons), 4 across in this narrower column. */
+  .account .product-row { gap: 0; }
+  .account .product-row .saved-item__actions { display: none; }
+  @media (min-width: 990px) {
+    .account .product-row__list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .account .product-row__list > :nth-child(n + 5) { display: none; }
+  }
+
+  .account__details { padding: var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--white); }
+  .account__details .account__h2 { margin-bottom: var(--space-3); }
+  .account__dl { display: grid; }
+  .account__dl > div { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: var(--space-3); padding-block: var(--space-3); border-bottom: 1px solid var(--color-line); }
+  .account__dl > div:last-child { border-bottom: 0; }
+  .account__dl dt { font-size: var(--fs-small); color: var(--color-muted); }
+  .account__dl dd { margin: 0; overflow-wrap: anywhere; color: var(--color-heading); }
+  .account__muted { color: var(--color-muted); }
+  .account__edit { width: 100%; min-height: var(--tap); margin-top: var(--space-3); font-size: .9375rem; }
+
+  .account__help { display: grid; gap: var(--space-3); padding: var(--space-5); border-radius: var(--radius-lg); color: var(--color-ink); }
+  .account__help > p { color: var(--color-ink); }
+  .account__help-btns { display: grid; gap: var(--space-2); }
+  .account__help-btns .btn { min-height: var(--tap); font-size: .9375rem; }
+  .account__help-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-4); }
+  .account__help-links a { display: inline-flex; align-items: center; min-height: var(--tap); color: var(--color-heading); font-size: var(--fs-small); text-decoration-color: var(--cocoa); text-underline-offset: 3px; }
+
+  .account__out { display: grid; justify-items: start; gap: var(--space-1); }
+  .account__sign-out { min-height: var(--tap); font-size: .9375rem; }
+  @media (max-width: 899px) { .account__sign-out { width: 100%; } }
+{% endstylesheet %}

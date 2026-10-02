@@ -43,6 +43,12 @@ Things to finish in the Shopify admin (Raushan) before the store opens. Deferred
 - [ ] Account domain `account.<domain>` once the domain is connected
 - [ ] Sign in once on the preview link so the signed-in states can be checked
 
+## Account page (docs/account-hub-plan.md, built 2026-10-03)
+- [ ] **Page "Your account"** (Online Store → Pages → Add page): title "Your account", handle `account`, content empty. The handle is what matters: the header menu, the drawer row and the Help links find it by handle, whatever template the admin shows.
+- [ ] **Customer account main menu** (Content → Menus): Orders, Profile, Saved (`/pages/saved`), Help (`/pages/account#help`). Remove "Track an order": once signed in, the orders are right there. The Track page stays for guests (Help menu and the account page).
+- [ ] **Sign in once and look at the signed-in states:** the header menu (initial, latest order, Sign out), the account page's real orders (Track parcel / Buy again / Need help?), Your details, then Sign out → "You're signed out" on the page you were on. Signing in needs an email code, so this can't be scripted.
+- [ ] **Before launch:** delete `theme/templates/page.account-demo.json` with the other demo files (it shows made-up orders, and only while Demo content is on).
+
 ## Offers: free shipping, free gift, COD (docs/offers-plan.md §5, §7)
 The theme side is built. Everything stays hidden until these are done, and `npm run check` section 11 then compares the theme with the admin. Do them in this order:
 - [ ] **Meesho average order value** (last 3 months). Free shipping should sit about 15–30% above it. The plan's amounts are ₹999 and ₹1,499.
