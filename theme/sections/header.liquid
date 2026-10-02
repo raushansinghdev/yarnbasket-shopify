@@ -150,7 +150,8 @@
           {%- render 'icon', icon: 'search' -%}
           <span class="visually-hidden">{{ 'header.search' | t }}</span>
         </a>
-        <button type="button" class="icon-btn site-header__search" aria-haspopup="dialog" aria-controls="SearchPanel" aria-expanded="false" data-search-open hidden {% if request.page_type == 'search' %}aria-current="page"{% endif %}>
+        {%- comment -%} On /search the lens jumps to the page's own box (search-page.js), so it isn't a pop-up button there. {%- endcomment -%}
+        <button type="button" class="icon-btn site-header__search" {% if request.page_type == 'search' %}aria-current="page"{% else %}aria-haspopup="dialog" aria-controls="SearchPanel" aria-expanded="false"{% endif %} data-search-open hidden>
           {%- render 'icon', icon: 'search' -%}
           <span class="visually-hidden">{{ 'header.search' | t }}</span>
         </button>
@@ -214,7 +215,7 @@
       {%- assign i = i | plus: 1 -%}
       <li style="--i: {{ i }}">
         <a href="{{ routes.search_url }}" data-search-fallback>{%- render 'icon', icon: 'search' -%}{{ 'header.search' | t }}</a>
-        <button type="button" aria-haspopup="dialog" aria-controls="SearchPanel" aria-expanded="false" data-search-open hidden>
+        <button type="button" {% unless request.page_type == 'search' %}aria-haspopup="dialog" aria-controls="SearchPanel" aria-expanded="false"{% endunless %} data-search-open hidden>
           {%- render 'icon', icon: 'search' -%}{{ 'header.search' | t }}
         </button>
       </li>
