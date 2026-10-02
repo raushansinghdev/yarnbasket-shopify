@@ -9,7 +9,7 @@ const panel = document.getElementById('SearchPanel');
 const page = document.querySelector('[data-search-page]');
 const root = document.documentElement;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const phone = matchMedia('(max-width: 767px)');
+const phone = matchMedia('(max-width: 767px), (max-height: 500px)');
 const searchPath = document.querySelector('form[role="search"]')?.getAttribute('action') || '/search';
 const MIN = 2;
 const RECENT = 'yb-recent-searches';

@@ -1,9 +1,11 @@
 {%- doc -%}
   What search shows before anything is typed, and when nothing matches (docs/search-plan.md §5.3, §5.5, §8.4).
   - Recent searches (panel only): filled in by search.js from this browser's storage; hidden until there are some.
-  - Popular: links from Theme settings → Search → Popular searches menu. Demo chips while Demo content is on.
+  - Popular: links from Theme settings → Search → Popular searches menu; without one, the store's product types
+    (Bouquets, Keychains…); with no products yet, demo chips while Demo content is on.
   - No matches only: a "we make custom pieces" card that opens WhatsApp (Theme settings → Social), or the contact page.
   - Up to 4 products from Theme settings → Search → Products to suggest (default: "bestsellers", then "our-favourites").
+    Without any of those, 4 products from the whole store, labelled "Our makes" (never "Bestsellers" unless they are).
   In the panel, photos load only when the panel opens (lazy images in a closed dialog aren't fetched).
 
   @param {string} context - 'panel' or 'page'
@@ -17,11 +19,29 @@
   endif
   assign popular = settings.search_popular_menu
   assign picks = settings.search_products | default: collections['bestsellers'] | default: collections['our-favourites']
-  # A missing collection gives an empty value, not 0: make the count a number before comparing.
-  assign pick_count = picks.products_count | plus: 0
+  assign picks_label = 'search.picks' | t
+  # Suggestions skip sold-out products: nothing to tap through to.
+  assign buyable = picks.products | where: 'available'
+  if buyable.size == 0 and shop.products_count > 0
+    assign buyable = collections.all.products | where: 'available'
+    assign picks_label = 'search.picks_all' | t
+  endif
+  assign pick_count = buyable.size
   assign demo = false
   if settings.demo_content and shop.products_count == 0
     assign demo = true
+  endif
+  # Chips: the admin menu, else the store's product types, else demo chips.
+  assign type_list = ''
+  for type in shop.types
+    if type != blank
+      assign type_list = type_list | append: type | append: '|'
+    endif
+  endfor
+  assign types = type_list | split: '|'
+  assign has_chips = false
+  if popular.links.size > 0 or types.size > 0 or demo
+    assign has_chips = true
   endif
   assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
   if context == 'panel'
@@ -34,7 +54,7 @@
   {%- if none -%}
     <div class="search-start__none">
       <p class="search-start__none-title">{{ 'search.no_results' | t: terms: terms }}</p>
-      <p class="search-start__none-tip">{{ 'search.no_results_tip' | t }}</p>
+      <p class="search-start__none-tip">{% if has_chips %}{{ 'search.no_results_tip' | t }}{% else %}{{ 'search.no_results_tip_plain' | t }}{% endif %}</p>
     </div>
   {%- elsif context == 'panel' -%}
     <div class="search-start__group" data-search-recent hidden>
@@ -52,13 +72,17 @@
     </div>
   {%- endif -%}
 
-  {%- if popular.links.size > 0 or demo -%}
+  {%- if has_chips -%}
     <div class="search-start__group">
       {%- unless none -%}<h2 class="search-start__title eyebrow">{{ 'search.popular' | t }}</h2>{%- endunless -%}
       <ul class="search-start__chips" role="list">
         {%- if popular.links.size > 0 -%}
           {%- for link in popular.links limit: 6 -%}
             <li><a class="search-chip" href="{{ link.url }}">{{ link.title }}</a></li>
+          {%- endfor -%}
+        {%- elsif types.size > 0 -%}
+          {%- for type in types limit: 6 -%}
+            <li><a class="search-chip" href="{{ routes.search_url }}?q={{ type | url_encode }}&amp;options%5Bprefix%5D=last">{{ type | escape }}</a></li>
           {%- endfor -%}
         {%- else -%}
           {%- assign d_titles = 'Bouquets|Keychains|Hair clips|Bag charms|Flower pots' | split: '|' -%}
@@ -79,7 +103,9 @@
         <p class="search-custom__body">{{ 'search.custom_text' | t }}</p>
       </div>
       {%- if whatsapp != blank -%}
-        <a class="btn btn--ghost search-custom__btn" href="https://wa.me/{{ whatsapp }}?text={{ 'search.custom_message' | t: terms: terms | url_encode }}" rel="noopener" target="_blank">
+        {%- comment -%} t escapes the typed words for HTML; a WhatsApp message wants them plain. {%- endcomment -%}
+        {%- assign message = 'search.custom_message' | t: terms: terms | replace: '&lt;', '<' | replace: '&gt;', '>' | replace: '&quot;', '"' | replace: '&#39;', "'" | replace: '&amp;', '&' -%}
+        <a class="btn btn--ghost search-custom__btn" href="https://wa.me/{{ whatsapp }}?text={{ message | url_encode }}" rel="noopener" target="_blank">
           {%- render 'icon', icon: 'whatsapp' -%}
           {{ 'search.custom_whatsapp' | t }}
           <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
@@ -92,10 +118,10 @@
 
   {%- if pick_count > 0 or demo -%}
     <div class="search-start__group">
-      <h2 class="search-start__title eyebrow">{{ 'search.picks' | t }}</h2>
+      <h2 class="search-start__title eyebrow">{{ picks_label }}</h2>
       <ul class="{% if context == 'panel' %}search-start__products{% else %}product-grid{% endif %}" role="list">
         {%- if pick_count > 0 -%}
-          {%- for product in picks.products limit: 4 -%}
+          {%- for product in buyable limit: 4 -%}
             <li>{%- render 'product-card', product: product, index: forloop.index0, sizes: card_sizes, skip_bestseller: true -%}</li>
           {%- endfor -%}
         {%- else -%}

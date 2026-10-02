@@ -89,4 +89,8 @@
     .search-result__link:active { background: none; }
     .search-result__link:active .search-result__media { scale: .97; }
   }
+  /* Short screens (landscape phones): compact rows even when wide, so results fit above the keyboard. */
+  @media (max-height: 500px) {
+    .search-result__link { grid-template-columns: 56px minmax(0, 1fr); align-items: center; gap: var(--space-3); padding: var(--space-1); margin-inline: calc(var(--space-1) * -1); }
+  }
 {% endstylesheet %}

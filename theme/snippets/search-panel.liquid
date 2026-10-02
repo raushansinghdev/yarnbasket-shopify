@@ -1,6 +1,6 @@
 {%- doc -%}
   The search panel (docs/search-plan.md §5–§7). One <dialog>, two ways of showing it, decided by theme.js when it opens:
-  - Phones (under 768px): a full-screen modal sheet with its own field, label and Cancel button.
+  - Phones (under 768px wide, or 500px tall or less, e.g. landscape): a full-screen modal sheet: a back arrow and its own field in one row.
   - Wider: a non-modal panel under the header. Where the header has its search pill (768–1099px, 1280px+), the
     panel shows results only (.is-attached) and the pill stays the field. At 1100–1279px it brings its own field.
   It sits in the header's icon row right after the search controls, so Tab goes from the field straight into the results.
@@ -132,8 +132,9 @@
   /* A link was followed: the panel stays until the next page replaces it, dimmed so the tap is acknowledged. */
   .search-panel.is-leaving .search-panel__body { opacity: .6; transition: opacity 150ms ease; }
 
-  /* Wider screens: a panel hanging from the header, right-aligned with the page content. */
-  @media (min-width: 768px) {
+  /* Wider screens: a panel hanging from the header, right-aligned with the page content. Short screens (landscape
+     phones) keep the full sheet: a dropdown there is about 290px tall before the keyboard even opens. */
+  @media (min-width: 768px) and (min-height: 501px) {
     .search-panel {
       position: absolute;
       inset: 100% calc((100% - var(--content-width)) / 2) auto auto;

@@ -262,13 +262,13 @@ if (document.querySelector('.tip')) {
     const pill = document.getElementById('HeaderSearch');
     const own = document.getElementById('SearchPanelInput');
     const scrim = document.querySelector('[data-search-scrim]');
-    const phone = matchMedia('(max-width: 767px)');
+    const phone = matchMedia('(max-width: 767px), (max-height: 500px)');
     let returnTo = null;
     let loading = null;
     let closing = 0;
     let quiet = false;
 
-    // The real buttons replace the plain /search links (same box, so nothing moves).
+    // Buttons replace the plain /search links (same box: nothing moves).
     document.querySelectorAll('[data-search-fallback]').forEach((link) => (link.hidden = true));
     openers.forEach((button) => (button.hidden = false));
 
@@ -291,7 +291,7 @@ if (document.querySelector('.tip')) {
           scrim.hidden = false;
         }
         setExpanded(true);
-        // Carry the text across when the other field was used last.
+        // Carry the text across fields.
         const other = attached ? own : pill;
         if (!field().value && other?.value) field().value = other.value;
       }
@@ -301,17 +301,16 @@ if (document.querySelector('.tip')) {
     };
 
     const finish = (refocus) => {
+      // Quiet while closing: the dialog hands focus back to its opener, and the pill's focus would reopen it.
+      quiet = true;
       panel.close();
       panel.classList.remove('is-leaving');
       delete panel.dataset.closing;
       scrim.hidden = true;
       setExpanded(false);
       const target = shown(returnTo) ? returnTo : openers.find(shown);
-      if (refocus && target) {
-        quiet = true; // don't let the pill's focus reopen the panel
-        target.focus();
-        quiet = false;
-      }
+      if (refocus && target) target.focus();
+      quiet = false;
     };
     // Fade out (220ms), then close.
     const close = ({ refocus = false } = {}) => {
@@ -335,7 +334,7 @@ if (document.querySelector('.tip')) {
     pill?.addEventListener('input', () => !panel.open && open(pill));
     panel.querySelectorAll('[data-search-close]').forEach((button) => button.addEventListener('click', () => close({ refocus: true })));
 
-    // Esc: clears the text first, then closes. preventDefault also stops the dialog's own close.
+    // Esc clears the text, then closes (preventDefault stops the dialog's own close).
     const onKey = (event) => {
       if (event.key !== 'Escape' || !panel.open) return;
       event.preventDefault();

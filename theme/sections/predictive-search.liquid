@@ -58,7 +58,8 @@
     assign said = 'search.no_results' | t: terms: terms
   endif
 -%}
-<div class="ps" data-ps data-status="{{ said | escape }}">
+{%- comment -%} No | escape: t has already escaped the typed words, and escaping twice makes screen readers say "amp". {%- endcomment -%}
+<div class="ps" data-ps data-status="{{ said }}">
   {%- if total > 0 or n_queries > 0 -%}
     {%- if n_queries > 0 -%}
       <div class="ps__group">
@@ -146,6 +147,9 @@
   @container search-body (min-width: 560px) {
     .ps__chips { flex-wrap: wrap; overflow: visible; }
     .ps__products { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-5) var(--space-4); }
+  }
+  @media (max-height: 500px) {
+    .ps__products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px var(--space-5); }
   }
 {% endstylesheet %}
 
