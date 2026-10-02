@@ -506,6 +506,59 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   await browser.close();
 }
 
+// 12. Home media (docs/home-media-plan.md): hero photos are square on phones and desktop. The "Made by hand" video
+//     downloads nothing until the section is near, plays muted while it's in view, pauses on the button and when
+//     scrolled away, and never starts by itself with reduced motion or data saver (nothing is even fetched).
+//     Campaign cards are tested by hand: they need a dated block and Files images (home-media-plan "As built").
+{
+  const phone = { viewport: { width: 360, height: 780 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+  const media = async (device, opts = {}) => {
+    const { browser, page, errors } = await open(chromium, device, { reducedMotion: opts.reduce ? 'reduce' : 'no-preference', init: opts.init });
+    const mp4 = [];
+    page.on('request', (r) => { if (/\.mp4|\.m3u8/.test(r.url())) mp4.push(r.url()); });
+    const hero = await page.evaluate(() => { const r = document.querySelector('.hero__slide')?.getBoundingClientRect(); return r ? Math.abs(r.width - r.height) <= 1 : null; });
+    const early = mp4.length;
+    const has = await page.evaluate(() => !!document.querySelector('[data-story-video]'));
+    let v = null;
+    if (has) {
+      await page.evaluate(() => document.querySelector('[data-story-video]').scrollIntoView({ block: 'center' }));
+      await page.waitForTimeout(2500);
+      const state = () => page.evaluate(() => { const box = document.querySelector('[data-story-video]'); const el = box.querySelector('video'); return { playing: !el.paused && el.currentTime > 0, label: box.querySelector('[data-video-toggle]').getAttribute('aria-label') }; });
+      v = { inView: await state() };
+      if (opts.toggle) {
+        await page.click('[data-video-toggle]');
+        await page.waitForTimeout(400);
+        v.afterPause = await state();
+        await page.click('[data-video-toggle]');
+        await page.evaluate(() => scrollTo(0, 0));
+        await page.waitForTimeout(800);
+        v.away = await page.evaluate(() => !document.querySelector('[data-story-video] video').paused);
+      }
+      if (opts.axe) {
+        await page.evaluate(() => document.querySelector('[data-story-video]').scrollIntoView({ block: 'center' }));
+        await page.addScriptTag({ content: axe.source });
+        v.axe = await page.evaluate(async () => (await window.axe.run(document.querySelector('.story'), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+      }
+    }
+    await browser.close();
+    return { hero, early, has, v, fetched: mp4.length, errors };
+  };
+  const p = await media(phone, { toggle: true, axe: true });
+  record('Media, phone 360: hero photos are square', p.hero === true, `square: ${p.hero}`);
+  const d = await media(devices['Desktop Chrome']);
+  record('Media, desktop: hero frame is square', d.hero === true, `square: ${d.hero}`);
+  if (!p.has) console.log('SKIP  Media video checks                                no video in "Made by hand" (and Demo content is off)');
+  else {
+    record('Media, phone: no video download on first screen', p.early === 0, `${p.early} video request(s) before scrolling`);
+    record('Media, phone: video plays in view, button pauses, pauses off screen', p.v.inView.playing && !p.v.afterPause.playing && p.v.afterPause.label !== p.v.inView.label && p.v.away === false, `in view: ${p.v.inView.playing}, after Pause: ${p.v.afterPause.playing} ("${p.v.afterPause.label}"), scrolled away playing: ${p.v.away}`);
+    record('Media, phone: story with video (axe)', p.v.axe.length === 0 && p.errors.length === 0, (p.v.axe.join(', ') || '0 violations') + (p.errors.length ? `; errors: ${p.errors[0]}` : ''));
+    const r = await media(phone, { reduce: true });
+    record('Media, reduced motion: video never starts itself', !r.v.inView.playing && r.fetched === 0, `playing: ${r.v.inView.playing}, video requests: ${r.fetched}`);
+    const s = await media(phone, { init: () => Object.defineProperty(navigator, 'connection', { value: { saveData: true, effectiveType: '4g' } }) });
+    record('Media, data saver: video never starts or downloads', !s.v.inView.playing && s.fetched === 0, `playing: ${s.v.inView.playing}, video requests: ${s.fetched}`);
+  }
+}
+
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
 process.exit(failed.length ? 1 : 0);

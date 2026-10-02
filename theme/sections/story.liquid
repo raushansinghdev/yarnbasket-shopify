@@ -1,4 +1,40 @@
-{%- assign s = section.settings -%}
+{%- liquid
+  assign s = section.settings
+
+  # A short clip of the work (docs/home-media-plan.md §4), from Shopify's video picker: the 720p copy for phones, up
+  # to 1080p for desktop. While Demo content is on and nothing is picked, the brand kit's logo animation stands in.
+  assign v_small = blank
+  assign v_large = blank
+  assign v_alt = blank
+  if s.video != blank
+    assign best_small = 0
+    assign best_large = 0
+    for source in s.video.sources
+      if source.format != 'mp4'
+        continue
+      endif
+      assign short = source.width
+      if source.height < short
+        assign short = source.height
+      endif
+      if short <= 720 and short > best_small
+        assign v_small = source.url
+        assign best_small = short
+      endif
+      if short <= 1080 and short > best_large
+        assign v_large = source.url
+        assign best_large = short
+      endif
+    endfor
+    assign v_small = v_small | default: v_large
+    assign v_large = v_large | default: v_small
+    assign v_alt = s.video_alt | default: s.video.alt
+  elsif s.image == blank and settings.demo_content
+    assign v_small = 'demo-story-video-720.mp4' | asset_url
+    assign v_large = 'demo-story-video-1080.mp4' | asset_url
+    assign v_alt = 'The Yarn Basket logo drawing itself: a ball of yarn and a crochet hook in a basket'
+  endif
+-%}
 
 <section class="section story scheme-{{ s.scheme }}" aria-labelledby="Story-{{ section.id }}" data-inview>
   {%- comment -%}
@@ -23,6 +59,53 @@
 
   <div class="story__grid{% if s.panel %} story__grid--panel panel-blush{% endif %}">
     <div class="story__visual" data-arrive="settle">
+      {%- if v_small != blank -%}
+        {%- comment -%}
+          Muted, inline and looping, playing only while at least half of it is on screen, and nothing downloads until
+          the section is near (assets/story-video.js). The still frame is a lazy image of the same 4:5 shape, so
+          nothing jumps when the video takes over. It never plays by itself with reduced motion, lite mode or data
+          saver; the play button is always there (WCAG 2.2.2). The clip has no sound, so its name says what it shows
+          (WCAG 1.2.1), and the text beside it says the rest.
+        {%- endcomment -%}
+        <div class="media story__media story__media--video" style="--ratio: 4 / 5" data-story-video>
+          <video
+            class="story__video"
+            muted
+            loop
+            playsinline
+            preload="none"
+            disablepictureinpicture
+            disableremoteplayback
+            aria-label="{{ v_alt | escape }}"
+            data-src-small="{{ v_small }}"
+            data-src-large="{{ v_large }}"
+          ></video>
+          {%- if s.video != blank -%}
+            {{- s.video.preview_image | image_url: width: 1200 | image_tag:
+              widths: '400, 600, 800, 1000, 1200',
+              sizes: '(min-width: 990px) 45vw, calc(100vw - 40px)',
+              loading: 'lazy',
+              class: 'story__poster',
+              alt: ''
+            -}}
+          {%- else -%}
+            <img class="story__poster" src="{{ 'demo-story-video-poster.webp' | asset_url }}" alt="" width="800" height="1000" loading="lazy">
+          {%- endif -%}
+          <button
+            type="button"
+            class="story__toggle"
+            data-video-toggle
+            data-label-play="{{ 'story.play' | t }}"
+            data-label-pause="{{ 'story.pause' | t }}"
+            aria-label="{{ 'story.play' | t }}"
+            hidden
+          >
+            {%- render 'icon', icon: 'play', class: 'story__ico-play' -%}
+            {%- render 'icon', icon: 'pause', class: 'story__ico-pause' -%}
+          </button>
+        </div>
+        <script src="{{ 'story-video.js' | asset_url }}" type="module"></script>
+      {%- else -%}
       <div class="media story__media"{% if s.image %} style="--ratio: {{ s.image.aspect_ratio }}"{% elsif settings.demo_content %} style="--ratio: 1179 / 678"{% endif %}>
         {%- if s.image -%}
           {%- render 'image', image: s.image, sizes: '(min-width: 990px) 45vw, calc(100vw - 40px)', class: 'story__img' -%}
@@ -32,6 +115,7 @@
           {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}
         {%- endif -%}
       </div>
+      {%- endif -%}
     </div>
 
     <div class="story__copy" data-arrive="lines">
@@ -89,6 +173,31 @@
   .story__grid--panel::before { content: ""; position: absolute; inset: 0; z-index: -2; border-radius: inherit; background: var(--blush); }
   .story__grid--panel .story__media { border-radius: var(--radius-md); }
   .story__media { --ratio: 4 / 5; border-radius: var(--radius-lg); }
+
+  /* The clip: the still frame sits on top until the video is actually playing, then fades away. */
+  .story__poster { z-index: 1; transition: opacity var(--dur-panel) ease; }
+  .story__media--video[data-started] .story__poster { opacity: 0; }
+  .story__toggle {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--white) 88%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 22px -14px rgb(78 58 49 / .55);
+    color: var(--cocoa-deep);
+  }
+  .story__toggle[hidden] { display: none; }
+  .story__toggle .icon { width: 20px; height: 20px; }
+  .story__ico-pause, [data-playing] .story__ico-play { display: none; }
+  [data-playing] .story__ico-pause { display: block; }
+  @media (hover: hover) { .story__toggle:hover { background: var(--white); } }
   .story__copy { display: grid; gap: var(--space-4); justify-items: start; max-width: 32rem; }
   .story__icon { width: 52px; height: 52px; color: var(--color-heading); }
   .story__text { color: var(--color-ink); }
@@ -150,10 +259,22 @@
   "tag": "div",
   "settings": [
     {
+      "type": "video",
+      "id": "video",
+      "label": "Video",
+      "info": "Optional: 10–20 seconds of hands at work, filmed vertically and kept in the middle (it's shown 4:5). No text or music; it plays without sound. Upload in Content → Files. It replaces the photo."
+    },
+    {
+      "type": "text",
+      "id": "video_alt",
+      "label": "What the video shows",
+      "info": "One sentence for people who can't see it, e.g. \"Hands crocheting a red rose, petal by petal\"."
+    },
+    {
       "type": "image_picker",
       "id": "image",
       "label": "Photo",
-      "info": "Hands at work: crocheting, winding yarn or finishing a piece. Portrait."
+      "info": "Hands at work: crocheting, winding yarn or finishing a piece. Portrait. Shown when there's no video."
     },
     { "type": "checkbox", "id": "panel", "label": "Blush panel", "default": true, "info": "Sets the story on a rounded panel in the brand colour." },
     { "type": "text", "id": "eyebrow", "label": "Small label", "default": "How it's made" },

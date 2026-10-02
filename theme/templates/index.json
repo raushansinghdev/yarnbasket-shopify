@@ -222,10 +222,10 @@
   "order": [
     "hero",
     "shop",
+    "story",
     "occasions",
     "promise",
     "reviews",
-    "story",
     "faq",
     "newsletter"
   ]

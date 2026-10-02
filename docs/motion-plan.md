@@ -141,7 +141,7 @@ Replace the hard-coded selector lists with attributes any section can use:
 
 `theme.js` adds `html.lite` when `navigator.connection.saveData` is on, `deviceMemory` ≤ 2, or the network is 2G.
 Lite mode:
-- stops the decorative loops (floating flowers) and the hero slideshow autoplay;
+- stops the decorative loops (floating flowers), the hero slideshow autoplay and the story video autoplay;
 - skips photo fade-ins;
 - keeps every tap and drawer animation, because those are feedback, not decoration.
 
@@ -249,7 +249,7 @@ Each pattern is built once, as a snippet or a small module in `theme.js`, and re
 - **Fonts:** metric-matched fallbacks ("Cormorant Fallback" on Georgia Italic at 79.82%; "Jost Fallback" on Arial at
   96.39%; values measured from the font files). The font-swap layout shift with fonts delayed 1.5s went from 0.0017 to 0.
 - **Lite mode:** decided before first paint (data saver, 2G, ≤ 2 GB memory). It skips the floating flowers, the logo
-  intro, the photo fade-ins and the hero autoplay (the play button still works).
+  intro, the photo fade-ins, the hero autoplay and the story video autoplay (the play buttons still work).
 - **Hero on phones loads one photo ahead** instead of all four: about 216 KB less on first load (phone images
   880 → 664 KB). Verified in Pixel 7 and iPhone WebKit: the next photo is always ready before the swipe.
 - **Firefox gets a prefetch** when the pointer rests on a link (80ms) or a finger lands on it. Chrome and Edge keep the
@@ -279,7 +279,9 @@ Anything else that isn't GPU-friendly needs a decision entry.
 - GSAP or animation frameworks: about 70 KB for things CSS and a few lines of JS already do.
 - Parallax on text, cursor followers, magnetic buttons, confetti, animated gradients, page-load spinners, shimmer
   skeletons.
-- Autoplaying video with sound; autoplay anywhere on phones (the hero is swipe-only there).
+- Autoplaying video with sound; autoplay anywhere on phones (the hero is swipe-only there). **One exception**
+  (Raushan, decisions.md 2026-10-02): the "Made by hand" clip plays muted and inline while at least half of it is on
+  screen, fetched only when near, and never with reduced motion, lite mode or data saver (home-media-plan.md §4).
 - Motion longer than 1s that blocks content (only the logo intro, once a day, skippable).
 
 ---

@@ -2,6 +2,15 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-02 (home media built, docs/home-media-plan.md)
+
+- **Built as planned, with Raushan's two changes:** the video autoplays in view on phones too (guarded), and the hero is square on desktop too.
+  - Square hero: at 360 × 780 the craft circles moved from 691 to 644px.
+  - A campaign card adds 0px to the hero.
+  - "Made by hand" now follows Bestsellers.
+- **The test video is the brand kit's logo animation**, as demo content (`demo-story-video-*`), at Raushan's suggestion. It's deleted with the other demo assets before launch; the real clip goes in the section's Video setting.
+- **The video starts fetching at half a screen away, not a whole one.** Next to Bestsellers it's within one screen of the top on a 390px iPhone, and visitors who never scroll there shouldn't pay for it.
+
 ## 2026-10-02 (product cards are square)
 
 - **Every product card photo is square (1:1)**, the big home cards as well as the compact ones on the collection, search and saved pages. They were 4:5 before.

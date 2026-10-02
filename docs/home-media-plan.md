@@ -1,6 +1,42 @@
 # Home media plan: square hero photos, campaign banners, and "Made by hand" video
 
-Status: **proposed 2026-10-02, plan only.** Raushan approved the direction in chat (the recommended options): square hero photos every day, a dated campaign mode built now, video in "Made by hand", and trying "Made by hand" right after Bestsellers. This document turns that into a buildable spec. **Nothing is built until Raushan reviews this plan and says go.**
+Status: **built 2026-10-02** (stages A–E). Raushan reviewed the plan, changed M4 and M6 (below), and said go. The test video is the brand kit's logo animation, as demo content.
+
+### As built (where it differs from the plan below)
+- **Square hero (A):**
+  - `.hero__media --ratio: 1` and the phone/tablet slides use `aspect-ratio: 1`. The editor info for photos says "Square, at least 1200 px".
+  - **Measured at 360 × 780:** photos 198 × 198, and the craft circles start at **644px (was 691)**. At 390 × 844 (iPhone): 215 × 215, circles at 662. At 1280 × 800: the frame is 449 × 449.
+- **Campaign block (B):**
+  - Built as specified: at most one; "Show from" / "Show until"; it's slide 1 and gets `fetchpriority=high`, while the product photo loses its priority.
+  - On phones the card is 4:3 at `62% × 4/3` (264 × 198 at 360, so the next photo still peeks in by 64px). At 44% × 4/3 on tablets.
+  - The desktop photo comes through `<picture>`. Without one, the phone photo is shown whole (`object-fit: contain`, Soft blush mat). With only a desktop photo, the phone card is square.
+  - The CTA switches to the campaign's button label and link while it's live.
+  - **Theme editor only:** a campaign outside its dates still shows, with a dark note ("Not on the site now: shows … to …"); a campaign with no end date says so.
+  - `max_blocks` went from 4 to 5 (4 photos plus the campaign).
+  - **Tested by hand**, because a campaign needs Files images and the dev store has none. Product photos stood in through a temporary local patch, removed afterwards; the files were checked against their backups. Four cases at 360 and 1280: live, live without a desktop photo, expired, not started yet. **0px added to the hero, LCP on the campaign photo (1.2–1.3s), axe 0.**
+- **Video (C):**
+  - `sections/story.liquid` gained Shopify's `video` setting and "What the video shows". It picks the mp4 copies: ≤720 on the short side for phones, ≤1080 for desktop.
+  - The still frame is a **lazy `<img>` in the same 4:5 box**, not the `poster` attribute (which loads eagerly), so nothing jumps.
+  - `assets/story-video.js` (about 3 KB) loads only when there's a video:
+    - plays muted, inline and looping at ≥50% in view
+    - the shopper's pause sticks; the shopper's play overrides everything
+    - reduced motion is checked live, plus lite mode and data saver
+    - a refused autoplay falls back to the play button
+  - **Fetching starts at half a screen away, not a whole screen.** At 390 × 844 the section sits within one screen of the top now that it follows Bestsellers, and a real 1–2 MB clip shouldn't load for people who never scroll there.
+  - **Demo:** `assets/demo-story-video-720.mp4` (35 KB), `-1080.mp4` (66 KB) and `-poster.webp` (9 KB), made from `brand/animation/logo-animation-1080x1920-story.mp4` with no sound. They show while Demo content is on and nothing is picked, replacing the demo rose photo there. They go with the other `demo-*` assets before launch.
+  - `motion-plan.md` §8 has the exception, and §3.7/6b list the story video under lite mode (agreed with session 7f).
+- **Order (D):** hero, Bestsellers, **story**, occasions, promise, reviews, FAQ, newsletter. Judge it on the phone.
+- **Checks (E):** `npm run check` section 12:
+  - square hero on phone and desktop
+  - no video request before scrolling
+  - the video plays in view, Pause works, it pauses off screen
+  - axe on the story with video
+  - reduced motion and data saver: no autoplay and **no download**
+
+  §10 needed no change: square photos only moved the circles up.
+  - Full run: 94/95. The one miss was a single slow frame in the desktop scroll test, which had flaked before. It passed 3 out of 3 re-runs with 0 slow frames, phone and desktop, while the video was playing.
+
+Original plan below, kept as written (with the review changes).
 
 **Revised after review (2026-10-02):**
 - **M4:** the video **autoplays on phones too** when it's in view, with guards (§4). This is a deliberate exception to motion-plan §8.

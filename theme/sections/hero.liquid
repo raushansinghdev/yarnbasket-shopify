@@ -8,6 +8,61 @@
     assign img_priority = false
   endif
   assign parts = s.heading | split: '*'
+
+  # A campaign (docs/home-media-plan.md §3) is the first photo while today is within its dates, then hides itself.
+  # The theme editor still shows a campaign outside its dates, with a note, so it can be set up ahead.
+  assign today = 'now' | date: '%Y%m%d' | plus: 0
+  assign campaign = nil
+  assign campaign_note = blank
+  assign photo_count = 0
+  for block in section.blocks
+    if block.type == 'photo'
+      assign photo_count = photo_count | plus: 1
+      continue
+    endif
+    assign c = block.settings
+    if c.image_phone == blank and c.image_desktop == blank
+      continue
+    endif
+    assign c_live = true
+    assign c_from = c.show_from | remove: '-' | strip
+    assign c_until = c.show_until | remove: '-' | strip
+    if c_from != blank
+      assign c_from_num = c_from | plus: 0
+      if c_from_num > today
+        assign c_live = false
+      endif
+    endif
+    if c_until != blank
+      assign c_until_num = c_until | plus: 0
+      if c_until_num < today
+        assign c_live = false
+      endif
+    endif
+    if c_live
+      assign campaign = block
+      if c_until == blank and request.design_mode
+        assign campaign_note = 'hero.campaign_no_end' | t
+      endif
+    elsif request.design_mode
+      assign campaign = block
+      assign c_from_text = c.show_from | default: '…'
+      assign c_until_text = c.show_until | default: '…'
+      assign campaign_note = 'hero.campaign_hidden' | t: from: c_from_text, until: c_until_text
+    endif
+  endfor
+
+  assign cta_label = s.button_label
+  assign cta_link = s.button_link | default: routes.all_products_collection_url
+  if campaign and campaign.settings.button_label != blank
+    assign cta_label = campaign.settings.button_label
+    assign cta_link = campaign.settings.link | default: cta_link
+  endif
+  # The campaign photo is the page's main image while it's on; the product photo steps back.
+  assign main_priority = img_priority
+  if campaign
+    assign main_priority = false
+  endif
 -%}
 
 {%- capture heading_html -%}
@@ -39,16 +94,16 @@
       {%- if s.text != blank -%}
         <p class="lead hero__text hero__anim" style="--d: 140ms">{{ s.text }}</p>
       {%- endif -%}
-      {%- if s.button_label != blank or s.link_label != blank -%}
+      {%- if cta_label != blank or s.link_label != blank -%}
         {%- comment -%}
           One way in (docs/home-hero-plan.md H2, v3): on the light backgrounds (Soft blush, White) a Blush pill with a
           white knob, phones and desktop alike: pink as the supporting colour. On a Blush hero that pill would vanish, so
           there it's a quiet text link on phones and a Cocoa pill on desktop. An optional second link is always a link.
         {%- endcomment -%}
         <div class="hero__actions hero__anim" style="--d: 220ms">
-          {%- if s.button_label != blank -%}
-            <a class="btn btn--knob hero__cta" href="{{ s.button_link | default: routes.all_products_collection_url }}">
-              {{- s.button_label -}}
+          {%- if cta_label != blank -%}
+            <a class="btn btn--knob hero__cta" href="{{ cta_link }}">
+              {{- cta_label -}}
               <span class="btn__knob">{%- render 'icon', icon: 'arrow' -%}</span>
             </a>
           {%- endif -%}
@@ -73,10 +128,15 @@
       {%- liquid
         assign img_sizes = '(min-width: 990px) 46vw, (min-width: 600px) 44vw, 62vw'
         assign demo_slides = ''
-        if section.blocks.size == 0 and settings.demo_content
+        if photo_count == 0 and settings.demo_content
           assign demo_slides = 'bee-keychain|Bee crochet keychain|bee-chick-keychain-set|Bee keychain,cat-hair|Crochet flower hair clips|flower-hair-clips-set-of-8|Flower hair clips,cat-charms|Lily of the valley bag charm|lily-of-the-valley-bag-charm|Lily bag charm' | split: ','
         endif
-        assign total = section.blocks.size | plus: demo_slides.size | plus: 1
+        assign total = photo_count | plus: demo_slides.size | plus: 1
+        assign first_n = 1
+        if campaign
+          assign total = total | plus: 1
+          assign first_n = 2
+        endif
 
         assign main_product = s.product
         assign main_label = s.label
@@ -95,10 +155,67 @@
         {% if total > 1 %}role="region" aria-roledescription="carousel" aria-label="{{ 'hero.slideshow' | t }}" data-hero-slides{% endif %}
       >
         <div class="media hero__media">
-          <div class="hero__slide is-active"{% if total > 1 %} role="group" aria-roledescription="slide" aria-label="{{ 'hero.slide_of' | t: index: 1, total: total }}"{% endif %}>
+          {%- if campaign -%}
+            {%- liquid
+              assign cs = campaign.settings
+              assign c_desk = cs.image_desktop
+              assign c_phone = cs.image_phone | default: c_desk
+              assign c_square = false
+              if cs.image_phone == blank
+                assign c_square = true
+              endif
+              assign c_url = cs.link | default: routes.all_products_collection_url
+              assign c_alt = c_phone.alt | escape
+              if cs.label != blank
+                assign c_alt = ''
+              endif
+              assign c_fetch = 'auto'
+              if img_priority
+                assign c_fetch = 'high'
+              endif
+            -%}
+            {%- comment -%}
+              Phones: a 4:3 card exactly as tall as the square photos, so a campaign adds no height. Desktop: the first
+              slide in the square frame, from its own square photo; without one, the phone photo is shown whole.
+            {%- endcomment -%}
+            <div
+              class="hero__slide hero__slide--campaign{% if c_square %} hero__slide--square{% endif %}{% if c_desk == blank %} hero__slide--contain{% endif %} is-active"
+              role="group"
+              aria-roledescription="slide"
+              aria-label="{{ 'hero.slide_of' | t: index: 1, total: total }}"
+              {{ campaign.shopify_attributes }}
+            >
+              <a class="hero__link" href="{{ c_url }}">
+                <picture>
+                  {%- if c_desk != blank -%}
+                    <source
+                      media="(min-width: 990px)"
+                      srcset="{{ c_desk | image_url: width: 600 }} 600w, {{ c_desk | image_url: width: 900 }} 900w, {{ c_desk | image_url: width: 1200 }} 1200w, {{ c_desk | image_url: width: 1600 }} 1600w"
+                      sizes="46vw"
+                    >
+                  {%- endif -%}
+                  {{- c_phone | image_url: width: 1800 | image_tag:
+                    widths: '480, 640, 828, 1080, 1440, 1800',
+                    sizes: '(min-width: 990px) 46vw, (min-width: 600px) 59vw, 83vw',
+                    loading: img_loading,
+                    fetchpriority: c_fetch,
+                    class: 'hero__img',
+                    alt: c_alt
+                  -}}
+                </picture>
+                {%- if cs.label != blank -%}
+                  <span class="hero__tag"><span class="hero__tag-name">{{ cs.label | escape }}</span></span>
+                {%- endif -%}
+                {%- if campaign_note != blank -%}
+                  <span class="hero__note">{{ campaign_note }}</span>
+                {%- endif -%}
+              </a>
+            </div>
+          {%- endif -%}
+          <div class="hero__slide{% unless campaign %} is-active{% endunless %}"{% if total > 1 %} role="group" aria-roledescription="slide" aria-label="{{ 'hero.slide_of' | t: index: first_n, total: total }}"{% endif %}{% if campaign %} inert{% endif %}>
             <a class="hero__link" href="{{ main_url }}">
               {%- if s.image -%}
-                {%- render 'image', image: s.image, sizes: img_sizes, loading: img_loading, priority: img_priority, class: 'hero__img', decorative: main_tagged -%}
+                {%- render 'image', image: s.image, sizes: img_sizes, loading: img_loading, priority: main_priority, class: 'hero__img', decorative: main_tagged -%}
               {%- elsif settings.demo_content -%}
                 {%- liquid
                   assign d_alt = 'Sunflower Trio Crochet Bouquet'
@@ -106,16 +223,18 @@
                     assign d_alt = ''
                   endif
                 -%}
-                {%- render 'demo-image', name: 'hero-sunflowers', sizes: img_sizes, loading: img_loading, priority: img_priority, class: 'hero__img', alt: d_alt -%}
+                {%- render 'demo-image', name: 'hero-sunflowers', sizes: img_sizes, loading: img_loading, priority: main_priority, class: 'hero__img', alt: d_alt -%}
               {%- else -%}
                 {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
               {%- endif -%}
               {%- render 'hero-tag', product: main_product, label: main_label -%}
             </a>
           </div>
+          {%- assign n = first_n -%}
           {%- for block in section.blocks -%}
+            {%- if block.type != 'photo' -%}{%- continue -%}{%- endif -%}
             {%- liquid
-              assign n = forloop.index | plus: 1
+              assign n = n | plus: 1
               assign b = block.settings
               assign b_url = b.link | default: b.product.url | default: routes.all_products_collection_url
               assign b_tagged = false
@@ -124,7 +243,7 @@
               endif
               # The second photo is on the first screen in the phone row, so it doesn't wait for lazy loading.
               assign b_loading = 'lazy'
-              if forloop.first and section.index == 1
+              if n == 2 and section.index == 1
                 assign b_loading = 'eager'
               endif
             -%}
@@ -142,7 +261,7 @@
           {%- for slide in demo_slides -%}
             {%- liquid
               assign d = slide | split: '|'
-              assign n = forloop.index | plus: 1
+              assign n = forloop.index | plus: first_n
               assign d_product = all_products[d[2]]
               assign d_url = d_product.url | default: routes.all_products_collection_url
               assign d_alt = d[1]
@@ -150,7 +269,7 @@
                 assign d_alt = ''
               endif
               assign d_loading = 'lazy'
-              if forloop.first and section.index == 1
+              if n == 2 and section.index == 1
                 assign d_loading = 'eager'
               endif
             -%}
@@ -278,10 +397,24 @@
   }
 
   .hero__visual { position: relative; }
-  .hero__media { display: block; --ratio: 4 / 5; border-radius: var(--radius-lg); z-index: 0; }
+  .hero__media { display: block; --ratio: 1; border-radius: var(--radius-lg); z-index: 0; }
   .hero__link { position: absolute; inset: 0; display: block; border-radius: inherit; }
   .hero__link:focus-visible { outline-offset: -5px; }
-  .hero__link > img, .hero__link > svg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .hero__link > img, .hero__link > svg, .hero__link > picture > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* Theme editor only: why a campaign shows here but not on the site. */
+  .hero__note {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1;
+    max-width: calc(100% - 20px);
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--cocoa-deep);
+    color: var(--white);
+    font-size: .75rem;
+    font-weight: 500;
+  }
   .hero__img { transition: scale 1100ms var(--ease-out); }
 
   /* The product's name and live price on the photo (hero-tag). The name gives way first on a narrow photo. */
@@ -343,7 +476,9 @@
 
   /* ---------- Phones and tablets: products sooner (docs/home-hero-plan.md §3) ----------
      A two-line heading, one quiet text link, and the photos as a swipe row with the next one peeking in, so two
-     products show at once and the peek says "there's more" without dots. Nothing moves on its own here. */
+     products show at once and the peek says "there's more" without dots. Nothing moves on its own here.
+     Square photos, phone and desktop (docs/home-media-plan.md §2): the product photos are square, so nothing is
+     cropped, and the row is about 50px shorter than at 4:5. */
   @media (max-width: 989px) {
     .hero { padding-top: 1.25rem; padding-bottom: var(--space-2); }
     .hero.scheme-blush { --hero-fade: 64px; }
@@ -389,7 +524,7 @@
     .hero__slide {
       position: relative;
       flex: 0 0 62%;
-      aspect-ratio: 4 / 5;
+      aspect-ratio: 1;
       overflow: hidden;
       border-radius: var(--radius-lg);
       background: var(--color-surface);
@@ -397,10 +532,19 @@
     }
     /* A single photo fills the width, square, rather than sitting alone at 62%. */
     .hero__frame:not([data-hero-slides]) .hero__slide { flex-basis: 100%; aspect-ratio: 1; }
+    /* A campaign is a 4:3 card exactly as tall as the squares beside it: wider, never taller (home-media-plan §3). */
+    .hero__slide.hero__slide--campaign { flex-basis: calc(62% * 4 / 3); aspect-ratio: 4 / 3; }
+    .hero__slide.hero__slide--square { flex-basis: 62%; aspect-ratio: 1; }
     .hero__controls, .hero__flower { display: none; }
   }
   @media (min-width: 600px) and (max-width: 989px) {
     .hero__slide { flex-basis: 44%; }
+    .hero__slide.hero__slide--campaign { flex-basis: calc(44% * 4 / 3); }
+    .hero__slide.hero__slide--square { flex-basis: 44%; }
+  }
+  /* Desktop without a square campaign photo: the landscape one is shown whole on a Soft blush mat, never cropped. */
+  @media (min-width: 990px) {
+    .hero__slide--contain .hero__img { object-fit: contain; background: var(--blush-soft); }
   }
   /* When Bestsellers follows the hero, it moves up too: the hero already gives it room. */
   @media (max-width: 989px) {
@@ -635,7 +779,7 @@
       "type": "image_picker",
       "id": "image",
       "label": "Main photo",
-      "info": "Portrait or square, at least 1600 px wide. One product, plenty of space around it."
+      "info": "Square, at least 1200 px. One product, centred, with space around it: the name and price sit along the bottom."
     },
     { "type": "product", "id": "product", "label": "Product in the main photo", "info": "Shows its name and price on the photo, and the photo links to it." },
     { "type": "text", "id": "label", "label": "Short name on the photo", "info": "Optional, e.g. \"Sunflower bouquet\". Defaults to the product's title. Keep it to two or three words." },
@@ -677,19 +821,34 @@
     },
     {
       "type": "paragraph",
-      "content": "Add Photo blocks to show more products. On phones they sit in a swipe row after the main photo; on desktop they cross-fade slowly, 7 seconds each."
+      "content": "Add Photo blocks to show more products. On phones they sit in a swipe row after the main photo; on desktop they cross-fade slowly, 7 seconds each. Add a Campaign block for Diwali, Rakhi or a new collection: it goes first while it's on, and hides itself after its last day."
     }
   ],
-  "max_blocks": 4,
+  "max_blocks": 5,
   "blocks": [
     {
       "type": "photo",
       "name": "Photo",
       "settings": [
-        { "type": "image_picker", "id": "image", "label": "Photo", "info": "Same shape as the main photo: portrait or square, one product. Set the alt text on the image itself." },
+        { "type": "image_picker", "id": "image", "label": "Photo", "info": "Square like the main photo, one product. Set the alt text on the image itself." },
         { "type": "product", "id": "product", "label": "Product in the photo", "info": "Shows its name and price on the photo, and the photo links to it." },
         { "type": "text", "id": "label", "label": "Short name on the photo", "info": "Optional. Defaults to the product's title." },
         { "type": "url", "id": "link", "label": "Link", "info": "Optional. Defaults to the product above." }
+      ]
+    },
+    {
+      "type": "campaign",
+      "name": "Campaign",
+      "limit": 1,
+      "settings": [
+        { "type": "paragraph", "content": "A dated campaign (docs/home-media-plan.md §3). While it's on, it's the first photo: a wider card in the phone row (same height, so the hero doesn't grow) and the first slide on desktop. It hides itself after \"Show until\"." },
+        { "type": "image_picker", "id": "image_phone", "label": "Phone photo", "info": "Landscape 4:3, at least 1600 px wide. No text in the photo: it blurs on phones and can't be read aloud. Keep the bottom-left clear for the label." },
+        { "type": "image_picker", "id": "image_desktop", "label": "Desktop photo", "info": "Square, at least 1200 px. Optional: without it, the phone photo is shown whole on desktop." },
+        { "type": "text", "id": "label", "label": "Label on the photo", "info": "About 30 characters, e.g. \"Diwali gifts · Order by 26 Oct\". It also names the link for screen readers." },
+        { "type": "url", "id": "link", "label": "Link", "info": "Usually the campaign's collection." },
+        { "type": "text", "id": "button_label", "label": "Button label", "info": "Optional. Replaces the hero button while the campaign is on, e.g. \"Shop Diwali gifts\". It goes to the link above." },
+        { "type": "text", "id": "show_from", "label": "Show from", "placeholder": "2026-10-15", "info": "Optional. Date as YYYY-MM-DD, so you can set a campaign up ahead." },
+        { "type": "text", "id": "show_until", "label": "Show until", "placeholder": "2026-10-27", "info": "Date as YYYY-MM-DD. After this day it hides itself and the products come back. Shopify caches pages, so allow a day's margin." }
       ]
     }
   ],
