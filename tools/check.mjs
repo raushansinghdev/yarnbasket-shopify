@@ -292,6 +292,87 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   }
 }
 
+// 9. Account & saved (docs/account-plan.md): a heart saves and survives a reload; the drawer's account row opens
+//    Shopify's sheet (phones) and Esc returns to the menu button; the Saved page draws the list, Remove + Undo work;
+//    a shared link is read-only with "Save all"; axe on the Saved (full and empty) and Track pages. Until Raushan
+//    creates the Saved and Track pages, they're previewed on /pages/contact with ?view=. Needs products.
+{
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products, () => []);
+  const handles = products.filter((p) => p.variants.some((v) => v.available)).slice(0, 3).map((p) => p.handle);
+  const pageUrl = async (handle, view) => ((await fetch(site(`/pages/${handle}`))).ok ? site(`/pages/${handle}`) : site(`/pages/contact?view=${view}`));
+  if (handles.length < 2) console.log('SKIP  Account & saved checks                         no products in the store (import tools/test-products.csv)');
+  else {
+    const savedUrl = await pageUrl('saved', 'saved');
+    const trackUrl = await pageUrl('track-order', 'track-order');
+    const join = (url, q) => url + (url.includes('?') ? '&' : '?') + q;
+    for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
+      const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
+      const axeOn = async () => {
+        await page.addScriptTag({ content: axe.source });
+        return page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+      };
+      await page.evaluate(() => localStorage.removeItem('yb-saved'));
+      await page.goto(site('/collections/all'), { waitUntil: 'load' });
+      const heart = page.locator('#MainContent .card [data-save]').first();
+      await heart.click();
+      const handle = await heart.getAttribute('data-save');
+      const toast = await page.waitForSelector('.saved-toast', { timeout: 4000 }).then(() => true, () => false);
+      await page.reload({ waitUntil: 'load' });
+      const kept = await page.locator(`#MainContent .card [data-save="${handle}"]`).first().getAttribute('aria-pressed');
+      record(`Saved, ${label}: a heart saves, with the pop-up`, toast && kept === 'true', `pop-up: ${toast}, still saved after reload: ${kept}`);
+
+      if (label === 'phone') {
+        await page.click('[data-menu-open]');
+        await page.waitForTimeout(400);
+        await page.click('[data-account-open]');
+        const sheet = await page.waitForFunction(() => document.querySelector('[data-account]')?.shadowRoot?.querySelector('dialog')?.open, null, { timeout: 8000 }).then(() => true, () => false);
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(400);
+        const back = await page.evaluate(() => document.activeElement?.matches('[data-menu-open]'));
+        record('Account, phone: drawer row opens the sign-in sheet', sheet && back, `sheet opened: ${sheet}, Esc returns to the menu button: ${back}`);
+      }
+
+      await page.evaluate((h) => localStorage.setItem('yb-saved', JSON.stringify(h)), handles);
+      await page.goto(savedUrl, { waitUntil: 'load' });
+      await page.waitForFunction((n) => document.querySelectorAll('[data-saved-grid] .saved-item').length === n, handles.length, { timeout: 10000 }).catch(() => {});
+      const drawn = await page.locator('[data-saved-grid] .saved-item').count();
+      const v1 = await axeOn();
+      record(`Saved page, ${label}: draws the list (axe)`, drawn === handles.length && v1.length === 0, `${drawn}/${handles.length} cards; ${v1.join(', ') || '0 violations'}`);
+
+      await page.locator('[data-saved-grid] [data-save]').first().click();
+      await page.waitForTimeout(400);
+      const after = await page.locator('[data-saved-grid] .saved-item').count();
+      await page.click('.saved-toast [data-toast-action]');
+      await page.waitForTimeout(300);
+      const restored = await page.evaluate(() => JSON.parse(localStorage.getItem('yb-saved') || '[]').length);
+      record(`Saved page, ${label}: Remove, then Undo`, after === handles.length - 1 && restored === handles.length, `after remove: ${after}, after Undo: ${restored} saved`);
+
+      if (label === 'desktop') {
+        await page.evaluate(() => localStorage.removeItem('yb-saved'));
+        await page.goto(join(savedUrl, `list=${handles.slice(0, 2).join(',')}`), { waitUntil: 'load' });
+        await page.waitForSelector('[data-saved-grid] .saved-item', { timeout: 10000 }).catch(() => {});
+        await page.click('[data-saved-save-all]');
+        const all = await page.evaluate(() => JSON.parse(localStorage.getItem('yb-saved') || '[]').length);
+        record('Saved page: a shared list, Save all', all === 2, `${all} saved from the shared link`);
+
+        await page.evaluate(() => localStorage.removeItem('yb-saved'));
+        await page.goto(savedUrl, { waitUntil: 'load' });
+        await page.waitForTimeout(800);
+        const empty = await page.isVisible('[data-saved-empty]');
+        const v2 = await axeOn();
+        record('Saved page: empty state (axe)', empty && v2.length === 0, `empty state shown: ${empty}; ${v2.join(', ') || '0 violations'}`);
+
+        await page.goto(trackUrl, { waitUntil: 'load' });
+        const v3 = await axeOn();
+        record('Track order page (axe)', v3.length === 0, v3.join(', ') || '0 violations');
+      }
+      record(`Account & saved, ${label}: no script errors`, errors.length === 0, errors[0] || 'none');
+      await browser.close();
+    }
+  }
+}
+
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
 process.exit(failed.length ? 1 : 0);

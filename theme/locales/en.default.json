@@ -246,5 +246,69 @@
     "choose_craft": "Choose a craft",
     "see_all": "See all {{ craft }}",
     "status": "Showing {{ craft }}, {{ shown }} of {{ total }}"
+  },
+  "account": {
+    "sign_in": "Sign in",
+    "greeting": "Hi, {{ name }}",
+    "your_account": "Your account",
+    "row_hint": "Orders, saved items & help"
+  },
+  "saved": {
+    "title": "Saved",
+    "items": "Saved items",
+    "save": "Save",
+    "save_label": "Save {{ title }}",
+    "count": {
+      "one": "1 piece",
+      "other": "{{ count }} pieces"
+    },
+    "on_device": "on this device",
+    "added": "Saved",
+    "view": "View saved",
+    "dismiss": "Dismiss",
+    "removed": "Removed from saved",
+    "undo": "Undo",
+    "said_saved": "Saved to your list.",
+    "said_removed": "Removed from your list.",
+    "said_restored": "Back in your list.",
+    "empty_title": "Nothing saved yet",
+    "empty_text": "Tap the heart on anything you love, and it waits here for you.",
+    "share": "Share list",
+    "share_title": "My Yarn Basket wishlist",
+    "copied": "Link copied",
+    "shared_title": "A wishlist for you",
+    "shared_text": "Picked from Yarn Basket. Tap the heart to keep any for yourself.",
+    "save_all": "Save all to my list",
+    "saved_all": "All saved to your list",
+    "gone": {
+      "one": "1 saved piece is no longer available.",
+      "other": "{{ count }} saved pieces are no longer available."
+    },
+    "sign_in_hint": "Sign in to see your orders and details anywhere",
+    "recent": "Recently viewed",
+    "clear_recent": "Clear",
+    "choose": "Choose options",
+    "ask_make": "Ask us to make one",
+    "ask_message": "Hi Yarn Basket! Could you make the {{ title }} for me?",
+    "bestsellers": "Bestsellers",
+    "our_makes": "Our makes",
+    "error": "Couldn't load your saved pieces. Check your connection and try again.",
+    "retry": "Try again"
+  },
+  "track": {
+    "title": "Track your order",
+    "lead_out": "Sign in with the email or Google account you used at checkout. No password needed.",
+    "sign_in": "Sign in to see your orders",
+    "or_email": "Or open the tracking link in your shipping email.",
+    "lead_in": "Every order and its tracking is in your account.",
+    "see_orders": "See your orders",
+    "latest": "Your latest order",
+    "order": "Order {{ name }}",
+    "track": "Track",
+    "help_title": "Need help with an order?",
+    "help_text": "Message us with your order number and we'll sort it out.",
+    "whatsapp": "WhatsApp us",
+    "whatsapp_message": "Hi Yarn Basket! I have a question about my order #",
+    "contact": "Contact us"
   }
 }

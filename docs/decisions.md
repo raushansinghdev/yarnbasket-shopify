@@ -2,6 +2,20 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-02 (home hero on phones, docs/home-hero-plan.md; plan only, not built)
+
+- **Directions H1–H4** (Raushan chose the recommended option on all four):
+  - H1: photos become a peek row, portrait photos at about 62% width with the next one peeking in
+  - H2: one quiet "Shop all crochet →" text link with a stitched underline replaces both buttons, on phones and desktop
+  - H3: "Find a gift" leaves the hero
+  - H4: shorter two-line intro text
+- **Why:** on phones "Loved most" started 1.2–1.3 screens down and the first price nearly 2 screens down. The 4:5 photo frame (418px) and two full-width buttons (148px) took most of that. A live prototype puts "Loved most" and the craft circles on the first screen, even at 360 × 780, and the first price about 450px sooner.
+- **Plan v2 (pending Raushan's review of the demos):**
+  - desktop keeps one pill instead of the text link, which looked lost at 1440
+  - the text link's underline becomes solid
+  - a Cocoa trust bar (needs the real shipping and COD terms)
+  - optional name and price labels on the hero photos
+  - a proposed section order: occasions, reviews and promise move above the story
 
 ## 2026-10-02 (account, docs/account-plan.md)
 
@@ -15,6 +29,7 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   - made-to-order pieces as draft orders, so they show in Orders
   - self-serve returns on, made-to-order pieces final sale
   - saved items work without signing in, on this device first; sync later
+- **Built (2026-10-02), one change:** the header's account button starts at 900px, not 768px. Below that it brought the centred name within 8–30px of the search field; the drawer's account row covers those widths.
 - **Why hearts on cards:** shoppers shortlist while browsing a grid, Indian shoppers expect it (Myntra, Meesho, Nykaa), and a filled heart shows what's already saved. Kept calm: a small circle on the photo's top-right, badges stay top-left.
 
 ## 2026-10-02 (desktop header layout)

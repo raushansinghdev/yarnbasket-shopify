@@ -1,7 +1,8 @@
 {%- doc -%}
   Product card, modelled on the brand kit's Instagram photo frame: a rounded 4:5 photo on Oat,
   the name in Cormorant italic and the price in Jost, nothing more (simple, like an Instagram post).
-  Shows the second photo on hover (desktop) and at most one badge. Renders a placeholder card when product is blank.
+  Shows the second photo on hover (desktop), at most one badge, and a heart to save it (snippets/save-button, beside the
+  link so it's its own Tab stop). Renders a placeholder card when product is blank.
 
   The badge is true data (docs/home-shop-plan.md §4): Sold out wins, then "Last few" (tracked stock of 3 or fewer),
   then "Sale" (price below the compare-at price), then the "new" tag, then the "bestseller" tag. No colour count, dispatch time or stars under the price: Raushan
@@ -67,6 +68,7 @@
       </div>
       {%- if badge != blank -%}<span class="card__badge {{ badge_class }}">{{ badge }}</span>{%- endif -%}
     </a>
+    {%- render 'save-button', product: product -%}
   {%- elsif settings.demo_content -%}
     {%- comment -%} Demo product while the store has none (Theme settings → Demo content). {%- endcomment -%}
     {%- liquid

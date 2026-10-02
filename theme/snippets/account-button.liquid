@@ -1,0 +1,64 @@
+{%- doc -%}
+  The header's account button (docs/account-plan.md §4): Shopify's <shopify-account> component. It opens a sheet
+  over the page with sign-in (email code, Google once connected, Shop) when signed out, or the account menu
+  (Orders, Profile, Saved, Track an order: Content → Menus → Customer account main menu) when signed in. Shopify
+  loads its script (about 10 KB, low priority, after the page) and keeps it up to date.
+  - Signed out it shows our account glyph (the slot); signed in, the shopper's initial on a Blush circle.
+  - Until the component is ready, or without JavaScript, a plain link to the account stands in its place.
+  - Under 900px it isn't shown (beside the search field it would crowd the centred name): the drawer's account row
+    opens the same sheet (saved.js).
+  The colours, fonts and corners below are the component's own CSS variables; its layout and wording are Shopify's.
+{%- enddoc -%}
+{%- comment -%} The menu is used once it exists in the admin; until then Shopify shows Orders and Profile (and logs a warning). {%- endcomment -%}
+<shopify-account class="account-btn" {% if linklists['customer-account-main-menu'].links.size > 0 %}menu="customer-account-main-menu"{% endif %} data-account>
+  <span slot="signed-out-avatar" class="account-btn__glyph">
+    {%- render 'icon', icon: 'account' -%}
+    <span class="tip" aria-hidden="true">{{ 'header.account' | t }}</span>
+  </span>
+</shopify-account>
+<a href="{{ routes.account_url }}" class="icon-btn site-header__account">
+  {%- render 'icon', icon: 'account' -%}
+  <span class="visually-hidden">{{ 'header.account' | t }}</span>
+</a>
+
+{% stylesheet %}
+  .account-btn {
+    --shopify-account-color-accent: var(--cocoa-deep);
+    --shopify-account-color-accent-text: var(--cream);
+    --shopify-account-color-background: var(--white);
+    --shopify-account-color-text: var(--cocoa-deep);
+    --shopify-account-color-text-subdued: var(--taupe-ink);
+    --shopify-account-color-border: var(--color-line-strong);
+    --shopify-account-font-body: var(--font-sans);
+    --shopify-account-font-heading: var(--font-sans);
+    --shopify-account-font-heading-weight: 500;
+    --shopify-account-radius-base: var(--radius-md);
+    --shopify-account-radius-button: var(--radius-pill);
+    --shopify-account-radius-button-small: var(--radius-pill);
+    --shopify-account-radius-input: var(--radius-pill);
+    --shopify-account-dialog-position-top: calc(var(--header-height) + var(--space-2));
+    --shopify-account-signed-in-avatar-color-background: var(--blush);
+    --shopify-account-signed-in-avatar-color-text: var(--cocoa-deep);
+    --shopify-account-signed-in-avatar-size: 32px;
+    display: none;
+    position: relative;
+    color: var(--color-heading);
+  }
+  .account-btn::part(signed-out-avatar) { width: var(--tap); height: var(--tap); border-radius: 50%; }
+  .account-btn__glyph { position: relative; display: grid; place-items: center; }
+  .account-btn__glyph .icon { width: 28px; height: 28px; transition: transform var(--dur-panel) var(--ease-spring); }
+  @media (hover: hover) {
+    .account-btn:hover .account-btn__glyph .icon { transform: translateY(-1px); }
+    .account-btn:hover .tip { opacity: 1; visibility: visible; translate: -50% 0; transition-delay: 300ms, 300ms, 300ms; }
+  }
+  .account-btn__glyph .tip { top: calc(100% + 10px); }
+  /* The plain link stands in until the component is ready (same size and place, so nothing moves). */
+  .account-btn:defined + .site-header__account { display: none !important; }
+  @media (min-width: 900px) {
+    .account-btn:defined { display: block; }
+    .account-btn:not(:defined) + .site-header__account { display: inline-grid; }
+  }
+  /* Under 900px: opened from the drawer's account row. Its sheet lives in the top layer, so the host only needs to exist,
+     not to show. */
+  .account-btn.is-summoned { display: block; position: fixed; top: 0; right: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+{% endstylesheet %}

@@ -1,0 +1,168 @@
+{%- comment -%}
+  The Saved page (docs/account-plan.md §8.3–§8.5), on a page using the "saved" template. The list lives in this
+  browser (saved.js), so saved-page.js fills the grid: placeholders first (it knows the count at once), then each
+  card from the Section Rendering API (sections/saved-item). Also:
+  - a shared list (?list=handle,handle): "A wishlist for you" with "Save all to my list"
+  - the empty state with Bestsellers, so the page is never a dead end
+  - Recently viewed (the last product pages seen in this browser)
+  Without JavaScript nothing can be saved, so the empty state shows.
+{%- endcomment -%}
+{%- liquid
+  assign picks = collections['bestsellers']
+  assign picks_label = 'saved.bestsellers' | t
+  assign buyable = picks.products | where: 'available'
+  if buyable.size == 0
+    assign buyable = collections.all.products | where: 'available'
+    assign picks_label = 'saved.our_makes' | t
+  endif
+-%}
+<div
+  class="section saved scheme-soft"
+  data-saved-page
+  data-t-count-one="{{ 'saved.count.one' | t | escape }}"
+  data-t-count-other="{{ 'saved.count.other' | t: count: 99 | escape }}"
+  data-t-on-device="{{ 'saved.on_device' | t | escape }}"
+  data-t-shared-title="{{ 'saved.shared_title' | t | escape }}"
+  data-t-share-title="{{ 'saved.share_title' | t | escape }}"
+  data-t-copied="{{ 'saved.copied' | t | escape }}"
+  data-t-saved-all="{{ 'saved.saved_all' | t | escape }}"
+  data-t-removed="{{ 'saved.removed' | t | escape }}"
+  data-t-undo="{{ 'saved.undo' | t | escape }}"
+  data-t-said-removed="{{ 'saved.said_removed' | t | escape }}"
+  data-t-said-restored="{{ 'saved.said_restored' | t | escape }}"
+  data-t-gone-one="{{ 'saved.gone.one' | t | escape }}"
+  data-t-gone-other="{{ 'saved.gone.other' | t: count: 99 | escape }}"
+>
+  <div class="saved__head">
+    <h1 class="saved__title" tabindex="-1" data-saved-title>{{ 'saved.title' | t }}</h1>
+    <p class="saved__shared-text" data-saved-shared hidden>{{ 'saved.shared_text' | t }}</p>
+    <div class="saved__bar" data-saved-bar hidden>
+      <p class="saved__count eyebrow" data-saved-line></p>
+      <button type="button" class="btn btn--ghost saved__share" data-saved-share>
+        {%- render 'icon', icon: 'share' -%}{{ 'saved.share' | t }}
+      </button>
+      <button type="button" class="btn saved__save-all" data-saved-save-all hidden>
+        {%- render 'icon', icon: 'heart' -%}{{ 'saved.save_all' | t }}
+      </button>
+    </div>
+  </div>
+
+  <h2 class="visually-hidden">{{ 'saved.items' | t }}</h2>
+  <ul class="saved__grid" role="list" data-saved-grid></ul>
+  <p class="saved__note" data-saved-gone hidden></p>
+  <div class="saved__note" data-saved-error hidden>
+    <p>{{ 'saved.error' | t }}</p>
+    <button type="button" class="btn btn--ghost" data-saved-retry>{{ 'saved.retry' | t }}</button>
+  </div>
+
+  <div class="saved__empty" data-saved-empty hidden>
+    {%- render 'icon', icon: 'keychains' -%}
+    <h2 class="saved__empty-title">{{ 'saved.empty_title' | t }}</h2>
+    <p class="saved__empty-text">{{ 'saved.empty_text' | t }}</p>
+    {%- if buyable.size > 0 -%}
+      {%- render 'product-row', title: picks_label, id: 'SavedPicks', products: buyable -%}
+    {%- endif -%}
+  </div>
+  <noscript>
+    <div class="saved__empty">
+      <h2 class="saved__empty-title">{{ 'saved.empty_title' | t }}</h2>
+      <p class="saved__empty-text">{{ 'saved.empty_text' | t }}</p>
+    </div>
+  </noscript>
+
+  {%- unless customer -%}
+    <p class="saved__signin" data-saved-signin hidden>
+      <a class="saved__signin-link" href="{{ routes.account_url }}" data-account-open>
+        {%- render 'icon', icon: 'account' -%}<span>{{ 'saved.sign_in_hint' | t }}</span>{%- render 'icon', icon: 'arrow' -%}
+      </a>
+    </p>
+  {%- endunless -%}
+
+  <section class="product-row saved__recent" aria-labelledby="SavedRecentTitle" data-saved-recent hidden>
+    <div class="saved__recent-head">
+      <h2 class="product-row__title eyebrow" id="SavedRecentTitle">{{ 'saved.recent' | t }}</h2>
+      <button type="button" class="saved__clear" data-saved-clear>{{ 'saved.clear_recent' | t }}</button>
+    </div>
+    <ul class="product-row__list scroller" role="list" data-saved-recent-list></ul>
+  </section>
+  <p class="visually-hidden" role="status" data-saved-page-status></p>
+</div>
+
+<script src="{{ 'saved-page.js' | asset_url }}" type="module"></script>
+
+{% stylesheet %}
+  .saved { padding-block: var(--space-6) var(--section-space); }
+  .saved__head { display: grid; gap: var(--space-2); margin-bottom: var(--space-5); }
+  .saved__title { font-size: clamp(2rem, 1.5rem + 2vw, 3rem); line-height: 1.05; }
+  .saved__title:focus { outline: none; }
+  .saved__shared-text { color: var(--color-muted); max-width: 34rem; }
+  .saved__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+  .saved__share, .saved__save-all { min-height: var(--tap); padding-inline: var(--space-4); font-size: .9375rem; }
+  .saved__share .icon, .saved__save-all .icon { width: 18px; height: 18px; }
+  .saved__save-all .icon__fill { fill: var(--rose); }
+
+  .saved__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-3); }
+  @media (min-width: 768px) { .saved__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6) var(--space-5); } }
+  @media (min-width: 990px) { .saved__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 1280px) { .saved__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+  .saved__grid:empty { display: none; }
+
+
+  /* Placeholders while the cards load: the same shape, so nothing jumps. */
+  .saved-ghost { display: grid; gap: var(--space-2); }
+  .saved-ghost::before { content: ""; aspect-ratio: 1; border-radius: var(--radius-sm); background: var(--white); }
+  .saved-ghost span { height: .875rem; width: 80%; border-radius: var(--radius-pill); background: var(--white); }
+  .saved-ghost span + span { width: 45%; }
+  @media (prefers-reduced-motion: no-preference) {
+    .saved-ghost { animation: saved-breathe 1.6s var(--ease-in-out) infinite alternate; }
+  }
+  @keyframes saved-breathe { to { opacity: .55; } }
+
+  .saved__note { display: grid; justify-items: start; gap: var(--space-3); margin-top: var(--space-5); color: var(--color-muted); }
+
+  .saved__empty { display: grid; justify-items: center; gap: var(--space-2); padding-block: var(--space-6) 0; text-align: center; }
+  .saved__empty > .icon { width: 56px; height: 56px; color: var(--color-heading); margin-bottom: var(--space-2); }
+  .saved__empty-title { font-size: var(--fs-h3); }
+  .saved__empty-text { max-width: 26rem; color: var(--color-muted); }
+  .saved__empty .product-row { width: 100%; margin-top: var(--space-6); text-align: left; }
+
+  .saved__signin { margin-top: var(--space-6); }
+  /* One quiet line, in sentence case, so it reads as an offer and not a heading. */
+  .saved__signin-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    color: var(--color-heading);
+    text-decoration: underline;
+    text-decoration-color: var(--rose);
+    text-underline-offset: 4px;
+  }
+  .saved__signin-link .icon { width: 20px; height: 20px; flex: none; }
+  .saved__signin-link .icon--arrow { width: 16px; height: 16px; transition: transform var(--dur-panel) var(--ease-out); }
+  @media (hover: hover) { .saved__signin-link:hover .icon--arrow { transform: translateX(3px); } }
+
+  .saved__recent { margin-top: var(--space-8); }
+  .saved__recent-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: calc(var(--space-3) * -1); }
+  .saved__clear {
+    min-height: var(--tap);
+    padding: 0 var(--space-2);
+    margin-right: calc(var(--space-2) * -1);
+    border: 0;
+    background: none;
+    color: var(--color-heading);
+    font: inherit;
+    font-size: var(--fs-small);
+    text-decoration: underline;
+    text-decoration-color: var(--rose);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Saved items",
+  "settings": []
+}
+{% endschema %}

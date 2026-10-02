@@ -1,6 +1,54 @@
 # Account plan: sign-in, account menu, saved items, order tracking
 
-Status: **Approved 2026-10-02: Raushan chose every recommendation in §13 (AC1–AC9).** Building from stage A0.
+Status: **Built 2026-10-02 (stages A0–A4).** Raushan chose every recommendation in §13 (AC1–AC9). Still to do: the admin steps in §11 (Raushan), a real sign-in to check the signed-in states, and real-phone VoiceOver/TalkBack.
+
+### As built (where it differs from the plan below)
+- **A0 result: we use Shopify's `<shopify-account>`.**
+  - **Loading:** its script (`account.js`, about 10 KB compressed) is added by Shopify, `async`, with low priority. More code loads only when the sheet opens, so it doesn't delay the page.
+  - **Keyboard:** the sheet is a modal `<dialog>` with a heading. Focus starts on its close button, Tab stays inside, and Esc closes it and returns focus to the account button.
+  - **axe:** the only finding is a missing `title` on Shop's sign-in frame. That frame is refused on `127.0.0.1` (Shop only allows our own domains), so check it again on the preview link.
+  - **Styling:** the sheet takes our colours, pill buttons and Jost. Its heading is Jost 500, because Cormorant at Shopify's fixed 18px read too small.
+- **The sheet shows "Sign in with Shop" too.** Shopify includes it, so it appears for us after all (§3 guessed it wouldn't). Google will appear above the email field once it's connected in the admin (§11 step 2).
+- **The account menu:** while the store has its password page on, Shopify's API is locked ("Online Store channel is locked"). So the component can't read `customer-account-main-menu`, falls back to Orders and Profile, and logs a warning on every page (the audit lists it). This stops at launch. Once Raushan creates that menu with Saved and Track an order (§11 step 5), those links appear in the sheet too.
+- **Phones and small tablets:** the drawer's account row calls the component's own `showModal()`.
+  - The header's button is hidden below 900px, so it's "summoned": present but invisible while the sheet is open.
+  - When the sheet closes, focus goes to the menu button.
+  - Checked in Chrome, Safari (WebKit) and Firefox.
+  - Without the component (or JavaScript), the row is a link to the account.
+- **Header:** the button shows from 900px, not 768px as planned (AC3): at 768–899px it brought the centred name within 8–30px of the search field. Until the component is ready, a plain link with the same glyph stands in at the same size and place, so nothing moves.
+- **The Saved and Track pages show up once Raushan creates them** (§11 step 6, handles `saved` and `track-order`). Until then:
+  - the drawer's Saved row and the pop-up's "View saved" are left out
+  - Help → Track order still goes to the account
+  - for previews and checks: `/pages/contact?view=saved` and `?view=track-order`
+- **No "Account" theme setting:** the menu is always `customer-account-main-menu`, the one Shopify's account pages use too.
+- **Hearts:**
+  - on every product card (real products, not demo cards)
+  - not in the search panel's picks: the panel's typed results have none, and it's for getting somewhere fast
+  - `snippets/save-button`, beside the card's link
+- **The Saved pop-up is its own snippet** (`snippets/saved-toast`), in the cart pop-up's look and place. Showing one hides the other.
+- **A deleted product** comes back from Shopify as a 200 with an empty card, so it's recognised by its missing handle. It's dropped from the list, with "1 saved piece is no longer available."
+- **Sizes:** theme.js didn't change. `saved.js` (every page) is 2.4 KB gzipped; `saved-page.js` (the Saved page only) is 3.1 KB.
+- **Checks (2026-10-02):**
+  - theme check clean
+  - `npm run check:quick` 61/61, including 12 new account & saved checks:
+    - heart + pop-up + reload
+    - drawer row → sheet → Esc
+    - Saved page draws the list (axe)
+    - Remove + Undo
+    - shared list + Save all
+    - empty state (axe)
+    - Track page (axe)
+    - no script errors
+  - Scratch scripts also checked:
+    - Add to cart from Saved
+    - "Ask us to make one" for sold-out pieces
+    - Choose options for multi-option products
+    - Recently viewed
+    - the product page's Save
+- **Not tested yet:**
+  - **signed in** (needs a real sign-in): the drawer greeting and initial, the header avatar, and the Track page's latest-order card (`customer.last_order`)
+  - Google sign-in (needs the admin setup)
+  - real-phone VoiceOver/TalkBack and the iOS share sheet
 
 Raushan's answers so far (2026-10-02):
 - Shopify's current customer accounts, not classic.

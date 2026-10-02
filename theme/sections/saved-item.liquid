@@ -1,0 +1,54 @@
+{%- comment -%}
+  One saved product for the Saved page (docs/account-plan.md §8.3). Never placed on a page: saved-page.js asks for it
+  with the Section Rendering API on the product's own URL (/products/<handle>?section_id=saved-item), so the card
+  always shows today's price and stock.
+  Under the card: Add to cart (one-option products, via cart.js and its pop-up), Choose options, or for sold-out
+  pieces "Ask us to make one".
+{%- endcomment -%}
+{%- liquid
+  assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
+  assign variant = product.selected_or_first_available_variant
+-%}
+<li class="saved-item" data-handle="{{ product.handle }}">
+  {%- render 'product-card', product: product, sizes: '(min-width: 1280px) 15vw, (min-width: 990px) 20vw, (min-width: 768px) 28vw, 45vw', compact: true -%}
+  <div class="saved-item__actions">
+    {%- if product.available and product.has_only_default_variant -%}
+      {%- form 'product', product, class: 'saved-item__form', novalidate: 'novalidate' -%}
+        <input type="hidden" name="id" value="{{ variant.id }}">
+        <button type="submit" class="btn btn--ghost saved-item__btn">
+          <span data-add-label>{{ 'products.add_to_cart' | t }}</span>
+          <span class="visually-hidden">: {{ product.title }}</span>
+        </button>
+      {%- endform -%}
+    {%- elsif product.available -%}
+      <a class="btn btn--ghost saved-item__btn" href="{{ product.url }}">
+        {{- 'saved.choose' | t -}}<span class="visually-hidden">: {{ product.title }}</span>
+      </a>
+    {%- elsif whatsapp != blank -%}
+      <a class="btn btn--ghost saved-item__btn" href="https://wa.me/{{ whatsapp }}?text={{ 'saved.ask_message' | t: title: product.title | replace: '&amp;', '&' | replace: '&#39;', "'" | replace: '&quot;', '"' | url_encode }}" rel="noopener" target="_blank">
+        {{- 'saved.ask_make' | t -}}<span class="visually-hidden">: {{ product.title }} ({{ 'accessibility.new_window' | t }})</span>
+      </a>
+    {%- else -%}
+      <a class="btn btn--ghost saved-item__btn" href="/pages/contact">
+        {{- 'saved.ask_make' | t -}}<span class="visually-hidden">: {{ product.title }}</span>
+      </a>
+    {%- endif -%}
+  </div>
+</li>
+
+{% stylesheet %}
+  .saved-item { display: grid; grid-template-rows: 1fr auto; gap: var(--space-3); min-width: 0; }
+  .saved-item__btn { width: 100%; min-height: var(--tap); padding-inline: var(--space-3); font-size: .9375rem; white-space: normal; text-align: center; }
+  .saved-item__form { display: block; }
+  /* Removing: the card folds away, then the grid closes the gap. */
+  .saved-item.is-leaving { opacity: 0; scale: .96; transition: opacity 220ms var(--ease-exit), scale 220ms var(--ease-exit); }
+  /* In Recently viewed, just the cards. */
+  .saved__recent .saved-item__actions { display: none; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Saved item",
+  "settings": []
+}
+{% endschema %}

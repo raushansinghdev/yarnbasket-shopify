@@ -15,6 +15,9 @@
   endif
 
   assign all_url = routes.all_products_collection_url
+  # Pages Raushan creates in the admin (docs/account-plan.md §11): links to them appear once they exist.
+  assign saved_url = pages['saved'].url
+  assign track_url = pages['track-order'].url | default: routes.account_url
   assign bar_items = ''
   assign drawer_items = ''
   assign item_count = 0
@@ -52,7 +55,7 @@
         when 4
           assign kt = 'Track order|Shipping & delivery|FAQ|Contact us|Our story'
           assign kh = 'track-order|shipping|faq|contact|our-story'
-          assign ku = routes.account_url | append: '|/pages/contact|' | append: routes.root_url | append: '|/pages/contact|' | append: routes.root_url
+          assign ku = track_url | append: '|/pages/contact|' | append: routes.root_url | append: '|/pages/contact|' | append: routes.root_url
           if request.path == '/pages/contact'
             assign here = true
           endif
@@ -157,11 +160,7 @@
         </button>
         {%- render 'search-panel' -%}
         {%- if shop.customer_accounts_enabled -%}
-          <a href="{{ routes.account_url }}" class="icon-btn site-header__account" {% if request.page_type contains 'customers/' %}aria-current="page"{% endif %}>
-            {%- render 'icon', icon: 'account' -%}
-            <span class="visually-hidden">{{ 'header.account' | t }}</span>
-            <span class="tip" aria-hidden="true">{{ 'header.account' | t }}</span>
-          </a>
+          {%- render 'account-button' -%}
         {%- endif -%}
         <a href="{{ routes.cart_url }}" class="icon-btn site-header__cart" data-no-prerender {% if request.page_type == 'cart' %}aria-current="page"{% endif %}>
           {%- render 'icon', icon: 'cart' -%}
@@ -212,6 +211,43 @@
 
     {%- assign i = item_count -%}
     <ul class="drawer__secondary" role="list">
+      {%- comment -%}
+        You first (docs/account-plan.md §4.2): a two-line row that opens the account sheet (saved.js), or goes to the
+        account without JavaScript. Then Saved items, with its count.
+      {%- endcomment -%}
+      {%- if shop.customer_accounts_enabled -%}
+        {%- assign i = i | plus: 1 -%}
+        <li style="--i: {{ i }}">
+          <a href="{{ routes.account_url }}" class="drawer__account" data-account-open>
+            {%- if customer -%}
+              {%- assign who = customer.first_name | default: customer.email | strip -%}
+              <span class="drawer__avatar" aria-hidden="true">{{ who | slice: 0 | upcase }}</span>
+              <span class="drawer__account-text">
+                <span class="drawer__account-name">
+                  {%- if customer.first_name != blank -%}{{ 'account.greeting' | t: name: customer.first_name }}{%- else -%}{{ 'account.your_account' | t }}{%- endif -%}
+                </span>
+                <span class="drawer__account-hint">{{ 'account.row_hint' | t }}</span>
+              </span>
+            {%- else -%}
+              <span class="drawer__avatar drawer__avatar--out" aria-hidden="true">{%- render 'icon', icon: 'account' -%}</span>
+              <span class="drawer__account-text">
+                <span class="drawer__account-name">{{ 'account.sign_in' | t }}</span>
+                <span class="drawer__account-hint">{{ 'account.row_hint' | t }}</span>
+              </span>
+            {%- endif -%}
+            {%- render 'icon', icon: 'arrow', class: 'drawer__account-go' -%}
+          </a>
+        </li>
+      {%- endif -%}
+      {%- if saved_url -%}
+        {%- assign i = i | plus: 1 -%}
+        <li style="--i: {{ i }}">
+          <a href="{{ saved_url }}" {% if request.path == saved_url %}aria-current="page"{% endif %}>
+            {%- render 'icon', icon: 'heart' -%}{{ 'saved.items' | t }}
+            <span class="drawer__count" data-saved-count hidden></span>
+          </a>
+        </li>
+      {%- endif -%}
       {%- assign i = i | plus: 1 -%}
       <li style="--i: {{ i }}">
         <a href="{{ routes.search_url }}" data-search-fallback>{%- render 'icon', icon: 'search' -%}{{ 'header.search' | t }}</a>
@@ -219,12 +255,6 @@
           {%- render 'icon', icon: 'search' -%}{{ 'header.search' | t }}
         </button>
       </li>
-      {%- if shop.customer_accounts_enabled -%}
-        {%- assign i = i | plus: 1 -%}
-        <li style="--i: {{ i }}">
-          <a href="{{ routes.account_url }}">{%- render 'icon', icon: 'account' -%}{{ 'header.account' | t }}</a>
-        </li>
-      {%- endif -%}
       {%- if whatsapp != blank -%}
         {%- assign i = i | plus: 1 -%}
         <li style="--i: {{ i }}">
@@ -250,6 +280,11 @@
     <p class="drawer__sign eyebrow">{{ 'general.tagline' | t }}</p>
   </div>
 </dialog>
+
+{%- comment -%} Saved items (docs/account-plan.md §8): the pop-up and a status line for the hearts; saved.js fills them in. {%- endcomment -%}
+{%- render 'saved-toast', saved_url: saved_url -%}
+<p class="visually-hidden" role="status" data-saved-status></p>
+<script src="{{ 'saved.js' | asset_url }}" type="module"></script>
 
 {% stylesheet %}
   /* The section wrapper is what sticks; theme.js sets the state classes on <html>. */
@@ -518,8 +553,6 @@
     }
     @keyframes sub-item { from { opacity: 0; translate: 0 -4px; } }
 
-    .site-header__account { display: inline-grid; }
-
     /* Shop panel: the crafts as photo tiles. */
     /* Five or more tiles are too wide to centre under "Shop" without running off the left edge, so this panel
        lines up with its menu item instead. */
@@ -700,6 +733,39 @@
     color: var(--color-ink);
   }
   .drawer__secondary .icon { width: 20px; height: 20px; }
+  /* The account row: who you are, then what's inside, in two lines. */
+  .drawer__secondary .drawer__account { gap: var(--space-3); min-height: 64px; margin-bottom: var(--space-1); }
+  .drawer__avatar {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--blush);
+    color: var(--cocoa-deep);
+    font-weight: 500;
+    font-size: 1.0625rem;
+  }
+  .drawer__avatar--out { background: var(--blush-soft); }
+  .drawer__secondary .drawer__avatar .icon { width: 22px; height: 22px; }
+  .drawer__account-text { display: grid; gap: 1px; flex: 1; min-width: 0; }
+  .drawer__account-name { font-weight: 500; color: var(--color-heading); }
+  .drawer__account-hint { font-size: var(--fs-small); color: var(--color-muted); }
+  .drawer__secondary .drawer__account-go { width: 18px; height: 18px; color: var(--color-muted); }
+  .drawer__count {
+    margin-left: auto;
+    min-width: 24px;
+    padding: 0 7px;
+    border-radius: var(--radius-pill);
+    background: var(--blush-soft);
+    color: var(--cocoa-deep);
+    font-size: .8125rem;
+    font-weight: 500;
+    line-height: 24px;
+    text-align: center;
+  }
+  .drawer__secondary a[aria-current] { font-weight: 500; }
   .drawer__sign { margin-top: auto; }
 
   /* The search page has its own box (docs/search-results-plan.md §4.3): the header's pill steps back to the lens,

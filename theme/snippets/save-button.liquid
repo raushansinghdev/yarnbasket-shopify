@@ -1,0 +1,85 @@
+{%- doc -%}
+  Save a product for later (docs/account-plan.md §8.2). A toggle button: aria-pressed says whether it's saved, and its
+  name stays the same either way. saved.js keeps the list in this browser and reveals the button; without JavaScript
+  there's nothing to save into, so it stays hidden.
+  - card: a heart on the photo's top-right corner, beside the card's link (never inside it). 32px drawn, 48px to tap.
+  - page: an outlined "♡ Save" button beside Add to cart.
+
+  @param {product} product - The product
+  @param {string} [style] - 'card' (default) or 'page'
+{%- enddoc -%}
+{%- liquid
+  assign look = style | default: 'card'
+  assign title = product.title | escape
+-%}
+<button
+  type="button"
+  class="save-btn save-btn--{{ look }}{% if look == 'page' %} btn btn--ghost{% endif %}"
+  aria-pressed="false"
+  data-save="{{ product.handle }}"
+  data-title="{{ title }}"
+  {% if product.featured_media %}data-image="{{ product.featured_media.preview_image | image_url: width: 112 }}"{% endif %}
+  hidden
+>
+  {%- render 'icon', icon: 'heart' -%}
+  {%- if look == 'page' -%}
+    {{ 'saved.save' | t }}
+  {%- else -%}
+    <span class="visually-hidden">{{ 'saved.save_label' | t: title: product.title }}</span>
+  {%- endif -%}
+</button>
+
+{% stylesheet %}
+  .card { position: relative; }
+  .save-btn--card {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--cocoa-deep);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* The drawn circle is smaller than the tap area, so the heart stays quiet on the photo. */
+  .save-btn--card::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / .9);
+    box-shadow: 0 2px 8px -3px rgb(78 58 49 / .35);
+    transition: scale var(--dur-press) ease;
+  }
+  .save-btn--card:active::before { scale: .92; }
+  .save-btn--card .icon { position: relative; width: 20px; height: 20px; stroke-width: 2; }
+  .save-btn--card:focus-visible { outline-offset: -4px; }
+  .save-btn .icon__fill { transition: fill var(--dur-state) ease; }
+  .save-btn[aria-pressed="true"] .icon__fill { fill: var(--rose); }
+  .card--compact .save-btn--card { top: -4px; right: -4px; }
+  /* The search panel is for getting somewhere fast; its typed results have no hearts, so its picks don't either. */
+  .search-panel .save-btn { display: none; }
+
+  .save-btn--page { min-height: var(--tap); gap: var(--space-2); }
+  .product-form .save-btn--page { width: 100%; margin-top: var(--space-2); }
+  .save-btn--page .icon { width: 20px; height: 20px; }
+  .save-btn--page[aria-pressed="true"] { --btn-line: var(--cocoa); background: var(--blush-soft); }
+  @media (hover: hover) { .save-btn--page:hover .icon { transform: none; } }
+
+  /* A little pop as it fills (not when un-saving, and not with reduced motion or the lite mode). */
+  @media (prefers-reduced-motion: no-preference) {
+    .save-btn.is-popping .icon { animation: save-pop 420ms var(--ease-spring); }
+  }
+  html.lite .save-btn.is-popping .icon { animation: none; }
+  @keyframes save-pop { 40% { scale: 1.2; } }
+  @media (forced-colors: active) {
+    .save-btn--card::before { border: 1px solid CanvasText; background: Canvas; }
+    .save-btn[aria-pressed="true"] .icon__fill { fill: Highlight; }
+  }
+{% endstylesheet %}

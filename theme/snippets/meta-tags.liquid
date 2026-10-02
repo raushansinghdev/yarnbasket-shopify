@@ -33,8 +33,11 @@
   <meta name="description" content="{{ page_description | escape }}">
 {%- endif %}
 <link rel="canonical" href="{{ canonical_url }}">
-{%- comment -%} Search results are endless thin pages: keep them out of search engines (robots.txt also blocks /search). {%- endcomment -%}
-{%- if request.page_type == 'search' %}
+{%- comment -%}
+  Search results are endless thin pages: keep them out of search engines (robots.txt also blocks /search). The Saved
+  and Track pages are personal (docs/account-plan.md), so they stay out too.
+{%- endcomment -%}
+{%- if request.page_type == 'search' or template.suffix == 'saved' or template.suffix == 'track-order' %}
   <meta name="robots" content="noindex, follow">
 {%- endif %}
 

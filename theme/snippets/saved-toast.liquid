@@ -1,0 +1,68 @@
+{%- doc -%}
+  The pop-up for saved items (docs/account-plan.md §8.1): "♥ Saved · Rose bouquet · View saved", or on the Saved page
+  "Removed · Undo". It looks and sits like the added-to-cart pop-up (sections/cart-drawer): bottom of the screen on
+  phones, under the header on wider screens. It never takes focus, and waits while a finger, pointer or focus is on it.
+  saved.js clones it.
+
+  @param {string} [saved_url] - The Saved page, when it exists
+{%- enddoc -%}
+<template
+  id="SavedToastTemplate"
+  data-head="{{ 'saved.added' | t | escape }}"
+  data-said-saved="{{ 'saved.said_saved' | t | escape }}"
+  data-said-removed="{{ 'saved.said_removed' | t | escape }}"
+>
+  <div class="saved-toast" role="region" aria-label="{{ 'saved.title' | t }}">
+    <span class="saved-toast__media media"><img alt="" width="56" height="56" hidden></span>
+    <p class="saved-toast__text">
+      <span class="saved-toast__head">{%- render 'icon', icon: 'heart' -%}<span data-toast-head></span></span>
+      <span class="saved-toast__title"></span>
+    </p>
+    {%- if saved_url -%}
+      <a class="btn saved-toast__btn" href="{{ saved_url }}" data-toast-view>{{ 'saved.view' | t }}</a>
+    {%- else -%}
+      <span data-toast-view hidden></span>
+    {%- endif -%}
+    <button type="button" class="btn saved-toast__btn" data-toast-action></button>
+    <button type="button" class="icon-btn saved-toast__close" data-saved-toast-close aria-label="{{ 'saved.dismiss' | t }}">
+      {%- render 'icon', icon: 'close' -%}
+    </button>
+  </div>
+</template>
+
+{% stylesheet %}
+  .saved-toast {
+    position: fixed;
+    inset: auto var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
+    z-index: 30;
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-1) var(--space-2) var(--space-2);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    color: var(--color-ink);
+    box-shadow: 0 18px 40px -18px rgb(78 58 49 / .45);
+    transition: opacity var(--dur-panel) var(--ease-out), transform var(--dur-panel) var(--ease-out);
+  }
+  .saved-toast:not(:has(.saved-toast__media)) { grid-template-columns: minmax(0, 1fr) auto auto; padding-left: var(--space-4); }
+  @starting-style { .saved-toast { opacity: 0; transform: translateY(16px); } }
+  .saved-toast.is-leaving { opacity: 0; transform: translateY(16px); transition-timing-function: var(--ease-exit); }
+  .saved-toast__media { --ratio: 1; width: 56px; border-radius: var(--radius-sm); background: var(--oat); }
+  .saved-toast__text { display: grid; gap: 2px; min-width: 0; }
+  .saved-toast__head { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
+  .saved-toast__head .icon { width: 16px; height: 16px; }
+  .saved-toast__head .icon__fill { fill: var(--rose); }
+  .saved-toast__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); color: var(--color-muted); }
+  .saved-toast__title:empty { display: none; }
+  .saved-toast__btn { min-height: var(--tap); padding: 0 var(--space-4); font-size: .9375rem; }
+  @media (min-width: 768px) {
+    .saved-toast { inset: calc(var(--header-height) + var(--space-2)) var(--gutter) auto auto; width: 25rem; }
+    @starting-style { .saved-toast { transform: translateY(-12px); } }
+    .saved-toast.is-leaving { transform: translateY(-12px); }
+  }
+  @media (prefers-reduced-motion: reduce) { .saved-toast, .saved-toast.is-leaving { transform: none; } }
+  @media (forced-colors: active) { .saved-toast { border: 1px solid CanvasText; } }
+{% endstylesheet %}

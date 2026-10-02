@@ -61,7 +61,10 @@
     <p class="product-form__error" id="ProductAddError-{{ section.id }}" role="alert" data-add-error hidden></p>
     {{ form | payment_button }}
   {% endform %}
+  {%- render 'save-button', product: product, style: 'page' -%}
 </div>
+{%- comment -%} Recently viewed (docs/account-plan.md §8.5): saved.js notes this product's handle. {%- endcomment -%}
+<span hidden data-viewed="{{ product.handle }}"></span>
 
 {% stylesheet %}
   .product-form { max-width: 26rem; margin: var(--space-6) var(--gutter); }
