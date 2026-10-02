@@ -2,6 +2,7 @@
   "current": {
     "show_intro": true,
     "social_meesho": "https://www.meesho.com/SSCreator",
-    "demo_content": true
+    "demo_content": true,
+    "free_shipping_threshold": 999
   }
 }

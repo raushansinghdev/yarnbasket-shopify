@@ -424,10 +424,11 @@
     .site-header__search { display: inline-grid; }
 
     /* Cart is the most important button: it gets its word. */
-    .site-header__cart { display: inline-flex; gap: 6px; width: auto; padding: 0 14px 0 10px; border-radius: var(--radius-pill); text-decoration: none; }
+    .site-header__cart { display: inline-flex; gap: 14px; width: auto; padding: 0 14px 0 10px; border-radius: var(--radius-pill); text-decoration: none; }
     .site-header__cart > .icon { width: 26px; height: 26px; }
     .site-header__cart-word { display: inline; font-size: .875rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
-    .site-header__count { position: static; box-shadow: none; }
+    /* On the icon's corner, as on phones (the icon starts 10px in and is 26px wide), so CART stays one short word. */
+    .site-header__count { top: calc(50% - 23px); right: auto; left: 27px; }
     /* The menu sits beside the logo, so the bar reads as two groups (where to go | tools) rather than three
        islands with wide gaps between them. The header is 64px tall at every size (--header-height). */
     .site-header__nav { display: block; justify-self: start; margin-left: clamp(var(--space-5), 3vw, var(--space-7)); }

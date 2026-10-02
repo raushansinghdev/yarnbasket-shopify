@@ -4,7 +4,7 @@
   and shows the pinned Checkout bar on phones while the summary's own button is off screen.
   The same snippets draw the cart drawer (sections/cart-drawer.liquid), so the two never differ.
 {%- endcomment -%}
-<div class="section cart-page scheme-white" data-cart-page data-section-id="{{ section.id }}">
+<div class="section cart-page scheme-soft" data-cart-page data-section-id="{{ section.id }}">
   <div class="cart-page__root" data-cart-root data-count="{{ cart.item_count }}">
     <h1 class="cart-page__title">
       {{- 'cart.title' | t -}}
@@ -84,7 +84,7 @@
     justify-content: space-between;
     gap: var(--space-4);
     padding: var(--space-3) var(--space-4) max(var(--space-3), env(safe-area-inset-bottom));
-    background: var(--white);
+    background: var(--color-bg);
     border-top: 1px solid var(--color-line-strong);
     box-shadow: 0 -12px 24px -20px rgb(78 58 49 / .45);
     transform: translateY(110%);

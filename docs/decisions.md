@@ -2,6 +2,18 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-02 (cart look and rewards, docs/cart-look-plan.md; built)
+
+- **C1. The cart count sits on the cart icon's corner on desktop too**, the same as phones. The CART word now has 14px of room.
+- **C2. The cart page and drawer use Soft blush with white cards** (`scheme-soft`), like the home page:
+  - the summary card is white, and the gift note box and quantity buttons are white
+  - Checkout stays Cocoa Deep, the one dark button in the cart
+  - photo placeholders are Blush
+  - hovers in the cart lines use the scheme's surface colour, so they still show on Soft blush
+- **C3. Free shipping from ₹999 is on in Theme settings**, so the progress bar, "Small add-ons" and the sorting of Little extras work. The gift step stays off until a gift product and its "Buy X get Y" discount exist.
+  - The store's shipping rate is still ₹379 at every total, so `npm run check` §11 fails on purpose until Raushan adds a ₹0 rate from ₹999.
+- **C4. The currency format is `₹{{amount_no_decimals}}`** (Raushan, admin).
+
 ## 2026-10-02 (home media built, docs/home-media-plan.md)
 
 - **Built as planned, with Raushan's two changes:** the video autoplays in view on phones too (guarded), and the hero is square on desktop too.

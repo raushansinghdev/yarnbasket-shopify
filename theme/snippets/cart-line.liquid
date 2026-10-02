@@ -135,7 +135,7 @@
     background: linear-gradient(90deg, var(--color-line-strong) 6px, transparent 0) 0 100% / 10px 1px repeat-x;
   }
   .cart-line:last-child { background: none; }
-  .cart-line__media { --ratio: 1; border-radius: var(--radius-sm); background: var(--oat); }
+  .cart-line__media { --ratio: 1; border-radius: var(--radius-sm); background: var(--blush); }
   .cart-line__body {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -190,7 +190,7 @@
     cursor: pointer;
   }
   .cart-line__gift-remove .icon { width: 20px; height: 20px; }
-  @media (hover: hover) { .cart-line__gift-remove:hover { background: var(--blush-soft); } }
+  @media (hover: hover) { .cart-line__gift-remove:hover { background: var(--color-surface); } }
   .cart-line.is-sold-out .cart-line__media img { filter: grayscale(.7); opacity: .7; }
   /* While a change is on its way, the line's price and the totals dim; nothing else moves. */
   .cart-line.is-busy .cart-line__price, [data-cart-root].is-busy [data-total] { opacity: .55; }
@@ -224,7 +224,7 @@
     text-decoration-color: var(--rose);
     cursor: pointer;
   }
-  @media (hover: hover) { .cart-undo__btn:hover { background: var(--blush-soft); } }
+  @media (hover: hover) { .cart-undo__btn:hover { background: var(--color-surface); } }
   @media (prefers-reduced-motion: no-preference) {
     .cart-undo { animation: cart-fade var(--dur-panel) var(--ease-out) both; }
   }
