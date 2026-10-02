@@ -671,6 +671,68 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   }
 }
 
+// 14. Yarn heading (docs/yarn-heading.md): "stitched with love" is written by one strand of yarn. It waits as a dashed
+//     pattern, writes itself (hook, yarn from the ball) and ends finished: nothing still moving, the strand whole, the
+//     i's dotted, the hook gone. A tap on the heading finishes it at once. It waits for the logo intro to end, and with
+//     reduced motion it's simply there. The heading still reads as plain words.
+{
+  const has = await fetch(URL).then((r) => r.text()).then((t) => t.includes('class="yarn"'), () => false);
+  if (!has) console.log('SKIP  Yarn heading                                      the hero heading isn\'t "*stitched with love*"');
+  else {
+    const phone = devices['Pixel 7'];
+    const state = (page) => page.evaluate(() => {
+      const svg = document.querySelector('.yarn');
+      const op = (s) => +getComputedStyle(svg.querySelector(s)).opacity;
+      return {
+        play: document.documentElement.classList.contains('yarn-play'),
+        writing: svg.classList.contains('is-writing'),
+        written: svg.classList.contains('is-written'),
+        offset: parseFloat(getComputedStyle(svg.querySelector('.yarn__draw')).strokeDashoffset) || 0,
+        knot: op('.yarn__knot'),
+        hook: op('.yarn__hook'),
+        moving: document.getAnimations().filter((a) => a.effect?.target?.closest?.('.yarn') && a.playState === 'running').length,
+        heading: document.querySelector('h1').textContent.replace(/\s+/g, ' ').trim(),
+      };
+    });
+
+    let { browser, page, errors } = await open(chromium, phone, { reducedMotion: 'no-preference' });
+    await page.waitForFunction(() => document.querySelector('.yarn')?.classList.contains('is-written'), null, { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(1800);
+    let s = await state(page);
+    record('Yarn heading: writes itself, then rests', s.play && s.written && s.offset === 0 && s.knot === 1 && s.hook === 0 && s.moving === 0, `written: ${s.written}, strand left: ${s.offset}, knots: ${s.knot}, hook: ${s.hook}, still moving: ${s.moving}`);
+    record('Yarn heading: the heading reads as words', s.heading.endsWith('stitched with love'), `"${s.heading}"`);
+    record('Yarn heading: no script errors', errors.length === 0, errors[0] || 'none');
+    await browser.close();
+
+    ({ browser, page } = await open(chromium, phone, { reducedMotion: 'no-preference' }));
+    await page.waitForFunction(() => document.querySelector('.yarn')?.classList.contains('is-writing'), null, { timeout: 8000 }).catch(() => {});
+    await page.click('h1');
+    await page.waitForTimeout(250);
+    s = await state(page);
+    record('Yarn heading: a tap finishes it at once', s.written && s.offset === 0, `written: ${s.written}, strand left: ${s.offset}`);
+    await browser.close();
+
+    // The logo intro never plays for test browsers, so it's stood in for: the class goes on as the page starts and
+    // comes off 1.5 s after load. The writing must wait for that, then 2.5 s more.
+    ({ browser, page } = await open(chromium, phone, {
+      reducedMotion: 'no-preference',
+      init: () => new MutationObserver((m, o) => { if (document.documentElement) { document.documentElement.classList.add('yb-intro'); o.disconnect(); } }).observe(document, { childList: true }),
+    }));
+    await page.evaluate(() => document.documentElement.classList.remove('yb-intro'));
+    await page.waitForTimeout(1500);
+    const early = (await state(page)).writing;
+    await page.waitForTimeout(2500);
+    const later = (await state(page)).writing;
+    record('Yarn heading: waits for the logo intro', !early && later, `writing 1.5 s after the intro: ${early}, 4 s after: ${later}`);
+    await browser.close();
+
+    ({ browser, page } = await open(chromium, phone, { reducedMotion: 'reduce' }));
+    s = await state(page);
+    record('Yarn heading, reduced motion: simply there', !s.play && s.offset === 0 && s.knot === 1, `writing: ${s.play}, strand left: ${s.offset}`);
+    await browser.close();
+  }
+}
+
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
 process.exit(failed.length ? 1 : 0);

@@ -88,10 +88,19 @@
   endif
 -%}
 
+{%- assign yarn_heading = false -%}
 {%- capture heading_html -%}
   {%- for part in parts -%}
     {%- assign odd = forloop.index0 | modulo: 2 -%}
-    {%- if odd == 1 -%}
+    {%- comment -%}
+      "stitched with love" is written in one strand of yarn (snippets/yarn-lettering, docs/yarn-heading.md); any other
+      highlighted words get the hand-stitched underline.
+    {%- endcomment -%}
+    {%- assign yarn_words = part | strip | downcase -%}
+    {%- if odd == 1 and yarn_words == 'stitched with love' -%}
+      {%- assign yarn_heading = true -%}
+      {%- render 'yarn-lettering' -%}
+    {%- elsif odd == 1 -%}
       <span class="hl">{{ part }}<svg class="hl__stitch" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M3 9 C 40 4, 80 4, 110 7 S 170 11, 197 5"/></svg></span>
     {%- else -%}
       {{- part -}}
@@ -185,6 +194,7 @@
         <p class="eyebrow hero__anim" style="--d: 0ms">{{ s.eyebrow }}</p>
       {%- endif -%}
       {%- if section.index == 1 -%}
+        {%- if yarn_heading -%}{%- render 'yarn-lettering', part: 'script' -%}{%- endif -%}
         <h1 id="Hero-{{ section.id }}" class="h-display hero__title hero__anim" style="--d: 60ms">{{ heading_html }}</h1>
       {%- else -%}
         <h2 id="Hero-{{ section.id }}" class="h-display hero__title hero__anim" style="--d: 60ms">{{ heading_html }}</h2>
