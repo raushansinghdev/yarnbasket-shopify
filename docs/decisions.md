@@ -14,6 +14,11 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **No quick add-to-cart on cards yet.** It comes with the cart drawer (build-plan Phase 5).
 - **Flower pots is a launch category** (Raushan, 2026-10-02). It's on the home page and in the Shop menu. The menu item stays "Bestsellers".
 
+## 2026-10-02 (phone menu drawer)
+
+- **The drawer's × is always visible.** The top bar (logo and ×) is pinned while the menu scrolls. Raushan asked whether people would know to tap the thin strip of page to close the menu; most wouldn't. The strip, the swipe and Back still work as extras.
+- **Craft tiles 3 across, with "Shop all" as the 6th tile.** The menu is about 250px shorter, so Gifts, Bestsellers, Our story and Help show without scrolling on most phones.
+
 ## 2026-10-02 (search, docs/search-plan.md)
 
 Raushan accepted every recommendation in search-plan §13.

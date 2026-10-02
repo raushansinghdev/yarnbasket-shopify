@@ -197,6 +197,8 @@ if (document.querySelector('.tip')) {
       if (event.target === drawer) closeDrawer();
     });
     drawer.addEventListener('close', () => setExpanded(false));
+    // The pinned top bar gets its hairline once the menu has scrolled.
+    drawer.addEventListener('scroll', () => drawer.classList.toggle('is-scrolled', drawer.scrollTop > 4), { passive: true });
     // Following a link closes the drawer at once, so the back button returns to a clean page.
     drawer.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => drawer.close()));
 
@@ -250,9 +252,8 @@ if (document.querySelector('.tip')) {
 }
 
 /* ---------- Search panel: open and close (docs/search-plan.md §5–§7) ----------
-   Phones get a full-screen modal sheet; wider screens a panel under the header, with the page dimmed behind it.
-   The field gets focus inside the tap itself, the only way iOS opens the keyboard, so this part can't wait for
-   search.js. search.js (results as you type, recent searches) loads on first touch of anything search. */
+   Phones: a full-screen sheet; wider: a panel under the header. Focus moves inside the tap (the only way iOS opens
+   the keyboard), so this can't wait for search.js, which loads on first touch of anything search. */
 {
   const panel = document.getElementById('SearchPanel');
 
@@ -312,10 +313,10 @@ if (document.querySelector('.tip')) {
         quiet = false;
       }
     };
-    // Fade out first (220ms), then close; instantly when the layout switches or with reduced motion.
-    const close = ({ refocus = false, instant = false } = {}) => {
+    // Fade out (220ms), then close.
+    const close = ({ refocus = false } = {}) => {
       if (!panel.open || 'closing' in panel.dataset) return;
-      if (instant || reduceMotion.matches) return finish(refocus);
+      if (reduceMotion.matches) return finish(refocus);
       panel.dataset.closing = '';
       scrim.hidden = true;
       closing = setTimeout(() => finish(refocus), 220);
@@ -355,19 +356,17 @@ if (document.querySelector('.tip')) {
     const away = (event) => panel.open && !panel.matches(':modal') && !inside(event.target) && close();
     document.addEventListener('pointerdown', away);
     document.addEventListener('focusin', away);
-    // Following a link: the panel stays until the next page replaces it, so the page underneath never flashes
-    // in between; it dims so the tap is acknowledged. If Back restores this page from the back-forward cache,
-    // the panel is shut before it shows.
+    // Following a link: the panel stays (dimmed) until the next page replaces it, so nothing flashes in between.
+    // A page restored by Back has it shut first.
     panel.addEventListener('click', (event) => {
       const link = event.target.closest('a[href]');
       if (link && !link.target && !(event.metaKey || event.ctrlKey || event.shiftKey)) panel.classList.add('is-leaving');
     });
     addEventListener('pageshow', (event) => event.persisted && panel.open && finish(false));
-    phone.addEventListener('change', () => close({ instant: true }));
+    phone.addEventListener('change', () => panel.open && finish(false));
 
     // Warm up: fetch search.js as soon as a pointer or finger heads for search.
-    [...openers, pill].forEach((el) => el?.addEventListener('pointerenter', load, { once: true, passive: true }));
-    [...openers, pill].forEach((el) => el?.addEventListener('touchstart', load, { once: true, passive: true }));
+    [...openers, pill].forEach((el) => ['pointerenter', 'touchstart'].forEach((type) => el?.addEventListener(type, load, { once: true, passive: true })));
   }
 }
 

@@ -90,16 +90,19 @@
         {%- for kid_title in k_titles -%}
           {%- assign i = forloop.index0 -%}
           <li>
-            {%- render 'menu-tile', title: kid_title, url: k_urls[i], handle: k_handles[i], collection: kids[i].object, current: kids[i].current, sizes: '(min-width: 420px) 180px, 42vw' -%}
+            {%- render 'menu-tile', title: kid_title, url: k_urls[i], handle: k_handles[i], collection: kids[i].object, current: kids[i].current, sizes: '(min-width: 420px) 120px, 28vw' -%}
           </li>
         {%- endfor -%}
+        {%- comment -%} "Shop all" is the last tile, so five crafts fill two rows of three. {%- endcomment -%}
+        {%- if all_link -%}
+          <li>
+            <a href="{{ url }}" class="menu-tile menu-tile--all" {% if current %}aria-current="page"{% endif %}>
+              <span class="media menu-tile__media"><span class="menu-tile__art">{%- render 'icon', icon: 'arrow' -%}</span></span>
+              <span class="menu-tile__title">{{ all_label }}</span>
+            </a>
+          </li>
+        {%- endif -%}
       </ul>
-      {%- if all_link -%}
-        <a href="{{ url }}" class="link drawer__all" {% if current %}aria-current="page"{% endif %}>
-          {{- all_label -}}
-          {%- render 'icon', icon: 'arrow' -%}
-        </a>
-      {%- endif -%}
     {%- elsif k_titles != blank -%}
       <details class="drawer__group" {% if here %}open{% endif %}>
         <summary class="drawer__link">

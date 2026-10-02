@@ -584,15 +584,35 @@
     flex-direction: column;
     gap: var(--space-6);
     min-height: 100%;
-    padding: max(var(--space-3), env(safe-area-inset-top)) var(--space-5) max(var(--space-6), env(safe-area-inset-bottom));
+    padding: 0 var(--space-5) max(var(--space-6), env(safe-area-inset-bottom));
   }
-  .drawer__top { display: flex; align-items: center; justify-content: space-between; margin-right: -10px; }
+  /* The logo and × stay pinned while the menu scrolls, so the way out is always where people look for it.
+     A hairline appears under it once the list has scrolled (theme.js sets .is-scrolled). */
+  .drawer__top {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-inline: calc(var(--space-5) * -1);
+    padding: max(var(--space-3), env(safe-area-inset-top)) calc(var(--space-5) - 10px) var(--space-2) var(--space-5);
+    background: var(--cream);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--dur-state) ease, box-shadow var(--dur-state) ease;
+  }
+  .drawer.is-scrolled .drawer__top { border-bottom-color: var(--color-line); box-shadow: 0 10px 20px -18px rgb(78 58 49 / .5); }
   .drawer__logo .site-header__name { font-size: 1.375rem; }
   .drawer__shop { display: grid; gap: var(--space-3); padding-bottom: var(--space-5); margin-bottom: var(--space-2); border-bottom: 1px solid var(--color-line); }
   .drawer__shop-title { margin: 0; }
-  .drawer__tiles { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-3); }
-  .drawer__all { justify-self: start; }
-  .drawer__tiles .menu-tile__media { --ratio: 4 / 3; }
+  /* Crafts 3 across as squares, "Shop all" last: the whole menu fits a phone screen with little or no scrolling. */
+  .drawer__tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4) var(--space-3); }
+  .drawer__tiles .menu-tile { gap: 6px; }
+  .drawer__tiles .menu-tile__media { --ratio: 1; }
+  .drawer__tiles .menu-tile__title { font-size: .875rem; line-height: 1.25; text-wrap: balance; }
+  .menu-tile--all .menu-tile__media { background: var(--blush); }
+  .menu-tile--all .menu-tile__art .icon { width: 26px; height: 26px; color: var(--cocoa-deep); transition: translate var(--dur-state) var(--ease-out); }
+  @media (hover: hover) { .menu-tile--all:hover .menu-tile__art .icon { translate: 4px 0; } }
   .drawer__close .icon { transition: transform var(--dur-panel) var(--ease-spring); }
   @media (hover: hover) { .drawer__close:hover .icon { transform: rotate(90deg); } }
   .drawer__nav > ul { display: grid; }
