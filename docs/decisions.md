@@ -2,20 +2,23 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
-## 2026-10-02 (home hero on phones, docs/home-hero-plan.md; plan only, not built)
+## 2026-10-02 (home first screen, docs/home-hero-plan.md; built)
 
-- **Directions H1–H4** (Raushan chose the recommended option on all four):
-  - H1: photos become a peek row, portrait photos at about 62% width with the next one peeking in
-  - H2: one quiet "Shop all crochet →" text link with a stitched underline replaces both buttons, on phones and desktop
-  - H3: "Find a gift" leaves the hero
-  - H4: shorter two-line intro text
-- **Why:** on phones "Loved most" started 1.2–1.3 screens down and the first price nearly 2 screens down. The 4:5 photo frame (418px) and two full-width buttons (148px) took most of that. A live prototype puts "Loved most" and the craft circles on the first screen, even at 360 × 780, and the first price about 450px sooner.
-- **Plan v2 (pending Raushan's review of the demos):**
-  - desktop keeps one pill instead of the text link, which looked lost at 1440
-  - the text link's underline becomes solid
-  - a Cocoa trust bar (needs the real shipping and COD terms)
-  - optional name and price labels on the hero photos
-  - a proposed section order: occasions, reviews and promise move above the story
+- **Raushan approved plan v2 with the recommended options** ("go with your recommended/best options"):
+  - phones: a peek row of photos (62% wide, the next one peeking in), one "Shop all crochet →" text link with a thin solid underline, and a shorter two-line intro
+  - desktop: one pill button (a small link looked lost at 1440), with the framed cross-fade unchanged
+  - "Find a gift" leaves the hero
+  - name and live price labels on the hero photos (H6), using a Product picker per photo
+  - section order: hero, Bestsellers, occasions, promise, reviews, story, FAQ, newsletter (H7). Promise comes before reviews so the two Blush panels (promise, story) don't touch
+- **Trust bar, quieter than the plan** (Raushan approved via the account session's review):
+  - Blush with Cocoa Deep text and a hairline under it, about 33px tall, instead of the Cocoa band, so it doesn't pull the eye from the hero heading
+  - only true wording until COD and shipping are set up: "Handmade in India · Ships in 1–3 days". "Free shipping over ₹999 · Cash on delivery" goes in from the theme editor once both are live and match checkout
+  - no autoplay; arrows (48px) and swipe only with 2+ messages
+  - the cart's "Ships in 1–2 days" became "1–3 days", so the two promises match. **Raushan to confirm the real delivery time**
+- **Result (390 × 844):** "Loved most" 1,072 → 644px, first price 1,565 → ~1,130px. On 360 × 780 the craft circles start at 691px, on the first screen. On iPhone Safari with its toolbars showing (664px tall), "Loved most" sits at the bottom edge and the circles need a short scroll.
+- **Found while testing:**
+  - an offset variable set on `<html>` for the bar restyled the whole page at the first scroll (1 slow frame at 4x CPU); it's now set only on the four pop-ups that use it
+  - the newsletter form made Safari scroll sideways at 320px (an older bug); fixed with `minmax(0, 1fr)`
 
 ## 2026-10-02 (account, docs/account-plan.md)
 

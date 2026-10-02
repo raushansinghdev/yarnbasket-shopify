@@ -38,7 +38,9 @@
 </section>
 
 {% stylesheet %}
-  .newsletter__inner { display: grid; justify-items: center; gap: var(--space-3); max-width: 34rem; margin-inline: auto; text-align: center; }
+  /* minmax(0, 1fr): without it Safari sizes the column to the email field's natural width, and a 320px phone
+     scrolls sideways. */
+  .newsletter__inner { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--space-3); max-width: 34rem; margin-inline: auto; text-align: center; }
   .newsletter__form { width: 100%; margin-top: var(--space-4); }
   .newsletter__field {
     display: flex;

@@ -20,8 +20,8 @@ for (const [label, dev] of [['phone', devices[engine === webkit ? 'iPhone 13' : 
     if (path === '/cart' && label === 'desktop') await ctx.request.post(base + '/cart/add.js', { data: { items: [{ id: prods[0].variants[0].id, quantity: 1 }, { id: prods[5].variants.at(-1).id, quantity: 2 }] } });
     const p = await ctx.newPage();
     const errs = [];
-    p.on('pageerror', (e) => { if (!/Cross-origin|CORS/i.test(e.message)) errs.push('JS: ' + e.message); });
-    p.on('console', (m) => { if (m.type() === 'error' && !/CORS|cdn\.shopify|origin_trials|shop\.app|Content Security Policy|_shopify_test|Cookie|monorail|Failed to load resource|web-pixels|shopify-perf|net::ERR/i.test(m.text())) errs.push('console: ' + m.text().slice(0, 140)); });
+    p.on('pageerror', (e) => { if (!/Cross-origin|CORS|otlp-http|shopifysvc/i.test(e.message)) errs.push('JS: ' + e.message); });
+    p.on('console', (m) => { if (m.type() === 'error' && !/CORS|cdn\.shopify|origin_trials|shop\.app|Content Security Policy|_shopify_test|Cookie|monorail|Failed to load resource|web-pixels|shopify-perf|net::ERR|otlp-http|shopifysvc|keepalive|exporting metrics|Content-Security-Policy/i.test(m.text())) errs.push('console: ' + m.text().slice(0, 140)); });
     p.on('response', (r) => { const u = r.url(); if (u.startsWith(base) && r.status() >= 400 && !/nope-404|\/account\?locale|sf_private_access_tokens/.test(u) && !/\.map$/.test(u)) errs.push(`HTTP ${r.status()} ${u.replace(base, '')}`); });
     try { await p.goto(base + path, { waitUntil: 'load', timeout: 45000 }); } catch (e) { issues.push(`${label} ${path}: load failed ${e.message.slice(0, 80)}`); await p.close(); continue; }
     await p.waitForTimeout(900);

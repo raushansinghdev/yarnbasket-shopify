@@ -59,7 +59,7 @@
   .saved-toast__title:empty { display: none; }
   .saved-toast__btn { min-height: var(--tap); padding: 0 var(--space-4); font-size: .9375rem; }
   @media (min-width: 768px) {
-    .saved-toast { inset: calc(var(--header-height) + var(--space-2)) var(--gutter) auto auto; width: 25rem; }
+    .saved-toast { inset: calc(var(--header-top, 0px) + var(--header-height) + var(--space-2)) var(--gutter) auto auto; width: 25rem; }
     @starting-style { .saved-toast { transform: translateY(-12px); } }
     .saved-toast.is-leaving { transform: translateY(-12px); }
   }

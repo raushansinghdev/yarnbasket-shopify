@@ -40,17 +40,21 @@
         <p class="lead hero__text hero__anim" style="--d: 140ms">{{ s.text }}</p>
       {%- endif -%}
       {%- if s.button_label != blank or s.link_label != blank -%}
+        {%- comment -%}
+          One way in (docs/home-hero-plan.md H2): a quiet text link on phones, where Bestsellers starts right below,
+          and one pill on desktop, where a small link looked lost. An optional second link never becomes a second pill.
+        {%- endcomment -%}
         <div class="hero__actions hero__anim" style="--d: 220ms">
           {%- if s.button_label != blank -%}
-            <a class="btn btn--knob hero__btn" href="{{ s.button_link | default: routes.all_products_collection_url }}">
+            <a class="btn btn--knob hero__cta" href="{{ s.button_link | default: routes.all_products_collection_url }}">
               {{- s.button_label -}}
               <span class="btn__knob">{%- render 'icon', icon: 'arrow' -%}</span>
             </a>
           {%- endif -%}
           {%- if s.link_label != blank -%}
-            <a class="btn btn--ghost hero__btn" href="{{ s.link_url | default: routes.collections_url }}">
-              {%- render 'icon', icon: 'gift' -%}
+            <a class="hero__more" href="{{ s.link_url | default: routes.collections_url }}">
               {{- s.link_label -}}
+              {%- render 'icon', icon: 'arrow' -%}
             </a>
           {%- endif -%}
         </div>
@@ -60,16 +64,30 @@
     <div class="hero__visual">
       {%- comment -%}
         Every photo is a link: a product photo you can't tap is a dead end on a phone.
-        The main photo is always first (it is the page's LCP image). "Photo" blocks add more products,
-        which cross-fade slowly; the slideshow pauses on hover, focus, off-screen and for reduced motion.
+        The main photo is always first (it is the page's LCP image). "Photo" blocks add more products.
+        Phones and tablets: a swipe row with the next photo peeking in (docs/home-hero-plan.md §3).
+        Desktop: a slow cross-fade that pauses on hover, focus, off-screen and for reduced motion.
+        With a product chosen, a photo shows its name and live price (hero-tag), and that label names the link.
       {%- endcomment -%}
       {%- liquid
-        assign img_sizes = '(min-width: 990px) 46vw, calc(100vw - 60px)'
+        assign img_sizes = '(min-width: 990px) 46vw, (min-width: 600px) 44vw, 62vw'
         assign demo_slides = ''
         if section.blocks.size == 0 and settings.demo_content
-          assign demo_slides = 'bee-keychain|Bee crochet keychain,cat-hair|Crochet flower hair clips,cat-charms|Lily of the valley bag charm' | split: ','
+          assign demo_slides = 'bee-keychain|Bee crochet keychain|bee-chick-keychain-set|Bee keychain,cat-hair|Crochet flower hair clips|flower-hair-clips-set-of-8|Flower hair clips,cat-charms|Lily of the valley bag charm|lily-of-the-valley-bag-charm|Lily bag charm' | split: ','
         endif
         assign total = section.blocks.size | plus: demo_slides.size | plus: 1
+
+        assign main_product = s.product
+        assign main_label = s.label
+        if s.image == blank and main_product == blank and settings.demo_content
+          assign main_product = all_products['sunflower-trio-crochet-bouquet']
+          assign main_label = 'Sunflower bouquet'
+        endif
+        assign main_url = s.image_link | default: main_product.url | default: s.button_link | default: routes.all_products_collection_url
+        assign main_tagged = false
+        if main_product != blank
+          assign main_tagged = true
+        endif
       -%}
       <div
         class="hero__frame"
@@ -77,34 +95,68 @@
       >
         <div class="media hero__media">
           <div class="hero__slide is-active"{% if total > 1 %} role="group" aria-roledescription="slide" aria-label="{{ 'hero.slide_of' | t: index: 1, total: total }}"{% endif %}>
-            <a class="hero__link" href="{{ s.image_link | default: s.button_link | default: routes.all_products_collection_url }}">
+            <a class="hero__link" href="{{ main_url }}">
               {%- if s.image -%}
-                {%- render 'image', image: s.image, sizes: img_sizes, loading: img_loading, priority: img_priority, class: 'hero__img' -%}
+                {%- render 'image', image: s.image, sizes: img_sizes, loading: img_loading, priority: img_priority, class: 'hero__img', decorative: main_tagged -%}
               {%- elsif settings.demo_content -%}
-                {%- render 'demo-image', name: 'hero-sunflowers', sizes: img_sizes, loading: img_loading, priority: img_priority, class: 'hero__img', alt: 'Sunflower Trio Crochet Bouquet' -%}
+                {%- liquid
+                  assign d_alt = 'Sunflower Trio Crochet Bouquet'
+                  if main_tagged
+                    assign d_alt = ''
+                  endif
+                -%}
+                {%- render 'demo-image', name: 'hero-sunflowers', sizes: img_sizes, loading: img_loading, priority: img_priority, class: 'hero__img', alt: d_alt -%}
               {%- else -%}
                 {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
               {%- endif -%}
+              {%- render 'hero-tag', product: main_product, label: main_label -%}
             </a>
           </div>
           {%- for block in section.blocks -%}
-            {%- assign n = forloop.index | plus: 1 -%}
+            {%- liquid
+              assign n = forloop.index | plus: 1
+              assign b = block.settings
+              assign b_url = b.link | default: b.product.url | default: routes.all_products_collection_url
+              assign b_tagged = false
+              if b.product != blank
+                assign b_tagged = true
+              endif
+              # The second photo is on the first screen in the phone row, so it doesn't wait for lazy loading.
+              assign b_loading = 'lazy'
+              if forloop.first and section.index == 1
+                assign b_loading = 'eager'
+              endif
+            -%}
             <div class="hero__slide" role="group" aria-roledescription="slide" aria-label="{{ 'hero.slide_of' | t: index: n, total: total }}" inert {{ block.shopify_attributes }}>
-              <a class="hero__link" href="{{ block.settings.link | default: routes.all_products_collection_url }}">
-                {%- if block.settings.image -%}
-                  {%- render 'image', image: block.settings.image, sizes: img_sizes, class: 'hero__img' -%}
+              <a class="hero__link" href="{{ b_url }}">
+                {%- if b.image -%}
+                  {%- render 'image', image: b.image, sizes: img_sizes, loading: b_loading, class: 'hero__img', decorative: b_tagged -%}
                 {%- else -%}
                   {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
                 {%- endif -%}
+                {%- render 'hero-tag', product: b.product, label: b.label -%}
               </a>
             </div>
           {%- endfor -%}
           {%- for slide in demo_slides -%}
-            {%- assign d = slide | split: '|' -%}
-            {%- assign n = forloop.index | plus: 1 -%}
+            {%- liquid
+              assign d = slide | split: '|'
+              assign n = forloop.index | plus: 1
+              assign d_product = all_products[d[2]]
+              assign d_url = d_product.url | default: routes.all_products_collection_url
+              assign d_alt = d[1]
+              if d_product != blank
+                assign d_alt = ''
+              endif
+              assign d_loading = 'lazy'
+              if forloop.first and section.index == 1
+                assign d_loading = 'eager'
+              endif
+            -%}
             <div class="hero__slide" role="group" aria-roledescription="slide" aria-label="{{ 'hero.slide_of' | t: index: n, total: total }}" inert>
-              <a class="hero__link" href="{{ routes.all_products_collection_url }}">
-                {%- render 'demo-image', name: d[0], sizes: img_sizes, class: 'hero__img', alt: d[1] -%}
+              <a class="hero__link" href="{{ d_url }}">
+                {%- render 'demo-image', name: d[0], sizes: img_sizes, class: 'hero__img', alt: d_alt, loading: d_loading -%}
+                {%- render 'hero-tag', product: d_product, label: d[3] -%}
               </a>
             </div>
           {%- endfor -%}
@@ -160,25 +212,34 @@
     background: linear-gradient(to bottom, var(--blush) calc(100% - var(--hero-fade)), var(--blush-soft));
   }
   .hero.scheme-blush .hero__frame { border-color: color-mix(in srgb, var(--white) 92%, transparent); }
-  .hero.scheme-blush .btn--ghost { --btn-line: color-mix(in srgb, var(--cocoa) 22%, transparent); background: color-mix(in srgb, var(--white) 72%, transparent); }
   .hero__grid { display: grid; gap: clamp(var(--space-7), 2rem + 4vw, var(--space-9)); align-items: center; }
   .hero__copy { display: grid; gap: var(--space-4); justify-items: start; max-width: 36rem; }
-  .hero__title { max-width: 12ch; }
-  .hero__text { max-width: 30rem; color: var(--color-ink); }
+  .hero__text { max-width: 30rem; color: var(--color-ink); text-wrap: balance; }
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-2) var(--space-5);
     margin-top: var(--space-3);
-    width: 100%;
   }
-  /* On phones the two buttons stack full width, right under the thumb; from tablet up they sit side by side. */
-  .hero__btn { flex: 1 1 100%; }
-  .hero__btn.btn--knob { justify-content: space-between; padding-left: 1.75rem; }
-  @media (min-width: 600px) {
-    .hero__btn { flex: 0 0 auto; }
-    .hero__btn.btn--knob { justify-content: center; }
+
+  /* The optional second way in is always a quiet link, never a second pill. */
+  .hero__more {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    font-weight: 500;
+    color: var(--cocoa-deep);
+    text-decoration: underline 1.5px;
+    text-underline-offset: 7px;
+    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    transition: text-decoration-color var(--dur-state) ease;
+  }
+  .hero__more .icon { width: 18px; height: 18px; transition: transform var(--dur-panel) var(--ease-out); }
+  @media (hover: hover) {
+    .hero__more:hover { text-decoration-color: currentColor; }
+    .hero__more:hover .icon { transform: translateX(3px); }
   }
 
   /* Highlighted words get a hand-stitched underline that sews itself in. */
@@ -200,30 +261,37 @@
     vector-effect: non-scaling-stroke;
   }
 
-  .hero__visual { position: relative; margin-inline: 6px 2px; }
-  /* The photo-frame outline from the Instagram covers: a fine Rose line just outside the photo. */
-  .hero__frame {
-    position: relative;
-    display: block;
-    padding: 10px;
-    border: 1.5px solid color-mix(in srgb, var(--rose) 85%, transparent);
-    border-radius: calc(var(--radius-lg) + 10px);
-    transition: border-color var(--dur-state) ease;
-  }
-  .hero__media { display: block; --ratio: 4 / 5; border-radius: var(--radius-lg); touch-action: pan-y; z-index: 0; }
-
-  /* Slides sit on top of each other and cross-fade: opacity only, no sliding or zooming, so the change stays quiet.
-     The outgoing photo stays fully visible underneath while the new one fades in, so the background never shows through. */
-  .hero__slide { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 1400ms ease-in-out; }
-  .hero__slide.is-leaving { opacity: 1; transition: none; }
-  .hero__slide.is-active { opacity: 1; z-index: 1; pointer-events: auto; }
+  .hero__visual { position: relative; }
+  .hero__media { display: block; --ratio: 4 / 5; border-radius: var(--radius-lg); z-index: 0; }
   .hero__link { position: absolute; inset: 0; display: block; border-radius: inherit; }
   .hero__link:focus-visible { outline-offset: -5px; }
   .hero__link > img, .hero__link > svg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .hero__img { transition: scale 1100ms var(--ease-out); }
 
-  /* Previous / pause / next. On mouse devices they appear only on hover or keyboard focus.
-     Touch screens get a real swipe gallery instead (see below): no buttons, no autoplay, just dots. */
+  /* The product's name and live price on the photo (hero-tag). The name gives way first on a narrow photo. */
+  .hero__tag {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    max-width: calc(100% - 20px);
+    padding: 6px 11px;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--white) 88%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 18px -12px rgb(78 58 49 / .6);
+    font-size: .8125rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--cocoa-deep);
+  }
+  .hero__tag-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hero__tag-price { flex: none; font-weight: 600; white-space: nowrap; }
+
   .hero__controls {
     position: absolute;
     right: 20px;
@@ -254,9 +322,113 @@
   .hero__ico-play, [data-paused] .hero__ico-pause { display: none; }
   [data-paused] .hero__ico-play { display: block; }
   .hero__dots { display: none; }
-  /* Touch screens: the photos sit side by side and swipe natively (scroll snap), like an Instagram carousel.
-     They change only when the person swipes, so nothing moves on its own and no buttons are needed. */
-  @media (hover: none) and (pointer: coarse) {
+
+  .hero__flower { position: absolute; color: var(--taupe); opacity: .38; pointer-events: none; }
+
+  /* ---------- Phones and tablets: products sooner (docs/home-hero-plan.md §3) ----------
+     A two-line heading, one quiet text link, and the photos as a swipe row with the next one peeking in, so two
+     products show at once and the peek says "there's more" without dots. Nothing moves on its own here. */
+  @media (max-width: 989px) {
+    .hero { padding-top: 1.25rem; padding-bottom: var(--space-2); }
+    .hero.scheme-blush { --hero-fade: 64px; }
+    .hero__grid { gap: 1.25rem; }
+    .hero__copy { gap: .625rem; }
+    .hero__title { font-size: clamp(2.375rem, 1.6rem + 3vw, 3.25rem); line-height: 1.02; }
+    .hero__text { font-size: 1rem; line-height: 1.5; }
+    .hero__actions { margin-top: 0; }
+
+    /* The pill becomes a text link: Bestsellers starts right below, so the way in doesn't need to shout. */
+    .hero__cta.btn {
+      min-height: var(--tap);
+      padding: 0;
+      gap: var(--space-2);
+      border: 0;
+      border-radius: 0;
+      background: none;
+      color: var(--cocoa-deep);
+      text-decoration: underline 1.5px;
+      text-underline-offset: 7px;
+      text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    }
+    .hero__cta .btn__knob { width: auto; height: auto; background: none; color: inherit; border-radius: 0; }
+    .hero__cta.btn:hover { box-shadow: none; transform: none; text-decoration-color: currentColor; }
+
+    /* The row runs off the right edge of the screen. */
+    .hero__visual:has([data-hero-slides]) { margin-right: calc(var(--gutter) * -1); }
+    .hero__frame { padding: 0; border: 0; }
+    .hero__media {
+      display: flex;
+      gap: var(--space-3);
+      padding-right: var(--gutter);
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      aspect-ratio: auto;
+      border-radius: 0;
+      background: none;
+    }
+    .hero__media::-webkit-scrollbar { display: none; }
+    .hero__slide {
+      position: relative;
+      flex: 0 0 62%;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+      scroll-snap-align: start;
+    }
+    /* A single photo fills the width, square, rather than sitting alone at 62%. */
+    .hero__frame:not([data-hero-slides]) .hero__slide { flex-basis: 100%; aspect-ratio: 1; }
+    .hero__controls, .hero__flower { display: none; }
+  }
+  @media (min-width: 600px) and (max-width: 989px) {
+    .hero__slide { flex-basis: 44%; }
+  }
+  /* When Bestsellers follows the hero, it moves up too: the hero already gives it room. */
+  @media (max-width: 989px) {
+    .shopify-section:has(> .hero) + .shopify-section > [data-shop-crafts] { padding-top: var(--space-6); }
+    .shopify-section:has(> .hero) + .shopify-section > [data-shop-crafts] .section-head { gap: var(--space-1); }
+  }
+
+  /* ---------- Desktop: two columns, the photo in a framed slideshow ---------- */
+  @media (min-width: 990px) {
+    .hero { padding-top: var(--space-7); }
+    .hero__grid { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(var(--space-7), 6vw, var(--space-10)); }
+    .hero__title { max-width: 12ch; }
+    .hero__visual { margin-inline: 0 var(--space-6); }
+    /* The photo-frame outline from the Instagram covers: a fine Rose line just outside the photo. */
+    .hero__frame {
+      position: relative;
+      display: block;
+      padding: 10px;
+      border: 1.5px solid color-mix(in srgb, var(--rose) 85%, transparent);
+      border-radius: calc(var(--radius-lg) + 10px);
+      transition: border-color var(--dur-state) ease;
+    }
+    .hero__media { touch-action: pan-y; }
+    /* Slides sit on top of each other and cross-fade: opacity only, no sliding or zooming, so the change stays quiet.
+       The outgoing photo stays fully visible underneath while the new one fades in, so the background never shows through. */
+    .hero__slide { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 1400ms ease-in-out; }
+    .hero__slide.is-leaving { opacity: 1; transition: none; }
+    .hero__slide.is-active { opacity: 1; z-index: 1; pointer-events: auto; }
+    .hero__frame:has(.hero__link:active) { scale: .985; transition: scale var(--dur-press) ease; }
+    /* The label keeps clear of the controls in the bottom-right corner. */
+    .hero__tag { left: 16px; bottom: 16px; max-width: calc(100% - 172px); padding: 7px 13px; font-size: .875rem; }
+    .hero__flower--a { width: 72px; right: -84px; bottom: 22%; }
+    .hero__flower--b { width: 56px; left: -30%; top: 12%; }
+  }
+  /* Previous / pause / next: on mouse devices they appear only on hover or keyboard focus. */
+  @media (min-width: 990px) and (hover: hover) {
+    .hero__controls { opacity: 0; translate: 0 6px; }
+    .hero__frame:hover .hero__controls, .hero__frame:focus-within .hero__controls { opacity: 1; translate: 0 0; }
+    .hero__ctrl:hover { background: color-mix(in srgb, var(--cocoa) 9%, transparent); }
+    .hero__frame:hover, .hero.scheme-blush .hero__frame:hover { border-color: var(--rose); }
+    .hero__link:hover .hero__img { scale: 1.03; }
+  }
+  /* Large touch screens (iPad landscape): the framed photos swipe natively, like an Instagram carousel, with dots. */
+  @media (min-width: 990px) and (hover: none) and (pointer: coarse) {
     .hero__media {
       display: flex;
       overflow-x: auto;
@@ -288,30 +460,8 @@
     .hero__dots { display: flex; align-items: center; gap: 5px; }
     .hero__dots i { width: 6px; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--cocoa) 30%, transparent); transition: width var(--dur-panel) var(--ease-out), background-color var(--dur-panel) ease; }
     .hero__dots i.is-on { width: 16px; background: var(--cocoa-deep); }
-  }
-  @media (hover: hover) {
-    .hero__controls { opacity: 0; translate: 0 6px; }
-    .hero__frame:hover .hero__controls, .hero__frame:focus-within .hero__controls { opacity: 1; translate: 0 0; }
-    .hero__ctrl:hover { background: color-mix(in srgb, var(--cocoa) 9%, transparent); }
-  }
-
-  .hero__frame:has(.hero__link:active) { scale: .985; transition: scale var(--dur-press) ease; }
-
-  @media (hover: hover) {
-    .hero__frame:hover, .hero.scheme-blush .hero__frame:hover { border-color: var(--rose); }
-    .hero__link:hover .hero__img { scale: 1.03; }
-  }
-
-  .hero__flower { position: absolute; color: var(--taupe); opacity: .38; pointer-events: none; }
-  .hero__flower--a { width: 56px; bottom: 18%; right: -20px; }
-  .hero__flower--b { width: 40px; top: 30%; left: -22px; opacity: .28; }
-
-  @media (min-width: 990px) {
-    .hero { padding-top: var(--space-7); }
-    .hero__grid { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(var(--space-7), 6vw, var(--space-10)); }
-    .hero__visual { margin-inline: 0 var(--space-6); }
-    .hero__flower--a { width: 72px; right: -84px; bottom: 22%; }
-    .hero__flower--b { width: 56px; left: -30%; top: 12%; }
+    /* The dots sit bottom centre, so the label keeps to the left half. */
+    .hero__tag { max-width: calc(50% - 56px); }
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -345,9 +495,11 @@
 {% endstylesheet %}
 
 {% javascript %}
-  // Hero slideshow: a slow cross-fade between product photos (7 s each, looping).
-  // It never moves while someone is looking closely: it pauses on mouse hover, on keyboard focus,
-  // when the hero is scrolled away or the tab is hidden, and starts paused for reduced motion.
+  // Hero photos. Desktop: a slow cross-fade between product photos (7 s each, looping) that never moves while
+  // someone is looking closely: it pauses on mouse hover, on keyboard focus, when the hero is scrolled away or the
+  // tab is hidden, and starts paused for reduced motion.
+  // Below 990px the photos are a swipe row with the next one peeking in, and on large touch screens a full-frame
+  // swipe gallery. Both scroll natively: no timer, every photo reachable.
   document.querySelectorAll('[data-hero-slides]').forEach((root) => {
     const HOLD = 7000;
     const slides = [...root.querySelectorAll('.hero__slide')];
@@ -357,8 +509,9 @@
     const dots = [...root.querySelectorAll('.hero__dots i')];
     const html = document.documentElement;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-    // Touch screens get the native swipe gallery: no autoplay, every photo reachable, dots follow the scroll.
-    const touch = matchMedia('(hover: none) and (pointer: coarse)');
+    const row = matchMedia('(max-width: 989px)');
+    const swipe = matchMedia('(min-width: 990px) and (hover: none) and (pointer: coarse)');
+    const scrolls = () => row.matches || swipe.matches;
     let index = 0;
     let timer = 0;
     // Starts paused for reduced motion and lite mode; the play button still starts it.
@@ -367,7 +520,7 @@
     let focused = false;
     let visible = true;
 
-    const running = () => !touch.matches && !userPaused && !hovering && !focused && visible && !document.hidden && !html.classList.contains('yb-intro');
+    const running = () => !scrolls() && !userPaused && !hovering && !focused && visible && !document.hidden && !html.classList.contains('yb-intro');
     let leaving = 0;
     const show = (i) => {
       const prev = index;
@@ -376,7 +529,7 @@
       slides.forEach((slide, n) => {
         slide.classList.toggle('is-active', n === index);
         slide.classList.toggle('is-leaving', n === prev);
-        slide.inert = !touch.matches && n !== index;
+        slide.inert = !scrolls() && n !== index;
       });
       dots.forEach((dot, n) => dot.classList.toggle('is-on', n === index));
       clearTimeout(leaving);
@@ -406,26 +559,31 @@
     root.addEventListener('focusin', (e) => { focused = e.target.matches(':focus-visible'); schedule(); });
     root.addEventListener('focusout', (e) => { if (!root.contains(e.relatedTarget)) { focused = false; schedule(); } });
 
-    // Swipe gallery: whichever photo is snapped into view becomes the current one.
+    // Swipe row or gallery: whichever photo sits nearest the start of the row becomes the current one.
+    // Slides in the phone row are narrower than the row, so this measures positions instead of dividing by its width.
+    const offset = (slide) => slide.offsetLeft - slides[0].offsetLeft;
     stage.addEventListener('scroll', () => {
-      if (!touch.matches) return;
-      const i = Math.round(stage.scrollLeft / stage.clientWidth);
-      if (i !== index && slides[i]) { show(i); prime(i + 1); }
+      if (!scrolls()) return;
+      const i = slides.reduce((best, slide, n) => (Math.abs(offset(slide) - stage.scrollLeft) < Math.abs(offset(slides[best]) - stage.scrollLeft) ? n : best), 0);
+      if (i !== index) { show(i); prime(i + 1); prime(i + 2); }
     }, { passive: true });
     // In the swipe row the later photos sit off to the side, where lazy loading (Safari especially) never fetches
-    // them, so a swipe would land on an empty frame. Fetch one photo ahead: the next one once the page has loaded,
-    // then the one after each time the shopper swipes. Most people never swipe, so they never pay for the rest.
+    // them, so a swipe would land on an empty frame. Fetch ahead: the first photo out of view once the page has
+    // loaded, then the next ones each time the shopper swipes. Most people never swipe, so they never pay for the rest.
     const prime = (i) => slides[i]?.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; });
     const setMode = () => {
-      if (touch.matches) {
-        if (document.readyState === 'complete') prime(index + 1);
-        else addEventListener('load', () => prime(index + 1), { once: true });
+      if (scrolls()) {
+        // The phone row already shows two photos, so the first one out of view is the third.
+        const ahead = () => { prime(index + 1); if (row.matches) prime(index + 2); };
+        if (document.readyState === 'complete') ahead();
+        else addEventListener('load', ahead, { once: true });
       }
-      if (!touch.matches) stage.scrollLeft = 0;
-      slides.forEach((slide, n) => { slide.inert = !touch.matches && n !== index; });
+      if (!scrolls()) stage.scrollLeft = 0;
+      slides.forEach((slide, n) => { slide.inert = !scrolls() && n !== index; });
       schedule();
     };
-    touch.addEventListener('change', setMode);
+    row.addEventListener('change', setMode);
+    swipe.addEventListener('change', setMode);
 
     new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; schedule(); }, { threshold: 0.25 }).observe(root);
     document.addEventListener('visibilitychange', schedule);
@@ -443,7 +601,7 @@
       if (i > -1) {
         show(i);
         setPaused(true);
-        if (touch.matches) stage.scrollTo({ left: i * stage.clientWidth });
+        if (scrolls()) stage.scrollTo({ left: offset(slides[i]) });
       }
     });
 
@@ -463,7 +621,9 @@
       "label": "Main photo",
       "info": "Portrait or square, at least 1600 px wide. One product, plenty of space around it."
     },
-    { "type": "url", "id": "image_link", "label": "Main photo link", "info": "The product in the photo. Defaults to the button link." },
+    { "type": "product", "id": "product", "label": "Product in the main photo", "info": "Shows its name and price on the photo, and the photo links to it." },
+    { "type": "text", "id": "label", "label": "Short name on the photo", "info": "Optional, e.g. \"Sunflower bouquet\". Defaults to the product's title. Keep it to two or three words." },
+    { "type": "url", "id": "image_link", "label": "Main photo link", "info": "Optional. Defaults to the product above, then the button link." },
     {
       "type": "text",
       "id": "eyebrow",
@@ -481,12 +641,13 @@
       "type": "textarea",
       "id": "text",
       "label": "Text",
-      "default": "Bouquets, keychains, hair clips and bag charms, crocheted stitch by stitch and made to be gifted."
+      "default": "Bouquets, keychains, clips and charms, crocheted by hand.",
+      "info": "One short sentence. On phones it should fit on two lines."
     },
-    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop the collection" },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop all crochet", "info": "A text link on phones, a button on desktop." },
     { "type": "url", "id": "button_link", "label": "Button link" },
-    { "type": "text", "id": "link_label", "label": "Second button label", "default": "Find a gift" },
-    { "type": "url", "id": "link_url", "label": "Second button link" },
+    { "type": "text", "id": "link_label", "label": "Second link label", "info": "Optional. Shows as a quiet text link, never a second button. Leave blank to keep one clear way in." },
+    { "type": "url", "id": "link_url", "label": "Second link" },
     {
       "type": "select",
       "id": "scheme",
@@ -500,7 +661,7 @@
     },
     {
       "type": "paragraph",
-      "content": "Add Photo blocks to show more products in the big frame. They cross-fade slowly after the main photo, 7 seconds each."
+      "content": "Add Photo blocks to show more products. On phones they sit in a swipe row after the main photo; on desktop they cross-fade slowly, 7 seconds each."
     }
   ],
   "max_blocks": 4,
@@ -510,7 +671,9 @@
       "name": "Photo",
       "settings": [
         { "type": "image_picker", "id": "image", "label": "Photo", "info": "Same shape as the main photo: portrait or square, one product. Set the alt text on the image itself." },
-        { "type": "url", "id": "link", "label": "Link", "info": "The product in the photo." }
+        { "type": "product", "id": "product", "label": "Product in the photo", "info": "Shows its name and price on the photo, and the photo links to it." },
+        { "type": "text", "id": "label", "label": "Short name on the photo", "info": "Optional. Defaults to the product's title." },
+        { "type": "url", "id": "link", "label": "Link", "info": "Optional. Defaults to the product above." }
       ]
     }
   ],

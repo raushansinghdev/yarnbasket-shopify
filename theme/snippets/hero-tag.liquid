@@ -1,0 +1,23 @@
+{%- doc -%}
+  The small name-and-price label on a home hero photo (docs/home-hero-plan.md §5). The price is the product's own,
+  so it can't go stale. Renders nothing without a product. It sits inside the photo's link and becomes its name,
+  so the photo's alt text is left empty when this shows. Prices drop ".00" so the name has room on a phone.
+
+  @param {product} product - The product in the photo
+  @param {string} [label] - A short name for the label. Defaults to the product's title.
+
+  @example
+  {% render 'hero-tag', product: block.settings.product, label: block.settings.label %}
+{%- enddoc -%}
+{%- if product != blank -%}
+  {%- liquid
+    assign tag_name = label | default: product.title
+    if product.price_varies
+      assign min_price = product.price_min | money_without_trailing_zeros
+      assign tag_price = 'products.from_price' | t: price: min_price
+    else
+      assign tag_price = product.price | money_without_trailing_zeros
+    endif
+  -%}
+  <span class="hero__tag"><span class="hero__tag-name">{{ tag_name | escape }}</span> <span class="hero__tag-price">{{ tag_price }}</span></span>
+{%- endif -%}

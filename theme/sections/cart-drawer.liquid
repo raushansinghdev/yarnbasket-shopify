@@ -181,7 +181,7 @@
   .cart-toast.is-error :is(.cart-toast__media, .cart-toast__head, .cart-toast__view) { display: none; }
   .cart-toast.is-error .cart-toast__title { white-space: normal; color: var(--color-heading); font-weight: 500; }
   @media (min-width: 768px) {
-    .cart-toast { inset: calc(var(--header-height) + var(--space-2)) var(--gutter) auto auto; width: 25rem; }
+    .cart-toast { inset: calc(var(--header-top, 0px) + var(--header-height) + var(--space-2)) var(--gutter) auto auto; width: 25rem; }
     @starting-style { .cart-toast { transform: translateY(-12px); } }
     .cart-toast.is-leaving { transform: translateY(-12px); }
   }

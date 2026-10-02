@@ -26,7 +26,7 @@
     "subtotal": "Subtotal",
     "taxes_included": "Taxes included. Shipping calculated at checkout.",
     "taxes_excluded": "Taxes and shipping calculated at checkout.",
-    "ships": "Ships in 1–2 days",
+    "ships": "Ships in 1–3 days",
     "each": "{{ price }} each",
     "quantity": "Quantity, {{ title }}",
     "decrease": "Decrease quantity, {{ title }}",

@@ -7,9 +7,28 @@
       "settings": {
         "menu": "main-menu"
       }
+    },
+    "announcement": {
+      "type": "announcement-bar",
+      "blocks": {
+        "terms": {
+          "type": "message",
+          "settings": {
+            "text": "Handmade in India · Ships in 1–3 days",
+            "link": "",
+            "show_until": "",
+            "icon": "truck"
+          }
+        }
+      },
+      "block_order": [
+        "terms"
+      ],
+      "settings": {}
     }
   },
   "order": [
+    "announcement",
     "header"
   ]
 }

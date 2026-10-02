@@ -373,6 +373,55 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   }
 }
 
+// 10. Home first screen (docs/home-hero-plan.md): on a small Android phone (360 × 780) the craft circles start on the
+//     first screen; the next hero photo peeks in and has loaded; one way in, a 48px text link on phones and a pill on
+//     desktop; every photo link has a name; the trust line is plain text, not a tab stop; no sideways scroll from
+//     320 to 412 wide.
+{
+  const phone = { viewport: { width: 360, height: 780 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
+  for (const [label, engine] of QUICK ? [['Chrome', chromium]] : [['Chrome', chromium], ['Safari', webkit]]) {
+    const { browser, page, errors } = await open(engine, phone, { reducedMotion: 'reduce' });
+    const r = await page.evaluate(() => {
+      const slides = [...document.querySelectorAll('.hero__slide')];
+      const second = slides[1]?.getBoundingClientRect();
+      const img2 = slides[1]?.querySelector('img');
+      const cta = document.querySelector('.hero__cta');
+      const bar = document.querySelector('.announce');
+      return {
+        crafts: Math.round(document.querySelector('.shop__crafts')?.getBoundingClientRect().top ?? 9999),
+        peeks: !!second && second.left < innerWidth && second.right > innerWidth,
+        loaded: !!img2 && img2.complete && img2.naturalWidth > 0,
+        ways: document.querySelectorAll('.hero__actions a').length,
+        ctaH: Math.round(cta?.getBoundingClientRect().height ?? 0),
+        link: cta ? getComputedStyle(cta).backgroundColor === 'rgba(0, 0, 0, 0)' : false,
+        unnamed: [...document.querySelectorAll('.hero__link')].filter((a) => !a.textContent.trim() && !a.querySelector('img[alt]:not([alt=""])')).length,
+        bar: bar ? { arrows: bar.querySelectorAll('.announce__btn').length, tab: bar.querySelector('[data-announce-track]').tabIndex } : null,
+      };
+    });
+    record(`Home, ${label} 360 × 780: craft circles on the first screen`, r.crafts < 780, `circles start at ${r.crafts}px`);
+    record(`Home, ${label}: next hero photo peeks in, loaded`, r.peeks && r.loaded, `peeks: ${r.peeks}, loaded: ${r.loaded}`);
+    record(`Home, ${label}: one way in, a 48px text link`, r.ways === 1 && r.ctaH >= 48 && r.link, `${r.ways} link(s), ${r.ctaH}px, text link: ${r.link}`);
+    record(`Home, ${label}: every hero photo link has a name`, r.unnamed === 0, `${r.unnamed} unnamed`);
+    if (r.bar) record(`Home, ${label}: trust line is plain text`, r.bar.arrows === 0 && r.bar.tab === -1, `${r.bar.arrows} arrows, tabIndex ${r.bar.tab}`);
+    const wide = [];
+    for (const width of [320, 390, 412]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.waitForTimeout(300);
+      if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)) wide.push(width);
+    }
+    record(`Home, ${label}: no sideways scroll, 320–412`, wide.length === 0, wide.length ? `scrolls at ${wide.join(', ')}` : 'ok');
+    record(`Home, ${label}: no script errors`, errors.length === 0, errors[0] || 'none');
+    await browser.close();
+  }
+  const { browser, page } = await open(chromium, devices['Desktop Chrome']);
+  const d = await page.evaluate(() => {
+    const cta = document.querySelector('.hero__cta');
+    return { pill: !!cta && getComputedStyle(cta).backgroundColor !== 'rgba(0, 0, 0, 0)', h: Math.round(cta?.getBoundingClientRect().height ?? 0), ways: document.querySelectorAll('.hero__actions a').length };
+  });
+  record('Home, desktop: one way in, a pill button', d.pill && d.ways === 1 && d.h >= 48, `${d.ways} link(s), pill: ${d.pill}, ${d.h}px`);
+  await browser.close();
+}
+
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
 process.exit(failed.length ? 1 : 0);
