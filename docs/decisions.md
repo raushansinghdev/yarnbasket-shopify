@@ -2,6 +2,17 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-03 (hero campaign banners, docs/hero-campaign-plan.md)
+
+- **Festival banners: yes, but only while a campaign is live, one at a time, swiped by hand only.** The rest of the year the hero is the headline plus products. Baymard advises against carousels on phones, and slides after the first are rarely seen. The four reference sites all use Dawn's stock slideshow, which shows the layout is common, not that it sells.
+- **Phones:** a 3:2 banner (16:9 on short phones) takes the place of the heading, line and button, so the product row stays on the first screen. 16:9 everywhere was dropped: it crops tall bouquets.
+- **Desktop:** a wide banner replaces the whole hero (chosen after mockups). The split layout, festive words beside a square photo, read as "the normal page with new words". The card in the photo row stays as the fallback when there's only a square photo.
+- **Words are real text on a pill, never in the image.** The heading stays as a hidden h1.
+- **The five big occasions get the hero** (Diwali season, Christmas, Valentine's week, Mother's Day, Rakhi). The rest get the bar and a collection. Raushan can make banners with AI, so this is content advice, not a build limit: the piece itself must be a real photo, AI only for the setting, and no text in the image.
+- **No click counter yet:** theme events reach only tracking pixels, not Shopify's reports. Add it with GA4 or the Meta pixel.
+- **The bar's campaign message can skip the home page** (D7), so the shipping and COD line stays there.
+- **Built with dummy content** and tested at `/?view=campaign-test`. Real photos and dates come later.
+
 ## 2026-10-02 (account page, round 2, docs/account-hub-plan.md)
 
 - **Our own "Your account" page in the theme (`/pages/account`), with Shopify's hosted pages kept for editing and full order details** (AH1). Shopify's hosted pages can only take a logo, colours and fonts; their layout and motion are fixed, and editing needs the Customer Account API, which a Liquid theme can't use.

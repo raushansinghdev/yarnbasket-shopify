@@ -1,0 +1,89 @@
+/*
+ * Test page for the hero campaign banner (docs/hero-campaign-plan.md): /?view=campaign-test.
+ * A dated Campaign block with no photos, so with Demo content on it shows the demo banner
+ * (assets/demo-campaign-*.webp). tools/check.mjs section 12 uses it. The real home page is index.json.
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "eyebrow": "",
+        "heading": "Handmade crochet gifts, *stitched with love*",
+        "text": "Bouquets, keychains, clips and charms, crocheted by hand.",
+        "button_label": "Shop all crochet",
+        "link_label": "",
+        "scheme": "soft"
+      },
+      "blocks": {
+        "campaign": {
+          "type": "campaign",
+          "settings": {
+            "label": "Diwali gifts, made by hand",
+            "line": "Order by 2 Nov for Diwali delivery",
+            "link": "shopify://collections/all",
+            "button_label": "",
+            "show_from": "",
+            "show_until": "2099-12-31"
+          }
+        }
+      },
+      "block_order": [
+        "campaign"
+      ]
+    },
+    "shop": {
+      "type": "shop-crafts",
+      "settings": {
+        "eyebrow": "Loved most",
+        "heading": "Bestsellers",
+        "favourites_label": "All",
+        "limit": 4,
+        "scheme": "soft"
+      },
+      "blocks": {
+        "bouquets": {
+          "type": "craft",
+          "settings": {
+            "title": "Bouquets"
+          }
+        },
+        "keychains": {
+          "type": "craft",
+          "settings": {
+            "title": "Keychains"
+          }
+        },
+        "hair": {
+          "type": "craft",
+          "settings": {
+            "title": "Hair clips"
+          }
+        },
+        "charms": {
+          "type": "craft",
+          "settings": {
+            "title": "Bag charms"
+          }
+        },
+        "pots": {
+          "type": "craft",
+          "settings": {
+            "title": "Flower pots"
+          }
+        }
+      },
+      "block_order": [
+        "bouquets",
+        "keychains",
+        "hair",
+        "charms",
+        "pots"
+      ]
+    }
+  },
+  "order": [
+    "hero",
+    "shop"
+  ]
+}

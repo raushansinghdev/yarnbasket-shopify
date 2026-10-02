@@ -1,6 +1,19 @@
 # Hero campaign plan: festival and offer banners on the home page
 
-Status: **plan, waiting for Raushan's go** (2026-10-03; decisions revisited the same day, see §8). Builds on docs/home-media-plan.md §3 (the Campaign block, built in e54fae4) and changes how it looks on phones.
+Status: **built with dummy content (2026-10-03)**, decisions as revisited in §8. Real photos and dates come later.
+
+### As built
+- **Preview:** `/?view=campaign-test` (templates/index.campaign-test.json). That's the hero and Bestsellers with a live dummy campaign, "Diwali gifts, made by hand · Order by 2 Nov for Diwali delivery". The real home page (index.json) has no campaign. Screenshots: `docs/mockups/campaign-built-phone.png`, `campaign-built-desktop.png`.
+- **Dummy photo:** `assets/demo-campaign-{800,1600,2400}.webp`, made from the sunflower demo photo extended to 3:2 with a blurred, warm-bokeh left side, following the shooting guidance. A Campaign block with **no photos** shows it while Demo content is on. Delete it with the other demo-* assets before launch.
+- **Banner or card is decided by the photo:** a "Landscape photo" (wider than 1.2:1) makes a banner; only a square photo keeps the card in the row (home-media-plan §3). The settings were renamed: Landscape photo, Square photo (optional), Occasion, Second line (new), Link, Button label (card only), Show from, Show until.
+- **Phones:** 3:2 in place of the words. On short phones (≤ 620px tall, e.g. an iPhone SE in Safari) it's **16:9**, so the product row still fits (row ends at 528px of 548). Tablets 2:1.
+- **Desktop:** a strip `clamp(320px, 32vw, 460px)` tall replaces the whole hero. The hero's bottom padding is trimmed, so Bestsellers starts at 633px on 1280 × 800 and product cards at 672px on 1024 × 768. The hidden product photos are lazy, so desktop never downloads them (checked).
+- The crop follows the **focal point set on the image in Shopify** (`image.presentation.focal_point`).
+- The heading stays as a visually hidden h1. The pill text names the link, and the photo is decorative.
+- **D7:** the bar's message has "Hide on the home page". Tested with a temporary message: home shows the shipping/COD line, /collections/all shows the campaign. header-group.json was restored byte for byte.
+- **Checks:** check.mjs §12 has three new campaign checks (iPhone SE row on screen with a hidden h1, banner LCP with axe, desktop replaces the hero with no hidden photos loaded). `npm run check --quick` 94/94, theme check 0 offenses. LCP on the banner was 0.85–1.0s locally at every size.
+- **Not testable here:** the square-photo card fallback and a real Files image with a focal point both need Files uploads (admin). Test them when the first real campaign is set up.
+ Builds on docs/home-media-plan.md §3 (the Campaign block, built in e54fae4) and changes how it looks on phones.
 
 ## 1. The question
 
@@ -146,6 +159,7 @@ Each first-draft pick was checked again against what we have: photos that are ne
 | **D2** | One live banner or up to two | One | **One** (unchanged) | Slide 2 is rarely seen, and every slide is a photo shoot |
 | **D3** | Normal days: keep the headline, or an always-on brand banner | Keep the headline | **Keep the headline** (unchanged) | On a normal day "what is this shop" plus products and prices on the first screen is the strongest start. A brand banner would only repeat the headline, with a heavier image |
 | **D3b** | Which occasions get the hero | All nine | **The five big ones**: Diwali season, Christmas, Valentine's week, Mother's Day, Rakhi. The rest get the bar and a collection | Nine would mean a banner for about 30 weeks a year: a shoot every five weeks, and an always-on-sale feel (§6) |
+| | *Raushan, 2026-10-03:* "we can use AI to make banners" | | **Fine. The theme doesn't limit it, so this is a content choice, not a build one** | AI removes most of the photo-shoot cost, which was half the reason. The other half stays: a banner for 30 weeks a year reads as always-on-sale. So the five big ones remain the advice, and the small ones are your call. **AI rules:** the piece itself must be a real photo of what ships (AI for the setting only, e.g. Shopify's own image editor can generate a background; never an AI-drawn product, which misleads buyers and brings returns), and no AI-generated text in the image (D4) |
 | **D4** | Real text on a pill, or artwork with text in the image | Real text | **Real text** (unchanged) | Sharp on every phone, read aloud, and editable in seconds. A Canva banner would also need a separate phone and desktop version |
 | **D5** | Desktop: split (A), or a wide banner (B) | A, then B after the mockups | **B, with A as the fallback** (unchanged) | It reads as an event and shows products on the first screen. A is already built, so the fallback costs nothing |
 | **D6** | Banner click counter | Build it | **Not now** | It would only reach a pixel we don't have yet (§7). Use Shopify's reports, and add it with GA4 or the Meta pixel |

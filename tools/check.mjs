@@ -557,6 +557,50 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
     const s = await media(phone, { init: () => Object.defineProperty(navigator, 'connection', { value: { saveData: true, effectiveType: '4g' } }) });
     record('Media, data saver: video never starts or downloads', !s.v.inView.playing && s.fetched === 0, `playing: ${s.v.inView.playing}, video requests: ${s.fetched}`);
   }
+
+  // Campaign banner (docs/hero-campaign-plan.md), on the test page /?view=campaign-test (a live dummy campaign, shown
+  // with Demo content on): on the shortest phone the product row still fits the first screen, the banner is the LCP
+  // image, the heading stays in the page; on desktop it replaces the hero, the hidden product photos aren't fetched,
+  // and Bestsellers comes up onto the first screen.
+  const banner = async (device) => {
+    const browser = await chromium.launch();
+    const ctx = await browser.newContext(device);
+    await ctx.addInitScript(skipIntro);
+    await ctx.addInitScript(() => { window.__lcp = ''; new PerformanceObserver((l) => l.getEntries().forEach((e) => { window.__lcp = e.element?.className || ''; })).observe({ type: 'largest-contentful-paint', buffered: true }); });
+    const page = await ctx.newPage();
+    const errors = themeErrors(page);
+    await page.goto(new globalThis.URL('/?view=campaign-test', URL).href, { waitUntil: 'load' });
+    await page.waitForTimeout(2000);
+    const r = await page.evaluate(() => {
+      const box = document.querySelector('.hero__banner')?.getBoundingClientRect();
+      const slide = document.querySelector('.hero__slide');
+      return box && {
+        h: Math.round(box.height),
+        rowBottom: slide && getComputedStyle(document.querySelector('.hero__visual')).display !== 'none' ? Math.round(slide.getBoundingClientRect().bottom) : null,
+        shopTop: Math.round(document.querySelector('[data-shop-crafts] .section-head')?.getBoundingClientRect().top ?? 9999),
+        h1: document.querySelectorAll('h1').length === 1 && document.querySelector('h1').classList.contains('visually-hidden'),
+        pill: document.querySelector('.hero__pill-title')?.textContent.trim(),
+        lcp: window.__lcp,
+        photos: [...document.querySelectorAll('.hero__visual img')].filter((img) => img.complete && img.naturalWidth > 0).length,
+      };
+    });
+    let v = [];
+    if (r) {
+      await page.addScriptTag({ content: axe.source });
+      v = await page.evaluate(async () => (await window.axe.run(document.querySelector('.hero'), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+    }
+    await browser.close();
+    return { r, v, errors };
+  };
+  const se = { viewport: { width: 375, height: 548 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+  const bp = await banner(se);
+  if (!bp.r) console.log('SKIP  Campaign banner checks                              no banner on /?view=campaign-test (Demo content is off)');
+  else {
+    record('Campaign, iPhone SE: banner, product row on screen', bp.r.rowBottom !== null && bp.r.rowBottom <= 548 && bp.r.h1 && !!bp.r.pill, `banner ${bp.r.h}px, row ends at ${bp.r.rowBottom}px (screen 548), hidden h1: ${bp.r.h1}, pill: "${bp.r.pill}"`);
+    record('Campaign, phone: banner is the LCP image (axe)', /hero__banner-img/.test(bp.r.lcp) && bp.v.length === 0 && bp.errors.length === 0, `LCP on "${bp.r.lcp}", ${bp.v.join(', ') || '0 violations'}${bp.errors.length ? `, errors: ${bp.errors[0]}` : ''}`);
+    const bd = await banner({ viewport: { width: 1280, height: 800 } });
+    record('Campaign, desktop 1280: banner replaces the hero', bd.r.rowBottom === null && bd.r.h <= 460 && bd.r.shopTop < 700 && bd.r.photos === 0 && bd.v.length === 0, `banner ${bd.r.h}px, Bestsellers at ${bd.r.shopTop}px, hidden product photos loaded: ${bd.r.photos}, ${bd.v.join(', ') || '0 violations'}`);
+  }
 }
 
 // 13. Account page (docs/account-hub-plan.md): axe on the signed-out page and on the signed-in demo (made-up orders;
