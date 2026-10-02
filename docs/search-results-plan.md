@@ -293,6 +293,10 @@ One new snippet, `snippets/product-row.liquid`. It's used by:
 | `sections/header.liquid` | shared | On `/search`: the pill steps back to the lens (CSS plus one condition) |
 | `locales/en.default.json` | shared | New strings (`search.results_for`, `search.more_to_love`, `search.best_match`…) |
 
+**Build notes from the search session (2026-10-02):**
+- theme.js is at 25,472 bytes against its 25 KB budget. The lens-focuses-the-page-box change goes in search.js (which the search page already loads), or replaces existing theme.js code; it never adds to theme.js.
+- On `/search`, the search panel's openers must keep working wherever the page box is hidden or missing. theme.js `finish()` hands focus back to the first opener that's showing.
+
 **Stages:**
 
 | Stage | What | Done when |
