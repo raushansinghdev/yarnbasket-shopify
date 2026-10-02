@@ -3,6 +3,20 @@
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
 
+## 2026-10-02 (account, docs/account-plan.md)
+
+- **Accounts: Shopify's current customer accounts** (already on: `/account` goes to `shopify.com/78941028489/account`). Raushan approved AC1–AC9 as recommended:
+  - sign-in with an email code + Google; Facebook off. Phone OTP isn't possible without Shopify Plus; phone-first checkout is chosen together with the payment gateway
+  - Shopify's `<shopify-account>` sheet as the account button, if it passes the A0 accessibility and speed checks; otherwise our own popover
+  - phones: account in the drawer as a two-line row; the header gets it from 768px
+  - hearts on every product card and on the product page
+  - account pages on `account.<our domain>`
+  - Share your list
+  - made-to-order pieces as draft orders, so they show in Orders
+  - self-serve returns on, made-to-order pieces final sale
+  - saved items work without signing in, on this device first; sync later
+- **Why hearts on cards:** shoppers shortlist while browsing a grid, Indian shoppers expect it (Myntra, Meesho, Nykaa), and a filled heart shows what's already saved. Kept calm: a small circle on the photo's top-right, badges stay top-left.
+
 ## 2026-10-02 (desktop header layout)
 
 - **The menu sits beside the logo, and the header is 64px tall.** Raushan felt the bar was too wide. Measured at 1470px, the centred menu left about 167px of empty space on each side, so the logo, menu and tools read as three islands. Of the mocked options, he chose B: menu beside the logo, tools on the right, and from 1280px a wider search field (up to 360px) where the menu used to float. Search is a main way into a shop with many small products. The phone header is unchanged.
