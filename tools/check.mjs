@@ -213,7 +213,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //    import tools/test-products.csv first (skipped otherwise).
 {
   const site = (path) => new globalThis.URL(path, URL).href;
-  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products, () => []);
+  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift')), () => []);
   const single = products.find((p) => p.variants.length === 1 && p.variants[0].available && !/lily/.test(p.handle));
   const limited = products.find((p) => /lily-of-the-valley/.test(p.handle));
   if (!single) console.log('SKIP  Cart checks                                    no products in the store (import tools/test-products.csv)');
@@ -300,7 +300,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //    creates the Saved and Track pages, they're previewed on /pages/contact with ?view=. Needs products.
 {
   const site = (path) => new globalThis.URL(path, URL).href;
-  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products, () => []);
+  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift')), () => []);
   const handles = products.filter((p) => p.variants.some((v) => v.available)).slice(0, 3).map((p) => p.handle);
   const pageUrl = async (handle, view) => ((await fetch(site(`/pages/${handle}`))).ok ? site(`/pages/${handle}`) : site(`/pages/contact?view=${view}`));
   if (handles.length < 2) console.log('SKIP  Account & saved checks                         no products in the store (import tools/test-products.csv)');
@@ -443,7 +443,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   await page.goto(site('/cart'), { waitUntil: 'load' });
   record('Offers: no announcement bar on /cart', !(await page.$('.announce')), 'the rewards line says it there');
 
-  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products, () => []);
+  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift')), () => []);
   const cheap = products.filter((p) => p.variants[0].available).sort((a, b) => a.variants[0].price - b.variants[0].price);
   if (!cheap.length) console.log('SKIP  Offers checks                                   no products in the store');
   else {
