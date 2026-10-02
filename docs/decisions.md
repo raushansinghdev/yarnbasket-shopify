@@ -2,6 +2,19 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-02 (home hero colour: Soft blush leads, Blush supports)
+
+- **Raushan's direction:** the whitish **Soft blush #FBF1EE** is the main colour and the pinkish **Blush #F2D4CC** is the supporting colour, as the page below the hero already does ("Our promise" and "How it's made" are Blush cards on Soft blush). He calls them "Soft blush" and "Blush".
+- **Built:**
+  - the hero background and the header at the top of the page are now Soft blush (hero "Background" setting: Soft blush)
+  - the way in is a Blush pill with a white arrow knob, on phones and desktop (50px tall, sized to its text)
+  - the desktop photo frame keeps its Rose outline
+  - Blush stays for the top bar, the pill, the craft circles and the panels below
+- **Why not pure white:** everything below the hero is Soft blush, so a white hero left a visible seam at Bestsellers. Soft blush makes the first screen one continuous surface, and it still reads as white next to Blush.
+- **Why not a Blush card behind the hero text:** it adds a box to the busiest screen, reads as an ad banner and pushes Bestsellers about 40px down.
+- **Blush hero still works:** with the Background setting on Blush, the old behaviour returns (header tinted to match, a text link on phones, a dark pill on desktop), because a Blush pill would vanish on Blush.
+- **Checks:** full `npm run check` 88/88. Section 10 now expects the pill on a light hero and the link on a Blush one.
+
 ## 2026-10-02 (announcement wording)
 
 - **The announcement bar says "Free shipping over ₹999 · Partial COD available"**, Raushan's exact words. It's a message block in `header-group.json`, so it overrides the line built from settings until it's removed. It's one line from 360px; at 320px it splits into two lines at the dot.

@@ -41,8 +41,9 @@
       {%- endif -%}
       {%- if s.button_label != blank or s.link_label != blank -%}
         {%- comment -%}
-          One way in (docs/home-hero-plan.md H2): a quiet text link on phones, where Bestsellers starts right below,
-          and one pill on desktop, where a small link looked lost. An optional second link never becomes a second pill.
+          One way in (docs/home-hero-plan.md H2, v3): on the light backgrounds (Soft blush, White) a Blush pill with a
+          white knob, phones and desktop alike: pink as the supporting colour. On a Blush hero that pill would vanish, so
+          there it's a quiet text link on phones and a Cocoa pill on desktop. An optional second link is always a link.
         {%- endcomment -%}
         <div class="hero__actions hero__anim" style="--d: 220ms">
           {%- if s.button_label != blank -%}
@@ -223,6 +224,21 @@
     margin-top: var(--space-3);
   }
 
+  /* Light backgrounds (Soft blush, White): Soft blush leads and Blush supports, so the way in is a Blush pill with a
+     white knob, sized to its text. Cocoa Deep on Blush is about 8.5:1. */
+  .hero:not(.scheme-blush) .hero__cta.btn {
+    --btn-bg: var(--blush);
+    --btn-ink: var(--cocoa-deep);
+    --btn-line: var(--blush);
+    min-height: 50px;
+    padding: 0 6px 0 1.375rem;
+    gap: .875rem;
+  }
+  .hero:not(.scheme-blush) .hero__cta .btn__knob { width: 38px; height: 38px; background: var(--white); color: var(--cocoa-deep); }
+  @media (hover: hover) {
+    .hero:not(.scheme-blush) .hero__cta.btn:hover { --btn-bg: color-mix(in srgb, var(--blush) 82%, var(--rose)); --btn-line: var(--btn-bg); }
+  }
+
   /* The optional second way in is always a quiet link, never a second pill. */
   .hero__more {
     display: inline-flex;
@@ -337,8 +353,8 @@
     .hero__text { font-size: 1rem; line-height: 1.5; }
     .hero__actions { margin-top: 0; }
 
-    /* The pill becomes a text link: Bestsellers starts right below, so the way in doesn't need to shout. */
-    .hero__cta.btn {
+    /* On a Blush hero the pill becomes a text link: Bestsellers starts right below, so the way in doesn't need to shout. */
+    .hero.scheme-blush .hero__cta.btn {
       min-height: var(--tap);
       padding: 0;
       gap: var(--space-2);
@@ -350,8 +366,8 @@
       text-underline-offset: 7px;
       text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
     }
-    .hero__cta .btn__knob { width: auto; height: auto; background: none; color: inherit; border-radius: 0; }
-    .hero__cta.btn:hover { box-shadow: none; transform: none; text-decoration-color: currentColor; }
+    .hero.scheme-blush .hero__cta .btn__knob { width: auto; height: auto; background: none; color: inherit; border-radius: 0; }
+    .hero.scheme-blush .hero__cta.btn:hover { box-shadow: none; transform: none; text-decoration-color: currentColor; }
 
     /* The row runs off the right edge of the screen. */
     .hero__visual:has([data-hero-slides]) { margin-right: calc(var(--gutter) * -1); }
@@ -644,7 +660,7 @@
       "default": "Bouquets, keychains, clips and charms, crocheted by hand.",
       "info": "One short sentence. On phones it should fit on two lines."
     },
-    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop all crochet", "info": "A text link on phones, a button on desktop." },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop all crochet", "info": "A Blush pill. With the Blush background: a text link on phones, a dark button on desktop." },
     { "type": "url", "id": "button_link", "label": "Button link" },
     { "type": "text", "id": "link_label", "label": "Second link label", "info": "Optional. Shows as a quiet text link, never a second button. Leave blank to keep one clear way in." },
     { "type": "url", "id": "link_url", "label": "Second link" },

@@ -16,6 +16,16 @@ Status: **built 2026-10-02** (see "As built" below). Raushan approved v2 with th
 
 ---
 
+## v3: colours (2026-10-02, built)
+
+- **Main:** Soft blush **#FBF1EE**, for the hero and the header at the top, the same as the rest of the page.
+- **Supporting:** Blush **#F2D4CC**, for the top bar, the "Shop all crochet" pill (with a white knob, on phones and desktop), the craft circles, and the panels below.
+- **Text:** Cocoa Deep #4E3A31.
+- **Lines and accents:** Rose #E3A69C, for the stitched underline and the desktop frame outline.
+- **Blush hero:** with the hero's Background setting on Blush, the earlier look returns (text link on phones, dark pill on desktop).
+- **Measured** (360 × 780): the craft circles start at 693px.
+- **Checks:** 88/88.
+
 ## As built (2026-10-02)
 
 **Hero**
