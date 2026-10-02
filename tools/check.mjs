@@ -376,9 +376,10 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 }
 
 // 10. Home first screen (docs/home-hero-plan.md): on a small Android phone (360 × 780) the craft circles start on the
-//     first screen; the next hero photo peeks in and has loaded; one way in, ≥48px: a Blush pill on a light hero
-//     (a text link on phones if the hero is Blush) and a pill on desktop; every photo link has a name; the trust line is plain text, not a tab stop; no sideways scroll from
-//     320 to 412 wide.
+//     first screen; the next hero photo peeks in and has loaded; one way in (decisions.md 2026-10-03, hero button): on
+//     phones with a photo row the photos are the way in, no button, and the row ends in a "See all" card ≥48px (with a
+//     single photo, the button: a text link on a Blush hero); on desktop a solid pill button; every photo link has a
+//     name; the trust line is plain text, not a tab stop; no sideways scroll from 320 to 412 wide.
 {
   const phone = { viewport: { width: 360, height: 780 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
   for (const [label, engine] of QUICK ? [['Chrome', chromium]] : [['Chrome', chromium], ['Safari', webkit]]) {
@@ -393,9 +394,11 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
         crafts: Math.round(document.querySelector('.shop__crafts')?.getBoundingClientRect().top ?? 9999),
         peeks: !!second && second.left < innerWidth && second.right > innerWidth,
         loaded: !!img2 && img2.complete && img2.naturalWidth > 0,
-        ways: document.querySelectorAll('.hero__actions a').length,
+        row: !!document.querySelector('[data-hero-slides]'),
+        ctaShown: !!cta && cta.getClientRects().length > 0,
+        all: (() => { const a = document.querySelector('.hero__all'); return a && a.getClientRects().length ? { h: Math.round(a.getBoundingClientRect().height), name: a.textContent.trim(), last: a === a.parentElement.lastElementChild } : null; })(),
         ctaH: Math.round(cta?.getBoundingClientRect().height ?? 0),
-        // A light hero (Soft blush, White) gets the Blush pill; a Blush hero gets a text link on phones.
+        // Without a row: a solid pill, or a text link on a Blush hero.
         shape: cta ? ((getComputedStyle(cta).backgroundColor === 'rgba(0, 0, 0, 0)') === !!cta.closest('.hero.scheme-blush')) : false,
         unnamed: [...document.querySelectorAll('.hero__link')].filter((a) => !a.textContent.trim() && !a.querySelector('img[alt]:not([alt=""])')).length,
         bar: bar ? { arrows: bar.querySelectorAll('.announce__btn').length, tab: bar.querySelector('[data-announce-track]').tabIndex } : null,
@@ -403,7 +406,8 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
     });
     record(`Home, ${label} 360 × 780: craft circles on the first screen`, r.crafts < 780, `circles start at ${r.crafts}px`);
     record(`Home, ${label}: next hero photo peeks in, loaded`, r.peeks && r.loaded, `peeks: ${r.peeks}, loaded: ${r.loaded}`);
-    record(`Home, ${label}: one way in, ≥48px, the right shape`, r.ways === 1 && r.ctaH >= 48 && r.shape, `${r.ways} link(s), ${r.ctaH}px, pill or link as expected: ${r.shape}`);
+    if (r.row) record(`Home, ${label}: way in is the photo row, ending in "See all"`, !r.ctaShown && !!r.all && r.all.h >= 48 && r.all.last && !!r.all.name, `button shown: ${r.ctaShown}, end card: ${r.all ? `"${r.all.name}", ${r.all.h}px, last: ${r.all.last}` : 'missing'}`);
+    else record(`Home, ${label}: one way in, ≥48px, the right shape`, r.ctaShown && r.ctaH >= 48 && r.shape, `${r.ctaH}px, pill or link as expected: ${r.shape}`);
     record(`Home, ${label}: every hero photo link has a name`, r.unnamed === 0, `${r.unnamed} unnamed`);
     if (r.bar) record(`Home, ${label}: trust line is plain text`, r.bar.arrows === 0 && r.bar.tab === -1, `${r.bar.arrows} arrows, tabIndex ${r.bar.tab}`);
     const wide = [];

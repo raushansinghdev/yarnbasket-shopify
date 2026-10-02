@@ -245,7 +245,8 @@
     "pause": "Pause slideshow",
     "play": "Play slideshow",
     "campaign_hidden": "Not on the site now: shows {{ from }} to {{ until }}",
-    "campaign_no_end": "No end date: it stays up until you remove it"
+    "campaign_no_end": "No end date: it stays up until you remove it",
+    "see_all": "See all gifts"
   },
   "shop": {
     "choose_craft": "Choose a craft",

@@ -7,6 +7,17 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **Shopify's sign-in, profile and order pages get styled, not replaced** (no theme can host them with current accounts). Colours, logo and fonts are set in the checkout and accounts editor to match our account page: Soft blush page, white cards, Cocoa Deep buttons and links, our horizontal logo, Jost (plus Cormorant if listed). The desktop sign-in photo is the pink tulips and daisy bouquet. Done now on the dev store with Raushan; the `account.` domain follows at launch.
 - **Help is out of the account dropdown.** The navigation's Help menu (Track order, Shipping & delivery, FAQ, Contact, Our story) stays as it is. It's the customer-service menu for everyone, including guests. Order problems go through each order card's "Need help?", and Shopify's account menu keeps Help because those pages have no store navigation.
 
+## 2026-10-03 (hero button, revisits 2026-10-01 "Blush pill with a white knob")
+
+- **The Blush pill with a white knob is gone.** Raushan said it "feels odd", and the reasons are clear:
+  - It reads like an on/off switch.
+  - Blush on Soft blush is about 1.2:1, so the button barely stands out.
+  - On phones it was a third way in, between the photo row and the Bestsellers circles.
+- **Phones:** with a photo row there's no button. The products are the way in, and the row ends in a "See all gifts" card that goes to the button link. That raises the row 60px (it starts at 274px instead of 334px on a 390px phone), and the Bestsellers heading reaches the first screen. With a single photo the button shows; on a Blush hero it's a text link.
+- **Desktop:** the site's solid Cocoa button with an arrow after it, about 10:1 contrast, 52px tall.
+- **Label:** "Shop all gifts" instead of "Shop all crochet". The h1 already says crochet.
+- check.mjs §10 is updated to match: no button with a row, and the end card ≥48px and last in the row.
+
 ## 2026-10-03 (hero campaign banners, docs/hero-campaign-plan.md)
 
 - **Festival banners: yes, but only while a campaign is live, one at a time, swiped by hand only.** The rest of the year the hero is the headline plus products. Baymard advises against carousels on phones, and slides after the first are rarely seen. The four reference sites all use Dawn's stock slideshow, which shows the layout is common, not that it sells.
