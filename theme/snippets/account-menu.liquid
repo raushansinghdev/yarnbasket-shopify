@@ -1,8 +1,9 @@
 {%- doc -%}
   The header's account menu when someone is signed in (docs/account-hub-plan.md §5.1). Shopify's <shopify-account>
   sheet has no Sign out, icons or counts, and its layout can't be changed, so signed in we draw our own: the initial
-  on a Blush circle (plus "Account" from 1100px, like "Cart"), opening a small panel with the greeting, Orders (with
-  the latest order's state), Saved (its count, from saved.js), Your details, Help, Sign out and "Your account".
+  on a Blush circle (plus "Account" from 1100px, like "Cart"), opening a small panel. Its top row (initial, greeting,
+  email, ›) opens the account page; then Orders (with the latest order's state), Saved (its count, from saved.js),
+  Your details, Help, and Sign out last.
   - A native popover: Esc, click-away, the top layer and aria-expanded come from the browser, with no script.
   - A list of links, not an ARIA menu, so Tab and screen readers work the way they do everywhere else.
   - Under 900px it isn't shown: the drawer's account row goes to the account page instead.
@@ -50,15 +51,18 @@
     <span class="visually-hidden">{{ 'header.account' | t }}</span>
   </button>
   <div id="AccountMenu" class="account-menu__panel" popover>
-    <p class="account-menu__who" id="AccountMenuWho">
+    {%- comment -%} You, at the top, is the way into the account page (Raushan, 2026-10-03), like Google's and Amazon's. {%- endcomment -%}
+    <a class="account-menu__who" href="{{ account_url }}" id="AccountMenuWho">
       <span class="account-menu__avatar account-menu__avatar--lg" aria-hidden="true">{{ initial }}</span>
       <span class="account-menu__text">
         <span class="account-menu__name">
           {%- if first_name != blank -%}{{ 'account.greeting' | t: name: first_name }}{%- else -%}{{ 'account.your_account' | t }}{%- endif -%}
         </span>
         <span class="account-menu__email">{{ email }}</span>
+        {%- if first_name != blank -%}<span class="visually-hidden">, {{ 'account.view_account' | t }}</span>{%- endif -%}
       </span>
-    </p>
+      {%- render 'icon', icon: 'chevron', class: 'account-menu__go' -%}
+    </a>
     <nav aria-label="{{ 'account.menu_label' | t }}">
       <ul class="account-menu__list" role="list">
         <li>
@@ -94,10 +98,6 @@
     <a class="account-menu__out" href="{% if demo %}#{% else %}{{ logout_url }}{% endif %}" data-sign-out>
       {%- render 'icon', icon: 'sign-out' -%}
       <span class="account-menu__label">{{ 'account.sign_out' | t }}</span>
-    </a>
-    <a class="account-menu__all" href="{{ account_url }}">
-      {{- 'account.view_account' | t -}}
-      {%- render 'icon', icon: 'arrow' -%}
     </a>
   </div>
 </div>
@@ -181,13 +181,26 @@
   @media (prefers-reduced-motion: reduce) { .account-menu__panel, .account-menu__panel:popover-open { translate: none; transition-duration: 120ms; } }
   html.lite .account-menu__panel { translate: none; transition-duration: 120ms; }
 
-  .account-menu__who { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-2) var(--space-3); }
+  .account-menu__who {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 64px;
+    margin-bottom: var(--space-2);
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color var(--dur-state) ease;
+  }
+  .account-menu__text { flex: 1; }
+  .account-menu__panel .account-menu__go { width: 20px; height: 20px; rotate: -90deg; color: var(--color-muted); transition: translate var(--dur-panel) var(--ease-out); }
   .account-menu__text { display: grid; gap: 1px; min-width: 0; }
   .account-menu__name { font-weight: 500; color: var(--color-heading); }
   .account-menu__email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); color: var(--color-muted); }
 
   .account-menu__list { display: grid; padding: var(--space-2) 0; border-block: 1px solid var(--color-line); }
-  .account-menu__list a, .account-menu__out, .account-menu__all {
+  .account-menu__list a, .account-menu__out {
     display: flex;
     align-items: center;
     gap: var(--space-3);
@@ -213,12 +226,10 @@
     text-align: center;
   }
   .account-menu__out { margin-top: var(--space-2); }
-  .account-menu__all { justify-content: space-between; margin-top: var(--space-1); padding-block: 0; font-weight: 500; }
-  .account-menu__all .icon { width: 18px; height: 18px; transition: transform var(--dur-panel) var(--ease-out); }
   .account-menu__panel a:focus-visible { outline-offset: -2px; }
   @media (hover: hover) {
     .account-menu__panel a:hover { background: var(--blush-soft); }
-    .account-menu__all:hover .icon { transform: translateX(3px); }
+    .account-menu__who:hover .account-menu__go { translate: 3px 0; }
   }
   @media (forced-colors: active) {
     .account-menu__panel { border-color: CanvasText; }

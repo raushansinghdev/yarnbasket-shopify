@@ -7,7 +7,7 @@ Status: **B1–B3 and B5 built 2026-10-03** (theme side). Still to do: things th
 - **Signed-in header menu** (`snippets/account-menu`):
   - a native popover anchored under the button (CSS anchor positioning; other browsers put it under the header's right edge)
   - focus stays on the button when it opens, and Tab goes straight into the list; Esc and click-away close it and return focus
-  - rows: Orders (with "#1050 · Confirmed" from the latest order), Saved (count), Your details, Help, Sign out, then "Your account ›"
+  - the top row (initial, greeting, email, ›) is the link to the account page (Raushan, 2026-10-03, like Google and Amazon), so there's no separate "Your account ›" row. Then Orders (with "#1050 · Confirmed" from the latest order), Saved (count), Your details, Help, and Sign out last
 - **Signed out,** Shopify's sheet is restyled: Cocoa text everywhere (the menu text was black), one white surface, a softer shadow, larger corners. The border is `#A08A80` (3.26:1 on white), because the same variable draws the email field's edge.
 - **Sign out** goes to `/account/logout?return_url=<this page>`. Shopify honours `return_url` (checked signed out, 2026-10-03; check it once signed in). saved.js clears Recently viewed on the click, and the next page shows "You're signed out" once, adding "Your saved items stay on this device" plus "View saved" when there are any.
 - **Order card changes:**
@@ -15,7 +15,7 @@ Status: **B1–B3 and B5 built 2026-10-03** (theme side). Still to do: things th
   - **States are the ones Liquid can see:** Confirmed ("We're getting it ready"), Confirmed · pay on delivery, Shipped, Partly shipped, Cancelled, Refunded. No Packed or Delivered, since Liquid has no delivery status. The second line says "Shipped 1 Oct · Delhivery".
   - **Track parcel only for 14 days after shipping;** after that the card offers Buy again.
 - **Buy again** is a real form (`items[][id]`, `items[][quantity]`). Without JavaScript it adds and goes to the cart (checked). With it, account-page.js adds through cart.js's queue and the card says "Added 2 pieces to your cart. 1 piece is sold out, so it was left out. View cart". It skips the free gift and draft-order lines.
-- **Your details:** one "Edit your details ›" button (Shopify's Profile, through `/account/addresses`), not an Edit link per row, since every row goes to the same place. The phone number isn't masked: it's the shopper's own page.
+- **Your details:** an empty name says "Not added yet" like the other rows, and emails break only after the "@". One "Edit your details ›" button (Shopify's Profile, through `/account/addresses`), not an Edit link per row, since every row goes to the same place. The phone number isn't masked: it's the shopper's own page.
 - **"Download or delete my data"** is a `mailto:` to the store email, with the subject and request written out.
 - **Help panel:**
   - **Without a WhatsApp number** (as today), it shows "Contact us" and "Ask for a custom piece" (contact page). With the number, both open WhatsApp.
