@@ -80,4 +80,21 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
 - [ ] Search & Discovery: synonyms, Popular searches menu, product filters (search-plan §10)
 - [ ] Bestsellers collection
 - [ ] WhatsApp number in Theme settings → Social
-- [ ] Payment gateway and COD (decisions.md "Still open")
+- [ ] Payment gateway, COD, shipping and checkout: see "Shipping, payments and checkout" below
+
+## Shipping, payments and checkout (docs/shipping-checkout-comparison.md, decided 2026-10-03)
+Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with Razorpay connected inside it, partial COD only (no full COD). Shopify's checkout with Razorpay stays as the fallback. Do them in this order:
+- [ ] **Razorpay account** (business KYC takes days, so start it first). Connect it in Shopify (Settings → Payments), so Shopify's checkout works as the fallback.
+- [ ] **Shiprocket shipping account**, connected to Shopify as an app. Pickup address Piro. Check freight for our real box sizes in the rate calculator: couriers bill the higher of real weight and L × W × H ÷ 5000, and the ₹99 fee and free shipping from ₹999 must hold against that. At 200–300 parcels a month, price the ₹499 or ₹799 plan.
+- [ ] **Shiprocket Checkout quote.** Ask: is there a monthly minimum (ask for a percentage plan); does it need our own Razorpay account; can our own Checkout button open their pop-up; how refunds are made.
+- [ ] **Set up in Shiprocket Checkout:** shipping ₹99 below ₹999 and free from ₹999; the free keychain over ₹1,499 (automatic "Buy X get Y", Y free, 1 per order); partial COD rule (percentage upfront) and "Disable COD" for full COD; phone OTP on or off.
+- [ ] **Dev-store trial (Claude), all must pass:**
+  - partial COD order: the advance is charged, and the Shiprocket label shows only the balance
+  - cart over ₹1,499: keychain ₹0; cart at ₹999: shipping free; below: ₹99
+  - the order is in Shopify with the right customer, and under Orders when that shopper signs in on our site
+  - the gift note arrives on the order
+  - a purchase reaches analytics (their purchase event is wired by hand)
+  - phone page speed stays inside our gates with their script loaded late
+  - If the trial or the quote fails: Shopify's checkout with Razorpay and a partial-COD app instead.
+- [ ] **Theme:** the cart's Checkout button opens Shiprocket Checkout (drawer and cart page); Theme settings → Cart → Cash on delivery on; the announcement bar's "Partial COD available" is then true.
+- [ ] **Each parcel:** photo on the scale with a tape measure, kept for weight disputes (7 working days to dispute).

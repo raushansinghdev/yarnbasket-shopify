@@ -20,6 +20,15 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   - Still 2 across on phones and 4 on desktop (not the collection's 3 and 5): each craft shows four, which would leave a gap.
   - The editorial card (Cormorant italic name) is left only in the Featured products section, which the home page doesn't use.
 
+## 2026-10-03 (shipping, payments and checkout, docs/shipping-checkout-comparison.md)
+
+- **Shiprocket ships the parcels.** Shopify has no shipping service in India, so an aggregator is needed whatever the checkout is. Changing it later is invisible to shoppers.
+- **Partial COD only, from day one; no full COD** (Raushan).
+- **Shiprocket Checkout is the checkout, with Razorpay connected inside it** (Raushan, after the comparison). Partial COD is built in and Shopify's checkout can't do it without an app; payment happens inside the pop-up; Shopify's 2% on outside-gateway orders isn't charged. Raushan expects ₹2–3 lakh of sales in the first month, where even a fixed monthly fee about pays for itself. The first recommendation, Shopify's checkout, was made before partial COD only was decided.
+- **Shopify's checkout with Razorpay stays connected as the fallback,** because Shiprocket can change fees or end service on its own and Shopify's app rules forbid bypassing checkout.
+- **No cart app and no coupon list in the cart.** Our offers are automatic and the cart is already built.
+- **Done at launch, not now** (Raushan). Steps and the trial are in the launch checklist.
+
 ## 2026-10-03 (price details count sale prices)
 
 - **Price details start from list prices.** Raushan found that a product on sale (₹1,199 struck through, ₹999) didn't show in the breakdown. A "compare at" price is not a Shopify discount, so Shopify's before-discount total leaves it out. Now Items is the cart at list prices, "Product discount" takes the sale prices off (one row for all products), then each Shopify discount, and the rows add up to the subtotal. The struck-through total beside Checkout uses the same number, so it agrees with the lines above it.
@@ -494,4 +503,4 @@ Raushan accepted every recommendation in search-plan §13.
 
 - **Differentiator:** the proposal is "made by hand" storytelling plus gifting (occasions, gift note, wrap). Needed by 12 Oct.
 - **Launch range:** 15–25 products. Needed in week 2.
-- **Payment gateway and COD:** the proposal is Razorpay plus partial COD. Needed in week 2.
+- **Shiprocket Checkout's price and the dev-store trial** (launch-checklist "Shipping, payments and checkout"). If either fails, the checkout is Shopify's with Razorpay and a partial-COD app.
