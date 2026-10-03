@@ -16,7 +16,7 @@
   data-signed-out-text="{{ 'account.signed_out_text' | t }}"
 >
   <div class="saved-toast" role="region" aria-label="{{ 'saved.title' | t }}">
-    <span class="saved-toast__media media"><img alt="" width="56" height="56" hidden></span>
+    <span class="saved-toast__media media"><img alt="" width="48" height="48" hidden></span>
     <p class="saved-toast__text">
       <span class="saved-toast__head">{%- render 'icon', icon: 'heart' -%}<span data-toast-head></span></span>
       <span class="saved-toast__title"></span>
@@ -34,33 +34,43 @@
 </template>
 
 {% stylesheet %}
+  /* The same pill as the added-to-cart pop-up (sections/cart-drawer, docs/cart-compact-plan.md §3): one 64px row with
+     round ends, a round photo, the heading on one line, and buttons that wrap under the words when there's no room.
+     The headings here vary ("Saved", "Removed from saved"), so the words keep whatever their heading needs. */
   .saved-toast {
     position: fixed;
     inset: auto var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
     z-index: 30;
-    display: grid;
-    grid-template-columns: 56px minmax(0, 1fr) auto auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-2);
     padding: var(--space-2) var(--space-1) var(--space-2) var(--space-2);
     border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-md);
+    border-radius: 2rem;
     background: var(--white);
     color: var(--color-ink);
     box-shadow: 0 18px 40px -18px rgb(78 58 49 / .45);
     transition: opacity var(--dur-panel) var(--ease-out), transform var(--dur-panel) var(--ease-out);
   }
-  .saved-toast:not(:has(.saved-toast__media)) { grid-template-columns: minmax(0, 1fr) auto auto; padding-left: var(--space-4); }
+  .saved-toast:not(:has(.saved-toast__media)) { padding-left: var(--space-4); }
   @starting-style { .saved-toast { opacity: 0; transform: translateY(16px); } }
   .saved-toast.is-leaving { opacity: 0; transform: translateY(16px); transition-timing-function: var(--ease-exit); }
-  .saved-toast__media { --ratio: 1; width: 56px; border-radius: var(--radius-sm); background: var(--oat); }
-  .saved-toast__text { display: grid; gap: 2px; min-width: 0; }
-  .saved-toast__head { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
-  .saved-toast__head .icon { width: 16px; height: 16px; }
+  .saved-toast__media { --ratio: 1; flex: none; width: 48px; border-radius: 50%; background: var(--oat); }
+  .saved-toast__text { display: grid; gap: 2px; flex: 1 1 0; min-width: min-content; max-width: 100%; }
+  .saved-toast__head { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); white-space: nowrap; }
+  .saved-toast__head .icon { width: 16px; height: 16px; flex: none; }
   .saved-toast__head .icon__fill { fill: var(--rose); }
-  .saved-toast__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); color: var(--color-muted); }
+  /* width 0 + min-width 100%: the name fills the words' box but never widens it, so only the heading sets its size. */
+  .saved-toast__title { width: 0; min-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); color: var(--color-muted); }
   .saved-toast__title:empty { display: none; }
-  .saved-toast__btn { min-height: var(--tap); padding: 0 var(--space-4); font-size: .9375rem; }
+  .saved-toast__btn { flex: none; min-height: var(--tap); padding: 0 var(--space-3); font-size: .9375rem; }
+  .saved-toast__close { flex: none; width: 40px; }
+  @media (max-width: 339px) {
+    .saved-toast { padding-left: var(--space-4); }
+    .saved-toast__media { display: none; }
+  }
   @media (min-width: 768px) {
     .saved-toast { inset: calc(var(--header-top, 0px) + var(--header-height) + var(--space-2)) var(--gutter) auto auto; width: 25rem; }
     @starting-style { .saved-toast { transform: translateY(-12px); } }

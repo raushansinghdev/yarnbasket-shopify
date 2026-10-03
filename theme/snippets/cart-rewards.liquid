@@ -76,10 +76,11 @@
       assign text = 'rewards.ship_done' | t
     elsif gift_on and gift_line
       assign state = 'done'
+      # Short enough for one line on a phone; the gift's name is on its own cart line.
       if ship_at > 0
-        assign text = 'rewards.all_done' | t: gift: gift_name
+        assign text = 'rewards.all_done' | t
       else
-        assign text = 'rewards.gift_done' | t: gift: gift_name
+        assign text = 'rewards.gift_done' | t
       endif
     elsif gift_on
       if declined
@@ -182,10 +183,13 @@
   /* One line of words, then a 4px bar with a small round marker per step, then the amounts in 12px under the markers.
      The last marker sits at the bar's right end; the others are centred on their share of the top amount. */
   .rewards { display: grid; gap: var(--space-2); font-size: var(--fs-small); color: var(--color-heading); }
-  .rewards__text { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-2); row-gap: 2px; line-height: 1.4; }
-  .rewards__text > .icon { width: 18px; height: 18px; flex: none; }
+  /* No wrapping between the parts: the tick stays beside the first line, and the words wrap inside their own box. */
+  .rewards__text { display: flex; align-items: flex-start; column-gap: var(--space-2); line-height: 1.4; }
+  .rewards__text > .icon { width: 18px; height: 18px; flex: none; margin-top: .0625rem; }
+  .rewards__text > span { min-width: 0; }
   .rewards__btn {
     display: inline-flex;
+    flex: none;
     align-items: center;
     min-height: var(--tap);
     margin-block: calc((var(--tap) - 1.4em) / -2);
@@ -254,6 +258,10 @@
   .rewards__amounts > span { position: absolute; inset-inline-start: var(--at); transform: translateX(-50%); white-space: nowrap; }
   .rewards__amounts > .is-last { transform: translateX(-100%); }
   .rewards__amounts > .is-near { display: none; }
+
+  /* Once everything is unlocked the full bar has nothing left to say: only the words stay
+     (docs/cart-compact-plan.md). */
+  .rewards.is-done :is(.rewards__track, .rewards__amounts) { display: none; }
 
   @media (forced-colors: active) {
     .rewards__track::before { border: 1px solid CanvasText; }

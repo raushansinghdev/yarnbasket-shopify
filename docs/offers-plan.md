@@ -332,7 +332,7 @@ Shopify has no built-in A/B testing, so we compare 4 weeks before and after any 
 | O3 | Amounts and order | (a) free shipping ₹999, gift ₹1,499 (b) gift ₹999, free shipping ₹1,299 (yours) | **(a)**, confirmed against the Meesho average order value (§7) |
 | O4 | Adding the gift | (a) added automatically, removable, with "Add it back" (b) a "Claim your free gift" button | **(a).** Nobody misses a reward they've earned, and removing it is one tap |
 | O5 | Which gift | your pick (§7 constraints) | something under 15 min to make, light, same courier weight slab |
-| O6 | "₹X away" in the add-to-cart pop-up | (a) yes, one muted line (b) no | **(a).** It's the moment people decide whether to add more |
+| O6 | "₹X away" in the add-to-cart pop-up | (a) yes, one muted line (b) no | ~~(a)~~ **Reversed to (b) on 2026-10-03** (`cart-compact-plan.md`): the line wrapped to five lines on phones |
 | O7 | Gap fillers | (a) a link in the drawer + sorted Little extras on the page (b) a product row in the drawer (c) none | **(a).** It helps without crowding the drawer |
 | O8 | Show the shipping fee below the threshold | (a) "Shipping ₹79" in the cart summary (b) "Shipping at checkout" (now) | **(a), if India has one flat fee.** Baymard: show the full cost before checkout |
 | O9 | Hide the announcement bar on `/cart` | (a) yes (b) no | **(a).** The progress bar says the same thing with real numbers |

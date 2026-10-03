@@ -4,6 +4,11 @@
   is saved first and Shopify then sends the shopper to its checkout. It must stay the only way into checkout, so a
   checkout app can take it over later.
 
+  The drawer's footer is kept small so the products get the room (docs/cart-compact-plan.md): only the amount and
+  Checkout, on one row that wraps when there's no room for both. The amount is a button with a dotted underline
+  that scrolls to the price details at the end of the list (snippets/cart-details, cart.js). On the cart page the
+  price details are part of the card.
+
   @param {string} place - 'drawer' or 'page'. The page also shows express payment buttons and payment icons.
 
   @example
@@ -17,52 +22,34 @@
       break
     endif
   endfor
-
-  # With a flat fee set, say what shipping costs instead of "calculated at checkout" (docs/offers-plan.md O8).
-  assign threshold = settings.free_shipping_threshold | default: 0 | times: 100
-  assign fee = settings.shipping_fee | default: 0 | times: 100
-  assign tax_key = 'cart.taxes_excluded'
-  if cart.taxes_included
-    assign tax_key = 'cart.taxes_included'
-  endif
-  if threshold > 0 and cart.total_price >= threshold
-    assign tax_line = tax_key | append: '_free' | t
-  elsif fee > 0
-    assign fee_money = fee | money_without_trailing_zeros
-    assign tax_line = tax_key | append: '_fee' | t: amount: fee_money
-  else
-    assign tax_line = tax_key | t
-  endif
+  assign saved = cart.original_total_price | minus: cart.total_price
 -%}
 <div class="cart-summary cart-summary--{{ place }}">
   {%- render 'cart-rewards', place: place -%}
+  {%- if place == 'page' -%}{%- render 'cart-details', place: 'page' -%}{%- endif -%}
 
-  <dl class="cart-summary__rows" data-total>
-    {%- for discount in cart.cart_level_discount_applications -%}
-      <div class="cart-summary__row cart-summary__row--deal">
-        <dt>{{ discount.title }}</dt>
-        <dd>−{{ discount.total_allocated_amount | money }}</dd>
-      </div>
-    {%- endfor -%}
-    <div class="cart-summary__row cart-summary__row--total">
-      <dt>{{ 'cart.subtotal' | t }}</dt>
-      <dd>{{ cart.total_price | money }}</dd>
-    </div>
-  </dl>
-  <p class="cart-summary__tax">{{ tax_line }}</p>
-
-  <button
-    type="submit"
-    name="checkout"
-    class="btn cart-summary__checkout"
-    data-checkout
-    {% if blocked %}
-      disabled aria-describedby="CartBlocked-{{ place }}"
-    {% endif %}
-  >
-    {%- render 'icon', icon: 'lock' -%}
-    <span>{{ 'cart.checkout' | t }}</span>
-  </button>
+  <div class="cart-summary__main">
+    {%- if place == 'drawer' -%}
+      <button type="button" class="cart-summary__amount" data-details data-total>
+        <span class="visually-hidden">{{ 'cart.subtotal' | t }}</span>
+        {%- if saved > 0 -%}<s aria-hidden="true">{{ cart.original_total_price | money }}</s>{%- endif -%}
+        <span class="cart-summary__now">{{ cart.total_price | money }}</span>
+        <span class="visually-hidden">{{ 'cart.details' | t }}</span>
+      </button>
+    {%- endif -%}
+    <button
+      type="submit"
+      name="checkout"
+      class="btn cart-summary__checkout"
+      data-checkout
+      {% if blocked %}
+        disabled aria-describedby="CartBlocked-{{ place }}"
+      {% endif %}
+    >
+      {%- render 'icon', icon: 'lock' -%}
+      <span>{{ 'cart.checkout' | t }}</span>
+    </button>
+  </div>
   {%- if blocked -%}
     <p class="cart-summary__blocked" id="CartBlocked-{{ place }}">{{ 'cart.sold_out' | t }}</p>
   {%- endif -%}
@@ -70,11 +57,6 @@
   {%- if place == 'page' and additional_checkout_buttons -%}
     <div class="cart-summary__express">{{ content_for_additional_checkout_buttons }}</div>
   {%- endif -%}
-
-  <p class="cart-summary__ships">
-    {%- render 'icon', icon: 'truck' -%}
-    {{- 'cart.ships' | t -}}
-  </p>
 
   {%- if place == 'page' and shop.enabled_payment_types.size > 0 -%}
     <div class="cart-summary__pay">
@@ -90,20 +72,36 @@
 
 {% stylesheet %}
   .cart-summary { display: grid; gap: var(--space-3); }
-  .cart-summary__rows { display: grid; gap: var(--space-1); transition: opacity var(--dur-state) ease; }
-  .cart-summary__row { display: flex; justify-content: space-between; gap: var(--space-4); font-variant-numeric: tabular-nums; }
-  .cart-summary__row dd { margin: 0; }
-  .cart-summary__row--deal { font-size: var(--fs-small); color: var(--color-muted); }
-  .cart-summary__row--total { font-weight: 500; font-size: 1.125rem; color: var(--color-heading); }
-  .cart-summary__tax { margin-top: calc(var(--space-2) * -1); font-size: var(--fs-small); color: var(--color-muted); }
+  .cart-summary__main { display: grid; gap: var(--space-3); }
   .cart-summary__checkout { width: 100%; min-height: 56px; font-size: 1.0625rem; gap: var(--space-2); }
   .cart-summary__checkout .icon { width: 20px; height: 20px; }
   @media (hover: hover) { .cart-summary__checkout:hover .icon { transform: none; } }
   .cart-summary__checkout:disabled { --btn-bg: var(--taupe-ink); cursor: not-allowed; transform: none; box-shadow: none; }
   .cart-summary__blocked { font-size: var(--fs-small); color: #9A3B2E; font-weight: 500; text-align: center; }
-  .cart-summary__ships { display: flex; align-items: center; justify-content: center; gap: var(--space-2); font-size: var(--fs-small); color: var(--color-muted); }
-  .cart-summary__ships .icon { width: 20px; height: 20px; color: var(--color-heading); }
   .cart-summary__express:empty { display: none; }
   .cart-summary__pay ul { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
   .cart-summary__pay-icon { width: 38px; height: 24px; }
+
+  /* The drawer: the amount on the left, Checkout filling the rest of the row. When the two don't fit side by side
+     (large text), Checkout wraps under the amount at full width. The dotted underline says the amount can be
+     tapped: it goes to the price details. */
+  .cart-summary--drawer .cart-summary__main { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); }
+  .cart-summary--drawer .cart-summary__checkout { flex: 1 1 10rem; width: auto; }
+  .cart-summary__amount {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    min-width: var(--tap);
+    min-height: var(--tap);
+    font-weight: 500;
+    font-size: 1.25rem;
+    line-height: 1.25;
+    color: var(--color-heading);
+    font-variant-numeric: tabular-nums;
+    border-radius: var(--radius-sm);
+    transition: opacity var(--dur-state) ease;
+  }
+  .cart-summary__amount s { font-size: var(--fs-small); font-weight: 400; color: var(--color-muted); }
+  .cart-summary__now { text-decoration: underline dotted; text-decoration-thickness: 2px; text-underline-offset: 6px; text-decoration-color: var(--taupe-ink); }
+  @media (hover: hover) { .cart-summary__amount:hover .cart-summary__now { text-decoration-style: solid; } }
 {% endstylesheet %}

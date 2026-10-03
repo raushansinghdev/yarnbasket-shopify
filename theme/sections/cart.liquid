@@ -1,7 +1,7 @@
 {%- comment -%}
   The cart page, /cart (docs/cart-plan.md §4.2, §5). Works fully without JavaScript: a plain form with a quantity
   per line, an Update button and Checkout. cart.js makes the steppers instant, adds Undo and the gift-note autosave,
-  and shows the pinned Checkout bar on phones while the summary's own button is off screen.
+  and cart-page.js shows the pinned Checkout bar on phones while the summary's own button is off screen.
   The same snippets draw the cart drawer (sections/cart-drawer.liquid), so the two never differ.
 {%- endcomment -%}
 <div class="section cart-page scheme-soft" data-cart-page data-section-id="{{ section.id }}">
@@ -27,7 +27,7 @@
         </div>
 
         <div class="cart-page__side">
-          <section class="cart-page__summary" aria-labelledby="CartSummaryTitle">
+          <section class="cart-page__summary" id="CartSummary" aria-labelledby="CartSummaryTitle">
             <h2 class="visually-hidden" id="CartSummaryTitle">{{ 'cart.summary' | t }}</h2>
             {%- render 'cart-note', place: 'page' -%}
             {%- render 'cart-summary', place: 'page' -%}
@@ -37,10 +37,12 @@
 
       {%- comment -%} Phones: total and Checkout pinned to the bottom while the summary's button is off screen. {%- endcomment -%}
       <div class="cart-bar" data-cart-bar>
-        <p class="cart-bar__total" data-total>
-          <span class="cart-bar__label">{{ 'cart.subtotal' | t }}</span>
-          <span>{{ cart.total_price | money }}</span>
-        </p>
+        {%- comment -%} The amount goes to the summary card, where the price details are. {%- endcomment -%}
+        {%- assign saved = cart.original_total_price | minus: cart.total_price -%}
+        <a class="cart-bar__total" href="#CartSummary" tabindex="-1" data-total>
+          {%- if saved > 0 -%}<s>{{ cart.original_total_price | money }}</s>{%- endif -%}
+          <span class="cart-bar__now">{{ cart.total_price | money }}</span>
+        </a>
         <button type="submit" form="CartForm" name="checkout" class="btn cart-bar__btn" tabindex="-1" aria-hidden="true">
           {%- render 'icon', icon: 'lock' -%}
           <span>{{ 'cart.checkout' | t }}</span>
@@ -51,6 +53,8 @@
       {%- render 'cart-empty', place: 'page', level: 2 -%}
     {%- endif -%}
   </div>
+  {%- comment -%} The pinned bar and Little extras: only this page needs them, so they stay out of cart.js. {%- endcomment -%}
+  <script src="{{ 'cart-page.js' | asset_url }}" type="module"></script>
 
   {%- if settings.cart_extras and cart.item_count > 0 -%}
     {%- comment -%} "Little extras" (decision D7): cart.js fills this from sections/cart-extras.liquid. {%- endcomment -%}
@@ -69,7 +73,7 @@
   .cart-page__grid { display: grid; gap: var(--space-6); align-items: start; }
   .cart-page .cart-line { --photo: 96px; }
   .cart-page__update { margin-top: var(--space-4); }
-  .cart-page__summary { display: grid; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-md); background: var(--color-surface); }
+  .cart-page__summary { scroll-margin-top: calc(var(--header-height) + var(--space-4)); display: grid; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-md); background: var(--color-surface); }
   .cart-page__summary .cart-note { padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-line-strong); }
   .cart-page .cart-empty { padding-block: var(--space-6) var(--space-4); }
 
@@ -92,8 +96,9 @@
     transition: transform var(--dur-panel) var(--ease-out), visibility 0s linear var(--dur-panel);
   }
   .cart-bar.is-shown { transform: none; visibility: visible; transition-delay: 0s; }
-  .cart-bar__total { display: grid; font-weight: 500; font-size: 1.125rem; line-height: 1.2; color: var(--color-heading); font-variant-numeric: tabular-nums; transition: opacity var(--dur-state) ease; }
-  .cart-bar__label { font-size: var(--fs-label); font-weight: 500; letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
+  .cart-bar__total { display: grid; align-content: center; min-height: var(--tap); text-decoration: none; font-weight: 500; font-size: 1.25rem; line-height: 1.25; color: var(--color-heading); font-variant-numeric: tabular-nums; transition: opacity var(--dur-state) ease; }
+  .cart-bar__now { text-decoration: underline dotted; text-decoration-thickness: 2px; text-underline-offset: 6px; text-decoration-color: var(--taupe-ink); }
+  .cart-bar__total s { font-size: var(--fs-small); font-weight: 400; color: var(--color-muted); }
   .cart-bar__btn { flex: 1; max-width: 15rem; gap: var(--space-2); }
   .cart-bar__btn .icon { width: 20px; height: 20px; }
   [data-cart-root].is-busy .cart-bar__total { opacity: .55; }

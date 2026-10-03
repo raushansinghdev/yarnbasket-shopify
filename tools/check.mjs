@@ -294,6 +294,123 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   }
 }
 
+// 8b. Compact cart (docs/cart-compact-plan.md): the drawer's pinned bottom stays small (subtotal and Checkout on one
+//     row, no "Ships in", no ₹0 discount notes), so the products get the room; the amount goes to "Price details"
+//     at the end of the list, with focus;
+//     the added-to-cart pop-up is one 64px pill with "Added to cart" on one line and no rewards line. One product is
+//     one line even when Shopify splits it in two for the gift's discount, and its + changes the whole quantity.
+//     Checked with a step ahead and with everything unlocked, on a 320, a 360 and a 390px phone. Needs products.
+{
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift') && p.variants[0].available && !/lily/.test(p.handle)), () => []);
+  const cheap = products.filter((p) => p.variants.length === 1).sort((a, b) => a.variants[0].price - b.variants[0].price)[0];
+  if (!cheap) console.log('SKIP  Compact cart checks                            no products in the store (import tools/test-products.csv)');
+  for (const [w, h] of cheap ? [[320, 640], [360, 640], [390, 844]] : []) {
+    const { browser, page, errors } = await open(chromium, { viewport: { width: w, height: h }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, { reducedMotion: 'reduce' });
+    const settled = () => page.waitForFunction(() => !document.querySelector('[data-cart-root].is-busy'), null, { timeout: 10000 }).catch(() => {});
+    // Add from the product page, read the pop-up, open the drawer from it and read the pinned bottom.
+    const addAndOpen = async () => {
+      await page.goto(site(`/products/${cheap.handle}`), { waitUntil: 'load' });
+      await page.waitForTimeout(2500);
+      await settled();
+      await page.click('.product-form__add');
+      await page.waitForSelector('.cart-toast', { timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(600);
+      const toast = await page.evaluate(() => {
+        const t = document.querySelector('.cart-toast');
+        if (!t) return null;
+        const r = t.getBoundingClientRect();
+        const head = t.querySelector('.cart-toast__head').getBoundingClientRect();
+        return { h: Math.round(r.height), oneLine: head.height < 30 && head.right <= t.querySelector('.cart-toast__text').getBoundingClientRect().right + 1, reward: !!t.querySelector('.cart-toast__reward'), inside: r.left >= 0 && r.right <= innerWidth };
+      });
+      await page.click('.cart-toast [data-cart-view]').catch(() => {});
+      await page.waitForTimeout(2500);
+      await settled();
+      const drawer = await page.evaluate(() => {
+        const dr = document.getElementById('CartDrawer');
+        const box = dr.getBoundingClientRect();
+        const body = dr.querySelector('.cart-drawer__body').getBoundingClientRect();
+        const btn = dr.querySelector('[data-checkout]').getBoundingClientRect();
+        const tot = dr.querySelector('.cart-summary__amount').getBoundingClientRect();
+        const rewards = dr.querySelector('[data-rewards]');
+        return {
+          foot: Math.round(dr.querySelector('.cart-drawer__foot').getBoundingClientRect().height),
+          row: tot.right <= btn.left && tot.bottom > btn.top && tot.top < btn.bottom,
+          btn: [Math.round(btn.width), Math.round(btn.height)],
+          full: [...dr.querySelectorAll('.cart-line')].map((l) => l.getBoundingClientRect()).filter((r) => r.top >= body.top - 1 && r.bottom <= body.bottom + 1).length,
+          text: dr.textContent,
+          lines: dr.querySelectorAll('.cart-line').length,
+          products: new Set([...dr.querySelectorAll('.cart-line')].map((l) => l.dataset.variant + l.dataset.properties)).size,
+          state: rewards?.dataset.state || 'off',
+          done: !rewards || rewards.classList.contains('is-done'),
+          top: +(rewards?.dataset.giftAt || rewards?.dataset.shipAt || 0),
+          side: dr.scrollWidth > dr.clientWidth + 1 || [...dr.querySelectorAll('.cart-drawer__foot *')].some((e) => e.getBoundingClientRect().right > box.right + 1),
+        };
+      });
+      return { toast, drawer };
+    };
+    const judge = (name, { toast: t, drawer: d }) => {
+      const limit = d.done ? 125 : 175;
+      record(`Compact cart, ${w}px, ${name}: pop-up is one pill`, !!t && t.h <= 68 && t.oneLine && !t.reward && t.inside, t ? `${t.h}px tall, "Added to cart" on one line: ${t.oneLine}, rewards line: ${t.reward}, on screen: ${t.inside}` : 'no pop-up');
+      record(`Compact cart, ${w}px, ${name}: small pinned bottom`, d.foot <= limit && d.row && d.btn[1] >= 48 && d.btn[0] >= 150 && !d.side, `${d.foot}px (limit ${limit}, rewards: ${d.state}), subtotal beside Checkout: ${d.row}, Checkout ${d.btn[0]}×${d.btn[1]}, sideways scroll: ${d.side}`);
+      record(`Compact cart, ${w}px, ${name}: no "Ships in", no ₹0 notes`, !/Ships in/.test(d.text) && !/−₹0\)/.test(d.text), `"Ships in": ${/Ships in/.test(d.text)}, "(−₹0)": ${/−₹0\)/.test(d.text)}`);
+      record(`Compact cart, ${w}px, ${name}: one product, one line`, d.lines === d.products, `${d.lines} line(s) for ${d.products} product(s)`);
+    };
+    // The amount beside Checkout: a tap brings the price details into view and moves focus to their heading.
+    const details = async (name) => {
+      await page.click('#CartDrawer [data-details]');
+      await page.waitForTimeout(900);
+      const r = await page.evaluate(() => {
+        const dr = document.getElementById('CartDrawer');
+        const card = dr.querySelector('.cart-details');
+        const body = dr.querySelector('.cart-drawer__body').getBoundingClientRect();
+        const box = card.getBoundingClientRect();
+        const amount = dr.querySelector('[data-details]');
+        return { focus: document.activeElement?.matches('[data-details-at]'), seen: box.top >= body.top - 1 && box.bottom <= body.bottom + 1, rows: [...card.querySelectorAll('dt')].map((dt) => dt.textContent.trim()).join(', '), same: card.querySelector('.cart-details__row--total dd').textContent.trim() === amount.querySelector('.cart-summary__now').textContent.trim(), name: amount.textContent.replace(/\s+/g, ' ').trim(), tap: Math.round(Math.min(amount.getBoundingClientRect().width, amount.getBoundingClientRect().height)) };
+      });
+      record(`Compact cart, ${w}px, ${name}: the amount goes to Price details`, r.focus && r.seen && r.same && /Shipping/.test(r.rows) && r.tap >= 44, `focus on the heading: ${r.focus}, card in view: ${r.seen}, rows: ${r.rows}, same amount: ${r.same}, button reads "${r.name}", ${r.tap}px`);
+    };
+    await page.request.post(site('/cart/clear.js'));
+    const one = await addAndOpen();
+    judge('one piece', one);
+    await details('one piece');
+    // Past the top step (free shipping, then the gift), so every reward is unlocked and the gift line is in the cart.
+    if (one.drawer.top > 0) {
+      const unit = cheap.variants[0].price * 100;
+      await page.request.post(site('/cart/add.js'), { data: { items: [{ id: cheap.variants[0].id, quantity: Math.ceil(one.drawer.top / unit) }] } });
+      const all = await addAndOpen();
+      judge('all unlocked', all);
+      await details('all unlocked');
+      // The API add above and the product page's add land on two Shopify lines once the gift is in: + on the one
+      // line drawn must raise Shopify's total for that product by exactly one.
+      const owned = () => page.evaluate((id) => fetch('/cart.js').then((r) => r.json()).then((c) => c.items.filter((i) => i.variant_id === id)), cheap.variants[0].id);
+      const before = await owned();
+      await page.click(`#CartDrawer .cart-line[data-variant="${cheap.variants[0].id}"] .qty__plus`);
+      await page.waitForTimeout(2500);
+      await settled();
+      const after = await owned();
+      const sum = (items) => items.reduce((n, i) => n + i.quantity, 0);
+      const shown = await page.evaluate((id) => [...document.querySelectorAll(`#CartDrawer .cart-line[data-variant="${id}"]`)].map((l) => +l.dataset.qty), cheap.variants[0].id);
+      record(`Compact cart, ${w}px: + on a split product changes its total`, sum(after) === sum(before) + 1 && shown.length === 1 && shown[0] === sum(after), `Shopify: ${before.length} line(s) with ${sum(before)} → ${after.length} line(s) with ${sum(after)}; drawn: ${shown.join(' + ')}`);
+      if (h >= 800) record(`Compact cart, ${w}px: two whole products above the bottom`, all.drawer.full >= 2, `${all.drawer.full} whole line(s) in view`);
+      const v = await page.evaluate(async (src) => { if (!window.axe) (0, eval)(src); return (await window.axe.run(document.querySelector('#CartDrawer'), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`); }, axe.source);
+      record(`Compact cart, ${w}px: drawer with everything unlocked (axe)`, v.length === 0, v.join(', ') || '0 violations');
+    }
+    if (w === 360) {
+      await page.goto(site('/cart'), { waitUntil: 'load' });
+      await page.waitForTimeout(1500);
+      await settled();
+      const text = await page.evaluate(() => document.querySelector('.cart-page').textContent);
+      record('Compact cart: cart page has no "Ships in", no ₹0 notes', !/Ships in/.test(text) && !/−₹0\)/.test(text), `"Ships in": ${/Ships in/.test(text)}, "(−₹0)": ${/−₹0\)/.test(text)}`);
+      const pg = await page.evaluate(() => ({ lines: document.querySelectorAll('.cart-page .cart-line').length, products: new Set([...document.querySelectorAll('.cart-page .cart-line')].map((l) => l.dataset.variant + l.dataset.properties)).size, bar: [...document.querySelectorAll('.cart-page .rewards.is-done .rewards__track')].some((t) => getComputedStyle(t).display !== 'none') }));
+      record('Compact cart: cart page draws one line per product, no finished bar', pg.lines === pg.products && !pg.bar, `${pg.lines} line(s) for ${pg.products} product(s), finished bar shown: ${pg.bar}`);
+    }
+    await page.request.post(site('/cart/clear.js'));
+    record(`Compact cart, ${w}px: no script errors`, errors.length === 0, errors[0] || 'none');
+    await browser.close();
+  }
+}
+
 // 9. Account & saved (docs/account-plan.md): a heart saves and survives a reload; the drawer's account row opens
 //    Shopify's sheet (phones) and Esc returns to the menu button; the Saved page draws the list, Remove + Undo work;
 //    a shared link is read-only with "Save all"; axe on the Saved (full and empty) and Track pages. Until Raushan
@@ -320,6 +437,17 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
       await heart.click();
       const handle = await heart.getAttribute('data-save');
       const toast = await page.waitForSelector('.saved-toast', { timeout: 4000 }).then(() => true, () => false);
+      // The same pill as the added-to-cart pop-up (docs/cart-compact-plan.md): one 64px row, the heading on one line.
+      await page.waitForTimeout(500);
+      const pill = await page.evaluate(() => {
+        const t = document.querySelector('.saved-toast');
+        if (!t) return null;
+        const r = t.getBoundingClientRect();
+        const head = t.querySelector('.saved-toast__head').getBoundingClientRect();
+        const kids = [...t.querySelectorAll('a, button')].map((k) => k.getBoundingClientRect());
+        return { h: Math.round(r.height), radius: getComputedStyle(t).borderTopLeftRadius, photo: Math.round(t.querySelector('.saved-toast__media')?.getBoundingClientRect().width || 0), oneLine: head.height < 30, clear: kids.every((b) => b.left >= head.right - 1 && b.right <= r.right + 1) };
+      });
+      record(`Saved, ${label}: the pop-up is the same pill as the cart's`, !!pill && pill.h <= 68 && pill.radius === '32px' && pill.oneLine && pill.clear, pill ? `${pill.h}px tall, corners ${pill.radius}, photo ${pill.photo}px, heading on one line: ${pill.oneLine}, buttons clear of it: ${pill.clear}` : 'no pop-up');
       await page.reload({ waitUntil: 'load' });
       const kept = await page.locator(`#MainContent .card [data-save="${handle}"]`).first().getAttribute('aria-pressed');
       record(`Saved, ${label}: a heart saves, with the pop-up`, toast && kept === 'true', `pop-up: ${toast}, still saved after reload: ${kept}`);

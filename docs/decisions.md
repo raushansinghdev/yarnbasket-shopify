@@ -2,6 +2,20 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-03 (Compact cart, docs/cart-compact-plan.md)
+
+- **The drawer's pinned bottom is one row: subtotal on the left, Checkout on the right.** Raushan asked for it, so the products get the room. It went from about 285px to 140px (everything unlocked) or 190px (a step ahead).
+- **"Ships in 1–3 days" is gone from the cart**, drawer and page. It stays in the announcement bar and the product page's delivery terms.
+- **The rewards bar hides once everything is unlocked**, in the drawer and on the cart page. Only the words stay: "Free shipping and free gift unlocked".
+- **Discount notes with ₹0 are hidden.** Shopify lists the gift's discount on every line, with nothing off the others.
+- **The added-to-cart pop-up no longer shows the rewards line.** This reverses O6 in `offers-plan.md`. The line wrapped to five lines on phones. The pop-up is now one 66px pill with a round photo. Screen readers still hear a changed step.
+- **Price details, Flipkart-style (Raushan's idea).** The pinned bottom shows only the amount and Checkout. The amount has a dotted underline and goes to a "Price details" card at the end of the list: Items, discounts, Shipping, Subtotal, "Prices include all taxes." An info button and an "incl. taxes" note were both tried or weighed first and dropped: this hides nothing and has room for discount codes or a COD fee later.
+- **Shipping is never added into the subtotal.** The card says "Free", the flat fee "added at checkout", or "Calculated at checkout".
+- **One product, one line.** Shopify splits a product in two when the gift's discount is on, and re-splits it if merged through its API. The theme draws them as one line and changes both together.
+- **cart.js stays under 22 KB by splitting, not trimming:** the cart page's own script is now `cart-page.js`.
+- **The cart page's summary card keeps its stacked layout**, because it isn't pinned and the express payment buttons need the full width.
+- **The "Saved" pop-up has the same pill shape** as the added-to-cart pop-up, in all its forms (Saved, Removed · Undo, Link copied, signed out).
+
 ## 2026-10-03 (Gifting, docs/gifting-plan.md)
 
 - **Gifting stays right after Bestsellers, as an occasion shelf on its own White band.** It used to look merged with Bestsellers: the same background with one shared gap, a footnote to "Shop all gifts", and text-only pills.

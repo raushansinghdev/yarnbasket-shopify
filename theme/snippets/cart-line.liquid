@@ -7,6 +7,13 @@
   remove button instead of the stepper, but only while it really is free. If its discount is missing it's an ordinary
   line at its real price (rewards.js takes it out), so nothing is given away and nothing is mislabelled.
 
+  One product, one line (docs/cart-compact-plan.md §9). With the gift's "Buy X get Y" discount on, Shopify keeps the
+  pieces that earned the gift on a line of their own, so the same product can come back as two lines, and it splits
+  them again if they're merged through its API. Lines that are the same thing (variant, options typed in, selling
+  plan) are drawn once: the first one shows the total quantity and price, and the others draw nothing. The quantity
+  field posts the total for the first line and a hidden 0 for each of the others, which Shopify adds up to the same
+  total, with or without JavaScript; cart.js sends the same from data-more.
+
   @param {object} item - The cart line item
   @param {string} place - 'drawer' or 'page' (keeps ids unique when both are on a page)
   @param {string} [sizes] - The photo's sizes attribute
@@ -17,37 +24,83 @@
 {%- liquid
   assign uid = item.key | handle | prepend: '-' | prepend: place
   assign title = item.product.title | escape
+
+  assign is_gift = false
+  assign gift_variant = settings.gift_product.variants.first.id
+  if settings.gift_product != blank and settings.gift_threshold > 0 and item.variant_id == gift_variant and item.final_line_price == 0
+    assign is_gift = true
+  endif
+
+  # The same thing on other lines: an earlier one means this line is already drawn there; later ones are added in.
+  # Their discounts are kept as "title::amount" pairs, so each discount is listed once with its whole amount.
+  assign qty = item.quantity
+  assign line_price = item.final_line_price
+  assign original_line = item.original_line_price
+  assign more = ''
+  assign more_keys = ''
+  assign twin_before = false
+  assign deals = ''
+  for allocation in item.line_level_discount_allocations
+    assign deals = deals | append: allocation.discount_application.title | append: '::' | append: allocation.amount | append: ';;'
+  endfor
+  unless item.variant_id == gift_variant
+    assign props = item.properties | json
+    assign past_self = false
+    for other in cart.items
+      if other.key == item.key
+        assign past_self = true
+        continue
+      endif
+      assign other_props = other.properties | json
+      if other.variant_id != item.variant_id or other_props != props or other.selling_plan_allocation.selling_plan.id != item.selling_plan_allocation.selling_plan.id
+        continue
+      endif
+      if past_self == false
+        assign twin_before = true
+        break
+      endif
+      assign qty = qty | plus: other.quantity
+      assign line_price = line_price | plus: other.final_line_price
+      assign original_line = original_line | plus: other.original_line_price
+      assign more = more | append: other.key | append: ' '
+      for allocation in other.line_level_discount_allocations
+        assign deals = deals | append: allocation.discount_application.title | append: '::' | append: allocation.amount | append: ';;'
+      endfor
+    endfor
+    assign more = more | strip
+    assign more_keys = more | split: ' '
+  endunless
+
   assign max = blank
   if item.variant.inventory_management == 'shopify' and item.variant.inventory_policy == 'deny'
     assign max = item.variant.inventory_quantity
-    if max < item.quantity
-      assign max = item.quantity
+    if max < qty
+      assign max = qty
     endif
   endif
   assign note = blank
   if item.variant.available == false
     assign note = 'cart.sold_out' | t
-  elsif max != blank and item.quantity >= max
+  elsif max != blank and qty >= max
     assign note = 'cart.max' | t
   endif
 
-  assign is_gift = false
-  if settings.gift_product != blank and settings.gift_threshold > 0 and item.variant_id == settings.gift_product.variants.first.id and item.final_line_price == 0
-    assign is_gift = true
-  endif
-
   # The struck-through price is the higher of the sale's "compare at" and the price before discounts.
-  assign was = item.original_line_price
+  assign was = original_line
   if item.variant.compare_at_price > item.original_price
-    assign was = item.variant.compare_at_price | times: item.quantity
+    assign was = item.variant.compare_at_price | times: qty
   endif
 -%}
+{%- unless twin_before -%}
 <li
   class="cart-line{% if item.variant.available == false %} is-sold-out{% endif %}{% if is_gift %} is-gift{% endif %}"
   data-key="{{ item.key }}"
   data-title="{{ title }}"
   data-variant="{{ item.variant_id }}"
-  data-qty="{{ item.quantity }}"
+  data-qty="{{ qty }}"
+  {% if more != blank %}
+    data-more="{{ more }}"
+  {% endif %}
   data-properties="{{ item.properties | json | escape }}"
   {% if item.selling_plan_allocation %}
     data-plan="{{ item.selling_plan_allocation.selling_plan.id }}"
@@ -71,30 +124,51 @@
           <p class="cart-line__meta">{{ property.first }}: {{ property.last }}</p>
         {%- endif -%}
       {%- endfor -%}
-      {%- for allocation in item.line_level_discount_allocations -%}
-        {%- if is_gift -%}{%- continue -%}{%- endif -%}
-        <p class="cart-line__meta cart-line__deal">
-          {{- allocation.discount_application.title }} (−{{ allocation.amount | money -}})
-        </p>
-      {%- endfor -%}
-      {%- if item.quantity > 1 -%}
-        {%- assign each = item.final_price | money -%}
+      {%- unless is_gift -%}
+        {%- liquid
+          assign pairs = deals | split: ';;'
+          assign listed = ';;'
+        -%}
+        {%- for pair in pairs -%}
+          {%- liquid
+            assign deal = pair | split: '::' | first
+            assign marker = ';;' | append: deal | append: ';;'
+            if listed contains marker
+              continue
+            endif
+            assign listed = listed | append: deal | append: ';;'
+            assign off = 0
+            for each_pair in pairs
+              assign parts = each_pair | split: '::'
+              if parts.first == deal
+                assign off = parts.last | plus: off
+              endif
+            endfor
+          -%}
+          {%- comment -%} Shopify lists the gift's discount on every line, with nothing off the others. {%- endcomment -%}
+          {%- if off > 0 -%}
+            <p class="cart-line__meta cart-line__deal">{{ deal | escape }} (−{{ off | money }})</p>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endunless -%}
+      {%- if qty > 1 -%}
+        {%- assign each = line_price | divided_by: qty | money -%}
         <p class="cart-line__meta">{{ 'cart.each' | t: price: each }}</p>
       {%- endif -%}
     </div>
     <p class="cart-line__price">
       {%- if is_gift -%}
         <span>{{ 'rewards.free' | t }}</span>
-        {%- assign worth = item.original_line_price | money -%}
+        {%- assign worth = original_line | money -%}
         <span class="visually-hidden">{{ 'rewards.worth' | t: price: worth }}</span>
         <s aria-hidden="true">{{ worth }}</s>
-      {%- elsif was > item.final_line_price -%}
+      {%- elsif was > line_price -%}
         <span class="visually-hidden">{{ 'products.sale_price' | t }}</span>
-        <span>{{ item.final_line_price | money }}</span>
+        <span>{{ line_price | money }}</span>
         <span class="visually-hidden">{{ 'products.regular_price' | t }}</span>
         <s>{{ was | money }}</s>
       {%- else -%}
-        {{ item.final_line_price | money }}
+        {{ line_price | money }}
       {%- endif -%}
     </p>
     <div class="cart-line__qty">
@@ -113,8 +187,11 @@
         endif
         assign qty_name = 'updates[' | append: item.key | append: ']'
         assign qty_id = 'CartQty-' | append: uid
-        render 'quantity', id: qty_id, name: qty_name, value: item.quantity, title: title, max: max, describedby: note_id
+        render 'quantity', id: qty_id, name: qty_name, value: qty, title: title, max: max, describedby: note_id
       -%}
+      {%- for key in more_keys -%}
+        <input type="hidden" name="updates[{{ key }}]" value="0">
+      {%- endfor -%}
       {%- endif -%}
     </div>
     <p class="cart-line__note" id="CartLineNote-{{ uid }}" data-line-note {% if note == blank %}hidden{% endif %}>
@@ -122,6 +199,7 @@
     </p>
   </div>
 </li>
+{%- endunless -%}
 
 {% stylesheet %}
   /* Phone: photo on the left; name and price share the first row; the stepper sits under them (cart-plan §4.1). */

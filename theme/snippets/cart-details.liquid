@@ -1,0 +1,83 @@
+{%- doc -%}
+  Price details (docs/cart-compact-plan.md §10): what the subtotal is made of, and what shipping and taxes will do.
+  In the drawer it's the last block of the scrolling part, and the amount beside Checkout scrolls to it; on the cart
+  page it's the summary card's rows, and the pinned bar's amount goes to the card.
+
+  Items and each discount are listed only when something was taken off; the amounts always come from Shopify.
+  Shipping is never added in here: it says "Free", the flat fee from Theme settings → Cart, or that checkout works
+  it out.
+
+  @param {string} place - 'drawer' or 'page'. The drawer gets a visible heading; the page's card has its own.
+
+  @example
+  {% render 'cart-details', place: 'drawer' %}
+{%- enddoc -%}
+{%- liquid
+  assign threshold = settings.free_shipping_threshold | default: 0 | times: 100
+  assign fee = settings.shipping_fee | default: 0 | times: 100
+  if threshold > 0 and cart.total_price >= threshold
+    assign shipping = 'cart.shipping_free' | t
+  elsif fee > 0
+    assign fee_money = fee | money_without_trailing_zeros
+    assign shipping = 'cart.shipping_fee' | t: amount: fee_money
+  else
+    assign shipping = 'cart.shipping_later' | t
+  endif
+  assign tax_key = 'cart.taxes_out'
+  if cart.taxes_included
+    assign tax_key = 'cart.taxes_in'
+  endif
+  assign saved = cart.original_total_price | minus: cart.total_price
+-%}
+<div class="cart-details cart-details--{{ place }}" id="CartDetails-{{ place }}">
+  {%- if place == 'drawer' -%}
+    <h3 class="cart-details__title" tabindex="-1" data-details-at>{{ 'cart.details' | t }}</h3>
+  {%- endif -%}
+  <dl class="cart-details__rows" data-total>
+    {%- if saved > 0 -%}
+      <div class="cart-details__row">
+        <dt>{{ 'cart.items' | t }}</dt>
+        <dd>{{ cart.original_total_price | money }}</dd>
+      </div>
+      {%- for discount in cart.discount_applications -%}
+        {%- if discount.total_allocated_amount > 0 -%}
+          <div class="cart-details__row cart-details__row--deal">
+            <dt>{{ discount.title | escape }}</dt>
+            <dd>−{{ discount.total_allocated_amount | money }}</dd>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+    <div class="cart-details__row">
+      <dt>{{ 'cart.shipping' | t }}</dt>
+      <dd>{{ shipping }}</dd>
+    </div>
+    <div class="cart-details__row cart-details__row--total">
+      <dt>{{ 'cart.subtotal' | t }}</dt>
+      <dd>{{ cart.total_price | money }}</dd>
+    </div>
+  </dl>
+  <p class="cart-details__tax">{{ tax_key | t }}</p>
+</div>
+
+{% stylesheet %}
+  .cart-details { display: grid; gap: var(--space-2); }
+  .cart-details__rows { display: grid; gap: var(--space-2); transition: opacity var(--dur-state) ease; }
+  .cart-details__row { display: flex; justify-content: space-between; gap: var(--space-4); font-size: var(--fs-small); font-variant-numeric: tabular-nums; }
+  .cart-details__row dd { margin: 0; flex: none; text-align: end; }
+  .cart-details__row--deal { color: var(--color-muted); }
+  .cart-details__row--total { padding-top: var(--space-2); border-top: 1px solid var(--color-line-strong); font-weight: 500; font-size: 1.125rem; color: var(--color-heading); }
+  .cart-details__tax { font-size: .75rem; color: var(--color-muted); }
+
+  /* The drawer: a card at the end of the list. Arriving from the amount beside Checkout, it lights up for a moment,
+     so the tap is answered even when the card was already in view. */
+  .cart-details--drawer { margin-top: var(--space-4); padding: var(--space-4); border-radius: var(--radius-md); background: var(--color-surface); scroll-margin-block: var(--space-4); }
+  .cart-details__title { font-family: var(--font-sans); font-style: normal; font-weight: 500; font-size: 1rem; line-height: 1.3; letter-spacing: 0; color: var(--color-heading); }
+  .cart-details__title:focus { outline: none; box-shadow: none; }
+  .cart-details--drawer:has(.cart-details__title:focus) { animation: cart-details-arrive 1.2s var(--ease-out); }
+  @keyframes cart-details-arrive {
+    0%, 40% { box-shadow: 0 0 0 2px var(--color-heading); }
+    100% { box-shadow: 0 0 0 2px transparent; }
+  }
+  @media (forced-colors: active) { .cart-details--drawer { border: 1px solid CanvasText; } }
+{% endstylesheet %}

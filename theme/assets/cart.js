@@ -1,10 +1,10 @@
 /*
   Yarn Basket · cart.js (docs/cart-plan.md)
-  Add to cart without leaving the page, the added-to-cart pop-up, the cart drawer, and the cart's instant stepper,
-  Undo and gift-note autosave. Without it, every form still works: Add to cart and the header's cart button go
-  to /cart, and the cart page is a plain form.
-  Every change asks Shopify for the drawer's (or the cart page's) fresh HTML in the same request, so prices, stock
-  and discounts always come from Shopify. Changes go one at a time through a queue.
+  Add to cart without leaving the page, the added-to-cart pop-up, the cart drawer, the instant stepper, Undo and
+  gift-note autosave. Without it every form still works: Add to cart and the header's cart button go to /cart,
+  which is a plain form.
+  Every change asks Shopify for the cart's fresh HTML in the same request, so prices, stock and discounts always
+  come from Shopify. Changes go one at a time through a queue.
 */
 
 const base = window.Shopify?.routes?.root || '/';
@@ -31,7 +31,7 @@ const say = (msg) => {
   live.textContent = '';
   setTimeout(() => (live.textContent = msg), 80);
 };
-// The header's count and badge (theme.js). quiet: we say something more useful ourselves.
+// The header's count and badge (theme.js). quiet: we say something better ourselves.
 const counted = (count) => document.dispatchEvent(new CustomEvent('cart:updated', { detail: { item_count: count, quiet: true } }));
 
 /* ---------- Requests, one at a time ---------- */
@@ -121,7 +121,7 @@ const render = (html) => {
   if (scroller && top) scroller.scrollTop = top;
   if (focusAt) root.querySelector(focusAt)?.focus({ preventScroll: true });
   if (!pending) root.classList.remove('is-busy');
-  // Rewards: the bar moves from where it was (CSS transition); a step reached or lost is said.
+  // Rewards: the bar moves from where it was; a step reached or lost is said.
   const now = root.querySelector('[data-rewards]');
   if (now && now.dataset.state !== was?.dataset.state) rewardNews = now.querySelector('[data-rewards-text]').textContent;
   const fill = wasPct && now?.querySelector('[data-rewards-fill]');
@@ -130,7 +130,6 @@ const render = (html) => {
     fill.offsetWidth;
     fill.style.width = '';
   }
-  setupBar();
   document.dispatchEvent(new CustomEvent('cart:rendered'));
 };
 
@@ -161,23 +160,31 @@ const failed = (key, err) => {
     say(msg);
   });
 };
-const commit = (key, quantity) => {
+// gone: the twin lines' keys, once the line has left the page.
+const commit = (key, quantity, gone) => {
   clearTimeout(timers.get(key));
   timers.delete(key);
   dirty.delete(key);
   const li = lineOf(key);
   const { title, variant, properties } = li?.dataset || {};
   li?.classList.add('is-busy');
-  // Shopify re-keys a line when its discounts change (gift amount crossed): find it again by what it is.
+  // Shopify re-keys a line when its discounts change: find it by what it is.
+  let more;
   return enqueue(() => {
-    if (!lineOf(key)) key = [...box().querySelectorAll(`.cart-line[data-variant="${variant}"]`)].find((l) => l.dataset.properties === properties)?.dataset.key || key;
-    return send('cart/change.js', withSections({ id: key, quantity }));
+    const d = (lineOf(key) || [...box().querySelectorAll(`.cart-line[data-variant="${variant}"]`)].find((l) => l.dataset.properties === properties))?.dataset;
+    key = d?.key || key;
+    more = d ? d.more : gone;
+    if (!more) return send('cart/change.js', withSections({ id: key, quantity }));
+    // One product on several lines (snippets/cart-line): the total here, 0 for the rest.
+    const updates = { [key]: quantity };
+    more.split(' ').forEach((k) => (updates[k] = 0));
+    return send('cart/update.js', withSections({ updates }));
   })
     .then((cart) => {
       render(cart.sections?.[sectionId]);
       counted(cart.item_count);
       const item = cart.items.find((i) => i.key === key);
-      if (quantity > 0) say(fmt(S.updated, { title, quantity: item?.quantity ?? 0, subtotal: total() }));
+      if (quantity > 0) say(fmt(S.updated, { title, quantity: more ? quantity : item?.quantity ?? 0, subtotal: total() }));
       return cart;
     })
     .catch((err) => failed(key, err));
@@ -185,6 +192,9 @@ const commit = (key, quantity) => {
 
 /* ---------- Remove, and Undo ---------- */
 const remove = (li) => {
+  // Removing a focused field fires its change again.
+  if (li.gone) return;
+  li.gone = 1;
   const { key, title, variant, properties, plan } = li.dataset;
   const row = document.createElement('li');
   const text = document.createElement('span');
@@ -202,7 +212,7 @@ const remove = (li) => {
   li.replaceWith(row);
   undo.focus({ preventScroll: true });
   row.animate?.([{ height: `${from}px` }, { height: `${row.offsetHeight}px` }], { duration: 300, easing: 'cubic-bezier(.65, 0, .35, 1)' });
-  commit(key, 0).then((cart) => cart && say(fmt(S.removedStatus, { title })));
+  commit(key, 0, li.dataset.more).then((cart) => cart && say(fmt(S.removedStatus, { title })));
 };
 const restore = (row) => {
   const d = row.dataset;
@@ -336,8 +346,7 @@ const toast = (title, image, error) => {
   runToast();
 };
 
-// Checkout with the cart as it is now. A change can redraw the cart and replace the pressed button, so
-// submit the current form with its current Checkout button.
+// Checkout with the cart as it is now: a change can redraw it and replace the pressed button.
 const checkout = () => {
   const form = box()?.querySelector('[data-cart-form]');
   form?.requestSubmit(form.querySelector('[name="checkout"]'));
@@ -384,13 +393,6 @@ document.addEventListener('submit', (event) => {
       const variant = item.product_has_only_default_variant ? '' : item.variant_title;
       say(fmt(S.added, { title: item.product_title, count: countLabel(count) }));
       toast(variant ? `${item.product_title} · ${variant}` : item.product_title, item.image);
-      // "₹151 away from free shipping", in the pop-up.
-      const news = box()?.querySelector('[data-rewards-text]')?.textContent;
-      const line = toastEl?.querySelector('.cart-toast__reward');
-      if (news && line) {
-        line.textContent = news;
-        line.hidden = false;
-      }
       if (label) {
         label.textContent = S.addedButton;
         setTimeout(() => (label.textContent = original), 2000);
@@ -458,7 +460,7 @@ addEventListener('popstate', () => {
     else checkout();
   } else if (drawer?.open) closeDrawer(true);
 });
-// Coming back to a page whose entry was "drawer open" (bfcache): start closed and clean.
+// Coming back to a page whose entry was "drawer open" (bfcache): start closed.
 addEventListener('pageshow', () => history.state?.cartDrawer && history.replaceState(null, ''));
 
 if (drawer) {
@@ -469,7 +471,7 @@ if (drawer) {
   drawer.addEventListener('click', (event) => {
     if (event.target === drawer) closeDrawer();
   });
-  // Leaving from the drawer (a link, Checkout): step back over its history entry first.
+  // Leaving from the drawer (a link, Checkout): step back over its history entry.
   drawer.addEventListener('click', (event) => {
     const link = event.target.closest('a[href]');
     if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || !history.state?.cartDrawer) return;
@@ -502,9 +504,15 @@ document.addEventListener('click', (event) => {
   }
   if (target.closest('[data-undo]')) return restore(target.closest('.cart-undo'));
   if (target.closest('[data-cart-close]')) return closeDrawer();
+  // The amount beside Checkout: on to the price details, with focus, so keyboards and screen readers arrive too.
+  if (target.closest('[data-details]')) {
+    const at = box().querySelector('[data-details-at]');
+    at.scrollIntoView();
+    return at.focus({ preventScroll: true });
+  }
   if (target.closest('[data-toast-close]')) return hideToast();
   if (target.closest('[data-cart-view]')) return openDrawer(returnFocus || document.querySelector('.site-header__cart'));
-  // A plain click on the header's cart opens the drawer; new-tab clicks and no-JS go to /cart.
+  // A plain click on the header's cart opens the drawer; new-tab clicks go to /cart.
   const cartLink = target.closest('.site-header__cart');
   if (cartLink && drawer && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
     event.preventDefault();
@@ -512,7 +520,7 @@ document.addEventListener('click', (event) => {
   }
 });
 
-// Drawer photos are lazy: start them when a finger or pointer heads for the cart.
+// Drawer photos are lazy: start them when a pointer heads for the cart.
 const warm = (event) => {
   if (!event.target.closest?.('.site-header__cart, [data-cart-view]')) return;
   drawer?.querySelectorAll('img[loading="lazy"]').forEach((img) => (img.loading = 'eager'));
@@ -521,29 +529,5 @@ addEventListener('pointerover', warm, { passive: true });
 addEventListener('pointerdown', warm, { passive: true });
 addEventListener('focusin', warm);
 
-/* ---------- Cart page: pinned Checkout bar on phones, and Little extras ---------- */
-let barWatch;
-function setupBar() {
-  barWatch?.disconnect();
-  const bar = page?.querySelector('[data-cart-bar]');
-  const button = page?.querySelector('.cart-summary__checkout');
-  if (!bar || !button) return;
-  // Shown only while the summary's own Checkout is still below the screen.
-  barWatch = new IntersectionObserver(([entry]) => bar.classList.toggle('is-shown', !entry.isIntersecting && entry.boundingClientRect.top > 0));
-  barWatch.observe(button);
-}
-setupBar();
-
-const slot = page?.querySelector('[data-cart-extras]');
-if (slot) {
-  fetch(slot.dataset.url)
-    .then((r) => (r.ok ? r.text() : ''))
-    .then((html) => {
-      const extras = new DOMParser().parseFromString(html, 'text/html').querySelector('.extras');
-      if (extras) slot.replaceChildren(extras);
-    })
-    .catch(() => {});
-}
-
-// For rewards.js (the free gift).
+// For rewards.js (the free gift) and cart-page.js.
 window.ybCart = { enqueue, send, withSections, render, say, counted, box, sectionId, S, fmt };

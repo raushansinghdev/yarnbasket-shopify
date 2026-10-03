@@ -3,6 +3,7 @@
 Status: **Stages 1–4 built and tested with real items 2026-10-02** (11 test products imported from `tools/test-products.csv`, tag `test-product`). Raushan approved the recommendations, except D2: adding shows a Flipkart-style "Added to cart · View cart" pop-up instead of opening the drawer.
 
 ### As built (where it differs from the plan below)
+- **2026-10-03, compact cart (`cart-compact-plan.md`):** the drawer's pinned bottom is now only the amount and Checkout, 113–163px tall instead of about 285px. The amount goes to a "Price details" card at the end of the list. "Ships in 1–3 days" is gone from the cart. The pop-up is a 66px pill without the rewards line. A product that Shopify splits over two lines is drawn as one. The cart page's own script moved to `cart-page.js`. The drawings in §4.1 below show the older, taller footer.
 - **D2 changed (Raushan): adding to cart shows a pop-up and doesn't open the drawer.** Shoppers keep browsing; "View cart" in the pop-up opens the drawer.
   - What it shows: the photo, "✓ Added to cart", the name (with the option picked), View cart and ×.
   - Where it sits: at the bottom on phones; under the header's cart button from 768px.

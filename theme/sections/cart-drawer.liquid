@@ -3,7 +3,7 @@
   A native <dialog> from the right, mirroring the menu drawer on the left: focus trap, Esc and an inert page come
   built in. cart.js opens it from the header's cart button (a plain tap; long-press and no-JS still go to /cart) and
   from "View cart" in the added-to-cart pop-up, and refreshes [data-cart-root] after every change.
-  Pinned top bar · scrolling lines and gift note · pinned summary with Checkout.
+  Pinned top bar · scrolling lines, gift note and price details · pinned amount and Checkout.
 {%- endcomment -%}
 {%- unless request.page_type == 'cart' -%}
   <dialog class="cart-drawer scheme-soft" id="CartDrawer" aria-labelledby="CartDrawerTitle" data-scroll-lock closedby="any" data-cart-drawer>
@@ -32,6 +32,7 @@
               {%- endfor -%}
             </ul>
             {%- render 'cart-note', place: 'drawer' -%}
+            {%- render 'cart-details', place: 'drawer' -%}
           </div>
           <div class="cart-drawer__foot">
             {%- render 'cart-summary', place: 'drawer' -%}
@@ -76,6 +77,7 @@
 
 {%- comment -%}
   The added-to-cart pop-up (decision D2, cart-plan §6.1): photo, "Added to cart", the name, View cart and ×.
+  Always two lines of text in a 64px pill (docs/cart-compact-plan.md §3); the rewards news stays in the cart.
   Phones: at the bottom, in thumb reach. Wider: under the header's cart button. It never takes focus; the header
   status line says what happened, and the header cart button does the same as View cart, so nothing is lost when
   it goes. It stays about 8 seconds and pauses while a finger, pointer or focus is on it.
@@ -86,7 +88,6 @@
     <p class="cart-toast__text">
       <span class="cart-toast__head">{%- render 'icon', icon: 'check' -%}{{ 'cart.added' | t }}</span>
       <span class="cart-toast__title"></span>
-      <span class="cart-toast__reward" hidden></span>
     </p>
     {%- unless request.page_type == 'cart' -%}
       <button type="button" class="btn cart-toast__view" data-cart-view>{{ 'cart.view_cart' | t }}</button>
@@ -146,16 +147,19 @@
   .cart-drawer__form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .cart-drawer__body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--space-4) var(--space-4); }
   .cart-drawer__body .cart-note { margin-top: var(--space-2); }
+  /* The amount beside Checkout scrolls here to the price details. */
+  @media (prefers-reduced-motion: no-preference) { .cart-drawer__body { scroll-behavior: smooth; } }
   .cart-drawer__body .cart-empty { padding-block: var(--space-6); }
   .cart-drawer__foot {
     flex: none;
-    padding: var(--space-4) var(--space-4) max(var(--space-4), env(safe-area-inset-bottom));
+    padding: var(--space-3) var(--space-4) max(var(--space-3), env(safe-area-inset-bottom));
     border-top: 1px solid var(--color-line-strong);
     background: var(--color-bg);
     box-shadow: 0 -12px 24px -22px rgb(78 58 49 / .5);
   }
-  /* At 400% zoom or on a short landscape phone, the pinned parts would cover most of the screen: let it all scroll. */
-  @media (max-height: 500px) {
+  /* At 400% zoom, with large text or on a short landscape phone, the pinned parts would cover most of the screen:
+     let it all scroll. In em, so a larger browser text size counts too (31.25em is 500px at the usual size). */
+  @media (max-height: 31.25em) {
     .cart-drawer__root { display: block; height: auto; min-height: 100%; }
     .cart-drawer { overflow-y: auto; }
     .cart-drawer__body { overflow: visible; }
@@ -166,13 +170,16 @@
     position: fixed;
     inset: auto var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
     z-index: 30;
-    display: grid;
-    grid-template-columns: 56px minmax(0, 1fr) auto auto;
+    /* One 64px row with round ends. The words keep room for "Added to cart" on one line (7.25rem); with large text
+       or a very narrow screen the buttons wrap under them instead of squeezing them. */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-2);
     padding: var(--space-2) var(--space-1) var(--space-2) var(--space-2);
     border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-md);
+    border-radius: 2rem;
     background: var(--white);
     color: var(--color-ink);
     box-shadow: 0 18px 40px -18px rgb(78 58 49 / .45);
@@ -180,16 +187,20 @@
   }
   @starting-style { .cart-toast { opacity: 0; transform: translateY(16px); } }
   .cart-toast.is-leaving { opacity: 0; transform: translateY(16px); transition-timing-function: var(--ease-exit); }
-  .cart-toast__media { --ratio: 1; width: 56px; border-radius: var(--radius-sm); background: var(--oat); }
-  .cart-toast__text { display: grid; gap: 2px; min-width: 0; }
-  .cart-toast__head { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
-  .cart-toast__head .icon { width: 16px; height: 16px; }
+  .cart-toast__media { --ratio: 1; flex: none; width: 48px; border-radius: 50%; background: var(--oat); }
+  .cart-toast__text { display: grid; gap: 2px; flex: 1 1 7.25rem; min-width: min(7.25rem, 100%); }
+  .cart-toast__head { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); white-space: nowrap; }
+  .cart-toast__head .icon { width: 16px; height: 16px; flex: none; }
   .cart-toast__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); color: var(--color-muted); }
-  /* The rewards line from the cart ("Add ₹151 more for free shipping"), docs/offers-plan.md §6. */
-  .cart-toast__reward { font-size: .8125rem; line-height: 1.35; color: var(--color-heading); }
-  .cart-toast.is-error .cart-toast__reward { display: none; }
-  .cart-toast__view { min-height: var(--tap); padding: 0 var(--space-4); font-size: .9375rem; }
-  .cart-toast.is-error { grid-template-columns: minmax(0, 1fr) auto; padding-left: var(--space-4); }
+  .cart-toast__view { flex: none; min-height: var(--tap); padding: 0 var(--space-3); font-size: .9375rem; }
+  .cart-toast__close { flex: none; width: 40px; }
+  /* Too narrow for "Added to cart" on one line: the photo goes (it's decoration; the name is in the words). */
+  @media (max-width: 339px) {
+    .cart-toast { padding-left: var(--space-4); }
+    .cart-toast__media { display: none; }
+  }
+  .cart-toast.is-error { flex-wrap: nowrap; padding-left: var(--space-4); border-radius: var(--radius-md); }
+  .cart-toast.is-error .cart-toast__text { min-width: 0; }
   .cart-toast.is-error :is(.cart-toast__media, .cart-toast__head, .cart-toast__view) { display: none; }
   .cart-toast.is-error .cart-toast__title { white-space: normal; color: var(--color-heading); font-weight: 500; }
   @media (min-width: 768px) {
