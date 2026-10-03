@@ -46,14 +46,14 @@
         {%- if settings.social_instagram != blank -%}
           <li>
             <a class="icon-btn" href="{{ settings.social_instagram }}" rel="noopener" target="_blank">
-              {%- render 'icon', icon: 'instagram' -%}<span class="visually-hidden">Instagram</span>
+              {%- render 'icon', icon: 'instagram' -%}<span class="visually-hidden">Instagram ({{ 'accessibility.new_window' | t }})</span>
             </a>
           </li>
         {%- endif -%}
         {%- if settings.social_whatsapp != blank -%}
           <li>
-            <a class="icon-btn" href="https://wa.me/{{ settings.social_whatsapp | remove: '+' | remove: ' ' }}" rel="noopener" target="_blank">
-              {%- render 'icon', icon: 'whatsapp' -%}<span class="visually-hidden">WhatsApp</span>
+            <a class="icon-btn" href="https://wa.me/{{ settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-' }}" rel="noopener" target="_blank">
+              {%- render 'icon', icon: 'whatsapp' -%}<span class="visually-hidden">WhatsApp ({{ 'accessibility.new_window' | t }})</span>
             </a>
           </li>
         {%- endif -%}
@@ -134,21 +134,22 @@
 
   /* The banner: logo lockup, short rule, crafts on one line. */
   .footer__banner { position: relative; display: grid; justify-items: center; gap: var(--space-5); padding-bottom: var(--space-8); }
-  .footer__logo { display: inline-flex; align-items: center; gap: var(--space-4); text-align: left; }
+  .footer__logo { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-3) var(--space-4); max-width: 100%; text-align: left; }
   .footer__mark { width: 76px; height: 76px; flex: none; transition: transform var(--dur-panel) var(--ease-out); }
-  .footer__lockup { display: grid; gap: 8px; }
+  .footer__lockup { display: grid; gap: 8px; min-width: 0; }
   .footer__name {
     font-family: var(--font-serif);
     font-style: italic;
     font-weight: 600;
-    font-size: 2.375rem;
+    /* Capped by the screen's width, so the name stays on one line beside the basket at large text. */
+    font-size: min(2.375rem, 11.5vw);
     line-height: 1;
     color: var(--color-heading);
   }
   .footer__tagline {
-    font-size: .6875rem;
+    font-size: .75rem;
     font-weight: 500;
-    letter-spacing: .26em;
+    letter-spacing: .22em;
     text-transform: uppercase;
     color: var(--color-muted);
   }
@@ -162,7 +163,10 @@
   @keyframes rule-draw { from { opacity: 0; transform: scaleX(0); } }
 
   /* Phones: two neat columns. Wider screens: one line with dots, as on the banner. */
-  .footer__crafts ul { display: grid; grid-template-columns: repeat(2, auto); justify-content: center; gap: 0 var(--space-6); }
+  .footer__crafts ul { display: grid; grid-template-columns: repeat(2, minmax(0, auto)); justify-content: center; gap: 0 var(--space-6); }
+  /* Large text: one column, so no craft's name is broken mid-word. */
+  .footer__crafts { width: 100%; container-type: inline-size; }
+  @container (max-width: 13em) { .footer__crafts ul { grid-template-columns: minmax(0, auto); } }
   .footer__crafts li { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-3); }
   .footer__crafts a {
     display: inline-flex;

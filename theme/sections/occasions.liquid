@@ -21,7 +21,7 @@
     <h2 id="Occasions-{{ section.id }}">{{ s.heading }}</h2>
     {%- if s.text != blank -%}<p class="section-head__sub muted occasions__sub">{{ s.text }}</p>{%- endif -%}
     {%- if s.link_label != blank -%}
-      <a class="link section-head__link occasions__all" href="{{ s.link | default: routes.all_products_collection_url }}">
+      <a class="link section-head__link occasions__all" href="{{ s.link | default: settings.shop_all_collection.url | default: routes.all_products_collection_url }}">
         {{- s.link_label -}}
         {%- render 'icon', icon: 'arrow' -%}
       </a>
@@ -40,7 +40,7 @@
           continue
         endif
         if demo
-          assign url = routes.all_products_collection_url
+          assign url = settings.shop_all_collection.url | default: routes.all_products_collection_url
         else
           assign url = col.url
         endif

@@ -14,6 +14,8 @@ const sectionId = page ? page.dataset.sectionId : 'cart-drawer';
 const S = JSON.parse(document.getElementById('CartStrings')?.textContent || '{}');
 // Undo the t filter's &#39; escapes (these go into textContent).
 for (const k in S) S[k] = new DOMParser().parseFromString(S[k], 'text/html').body.textContent;
+// What went wrong, in the shop's words: Shopify's own reason, or ours when the request never arrived.
+const why = (err) => (err instanceof Error ? S.offline : err?.description || err?.message) || S.error;
 const fmt = (s = '', o = {}) => s.replace(/\[(\w+)\]/g, (_, k) => o[k] ?? '');
 const countLabel = (n) => (n === 1 ? S.one : S.other.replace('99', n));
 const box = () => (page || drawer)?.querySelector('[data-cart-root]');
@@ -154,10 +156,24 @@ const lineNote = (li, msg, error) => {
   note.classList.toggle('is-error', !!error);
 };
 const failed = (key, err) => {
-  const msg = err?.description || err?.message || S.error;
-  return fresh().finally(() => {
+  const msg = why(err);
+  const tell = () => {
     lineNote(lineOf(key), msg, true);
     say(msg);
+  };
+  // No fresh cart either (offline): put the lines back as Shopify last had them, a removed one included.
+  return fresh().then(tell, () => {
+    const row = box()?.querySelector(`.cart-undo[data-key="${CSS.escape(key)}"]`);
+    if (row?.line) {
+      row.line.gone = 0;
+      row.replaceWith(row.line);
+    }
+    box()?.querySelectorAll('.cart-line').forEach((li) => {
+      li.classList.remove('is-busy');
+      if (li.querySelector('[data-qty]')) showQty(li, +li.dataset.qty);
+    });
+    dirty.clear();
+    tell();
   });
 };
 // gone: the twin lines' keys, once the line has left the page.
@@ -200,6 +216,7 @@ const remove = (li) => {
   const text = document.createElement('span');
   const undo = document.createElement('button');
   row.className = 'cart-undo';
+  row.line = li;
   Object.assign(row.dataset, { key, title, variant, properties, qty: Math.max(1, +li.dataset.qty || 1) });
   if (plan) row.dataset.plan = plan;
   text.textContent = fmt(S.removed, { title });
@@ -232,7 +249,7 @@ const restore = (row) => {
     })
     .catch((err) => {
       row.removeAttribute('aria-busy');
-      say(err?.description || S.error);
+      say(why(err));
     });
 };
 
@@ -289,62 +306,13 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-/* ---------- The added-to-cart pop-up (decision D2) ---------- */
-let toastEl = null;
-let toastTimer;
-let toastLeft = 0;
-let toastStart = 0;
+/* ---------- The added-to-cart pop-up (decision D2): assets/cart-toast.js, fetched with the first add ---------- */
 let returnFocus = null;
-const holds = new Set();
-const hideToast = () => {
-  const t = toastEl;
-  if (!t) return;
-  toastEl = null;
-  clearTimeout(toastTimer);
-  holds.clear();
-  if (t.contains(document.activeElement)) returnFocus?.focus({ preventScroll: true });
-  t.classList.add('is-leaving');
-  setTimeout(() => t.remove(), 320);
-};
-const runToast = () => {
-  toastStart = Date.now();
-  toastTimer = setTimeout(hideToast, toastLeft);
-};
-const hold = (why, on) => {
-  if (on) {
-    if (!holds.size) {
-      clearTimeout(toastTimer);
-      toastLeft -= Date.now() - toastStart;
-    }
-    holds.add(why);
-  } else if (holds.delete(why) && !holds.size) runToast();
-};
-const toast = (title, image, error) => {
-  const template = document.getElementById('CartToastTemplate');
-  if (!template) return;
-  toastEl?.remove();
-  clearTimeout(toastTimer);
-  holds.clear();
-  const t = template.content.firstElementChild.cloneNode(true);
-  t.classList.toggle('is-error', !!error);
-  t.querySelector('.cart-toast__title').textContent = title;
-  const img = t.querySelector('img');
-  if (image) {
-    const url = new URL(image, location.href);
-    url.searchParams.set('width', '112');
-    img.src = url.href;
-    img.hidden = false;
-  }
-  t.addEventListener('pointerenter', () => hold('pointer', true));
-  t.addEventListener('pointerleave', () => hold('pointer', false));
-  t.addEventListener('focusin', () => hold('focus', true));
-  t.addEventListener('focusout', (e) => !t.contains(e.relatedTarget) && hold('focus', false));
-  t.addEventListener('keydown', (e) => e.key === 'Escape' && hideToast());
-  document.body.append(t);
-  toastEl = t;
-  toastLeft = error ? 10000 : 8000;
-  runToast();
-};
+let pop = null;
+const popSrc = document.getElementById('CartToastTemplate')?.dataset.src;
+const loadPop = () => (pop ||= popSrc ? import(popSrc).catch(() => (pop = null)) : null);
+const toast = (title, image, error) => loadPop()?.then((m) => m?.toast(title, image, error, returnFocus));
+const hideToast = () => pop?.then((m) => m?.hideToast());
 
 // Checkout with the cart as it is now: a change can redraw it and replace the pressed button.
 const checkout = () => {
@@ -383,6 +351,7 @@ document.addEventListener('submit', (event) => {
   }
   if (error) error.hidden = true;
   returnFocus = button;
+  loadPop();
 
   enqueue(() => send('cart/add.js', withSections(asItems(form))))
     .then((res) => {
@@ -406,7 +375,7 @@ document.addEventListener('submit', (event) => {
       }
     })
     .catch((err) => {
-      const msg = err?.description || err?.message || S.error;
+      const msg = why(err);
       if (label) label.textContent = original;
       if (error) {
         error.textContent = msg;
@@ -461,7 +430,11 @@ addEventListener('popstate', () => {
   } else if (drawer?.open) closeDrawer(true);
 });
 // Coming back to a page whose entry was "drawer open" (bfcache): start closed.
-addEventListener('pageshow', () => history.state?.cartDrawer && history.replaceState(null, ''));
+addEventListener('pageshow', (event) => {
+  if (history.state?.cartDrawer) history.replaceState(null, '');
+  // Restored by Back with the cart it had when it was left: fetch it as it is now.
+  if (event.persisted) fresh().then(() => counted(+box()?.dataset.count)).catch(() => {});
+});
 
 if (drawer) {
   drawer.addEventListener('cancel', (event) => {
@@ -510,7 +483,6 @@ document.addEventListener('click', (event) => {
     at.scrollIntoView();
     return at.focus({ preventScroll: true });
   }
-  if (target.closest('[data-toast-close]')) return hideToast();
   if (target.closest('[data-cart-view]')) return openDrawer(returnFocus || document.querySelector('.site-header__cart'));
   // A plain click on the header's cart opens the drawer; new-tab clicks go to /cart.
   const cartLink = target.closest('.site-header__cart');
@@ -530,4 +502,4 @@ addEventListener('pointerdown', warm, { passive: true });
 addEventListener('focusin', warm);
 
 // For rewards.js (the free gift) and cart-page.js.
-window.ybCart = { enqueue, send, withSections, render, say, counted, box, sectionId, S, fmt };
+window.ybCart = { enqueue, send, withSections, render, say, counted, box, sectionId, S, fmt, why };

@@ -71,7 +71,7 @@
   endif
 
   assign cta_label = s.button_label
-  assign cta_link = s.button_link | default: routes.all_products_collection_url
+  assign cta_link = s.button_link | default: settings.shop_all_collection.url | default: routes.all_products_collection_url
   if card and card.settings.button_label != blank
     assign cta_label = card.settings.button_label
     assign cta_link = card.settings.link | default: cta_link
@@ -126,7 +126,7 @@
       {%- liquid
         assign bs = banner.settings
         assign b_img = bs.image_phone
-        assign b_url = bs.link | default: routes.all_products_collection_url
+        assign b_url = bs.link | default: settings.shop_all_collection.url | default: routes.all_products_collection_url
         assign b_title = bs.label | default: bs.button_label
         assign b_alt = ''
         if b_title == blank
@@ -251,7 +251,7 @@
           assign main_product = all_products['sunflower-trio-crochet-bouquet']
           assign main_label = 'Sunflower bouquet'
         endif
-        assign main_url = s.image_link | default: main_product.url | default: s.button_link | default: routes.all_products_collection_url
+        assign main_url = s.image_link | default: main_product.url | default: s.button_link | default: settings.shop_all_collection.url | default: routes.all_products_collection_url
         assign main_tagged = false
         if main_product != blank
           assign main_tagged = true
@@ -271,7 +271,7 @@
               if cs.image_phone == blank
                 assign c_square = true
               endif
-              assign c_url = cs.link | default: routes.all_products_collection_url
+              assign c_url = cs.link | default: settings.shop_all_collection.url | default: routes.all_products_collection_url
               assign c_alt = c_phone.alt | escape
               if cs.label != blank
                 assign c_alt = ''
@@ -343,7 +343,7 @@
             {%- liquid
               assign n = n | plus: 1
               assign b = block.settings
-              assign b_url = b.link | default: b.product.url | default: routes.all_products_collection_url
+              assign b_url = b.link | default: b.product.url | default: settings.shop_all_collection.url | default: routes.all_products_collection_url
               assign b_tagged = false
               if b.product != blank
                 assign b_tagged = true
@@ -370,7 +370,7 @@
               assign d = slide | split: '|'
               assign n = forloop.index | plus: first_n
               assign d_product = all_products[d[2]]
-              assign d_url = d_product.url | default: routes.all_products_collection_url
+              assign d_url = d_product.url | default: settings.shop_all_collection.url | default: routes.all_products_collection_url
               assign d_alt = d[1]
               if d_product != blank
                 assign d_alt = ''
@@ -389,7 +389,7 @@
           {%- endfor -%}
           {%- if total > 1 -%}
             {%- comment -%} Phones only: the end of the row, so a swipe never dead-ends (the button is hidden there). {%- endcomment -%}
-            <a class="hero__all" href="{{ s.button_link | default: routes.all_products_collection_url }}">
+            <a class="hero__all" href="{{ s.button_link | default: settings.shop_all_collection.url | default: routes.all_products_collection_url }}">
               {{- 'hero.see_all' | t -}}
               <span class="hero__all-knob">{%- render 'icon', icon: 'arrow' -%}</span>
             </a>
@@ -530,7 +530,8 @@
     gap: 6px;
     max-width: calc(100% - 20px);
     padding: 6px 11px;
-    border-radius: var(--radius-pill);
+    /* A pill on one line; when the name takes two lines (small phones, large text) the corners stay this round. */
+    border-radius: 17px;
     background: color-mix(in srgb, var(--white) 88%, transparent);
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
@@ -540,7 +541,8 @@
     line-height: 1.2;
     color: var(--cocoa-deep);
   }
-  .hero__tag-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* The whole name, on two lines when one isn't enough; only a third line is cut. */
+  .hero__tag-name { min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
   .hero__tag-price { flex: none; font-weight: 600; white-space: nowrap; }
 
   .hero__controls {

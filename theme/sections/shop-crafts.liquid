@@ -112,7 +112,7 @@
             {%- endfor -%}
           {%- endif -%}
         </ul>
-        <a class="btn shop__all" href="{{ routes.all_products_collection_url }}">
+        <a class="btn shop__all" href="{{ settings.shop_all_collection.url | default: routes.all_products_collection_url }}">
           {{- 'shop.shop_all' | t -}}
           {%- render 'icon', icon: 'arrow' -%}
         </a>
@@ -147,7 +147,7 @@
           assign picks = picks | split: ','
           assign total = picks.size
           assign shown = total | at_most: per
-          assign url = routes.all_products_collection_url
+          assign url = settings.shop_all_collection.url | default: routes.all_products_collection_url
         endif
       -%}
       <div class="shop__panel" id="ShopPanel-{{ uid }}-{{ n }}" role="region" aria-labelledby="ShopTab-{{ uid }}-{{ n }}" data-label="{{ key | escape }}" data-shown="{{ shown }}" data-total="{{ total }}" {% if n > 0 %}hidden{% endif %}>
@@ -177,6 +177,7 @@
   <p class="visually-hidden" role="status" data-shop-status data-template="{{ 'shop.status' | t: craft: '[craft]', shown: '[shown]', total: '[total]' | escape }}"></p>
   {%- comment -%} Without JavaScript the buttons can't switch anything, so they hide and every craft is listed in turn. {%- endcomment -%}
   <noscript><style>.shop__crafts { display: none !important; } .shop__panel[hidden] { display: block !important; } .shop__panel + .shop__panel { margin-top: var(--space-8); } .shop__panel-title { position: static !important; width: auto !important; height: auto !important; clip-path: none !important; }</style></noscript>
+  <script src="{{ 'shop-crafts.js' | asset_url }}" type="module"></script>
 </section>
 {%- endif -%}
 

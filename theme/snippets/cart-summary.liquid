@@ -75,8 +75,8 @@
 </div>
 
 {% stylesheet %}
-  .cart-summary { display: grid; gap: var(--space-3); }
-  .cart-summary__main { display: grid; gap: var(--space-3); }
+  .cart-summary { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+  .cart-summary__main { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
   .cart-summary__checkout { width: 100%; min-height: 56px; font-size: 1.0625rem; gap: var(--space-2); }
   .cart-summary__checkout .icon { width: 20px; height: 20px; }
   @media (hover: hover) { .cart-summary__checkout:hover .icon { transform: none; } }

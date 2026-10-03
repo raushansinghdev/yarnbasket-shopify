@@ -2,6 +2,17 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-04 (audit fixes, docs/audit-2026-10-03.md)
+
+- **Audits cover only what is built.** SEO, checkout, the product page and the starter pages are judged when their phase is built (Raushan).
+- **"Partial COD available" stays in the announcement bar for now** (Raushan): the store isn't public, and the bar's wording is settled with the rest before going live.
+- **Dispatch time is "Ships in 1–2 days"** (Raushan), in the bar's fallback line and on the product page.
+- **"Shop all" goes to a collection chosen in Theme settings** (Shop all → "Shop all" collection, set to "Shop"), not `/collections/all`, which lists the free gift. A new "Shop all" link must use `settings.shop_all_collection.url | default: routes.all_products_collection_url`.
+- **Header breakpoints are in `em`** (48em, 56.25em, 68.75em, 80em), so the browser's text size decides the layout along with the screen width. Other sections keep `px`.
+- **Large text is supported to 200%** on phones and desktop: rows wrap, the cart line stacks (container query at 15em), menu tiles and footer crafts drop a column. `npm run check` section 16 and `npm run stress -- big130|big200` guard it.
+- **Buttons may wrap** (`.btn` no longer has `white-space: nowrap`), and their side padding is capped at 7vw.
+- **theme.js and cart.js were split** to stay inside their budgets: `shop-crafts.js` (home only) and `cart-toast.js` (fetched with the first add).
+
 ## 2026-10-03 (home Bestsellers uses the collection page's card)
 
 - **The home page's Bestsellers cards are the compact card** (Raushan liked the collection page's): plain Jost name at 16px (2 lines at most), the smaller photo corners and badge, and the collection grid's spacing. This reverses search-results-plan §5's "the home page cards don't change".

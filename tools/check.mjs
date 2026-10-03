@@ -997,6 +997,8 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
         before: bg(wrap.previousElementSibling),
         after: bg(wrap.nextElementSibling),
         links: tiles.map((a) => a.getAttribute('href')),
+        // Where "Shop all" goes (Theme settings → Shop all): demo tiles all go there.
+        all: document.querySelector('.shop__all')?.getAttribute('href'),
         named: tiles.every((a) => a.textContent.trim().length > 1),
         swipes: row.scrollWidth > row.clientWidth + 4,
         oneRow: new Set(tiles.map((a) => Math.round(a.getBoundingClientRect().top))).size === 1,
@@ -1007,7 +1009,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
     await page.evaluate(() => document.querySelector('.occasions').scrollIntoView({ block: 'start' }));
     await page.waitForTimeout(1800); // the tiles' arrival has finished, so axe sees their real colours
     const p = await look(page);
-    const own = p.links.every((h) => h && h !== '/collections' && (h === '/collections/all' || p.links.filter((x) => x === h).length === 1));
+    const own = p.links.every((h) => h && h !== '/collections' && (h === '/collections/all' || h === p.all || p.links.filter((x) => x === h).length === 1));
     record('Gifting: stands apart from its neighbours', p.bg !== p.before && p.bg !== p.after, `background ${p.bg}, before ${p.before}, after ${p.after}`);
     record('Gifting: each tile goes to its own collection', p.links.length > 0 && own && p.named, `${p.links.length} tiles: ${[...new Set(p.links)].join(', ')}`);
     record('Gifting, phone: the row swipes, the page doesn\'t', p.swipes && !p.sideways, `row swipes: ${p.swipes}, page scrolls sideways: ${p.sideways}`);
@@ -1021,6 +1023,87 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
     record('Gifting, desktop: every tile in one row', d.oneRow && !d.swipes, `one row: ${d.oneRow}, scrolls: ${d.swipes}`);
     await browser.close();
   }
+}
+
+// 16. Audit 2026-10-03 (docs/audit-2026-10-03.md): the free gift is never offered as something to shop; with the
+//     browser's text size at 130% (desktop) and 200% (phone) nothing is pushed past the screen and the cart button
+//     can still be reached; hero photo labels show whole names on a 360px phone; and when the network drops, the
+//     cart says so in its own words and goes back to the quantity Shopify has.
+{
+  const base = URL.replace(/\/$/, '').replace(/\/\?.*$/, '');
+  const big = async (device, size, path = '/') => {
+    const browser = await chromium.launch();
+    const ctx = await browser.newContext({ ...device, reducedMotion: 'reduce' });
+    await ctx.addInitScript(skipIntro);
+    const page = await ctx.newPage();
+    await (await ctx.newCDPSession(page)).send('Page.setFontSizes', { fontSizes: { standard: size } });
+    await page.goto(base + path, { waitUntil: 'load' });
+    await page.waitForTimeout(1200);
+    return { browser, ctx, page };
+  };
+  const edges = (page) => page.evaluate(() => {
+    const cart = document.querySelector('.site-header__cart').getBoundingClientRect();
+    return { sideways: document.documentElement.scrollWidth - innerWidth, cartIn: cart.left >= -1 && cart.right <= innerWidth + 1 };
+  });
+
+  // The gift
+  let { browser, ctx, page } = await big(devices['Pixel 7'], 16, '/search');
+  const gift = await page.evaluate(async () => {
+    const chips = [...document.querySelectorAll('.search-page .search-chip')].map((c) => c.textContent.trim());
+    const home = new DOMParser().parseFromString(await (await fetch('/')).text(), 'text/html');
+    const shopAll = home.querySelector('.shop__all')?.getAttribute('href');
+    const gifts = (await (await fetch('/products.json?limit=250')).json()).products.filter((p) => p.tags.includes('free-gift'));
+    const listing = shopAll ? await (await fetch(shopAll)).text() : '';
+    return { chips, shopAll, types: gifts.map((p) => p.product_type), listed: gifts.filter((p) => listing.includes(`/products/${p.handle}`)).map((p) => p.handle) };
+  });
+  if (!gift.types.length) console.log('SKIP  Audit: the free gift                              no product tagged free-gift');
+  else {
+    record('Audit: no "Free gift" chip in Popular searches', !gift.chips.some((c) => gift.types.includes(c)), gift.chips.join(', ') || 'no chips');
+    record('Audit: "Shop all" doesn\'t list the free gift', !!gift.shopAll && gift.listed.length === 0, `${gift.shopAll}: ${gift.listed.join(', ') || 'gift not listed'}`);
+  }
+  await browser.close();
+
+  // Large text
+  ({ browser, ctx, page } = await big({ viewport: { width: 1280, height: 800 } }, 21));
+  let e = await edges(page);
+  record('Audit, desktop at 130% text: header fits', e.sideways <= 1 && e.cartIn, `sideways ${e.sideways}px, cart button on screen: ${e.cartIn}`);
+  await browser.close();
+  ({ browser, ctx, page } = await big(devices['iPhone 13'], 32));
+  e = await edges(page);
+  let opened = false;
+  try { await page.locator('.site-header__cart').click({ timeout: 4000 }); await page.waitForTimeout(700); opened = await page.evaluate(() => document.getElementById('CartDrawer').open); } catch {}
+  record('Audit, phone at 200% text: the cart button works', e.sideways <= 1 && e.cartIn && opened, `sideways ${e.sideways}px, on screen: ${e.cartIn}, drawer opened: ${opened}`);
+  await browser.close();
+
+  // Hero labels on a 360px phone
+  ({ browser, ctx, page } = await big({ ...devices['Pixel 7'], viewport: { width: 360, height: 780 } }, 16));
+  const cut = await page.evaluate(() => [...document.querySelectorAll('.hero__tag-name')].filter((n) => n.scrollHeight > n.clientHeight + 4).map((n) => n.textContent.trim()));
+  record('Audit, phone 360: hero labels show whole names', cut.length === 0, cut.join(', ') || 'none cut');
+  await browser.close();
+
+  // The network drops
+  ({ browser, ctx, page } = await big(devices['Pixel 7'], 16));
+  const prods = (await (await ctx.request.get(base + '/products.json?limit=50')).json()).products.filter((p) => p.variants[0].available && !p.tags.includes('free-gift'));
+  if (!prods.length) console.log('SKIP  Audit: cart offline                               no product to add');
+  else {
+    await ctx.request.post(base + '/cart/add.js', { data: { items: [{ id: prods[0].variants[0].id, quantity: 1 }] } });
+    await page.goto(base + '/cart', { waitUntil: 'load' });
+    // Shopify's own scripts fail to load offline too; only the theme's errors count.
+    const errors = [];
+    page.on('pageerror', (err) => { if (!/cdn\.shopify\.com|dynamically imported|Cross-origin|CORS/i.test(err.message)) errors.push(err.message); });
+    await ctx.setOffline(true);
+    await page.locator('.cart-line .qty__plus').first().click();
+    await page.waitForTimeout(2500);
+    const off = await page.evaluate(() => {
+      const li = document.querySelector('.cart-line');
+      return { qty: li.querySelector('.qty__input').value, busy: li.classList.contains('is-busy'), note: li.querySelector('[data-line-note]').textContent.trim(), offline: JSON.parse(document.getElementById('CartStrings').textContent).offline };
+    });
+    await ctx.setOffline(false);
+    record('Audit: offline, the cart keeps the saved quantity', off.qty === '1' && !off.busy && errors.length === 0, `shows ${off.qty}, busy: ${off.busy}${errors.length ? `, errors: ${errors[0]}` : ''}`);
+    record('Audit: offline, the message is the shop\'s own', off.note.length > 0 && !/fetch|load failed|network/i.test(off.note), off.note || 'no message');
+    await ctx.request.post(base + '/cart/clear.js');
+  }
+  await browser.close();
 }
 
 const failed = results.filter((r) => !r.ok);

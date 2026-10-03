@@ -59,6 +59,17 @@
     ]
   },
   {
+    "name": "Shop all",
+    "settings": [
+      {
+        "type": "collection",
+        "id": "shop_all_collection",
+        "label": "\"Shop all\" collection",
+        "info": "Where every \"Shop all\" link goes: the hero, Bestsellers, the menu, the empty cart. Use a collection of everything you sell, without the free gift (for example an automated collection: tag is not equal to free-gift). Left empty, the links go to Shopify's list of all products, which includes the gift."
+      }
+    ]
+  },
+  {
     "name": "Search",
     "settings": [
       {

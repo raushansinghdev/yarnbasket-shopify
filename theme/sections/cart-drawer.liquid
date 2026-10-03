@@ -60,6 +60,7 @@
     "undoLabel": {{ 'cart.undo_label' | t: title: '[title]' | json }},
     "max": {{ 'cart.max' | t | json }},
     "error": {{ 'cart.error' | t | json }},
+    "offline": {{ 'cart.offline' | t | json }},
     "adding": {{ 'cart.adding' | t | json }},
     "addedButton": {{ 'cart.added_button' | t | json }},
     "giftAdded": {{ 'rewards.spoken_added' | t | json }},
@@ -82,7 +83,7 @@
   status line says what happened, and the header cart button does the same as View cart, so nothing is lost when
   it goes. It stays about 8 seconds and pauses while a finger, pointer or focus is on it.
 {%- endcomment -%}
-<template id="CartToastTemplate">
+<template id="CartToastTemplate" data-src="{{ 'cart-toast.js' | asset_url }}">
   <div class="cart-toast" role="region" aria-label="{{ 'cart.added' | t }}">
     <span class="cart-toast__media media"><img alt="" width="56" height="56" hidden></span>
     <p class="cart-toast__text">

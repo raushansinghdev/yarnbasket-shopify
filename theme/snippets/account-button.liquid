@@ -92,14 +92,14 @@
   .account-btn__glyph .tip { top: calc(100% + 10px); }
   /* The plain link stands in until the component is ready (same size and place, so nothing moves). */
   .account-btn:defined + .site-header__account { display: none !important; }
-  @media (min-width: 900px) {
+  @media (min-width: 56.25em) {
     .account-btn:defined { display: block; }
     .account-btn:not(:defined) + .site-header__account { display: inline-grid; }
   }
   .account-btn__word { display: none; }
   /* From 1100px: a pill with the word, the same shape as the cart beside it (sections/header.liquid). The tooltip
      would only repeat the word, so it goes. */
-  @media (min-width: 1100px) {
+  @media (min-width: 68.75em) {
     .account-btn::part(signed-out-avatar) { width: auto; padding: 0 14px 0 10px; border-radius: var(--radius-pill); }
     .account-btn__glyph { display: inline-flex; align-items: center; gap: 10px; }
     .account-btn__glyph .icon { width: 26px; height: 26px; }
@@ -110,7 +110,7 @@
     .account-btn:not(:defined) + .site-header__account { display: inline-flex; }
     .site-header__account > .icon { width: 26px; height: 26px; }
   }
-  @media (min-width: 1100px) and (hover: hover) {
+  @media (min-width: 68.75em) and (hover: hover) {
     .account-btn::part(signed-out-avatar):hover { background: color-mix(in srgb, var(--color-heading) 8%, transparent); }
   }
   /* Under 900px: opened from the drawer's account row. Its sheet lives in the top layer, so the host only needs to exist,

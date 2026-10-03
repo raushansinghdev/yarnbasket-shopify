@@ -100,7 +100,7 @@
             {%- assign d_titles = 'Bouquets|Keychains|Hair clips|Bag charms' | split: '|' -%}
             {%- for id in demo_collections -%}
               {%- assign i = id | minus: 1 -%}
-              <li><a class="search-chip" href="{{ routes.all_products_collection_url }}">{{ d_titles[i] }}{%- render 'icon', icon: 'arrow' -%}</a></li>
+              <li><a class="search-chip" href="{{ settings.shop_all_collection.url | default: routes.all_products_collection_url }}">{{ d_titles[i] }}{%- render 'icon', icon: 'arrow' -%}</a></li>
             {%- endfor -%}
           {%- else -%}
             {%- for collection in r.collections -%}

@@ -6,6 +6,7 @@
     "free_shipping_threshold": 999,
     "shipping_fee": 99,
     "gift_threshold": 1499,
-    "gift_product": "sunflower-keychain-free-gift"
+    "gift_product": "sunflower-keychain-free-gift",
+    "shop_all_collection": "shop"
   }
 }

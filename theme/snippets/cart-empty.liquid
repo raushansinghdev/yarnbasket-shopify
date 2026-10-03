@@ -10,7 +10,7 @@
 {%- enddoc -%}
 {%- liquid
   assign h = level | default: 2
-  assign best_url = collections['bestsellers'].url | default: routes.all_products_collection_url
+  assign best_url = collections['bestsellers'].url | default: settings.shop_all_collection.url | default: routes.all_products_collection_url
   assign titles = 'Bouquets|Keychains|Hair clips|Bag charms|Flower pots' | split: '|'
   assign handles = 'bouquets|keychains|hair-clips|bag-charms|flower-pots' | split: '|'
 -%}
@@ -29,7 +29,7 @@
       {%- liquid
         # A collection that doesn't exist yet comes back as an empty object, not nil: pass nil so the tile uses its demo photo.
         assign c = nil
-        assign c_url = routes.all_products_collection_url
+        assign c_url = settings.shop_all_collection.url | default: routes.all_products_collection_url
         if collections[handle].id != blank
           assign c = collections[handle]
           assign c_url = c.url
@@ -40,7 +40,7 @@
       </li>
     {%- endfor -%}
     <li>
-      <a href="{{ routes.all_products_collection_url }}" class="menu-tile cart-empty__all">
+      <a href="{{ settings.shop_all_collection.url | default: routes.all_products_collection_url }}" class="menu-tile cart-empty__all">
         <span class="media menu-tile__media"><span class="cart-empty__all-art">{%- render 'icon', icon: 'arrow' -%}</span></span>
         <span class="menu-tile__title">{{ 'header.shop_all' | t }}</span>
       </a>

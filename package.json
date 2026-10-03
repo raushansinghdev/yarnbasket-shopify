@@ -6,7 +6,9 @@
   "scripts": {
     "check": "node tools/check.mjs",
     "check:quick": "node tools/check.mjs --quick",
-    "audit": "node tools/audit.mjs"
+    "audit": "node tools/audit.mjs",
+    "stress": "node tools/stress.mjs",
+    "edge-cases": "node tools/edge-cases.mjs"
   },
   "devDependencies": {
     "axe-core": "4.10.2",

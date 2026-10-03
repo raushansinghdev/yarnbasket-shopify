@@ -63,6 +63,8 @@
     transition: opacity var(--dur-panel) var(--ease-out), translate var(--dur-panel) var(--ease-out);
   }
   .search-panel:not([open]) { display: none; }
+  /* Nothing in it may push it sideways (large text): the sheet only ever scrolls up and down. */
+  .search-panel { overflow-x: clip; }
   .search-panel[open][data-closing] { opacity: 0; translate: 0 -8px; transition-duration: 220ms; transition-timing-function: var(--ease-exit); }
   @starting-style { .search-panel[open] { opacity: 0; translate: 0 -12px; } }
   .search-panel::backdrop { background: transparent; }
@@ -71,7 +73,7 @@
   /* Phones: [←][ field ] in one row. The "Search" label stays for screen readers only. */
   .search-panel__head {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: var(--space-1);
     padding: max(var(--space-3), env(safe-area-inset-top)) var(--gutter) var(--space-3) calc(var(--gutter) - 12px);

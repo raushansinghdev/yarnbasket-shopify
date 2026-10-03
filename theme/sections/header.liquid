@@ -14,7 +14,7 @@
     assign demo_menu = true
   endif
 
-  assign all_url = routes.all_products_collection_url
+  assign all_url = settings.shop_all_collection.url | default: routes.all_products_collection_url
   # Pages Raushan creates in the admin (docs/account-plan.md §11): links to them appear once they exist.
   assign saved_url = pages['saved'].url
   assign track_url = pages['track-order'].url | default: routes.account_url
@@ -292,7 +292,10 @@
 <script src="{{ 'saved.js' | asset_url }}" type="module"></script>
 
 {% stylesheet %}
-  /* The section wrapper is what sticks; theme.js sets the state classes on <html>. */
+  /* Breakpoints here are in em (48em = 768px, 68.75em = 1100px, 80em = 1280px at the usual text size): the header's
+     words grow with the browser's text size, so with larger text it keeps the compact layout until there's room
+     (docs/audit-2026-10-03.md L1). snippets/account-button and account-menu do the same.
+     The section wrapper is what sticks; theme.js sets the state classes on <html>. */
   .header-section {
     position: sticky;
     top: 0;
@@ -349,7 +352,8 @@
      is remembered by its name; the basket still appears in the drawer, footer, splash and favicon.
      Desktop (below): basket and name in the brand kit's horizontal-logo proportions. */
   .site-header .site-header__logo .logo-mark { display: none; }
-  .site-header .site-header__name { font-size: clamp(1.625rem, 1rem + 3vw, 1.75rem); }
+  /* Capped by the screen's width as well: at 320px, or at 200% text, the three buttons still fit beside it. */
+  .site-header .site-header__name { font-size: min(clamp(1.625rem, 1rem + 3vw, 1.75rem), 7.2vw); }
   .site-header__nav { display: none; }
   .site-header__icons { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-right: -10px; }
   /* Header glyphs are 28px: big enough to find at a glance, still inside a 48px target. */
@@ -383,7 +387,7 @@
   html.tips-off .tip { display: none; }
 
   /* Tablet: room for the search field. */
-  @media (min-width: 768px) {
+  @media (min-width: 48em) {
     .site-header__search-form { display: flex; }
     .site-header__search { display: none; }
   }
@@ -419,7 +423,7 @@
   .site-header__count.is-bumped { animation: count-bump 520ms var(--ease-spring); }
   @keyframes count-bump { from { transform: scale(.4); } to { transform: none; } }
 
-  @media (min-width: 1100px) {
+  @media (min-width: 68.75em) {
     .site-header__row { grid-template-columns: auto 1fr auto; gap: var(--space-6); }
     .site-header__menu-btn { display: none; }
     .site-header .site-header__logo { gap: 10px; }
@@ -575,7 +579,7 @@
     }
   }
 
-  @media (min-width: 1280px) {
+  @media (min-width: 80em) {
     /* Search fills the space the menu used to float in: it's a main way into a shop of many small things. */
     .site-header__search-form { display: flex; width: clamp(260px, 24vw, 360px); }
     .site-header__search { display: none; }
@@ -593,7 +597,7 @@
   .menu-tile__img { transition: transform 900ms var(--ease-out); }
   .menu-tile__art { position: absolute; inset: 0; display: grid; place-items: center; }
   .menu-tile__art .icon--brand { width: 52px; height: 52px; }
-  .menu-tile__title { font-size: .9375rem; font-weight: 500; line-height: 1.3; }
+  .menu-tile__title { font-size: .9375rem; font-weight: 500; line-height: 1.3; overflow-wrap: break-word; hyphens: auto; }
   .menu-tile[aria-current] .menu-tile__media { outline: 2px solid var(--cocoa-deep); outline-offset: 2px; }
   .menu-tile:active .menu-tile__media { scale: .97; transition: scale var(--dur-press) ease; }
   @media (hover: hover) {
@@ -662,6 +666,9 @@
   .drawer__shop-title { margin: 0; }
   /* Crafts 3 across as squares, "Shop all" last: the whole menu fits a phone screen with little or no scrolling. */
   .drawer__tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4) var(--space-3); }
+  /* Large text: the names no longer fit three across, so two (13em is the drawer's width at about 140% text). */
+  .drawer__shop { container-type: inline-size; }
+  @container (max-width: 13em) { .drawer__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .drawer__tiles .menu-tile { gap: 6px; }
   .drawer__tiles .menu-tile__media { --ratio: 1; }
   .drawer__tiles .menu-tile__title { font-size: .875rem; line-height: 1.25; text-wrap: balance; }

@@ -49,8 +49,10 @@
   endif
   # Chips: the admin menu, else the store's product types, else demo chips.
   assign type_list = ''
+  # The free gift's own type ("Free gift") isn't something to search for.
+  assign gift_type = settings.gift_product.type
   for type in shop.types
-    if type != blank
+    if type != blank and type != gift_type
       assign type_list = type_list | append: type | append: '|'
     endif
   endfor

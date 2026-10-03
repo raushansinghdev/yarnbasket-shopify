@@ -3,7 +3,7 @@
   would mean rotation (WCAG 2.2.2) or arrows, and Baymard found shoppers skip banner text anyway, so every offer is
   also said where the decision happens (product page, added-to-cart pop-up, cart).
   - The standing line is built from Theme settings, so it can't disagree with the cart: free shipping and COD once
-    they're switched on, otherwise "Handmade in India · Ships in 1–3 days". Two parts on phones, three from 768px.
+    they're switched on, otherwise "Handmade in India · Ships in 1–2 days". Two parts on phones, three from 768px.
   - A message block (dated news: a Diwali cut-off, a sale) replaces it until its "Show until" day; the first live one wins.
     "Hide on the home page" skips it there, where the hero's campaign banner already says it (hero-campaign-plan.md D7).
   - Hidden on /cart, where the progress bar says the same thing with real numbers.
@@ -65,9 +65,11 @@
       {%- if icon != 'none' -%}{%- render 'icon', icon: icon, class: 'announce__icon' -%}{%- endif -%}
       <span>
         {%- for part in parts limit: 3 -%}
+          {%- comment -%} The dot ends a part, so a line that wraps never starts with one. The dot before the third
+          part shows only where the third part does. {%- endcomment -%}
           <span class="announce__chunk{% if forloop.index == 3 %} announce__chunk--wide{% endif %}">
-            {%- unless forloop.first -%}<span class="visually-hidden">, </span><span class="announce__dot" aria-hidden="true">·</span>{%- endunless -%}
             <span class="announce__part">{{ part }}</span>
+            {%- unless forloop.last -%}<span class="visually-hidden">, </span><span class="announce__dot{% if forloop.index == 2 %} announce__dot--wide{% endif %}" aria-hidden="true">·</span>{%- endunless -%}
           </span>
         {%- endfor -%}
       </span>
@@ -101,8 +103,8 @@
   .announce__part { white-space: nowrap; }
   .announce__dot { margin-inline: .5em; opacity: .55; }
   /* The third part of the standing line only where there's room. */
-  .announce__chunk--wide { display: none; }
-  @media (min-width: 768px) { .announce__chunk--wide { display: inline; } }
+  .announce__chunk--wide, .announce__dot--wide { display: none; }
+  @media (min-width: 768px) { .announce__chunk--wide, .announce__dot--wide { display: inline; } }
   .announce__icon { width: 16px; height: 16px; flex: none; }
   a.announce__msg { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
   a.announce__msg:focus-visible { outline-color: var(--cocoa-deep); }
@@ -131,7 +133,7 @@
       "id": "terms",
       "label": "Show the store terms",
       "default": true,
-      "info": "Built from Theme settings → Cart: \"Free shipping over ₹…\" and \"Cash on delivery\" once they're set, otherwise \"Handmade in India · Ships in 1–3 days\"."
+      "info": "Built from Theme settings → Cart: \"Free shipping over ₹…\" and \"Cash on delivery\" once they're set, otherwise \"Handmade in India · Ships in 1–2 days\"."
     }
   ],
   "blocks": [

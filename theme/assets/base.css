@@ -305,7 +305,10 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
   justify-content: center;
   gap: var(--space-3);
   min-height: 54px;
-  padding: 0 1.625rem;
+  /* One line normally; a long label or large text wraps inside the button instead of running past the screen. */
+  padding: .375rem min(1.625rem, 7vw);
+  line-height: 1.25;
+  text-align: center;
   border-radius: var(--radius-pill);
   border: 1.5px solid var(--btn-line);
   background: var(--btn-bg);
@@ -315,7 +318,6 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
   font-size: 1rem;
   letter-spacing: .01em;
   text-decoration: none;
-  white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
   transition: transform var(--dur-state) var(--ease-out), background-color var(--dur-state) ease, border-color var(--dur-state) ease, color var(--dur-state) ease, box-shadow var(--dur-state) var(--ease-out);
 }

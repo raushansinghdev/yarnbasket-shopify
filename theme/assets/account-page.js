@@ -105,7 +105,7 @@ if (page) {
           note.replaceChildren(`${words} `, view);
         })
         // The card's note is a status line, so screen readers hear this too.
-        .catch((err) => (note.textContent = err?.description || err?.message || ''))
+        .catch((err) => (note.textContent = cart.why(err)))
         .finally(() => {
           label.textContent = original;
           button.removeAttribute('aria-busy');

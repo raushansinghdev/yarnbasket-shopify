@@ -17,7 +17,7 @@
       render 'search-demo', what: 'title', n: demo
     endcapture
     assign title = title | strip | escape
-    assign url = routes.all_products_collection_url
+    assign url = settings.shop_all_collection.url | default: routes.all_products_collection_url
   endif
   if terms != blank
     assign title = title | highlight: terms
