@@ -11,6 +11,12 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   - New gate in `npm run check` (1b): 700ms after landing on any screen of the home page, nothing in view is still hidden or faded.
 - **Photos still loading fade in over 250ms** (was 700ms). **The page cross-fade is 150ms** (was 260ms).
 - **The header hides as soon as you scroll down, but returns only after 48px of upward travel** (was 6px either way), so a small wobble no longer slides it over the content. It still returns at once near the top and whenever focus is inside it.
+- **A slow page shows a thin Cocoa line at the top, 300ms after the tap** (phase B; Raushan's go covered the recommendation). This replaces the motion plan's "no loading indicator on page loads", which assumed hover prerender covers every tap; it does not on phones or in Safari. A page that arrives within 300ms shows nothing.
+  - It never shows for a link within the page, a new-tab link, or anything a script handles itself (cart drawer, search).
+  - It starts a third of the way across, because Safari freezes animations while a page is on its way and must still show a line. With reduced motion it appears without moving.
+  - Cocoa, not Rose: Rose on Blush is too faint for a status mark.
+- **On touch screens in Chrome, links the shopper is looking at are fetched ahead** (half on screen for 400ms; six a page at most; HTML only; never in lite mode or data saver; same exclusions as the hover prerender). Measured locally: tap to painted 0.9s → 0.5s.
+- **`page-turn.js` is a new module on every page** (4 KB): the line, the fetch-ahead, and Firefox's hover prefetch, moved out of `theme.js` (now 21.3 KB of its 25 KB budget). It also registers an empty touch listener, which iOS Safari needs before it shows any `:active` press state.
 - **Left alone on purpose:** the logo intro, the hero entrance, the "One stitch at a time" writing, the hero slideshow, the card hover crossfade, drawers and accordions.
 
 ## 2026-10-04 (audit fixes, docs/audit-2026-10-03.md)

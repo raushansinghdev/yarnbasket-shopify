@@ -456,6 +456,22 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 150ms; animation-timing-function: var(--ease-out); }
 
+/* The next page is taking a moment (page-turn.js adds the class 300ms after a tap): a thin line grows under the top
+   edge, quick at first and never quite finishing. With reduced motion it simply appears. */
+html.is-turning body::after {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 2000;
+  height: 3px;
+  background: var(--cocoa);
+  transform-origin: 0 50%;
+  pointer-events: none;
+  animation: page-turning 10s cubic-bezier(.05, .7, .1, 1) both;
+}
+/* Starts a third of the way across: Safari freezes animations while a page is on its way, and must still show a line. */
+@keyframes page-turning { from { transform: scaleX(.3); } to { transform: scaleX(.92); } }
+
 /* ---------- Alive: small motion that answers the shopper, never motion that competes with the products ----------
    Reveals play once, on a timer, as each thing arrives on screen (theme.js), not tied to the scroll position:
    scroll-linked reveals advance in steps under a notched mouse wheel and read as jitter, and Firefox can't run them.

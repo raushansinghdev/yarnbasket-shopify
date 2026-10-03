@@ -32,7 +32,7 @@
       {%- render 'splash', part: 'head' -%}
     {%- endif -%}
 
-    {%- comment -%} Start loading likely next pages as soon as a finger or pointer lands on a link. {%- endcomment -%}
+    {%- comment -%} Start loading likely next pages as soon as a pointer rests on a link. Touch screens and Firefox: page-turn.js. {%- endcomment -%}
     <script type="speculationrules">
       {
         "prerender": [{
@@ -48,6 +48,7 @@
 
     <script src="{{ 'theme.js' | asset_url }}" type="module"></script>
     <script src="{{ 'cart.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'page-turn.js' | asset_url }}" type="module"></script>
 
     {{ content_for_header }}
 

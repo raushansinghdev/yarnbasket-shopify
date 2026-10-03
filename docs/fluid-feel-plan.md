@@ -1,7 +1,7 @@
 # Fluid feel plan: why the store feels heavy, and what to change
 
-Status: **Phase A done 2026-10-04** (Raushan's go: phase by phase, test, then push, without giving up the alive
-feel, smoothness or accessibility). Phases B to D follow. Results are in section 6.
+Status: **Phases A and B done 2026-10-04** (Raushan's go: phase by phase, test, then push, without giving up the alive
+feel, smoothness or accessibility). Phase C needs Raushan's phones; phase D waits for the theme to be published. Results are in section 6.
 
 Raushan's report: the whole store feels heavy, even on the local server. Scrolling and clicking feel slow.
 This plan is a tuning pass on `docs/motion-plan.md`, not a replacement. The motion plan's principles stand
@@ -144,3 +144,21 @@ arriving within 700ms. This would have caught the problem.
   focus is inside it.
 - `npm run check`: 188/188 across Chrome desktop and phone, iPhone WebKit and Firefox. 0 slow frames at 4x CPU,
   axe 0, reduced motion still static.
+
+### Phase B (2026-10-04)
+
+- **The line:** a 3px Cocoa line across the top, 300ms after a tap on a link or a form that leaves the page. Not for
+  links within the page, new-tab links, or taps a script handles (cart drawer, search). Gone on the new page and
+  after Back.
+- **Safari:** it freezes CSS animations once a page is on its way, so the line would have stayed at zero width.
+  It now starts 30% across, so Safari shows a still line and other browsers a growing one.
+- **Fetch-ahead on phones (Chrome):** links at least half on screen for 400ms are fetched, six a page at most.
+  Locally the tapped page then starts arriving in 6ms instead of about 750ms; tap to painted went from about
+  0.9s to 0.5s. Off in lite mode and with data saver.
+- **Press states:** already on cards, craft circles, tiles, chips and buttons. iOS Safari only shows them when the
+  page listens for touches, and nothing did in Safari; `page-turn.js` now does.
+- **Not possible:** Safari has no way to fetch a page ahead, so on iPhones the line and the press state are the
+  answer to a tap.
+- **To check after publish:** that fetched-ahead pages are not counted as visits in Shopify analytics (the fetch
+  runs no scripts, so they should not be).
+- Check section 17 (six checks). `npm run check`: 194/194.

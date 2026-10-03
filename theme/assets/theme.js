@@ -479,32 +479,6 @@ document.addEventListener('cart:updated', (event) => {
   document.addEventListener('shopify:section:load', (event) => scan(event.target));
 }
 
-/* ---------- Next page, sooner, where Speculation Rules aren't supported ----------
-   Chrome and Edge prerender on hover via the speculationrules script in theme.liquid. Firefox gets a
-   <link rel="prefetch"> when the pointer rests on a link (80ms) or a finger lands on it. Safari supports neither,
-   so it is skipped. Same exclusions as the rules: other sites, cart, checkout, account, query strings, nofollow. */
-if (!HTMLScriptElement.supports?.('speculationrules') && document.createElement('link').relList.supports?.('prefetch') && !root.classList.contains('lite')) {
-  const done = new Set();
-  const want = (a) => a && a.origin === location.origin && !a.search && !a.hasAttribute('download')
-    && !/^\/(cart|checkout|account)/.test(a.pathname) && !a.matches('[rel~="nofollow"], [data-no-prerender]')
-    && !(a.pathname === location.pathname && a.hash) && !done.has(a.href);
-  const prefetch = (a) => {
-    if (!want(a)) return;
-    done.add(a.href);
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = a.href;
-    document.head.append(link);
-  };
-  let timer = 0;
-  document.addEventListener('pointerover', (event) => {
-    const a = event.target.closest?.('a[href]');
-    clearTimeout(timer);
-    if (a) timer = setTimeout(() => prefetch(a), 80);
-  }, { passive: true });
-  document.addEventListener('touchstart', (event) => prefetch(event.target.closest?.('a[href]')), { passive: true });
-}
-
 /* ---------- Story strand fallback ----------
    The story's yarn strand draws with the scroll where scroll timelines exist; elsewhere it draws once on arrival. */
 if (!CSS.supports('animation-timeline: view()') && 'IntersectionObserver' in window) {

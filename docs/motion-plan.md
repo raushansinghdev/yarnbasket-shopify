@@ -167,7 +167,7 @@ Each pattern is built once, as a snippet or a small module in `theme.js`, and re
 | **Gallery** | Phones: native swipe with dots (as the hero). Desktop: thumbnails cross-fade the main photo; click opens a lightbox that morphs from the photo | 320ms | Instant |
 | **Sticky buy bar** (phones, product page) | Slides up from the bottom once the main button scrolls out of view; hides near the footer | 320ms | Appears |
 | **Progress** (free-shipping bar) | Bar fills as a stitched line growing | 600ms | Static |
-| **Loading** | No spinners on page loads (prerender covers it). Inline actions show the button text state. Search results fade in. Blush placeholders, no shimmer | — | — |
+| **Loading** | No spinners. A page that takes longer than 300ms shows a thin line at the top (fluid-feel-plan.md, phase B; prerender does not cover phones or Safari). Inline actions show the button text state. Search results fade in. Blush placeholders, no shimmer | — | — |
 | **Toast/status** | Small pill rises from the bottom, stays 3s, can be dismissed, announced via `role="status"` | 320ms | Appears |
 
 ---

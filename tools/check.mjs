@@ -1126,6 +1126,67 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   await browser.close();
 }
 
+// 17. A tap is always answered (docs/fluid-feel-plan.md, phase B): when the next page takes longer than a moment a
+//     thin line shows at the top (after 300ms, never for a link within the page, gone on the new page; with reduced
+//     motion it appears without moving), and on a phone in Chrome the links in view are fetched ahead, so the tapped
+//     page comes from that fetch.
+{
+  const line = async (label, engine, device, reducedMotion) => {
+    const { browser, page } = await open(engine, device, { reducedMotion });
+    await page.route('**/collections/**', async (route) => { if (route.request().isNavigationRequest()) await new Promise((r) => setTimeout(r, 1500)); route.continue(); });
+    const hash = await page.evaluate(async () => {
+      const a = document.createElement('a'); a.href = '#MainContent'; document.body.append(a); a.click();
+      await new Promise((r) => setTimeout(r, 450));
+      return document.documentElement.classList.contains('is-turning');
+    });
+    // Sampled from inside the page and read back on the next one: the old page can't be asked once it has gone.
+    await page.evaluate(() => {
+      const t0 = performance.now(); const out = [];
+      const iv = setInterval(() => {
+        const s = getComputedStyle(document.body, '::after');
+        out.push([Math.round(performance.now() - t0), document.documentElement.classList.contains('is-turning'), s.height, s.transform === 'none' ? 0 : new DOMMatrix(s.transform).a]);
+        sessionStorage.setItem('yb-line', JSON.stringify(out));
+      }, 100);
+      addEventListener('pagehide', () => clearInterval(iv));
+      [...document.querySelectorAll('main a[href*="/collections/"]')].find((x) => x.offsetParent).click();
+    }).catch(() => {});
+    await page.waitForURL('**/collections/**', { timeout: 20000 }).catch(() => {});
+    await page.waitForTimeout(600);
+    const r = await page.evaluate(() => ({ samples: JSON.parse(sessionStorage.getItem('yb-line') || '[]'), left: document.documentElement.classList.contains('is-turning') }));
+    const at = (ms) => r.samples.filter((x) => x[0] <= ms).pop() || [];
+    const early = at(250), mid = at(700), late = at(1400);
+    const moves = reducedMotion === 'reduce' ? late[3] === mid[3] : true;
+    record(`Page turn, ${label}: a line when the page is slow`, !hash && early[1] === false && mid[1] === true && mid[2] === '3px' && mid[3] >= 0.29 && moves && !r.left,
+      `in-page link: ${hash ? 'shown' : 'quiet'}; 250ms: ${early[1] ? 'shown' : 'not yet'}; 700ms: ${mid[1] ? `shown, ${Math.round(mid[3] * 100)}% across` : 'missing'}; next page: ${r.left ? 'still there' : 'gone'}`);
+    await browser.close();
+  };
+  await line('desktop', chromium, devices['Desktop Chrome']);
+  await line('reduced motion', chromium, devices['Desktop Chrome'], 'reduce');
+  if (!QUICK) {
+    await line('iPhone (WebKit)', webkit, devices['iPhone 13']);
+    await line('Firefox', firefox, FIREFOX);
+  }
+
+  const { browser, page } = await open(chromium, devices['Pixel 7']);
+  await page.evaluate(() => scrollTo({ top: innerHeight * 1.2, behavior: 'instant' }));
+  await page.waitForTimeout(2500);
+  const ahead = await page.evaluate(() => [...document.querySelectorAll('script[type=speculationrules]')].map((el) => JSON.parse(el.textContent).prefetch?.[0]?.urls?.[0]).filter(Boolean).map((u) => new URL(u).pathname));
+  let delivery = 'nothing fetched ahead';
+  if (ahead[0]) {
+    await Promise.all([page.waitForURL('**' + ahead[0]), page.locator(`main a[href="${ahead[0]}"]`).locator('visible=true').first().tap()]);
+    delivery = await page.evaluate(() => performance.getEntriesByType('navigation')[0].deliveryType || 'network');
+  }
+  record('Page turn, phone: links in view are fetched ahead', ahead.length > 0 && ahead.length <= 6 && delivery === 'navigational-prefetch', `${ahead.length} fetched ahead (6 at most); the tapped page came from: ${delivery}`);
+  await browser.close();
+
+  const lite = await open(chromium, devices['Pixel 7'], { init: () => Object.defineProperty(navigator, 'connection', { value: { saveData: true }, configurable: true }) });
+  await lite.page.evaluate(() => scrollTo({ top: innerHeight * 1.2, behavior: 'instant' }));
+  await lite.page.waitForTimeout(1500);
+  const none = await lite.page.evaluate(() => [...document.querySelectorAll('script[type=speculationrules]')].filter((el) => /"prefetch"/.test(el.textContent)).length);
+  record('Page turn, data saver: nothing is fetched ahead', none === 0, `${none} fetched ahead`);
+  await lite.browser.close();
+}
+
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
 process.exit(failed.length ? 1 : 0);
