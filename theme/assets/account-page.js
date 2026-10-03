@@ -1,8 +1,8 @@
 /*
   Yarn Basket · account-page.js (docs/account-hub-plan.md §4)
-  The account page: the Saved and Recently viewed rows (this browser's lists, kept by saved.js), and Buy again on an
-  order card (adds what's still for sale through cart.js's queue, then says so in the card). Without it the rows stay
-  hidden and Buy again is a plain /cart/add form.
+  The account page: the Saved and Recently viewed rows (this browser's lists, kept by saved.js; Recently viewed can be
+  cleared), and Buy again on an order card (adds what's still for sale through cart.js's queue, then says so in the
+  card). Without it the rows stay hidden and Buy again is a plain /cart/add form.
 */
 
 const page = document.querySelector('[data-account-page]');
@@ -50,6 +50,14 @@ if (page) {
     const mine = saved.read().slice(0, 8);
     fill('saved', mine);
     fill('recent', saved.viewed().filter((h) => !mine.includes(h)).slice(0, 8));
+
+    // Clear Recently viewed, as on the Saved page: the row goes, and focus moves to the page's heading.
+    page.querySelector('[data-account-clear]')?.addEventListener('click', () => {
+      saved.clearViewed();
+      page.querySelector('[data-account-row="recent"]').hidden = true;
+      page.querySelector('[data-account-title]')?.focus();
+      saved.say(text.tCleared);
+    });
   }
 
   /* ---------- Buy again ----------

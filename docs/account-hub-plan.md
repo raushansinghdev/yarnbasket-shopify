@@ -1,6 +1,6 @@
 # Account plan, round 2: the account page, the account menu, signing out
 
-Status: **B1–B3 and B5 built 2026-10-03** (theme side). Still to do: things that need a real sign-in (B0, below), the Google setup (§7, G0, with Raushan), Shopify's branding (§8, admin), and the admin steps in `launch-checklist.md` "Account page".
+Status: **B1–B3 and B5 built 2026-10-03** (theme side). Round 3 (`account-phone-plan.md`, 2026-10-03) changed the phone page: the greeting row opens Your details on its own page, and Recently viewed can be cleared. Still to do: things that need a real sign-in (B0, below), the Google setup (§7, G0, with Raushan), Shopify's branding (§8, admin), and the admin steps in `launch-checklist.md` "Account page".
 
 ### As built (where it differs from the plan below)
 - **Preview without signing in:** `/pages/contact?view=account-demo` shows the signed-in page and header menu with a made-up shopper and three orders (Confirmed, Shipped with Track parcel, an older one with Buy again). This needs Demo content on, and it's deleted before launch. `?view=account` is the real page; once Raushan creates the `account` page, it's `/pages/account`.

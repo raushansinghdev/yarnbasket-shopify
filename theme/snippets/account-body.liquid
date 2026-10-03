@@ -3,13 +3,17 @@
   "account"). One scrolling page in the store's own look; Shopify's hosted pages are only for editing details and an
   order's full page.
   Signed in: greeting, shortcuts (phones), the latest 3 orders, Saved and Recently viewed (filled by account-page.js
-  from this browser), Your details, Need help? (WhatsApp, a custom piece, policies), Sign out, and "Download or
-  delete my data".
+  from this browser; Recently viewed can be cleared), Your details, Need help? (WhatsApp, a custom piece, policies),
+  Sign out, and "Download or delete my data".
+  Phones (docs/account-phone-plan.md): the greeting row is the way to Your details, which is its own page there (this
+  page with ?view=account-details: back link, the details, Edit, Sign out, "Download or delete my data"), so the card
+  and the data link leave the phone page. Desktop keeps the card beside the orders and the greeting is plain text.
   Signed out: a sign-in card (Shopify's sheet; without it, Shopify's sign-in page), Track an order, Saved, help.
   Demo (the account-demo template with Demo content on, nobody signed in): the signed-in page with made-up orders, so
   the layout can be judged and tested without a real sign-in. Remove with the other demo files before launch.
 
   @param {boolean} [demo] - Show the signed-in page with demo data when nobody is signed in
+  @param {string} [view] - 'details' for the Your details page (signed in only; otherwise the account page)
 {%- enddoc -%}
 {%- liquid
   assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
@@ -56,7 +60,58 @@
   if whatsapp != blank
     assign help_base = 'https://wa.me/' | append: whatsapp | append: '?text='
   endif
+
+  # Your details is this page with another template (?view=), so it needs no page of its own in the admin.
+  assign show_details = false
+  if signed_in and view == 'details'
+    assign show_details = true
+  endif
+  if is_demo
+    assign home_url = request.path | append: '?view=account-demo'
+    assign details_page = request.path | append: '?view=account-details-demo'
+  else
+    assign home_url = pages['account'].url
+    assign details_page = home_url | default: request.path | append: '?view=account-details'
+    if home_url == blank
+      assign home_url = request.path | append: '?view=account'
+    endif
+  endif
 -%}
+{%- if signed_in -%}
+  {%- capture details_card -%}
+    <dl class="account__dl">
+      <div><dt>{{ 'account.name' | t }}</dt><dd>{%- if full_name != blank -%}{{ full_name }}{%- else -%}<span class="account__muted">{{ 'account.not_added' | t }}</span>{%- endif -%}</dd></div>
+      <div><dt>{{ 'account.email' | t }}</dt><dd>{{ email_wrap }}</dd></div>
+      <div><dt>{{ 'account.phone' | t }}</dt><dd>{%- if phone != blank -%}{{ phone }}{%- else -%}<span class="account__muted">{{ 'account.not_added' | t }}</span>{%- endif -%}</dd></div>
+      <div><dt>{{ 'account.address' | t }}</dt><dd>{%- if address_line != blank -%}{{ address_line }}{%- else -%}<span class="account__muted">{{ 'account.not_added' | t }}</span>{%- endif -%}</dd></div>
+      <div><dt>{{ 'account.emails' | t }}</dt><dd>{%- if offers -%}{{ 'account.emails_on' | t }}{%- else -%}{{ 'account.emails_off' | t }}{%- endif -%}</dd></div>
+    </dl>
+    <a class="btn btn--ghost account__edit" href="{{ routes.account_addresses_url }}">{{ 'account.edit_details' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+  {%- endcapture -%}
+  {%- capture out_block -%}
+    <div class="account__out">
+      <a class="btn btn--ghost account__sign-out" href="{% if is_demo %}#{% else %}{{ logout_url }}{% endif %}" data-sign-out>
+        {%- render 'icon', icon: 'sign-out' -%}{{ 'account.sign_out' | t }}
+      </a>
+      {%- if shop.email != blank -%}
+        {%- capture data_body -%}{{ 'account.data_body' | t: email: email }}{%- endcapture -%}
+        <a class="account__quiet-link account__data" href="mailto:{{ shop.email }}?subject={{ 'account.data_subject' | t | url_encode | replace: '+', '%20' }}&amp;body={{ data_body | url_encode | replace: '+', '%20' }}">
+          {{- 'account.data_link' | t -}}
+        </a>
+      {%- endif -%}
+    </div>
+  {%- endcapture -%}
+{%- endif -%}
+{%- if show_details -%}
+<div class="section account account--details scheme-soft"{% if is_demo %} data-demo{% endif %}>
+  <div class="account__solo">
+    <a class="account__quiet-link account__back" href="{{ home_url }}">{%- render 'icon', icon: 'back' -%}{{ 'account.back' | t }}</a>
+    <h1 class="account__title">{{ 'account.details_title' | t }}</h1>
+    <div class="account__details">{{ details_card }}</div>
+    {{ out_block }}
+  </div>
+</div>
+{%- else -%}
 <div
   class="section account scheme-soft{% unless signed_in %} account--out{% endunless %}"
   data-account-page
@@ -66,16 +121,21 @@
   data-t-skipped-other="{{ 'account.skipped_other' | t: count: 99 }}"
   data-t-adding="{{ 'account.adding' | t }}"
   data-t-view-cart="{{ 'account.view_cart' | t }}"
+  data-t-cleared="{{ 'account.cleared_recent' | t }}"
   {% if is_demo %}data-demo{% endif %}
 >
   <div class="account__grid">
     {%- if signed_in -%}
-      <header class="account__hello" data-arrive="lines">
+      <header class="account__hello account__hello--go" data-arrive="lines">
         <span class="account__avatar" aria-hidden="true">{{ initial }}</span>
-        <h1 class="account__title">
+        <h1 class="account__title" tabindex="-1" data-account-title>
           {%- if first_name != blank -%}{{ 'account.greeting' | t: name: first_name }}{%- else -%}{{ 'account.your_account' | t }}{%- endif -%}
         </h1>
         <p class="account__email">{{ email_wrap }}</p>
+        {%- comment -%} Phones: the whole row goes to Your details (this link's tap area covers the row). {%- endcomment -%}
+        <a class="account__go" href="{{ details_page }}">
+          {%- render 'icon', icon: 'chevron' -%}<span class="visually-hidden">{{ 'account.details' | t }}</span>
+        </a>
       </header>
 
       <nav class="account__jump" aria-label="{{ 'account.jump_label' | t }}">
@@ -90,7 +150,7 @@
     {%- else -%}
       <header class="account__hello account__hello--out" data-arrive="lines">
         <span class="account__avatar account__avatar--out" aria-hidden="true">{%- render 'icon', icon: 'account' -%}</span>
-        <h1 class="account__title">{{ 'account.title_out' | t }}</h1>
+        <h1 class="account__title" tabindex="-1" data-account-title>{{ 'account.title_out' | t }}</h1>
         <p class="account__lead">{{ 'account.lead_out' | t }}</p>
         <p class="account__signin">
           <a class="btn" href="{{ routes.account_login_url }}" data-account-open>{{ 'account.sign_in' | t }}</a>
@@ -263,6 +323,7 @@
       <section class="account__block product-row" aria-labelledby="AccountRecent" data-account-row="recent" hidden>
         <div class="account__head">
           <h2 class="account__h2" id="AccountRecent">{{ 'account.recent_title' | t }}</h2>
+          <button type="button" class="saved__clear" data-account-clear>{{ 'saved.clear_recent' | t }}</button>
         </div>
         <ul class="product-row__list scroller" role="list" data-account-list></ul>
       </section>
@@ -272,14 +333,7 @@
       {%- if signed_in -%}
         <section class="account__block account__details" id="details" aria-labelledby="AccountDetails" tabindex="-1" data-arrive>
           <h2 class="account__h2" id="AccountDetails">{{ 'account.details_title' | t }}</h2>
-          <dl class="account__dl">
-            <div><dt>{{ 'account.name' | t }}</dt><dd>{%- if full_name != blank -%}{{ full_name }}{%- else -%}<span class="account__muted">{{ 'account.not_added' | t }}</span>{%- endif -%}</dd></div>
-            <div><dt>{{ 'account.email' | t }}</dt><dd>{{ email_wrap }}</dd></div>
-            <div><dt>{{ 'account.phone' | t }}</dt><dd>{%- if phone != blank -%}{{ phone }}{%- else -%}<span class="account__muted">{{ 'account.not_added' | t }}</span>{%- endif -%}</dd></div>
-            <div><dt>{{ 'account.address' | t }}</dt><dd>{%- if address_line != blank -%}{{ address_line }}{%- else -%}<span class="account__muted">{{ 'account.not_added' | t }}</span>{%- endif -%}</dd></div>
-            <div><dt>{{ 'account.emails' | t }}</dt><dd>{%- if offers -%}{{ 'account.emails_on' | t }}{%- else -%}{{ 'account.emails_off' | t }}{%- endif -%}</dd></div>
-          </dl>
-          <a class="btn btn--ghost account__edit" href="{{ routes.account_addresses_url }}">{{ 'account.edit_details' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+          {{ details_card }}
         </section>
       {%- endif -%}
 
@@ -309,24 +363,13 @@
         </ul>
       </section>
 
-      {%- if signed_in -%}
-        <div class="account__out">
-          <a class="btn btn--ghost account__sign-out" href="{% if is_demo %}#{% else %}{{ logout_url }}{% endif %}" data-sign-out>
-            {%- render 'icon', icon: 'sign-out' -%}{{ 'account.sign_out' | t }}
-          </a>
-          {%- if shop.email != blank -%}
-            {%- capture data_body -%}{{ 'account.data_body' | t: email: email }}{%- endcapture -%}
-            <a class="account__quiet-link" href="mailto:{{ shop.email }}?subject={{ 'account.data_subject' | t | url_encode | replace: '+', '%20' }}&amp;body={{ data_body | url_encode | replace: '+', '%20' }}">
-              {{- 'account.data_link' | t -}}
-            </a>
-          {%- endif -%}
-        </div>
-      {%- endif -%}
+      {%- if signed_in -%}{{ out_block }}{%- endif -%}
     </div>
   </div>
 </div>
 
 <script src="{{ 'account-page.js' | asset_url }}" type="module"></script>
+{%- endif -%}
 
 {% stylesheet %}
   .account { padding-block: var(--space-6) var(--section-space); }
@@ -344,7 +387,7 @@
     .account--out .account__help { max-width: 34rem; }
   }
   .account__block { scroll-margin-top: calc(var(--header-height) + var(--space-4)); }
-  .account__block:focus { outline: none; }
+  .account__block:focus, .account__title:focus { outline: none; }
 
   /* Greeting: the initial on Blush, the serif h1, the email under it. */
   .account__hello { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: var(--space-4); row-gap: 2px; }
@@ -364,6 +407,35 @@
   .account__avatar--out .icon__fill { fill: none; }
   .account__title { font-size: clamp(2rem, 1.5rem + 2vw, 3rem); line-height: 1.05; overflow-wrap: anywhere; }
   .account__email { color: var(--color-muted); font-size: var(--fs-small); overflow-wrap: break-word; }
+  /* Phones: the row is the way to Your details. The link sits at its end and its tap area covers the whole row. */
+  .account__go { display: none; }
+  @media (max-width: 899px) {
+    .account__hello--go { position: relative; grid-template-columns: auto minmax(0, 1fr) auto; }
+    .account__go {
+      grid-area: 1 / 3 / span 2;
+      display: grid;
+      place-items: center;
+      width: var(--tap);
+      height: var(--tap);
+      margin-right: calc(var(--space-2) * -1);
+      color: var(--color-heading);
+    }
+    .account__go::after { content: ""; position: absolute; inset: calc(var(--space-2) * -1); border-radius: var(--radius-md); }
+    .account__go .icon { width: 24px; height: 24px; rotate: -90deg; }
+    /* The focus ring goes around the whole row, not the arrow. */
+    .account__go:focus-visible { outline: none; box-shadow: none; }
+    .account__go:focus-visible::after { outline: 2px solid var(--color-ink); box-shadow: 0 0 0 6px color-mix(in srgb, var(--rose) 45%, transparent); }
+    .account__go:active .icon { translate: 3px 0; }
+    /* Your details has its own page here, and the data link goes with it. */
+    .account__grid .account__details, .account__grid .account__data { display: none; }
+  }
+
+  /* Your details as its own page: one narrow column. */
+  .account__solo { display: grid; gap: var(--space-5); max-width: 34rem; }
+  .account__back { justify-self: start; margin-bottom: calc(var(--space-3) * -1); }
+  @media (hover: hover) { .account__back:hover .icon { transform: translateX(-3px); } }
+  .account--details .account__dl > div:first-child { padding-top: 0; }
+
   .account__hello--out .account__lead, .account__hello--out .account__signin { grid-column: 1 / -1; }
   .account__lead { max-width: 34rem; margin-top: var(--space-3); font-size: var(--fs-lead); line-height: 1.5; }
   .account__signin { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-top: var(--space-4); }
@@ -479,6 +551,8 @@
   /* Saved and Recently viewed: the swipe row, cards only (no buttons), 4 across in this narrower column. */
   .account .product-row { gap: 0; }
   .account .product-row .saved-item__actions { display: none; }
+  .account__empty + .product-row { gap: var(--space-3); }
+  .account__head:has(.saved__clear) { flex-wrap: wrap; row-gap: 0; }
   @media (min-width: 990px) {
     .account .product-row__list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .account .product-row__list > :nth-child(n + 5) { display: none; }

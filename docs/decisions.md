@@ -2,6 +2,15 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-03 (account page on phones)
+
+Plan and checks: `account-phone-plan.md`.
+
+- **On phones the greeting row opens "Your details".** The initial, name and email end in a `›` and the whole row is one link (Raushan: like the header menu's top row). The details card was about 1,180 px down the phone page, after orders, Saved and Recently viewed. Desktop keeps the card beside the orders, so there the greeting stays plain text.
+- **"Your details" is its own page on phones:** the account page with `?view=account-details` (an alternate template, so no admin step). It has a back link, the details, "Edit your details", Sign out and "Download or delete my data". The card and the data link leave the phone account page; Sign out stays at its end too.
+- **Recently viewed on the account page has "Clear",** the same button as on the Saved page (Raushan: the same everywhere). No confirm and no undo, as there.
+- **A new template whose section setting is new must upload after the section.** `shopify theme dev` uploaded `page.account-details.json` before `sections/account.liquid` knew the "Show" setting, so Shopify dropped it without an error and the page showed the normal account page. Saving the template again fixed it.
+
 ## 2026-10-03 (announcement bar: no icon)
 
 - **The announcement bar has no icon, only words.** With a dot between the parts, the truck read as belonging to "Free shipping" alone, so "Partial COD available" looked like the lesser message. A second icon was weighed and dropped: COD has no icon that reads at 16px, and two icons crowd a 360px line. The message block's icon is "None", and the line built from Theme settings has none either. The icon choice stays in the editor for a one-part campaign message (a gift, a delivery cut-off).

@@ -1,10 +1,20 @@
 {%- comment -%} The page itself is snippets/account-body (sections/page also renders it for a page with the handle 'account'). {%- endcomment -%}
-{%- render 'account-body', demo: section.settings.demo -%}
+{%- render 'account-body', demo: section.settings.demo, view: section.settings.view -%}
 
 {% schema %}
 {
   "name": "Your account",
   "settings": [
+    {
+      "type": "select",
+      "id": "view",
+      "label": "Show",
+      "options": [
+        { "value": "page", "label": "The account page" },
+        { "value": "details", "label": "Your details (phones open it from the greeting)" }
+      ],
+      "default": "page"
+    },
     {
       "type": "checkbox",
       "id": "demo",

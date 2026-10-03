@@ -23,7 +23,7 @@
     {%- render 'font-faces' -%}
     {%- assign intro_pages = 'index,collection,list-collections,product,page,blog,article' | split: ',' -%}
     {%- comment -%} Never on personal pages (decisions.md "Logo intro": not on account pages; account-hub-plan.md). {%- endcomment -%}
-    {%- assign personal = 'account,account-demo,saved,track-order' | split: ',' -%}
+    {%- assign personal = 'account,account-demo,account-details,account-details-demo,saved,track-order' | split: ',' -%}
     {%- if personal contains template.suffix or personal contains page.handle -%}{%- assign intro_pages = '' | split: ',' -%}{%- endif -%}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}

@@ -750,10 +750,15 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //     signing in for real needs an email code, so it's checked by hand), phone and desktop; the signed-in menu opens
 //     with Enter, Tab goes into it, Esc closes it and returns focus; Sign out is in the menu and on the page; after
 //     signing out the next page says so, once. Until Raushan creates the "account" page, it's /pages/contact?view=.
+//     Phones (docs/account-phone-plan.md): the greeting row goes to Your details, which is its own page there (axe,
+//     one h1, the details, Edit, Sign out, a way back); desktop keeps the card and the greeting is plain. Recently
+//     viewed on the account page can be cleared.
 {
   const site = (path) => new globalThis.URL(path, URL).href;
   const acct = (await fetch(site('/pages/account'))).ok ? site('/pages/account') : site('/pages/contact?view=account');
   const demoUrl = site('/pages/contact?view=account-demo');
+  const detailsUrl = site('/pages/contact?view=account-details-demo');
+  const seen = await fetch(site('/products.json?limit=10')).then((r) => r.json()).then((d) => d.products.slice(0, 2).map((p) => p.handle), () => []);
   const hasDemo = await fetch(demoUrl).then((r) => r.text()).then((t) => t.includes('order-card'), () => false);
   for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
     const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
@@ -772,6 +777,53 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
       const v2 = await axeOn();
       const out = await page.locator('.account [data-sign-out]').count();
       record(`Account page, ${label}: signed-in demo (axe)`, v2.length === 0 && out === 1, `${v2.join(', ') || '0 violations'}; Sign out on the page: ${out}`);
+      const row = await page.evaluate(() => {
+        const a = document.querySelector('.account__go');
+        const at = (el) => { const r = el.getBoundingClientRect(); return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); };
+        const shown = !!a && getComputedStyle(a).display !== 'none';
+        return {
+          shown,
+          tap: shown && at(document.querySelector('.account__title')) === a && at(document.querySelector('.account__email')) === a && at(document.querySelector('.account__avatar')) === a,
+          to: a?.getAttribute('href') || '',
+          name: a?.textContent.trim() || '',
+          card: !!document.querySelector('.account__grid .account__details')?.offsetParent,
+        };
+      });
+      if (label === 'phone') record('Account page, phone: the greeting row goes to Your details', row.shown && row.tap && row.to.includes('account-details') && row.name.length > 0 && !row.card, `arrow shown: ${row.shown}, name, email and initial are the link: ${row.tap}, to ${row.to}, called "${row.name}"; details card on the page: ${row.card}`);
+      else record('Account page, desktop: details card beside the orders, greeting plain', !row.shown && row.card, `greeting link shown: ${row.shown}, details card shown: ${row.card}`);
+
+      if (seen.length && label === 'phone') {
+        await page.evaluate((list) => localStorage.setItem('yb-recent-products', JSON.stringify(list)), seen);
+        await page.reload({ waitUntil: 'load' });
+        const drawn = await page.waitForSelector('[data-account-row="recent"] .saved-item', { timeout: 8000 }).then(() => true, () => false);
+        const size = await page.evaluate(() => { const r = document.querySelector('[data-account-clear]').getBoundingClientRect(); return Math.round(r.height); });
+        await page.click('[data-account-clear]');
+        await page.waitForTimeout(300);
+        const after = await page.evaluate(() => ({
+          hidden: document.querySelector('[data-account-row="recent"]').hidden,
+          kept: localStorage.getItem('yb-recent-products'),
+          focus: document.activeElement.matches('[data-account-title]'),
+        }));
+        record('Account page: Clear Recently viewed', drawn && size >= 44 && after.hidden && !after.kept && after.focus, `row drawn: ${drawn}, button ${size}px tall, row hidden after: ${after.hidden}, list emptied: ${!after.kept}, focus on the heading: ${after.focus}`);
+      }
+
+      await page.goto(detailsUrl, { waitUntil: 'load' });
+      await page.waitForTimeout(800);
+      const v4 = await axeOn();
+      const det = await page.evaluate(() => ({
+        solo: !!document.querySelector('.account--details'),
+        h1: document.querySelectorAll('h1').length,
+        rows: document.querySelectorAll('.account__dl > div').length,
+        edit: document.querySelectorAll('.account__edit').length,
+        out: document.querySelectorAll('.account [data-sign-out]').length,
+        back: document.querySelector('.account__back')?.getAttribute('href') || '',
+        backTall: Math.round(document.querySelector('.account__back')?.getBoundingClientRect().height || 0),
+        wide: document.documentElement.scrollWidth > innerWidth,
+      }));
+      record(`Your details page, ${label} (axe)`, v4.length === 0 && det.solo && det.h1 === 1 && det.rows === 5 && det.edit === 1 && det.out === 1 && det.back.includes('view=account-demo') && det.backTall >= 44 && !det.wide, `${v4.join(', ') || '0 violations'}; h1: ${det.h1}, rows: ${det.rows}, Edit: ${det.edit}, Sign out: ${det.out}, back to ${det.back} (${det.backTall}px tall), scrolls sideways: ${det.wide}`);
+      await page.goto(demoUrl, { waitUntil: 'load' });
+      await page.waitForTimeout(600);
+
       if (label === 'desktop') {
         await page.focus('.account-menu__btn');
         await page.keyboard.press('Enter');
