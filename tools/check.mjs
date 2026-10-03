@@ -70,6 +70,26 @@ for (const [label, engine, device] of runs) {
   await browser.close();
 }
 
+// 1b. Arrivals never keep the shopper waiting (docs/fluid-feel-plan.md): 700ms after landing on any screen of the
+//     home page, nothing in view is still hidden or faded by an arrival.
+for (const [label, device] of [['desktop', devices['Desktop Chrome']], ['phone', devices['Pixel 7']]]) {
+  const { browser, page } = await open(chromium, device);
+  const late = await page.evaluate(async () => {
+    const worst = [];
+    const inView = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
+    for (let y = innerHeight; y < document.documentElement.scrollHeight - innerHeight; y += innerHeight * 0.9) {
+      scrollTo({ top: y, behavior: 'instant' });
+      await new Promise((r) => setTimeout(r, 700));
+      const faded = [...document.querySelectorAll('.is-pending, .is-pending > *, .is-arriving, .is-arriving > *, .is-arriving .media, .is-arriving .review__star')]
+        .filter((el) => inView(el) && !(el.closest('.review__stars') && el.closest('.scroller')) && +getComputedStyle(el).opacity < 0.9);
+      if (faded.length) worst.push(`${faded.length} at ${Math.round(y)}px (${faded[0].className.toString().slice(0, 40)})`);
+    }
+    return worst;
+  });
+  record(`Arrivals settle within 700ms, ${label}`, late.length === 0, late.slice(0, 2).join('; ') || 'every screen settled');
+  await browser.close();
+}
+
 // 2. Smoothness: slow frames during a cold scroll, CPU slowed 4x (Chrome only: it exposes CPU throttling)
 for (const [label, device] of [['desktop', devices['Desktop Chrome']], ['phone', devices['Pixel 7']]]) {
   const { browser, ctx, page } = await open(chromium, device);

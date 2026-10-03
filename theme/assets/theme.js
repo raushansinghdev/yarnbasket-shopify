@@ -22,13 +22,18 @@ document.querySelectorAll(root.classList.contains('lite') ? ':not(*)' : '.media 
   let lastY = scrollY;
   let ticking = false;
   const threshold = 160;
+  const returnAfter = 48;
 
   const update = () => {
     const y = Math.max(scrollY, 0);
     const delta = y - lastY;
     root.classList.toggle('header-scrolled', y > 4);
-    if (Math.abs(delta) > 6) {
-      root.classList.toggle('header-hidden', delta > 0 && y > threshold && !document.querySelector('dialog[open]'));
+    // Hides as soon as you head down; comes back only once you've clearly turned around (docs/fluid-feel-plan.md).
+    if (delta > 6) {
+      root.classList.toggle('header-hidden', y > threshold && !document.querySelector('dialog[open]'));
+      lastY = y;
+    } else if (delta < -returnAfter || (delta < 0 && y <= threshold)) {
+      root.classList.remove('header-hidden');
       lastY = y;
     }
     ticking = false;
@@ -445,8 +450,8 @@ document.addEventListener('cart:updated', (event) => {
       const items = el.matches('[data-arrive~="stagger"].scroller') ? [...el.children] : [el];
       items.forEach((item) => item.classList.replace('is-pending', 'is-arriving'));
     });
-  }, { rootMargin: '0px 0px -10% 0px' });
-  const below = (el) => el.getBoundingClientRect().top > innerHeight * 0.9;
+  });
+  const below = (el) => el.getBoundingClientRect().top > innerHeight;
   const wait = (el, watch = el) => { el.classList.add('is-pending'); io.observe(watch); };
 
   const scan = (scope = document) => {
@@ -458,7 +463,7 @@ document.addEventListener('cart:updated', (event) => {
       if (el.matches('.is-pending, .is-arriving')) return;
       if (el.matches('[data-arrive~="stagger"]')) {
         const items = [...el.children];
-        items.forEach((item, n) => { if (!item.style.getPropertyValue('--i')) item.style.setProperty('--i', Math.min(n, 6)); });
+        items.forEach((item, n) => { if (!item.style.getPropertyValue('--i')) item.style.setProperty('--i', Math.min(n, 4)); });
         if (el.matches('.scroller')) {
           if (below(el)) { items.forEach((item) => item.classList.add('is-pending')); io.observe(el); }
         } else {

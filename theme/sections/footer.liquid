@@ -158,7 +158,7 @@
   .footer__rule { width: min(220px, 50%); height: 1px; background: var(--color-line-strong); }
   /* The short rule draws itself as the banner arrives. */
   @media (prefers-reduced-motion: no-preference) {
-    .footer__banner.is-arriving > .footer__rule { animation-name: rule-draw; animation-duration: var(--dur-hero); }
+    .footer__banner.is-arriving > .footer__rule { animation-name: rule-draw; animation-duration: 600ms; }
   }
   @keyframes rule-draw { from { opacity: 0; transform: scaleX(0); } }
 

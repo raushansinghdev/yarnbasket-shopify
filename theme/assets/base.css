@@ -72,11 +72,12 @@
   --dur-state: 200ms;
   --dur-panel: 320ms;
   --dur-enter: 560ms;
+  --dur-arrive: 450ms; /* arrivals: everything on screen has settled within about 700ms of a scroll stopping (docs/fluid-feel-plan.md) */
   --dur-hero: 900ms;
   --ease-out: cubic-bezier(.22, 1, .36, 1);
   --ease-exit: cubic-bezier(.4, 0, 1, 1); /* things leaving; exits run at about 70% of the entry duration */
-  --stagger: 90ms; /* delay step between siblings arriving */
-  --rise: 24px; /* how far things travel as they arrive */
+  --stagger: 50ms; /* delay step between siblings arriving */
+  --rise: 12px; /* how far things travel as they arrive */
   --ease-in-out: cubic-bezier(.65, 0, .35, 1);
   --ease-spring: linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%, .975 57.1%, .997 69.8%, 1.003 76.9%, 1);
 
@@ -453,7 +454,7 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 
 /* ---------- Motion ---------- */
 @view-transition { navigation: auto; }
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: 260ms; animation-timing-function: var(--ease-out); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 150ms; animation-timing-function: var(--ease-out); }
 
 /* ---------- Alive: small motion that answers the shopper, never motion that competes with the products ----------
    Reveals play once, on a timer, as each thing arrives on screen (theme.js), not tied to the scroll position:
@@ -466,7 +467,7 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 html.lite :is(.hero__flower, .footer__flower) { animation: none !important; }
 
 img.img-wait { opacity: 0; }
-img.img-in { animation: img-in 700ms var(--ease-out); }
+img.img-in { animation: img-in 250ms var(--ease-out); }
 @keyframes img-in { from { opacity: 0; } }
 
 /* ---------- Arrivals: data-arrive ----------
@@ -482,26 +483,26 @@ img.img-in { animation: img-in 700ms var(--ease-out); }
 @media (prefers-reduced-motion: no-preference) {
   .is-pending { opacity: 0; }
   [data-arrive].is-pending, [data-arrive~="stagger"] > .is-pending { transform: translateY(var(--rise)); }
-  [data-arrive].is-arriving, [data-arrive~="stagger"] > .is-arriving { animation: arrive 800ms var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
+  [data-arrive].is-arriving, [data-arrive~="stagger"] > .is-arriving { animation: arrive var(--dur-arrive) var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
 
   [data-arrive~="lines"].is-pending { opacity: 1; transform: none; }
   [data-arrive~="lines"].is-pending > * { opacity: 0; }
   [data-arrive~="lines"].is-arriving { animation: none; }
-  [data-arrive~="lines"].is-arriving > * { animation: arrive 760ms var(--ease-out) backwards; }
+  [data-arrive~="lines"].is-arriving > * { animation: arrive var(--dur-arrive) var(--ease-out) backwards; }
   [data-arrive~="lines"].is-arriving > :nth-child(2) { animation-delay: var(--stagger); }
   [data-arrive~="lines"].is-arriving > :nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
   [data-arrive~="lines"].is-arriving > :nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
   [data-arrive~="lines"].is-arriving > :nth-child(n + 5) { animation-delay: calc(var(--stagger) * 4); }
-  [data-arrive~="lines"].is-arriving > h2 { animation-name: arrive-ink; animation-duration: var(--dur-hero); }
+  [data-arrive~="lines"].is-arriving > h2 { animation-name: arrive-ink; animation-duration: 600ms; }
 
   [data-arrive~="settle"].is-arriving .media,
-  [data-arrive~="stagger"] > .is-arriving .media { animation: settle 1000ms var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
+  [data-arrive~="stagger"] > .is-arriving .media { animation: settle 500ms var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
 
   .stitch.is-pending, .review__stars.is-pending { opacity: 1; }
   .stitch.is-pending rect { stroke-dasharray: 0 13; }
-  .stitch.is-arriving rect { animation: stitch-in 1400ms var(--ease-out) 150ms backwards; }
+  .stitch.is-arriving rect { animation: stitch-in 900ms var(--ease-out) 100ms backwards; }
   .review__stars.is-pending .review__star { opacity: 0; }
-  .review__stars.is-arriving .review__star { animation: star-in 520ms var(--ease-out) calc(200ms + var(--s, 0) * 90ms + var(--i, 0) * 120ms) backwards; }
+  .review__stars.is-arriving .review__star { animation: star-in 360ms var(--ease-out) calc(80ms + var(--s, 0) * 45ms + var(--i, 0) * 50ms) backwards; }
 }
 @keyframes arrive { from { opacity: 0; transform: translateY(var(--rise)); } }
 /* Italic serif overhangs its box, so the mask is generous on every side except the one it rises from. */
