@@ -2,6 +2,19 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-03 (yarn lettering round 2 and home order, docs/yarn-story-plan.md)
+
+- **The hero's "stitched with love" is still yarn lettering, readable at once, with no motion.** The round 1 writing (below) hid half the headline for several seconds on the first screen, pulled the eye from the products, and repeated on every visit.
+- **The hook-and-ball writing moved to Our story's "One stitch at a time".** The line starts blank, the hook and ball arrive together when the whole heading is on screen, the ball rolls and shrinks under the line, and both leave together. Once per page view.
+  - A tap or scrolling away finishes it.
+  - It waits for the logo intro.
+  - Reduced motion, lite mode and no JavaScript show it finished.
+- **One thing moving at a time in Our story:** the heading skips its ink rise, and the clip waits until the words are written (a shopper's Play still wins). On phones the clip shows its still frame until then. The scroll-drawn background strand stays, since it follows the shopper's scroll.
+- **Home order:** Hero, Bestsellers, **Gifting, Our story, Customer love, Our promise**, FAQ, Newsletter.
+  - Both shopping paths sit at the top, then the reasons to trust us.
+  - The backgrounds alternate plain and Blush from Gifting on.
+  - Promise's first line is now "Every piece made by hand, never by machine.", so it doesn't repeat the story heading.
+
 ## 2026-10-03 (yarn heading, docs/yarn-heading.md)
 
 - **"stitched with love" is written by one strand of Cocoa yarn on the home hero**, replacing the dashed underline. On every home visit, after a 2.5 s pause (or 2.5 s after the logo intro), a crochet hook takes yarn from a ball resting after the last word, writes the words over a faint dashed pattern, comes back to the ball, crosses the t's and dots the i's with rose knots.

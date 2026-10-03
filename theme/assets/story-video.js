@@ -6,6 +6,9 @@
   It never starts by itself with reduced motion, lite mode or data saver (checked live, so changing the setting stops
   it), or when the browser refuses autoplay (iPhone Low Power Mode): the play button is always there instead.
   A pause from the shopper sticks; a play from the shopper wins over everything above.
+  One thing at a time (docs/yarn-story-plan.md §4): while the section's yarn heading is still to be written, the clip
+  waits, and starts when the words are done ('yarn:written'). Without the writing (reduced motion, lite mode) it
+  behaves as above.
   Loaded only by sections/story.liquid when it has a video.
 */
 
@@ -21,6 +24,8 @@ document.querySelectorAll('[data-story-video]').forEach((box) => {
   let userPaused = false;
   let userPlayed = false;
   let refused = false;
+  const words = box.closest('section')?.querySelector('.yarn--play');
+  const writing = () => !!words && html.classList.contains('yarn-play') && !words.classList.contains('is-written');
 
   const load = () => {
     if (!video.getAttribute('src')) video.src = phone.matches ? video.dataset.srcSmall : video.dataset.srcLarge;
@@ -40,7 +45,8 @@ document.querySelectorAll('[data-story-video]').forEach((box) => {
       }
     );
   };
-  const may = () => userPlayed || (!userPaused && !refused && !calm());
+  const allowed = () => userPlayed || (!userPaused && !refused && !calm());
+  const may = () => userPlayed || (allowed() && !writing());
   const update = () => {
     if (inView && may() && !document.hidden) play();
     else if (!video.paused) {
@@ -67,7 +73,7 @@ document.querySelectorAll('[data-story-video]').forEach((box) => {
   // Half a screen away: start fetching, so it's ready when it arrives (never in the calm modes). Not a whole screen:
   // the section sits right after Bestsellers, and most visitors who never scroll that far shouldn't pay for it.
   const near = new IntersectionObserver(([entry]) => {
-    if (!entry.isIntersecting || !may()) return;
+    if (!entry.isIntersecting || !allowed()) return;
     near.disconnect();
     video.preload = 'auto';
     load();
@@ -78,6 +84,7 @@ document.querySelectorAll('[data-story-video]').forEach((box) => {
     update();
   }, { threshold: [0, 0.5] }).observe(box);
 
+  words?.addEventListener('yarn:written', update);
   document.addEventListener('visibilitychange', update);
   reduce.addEventListener('change', update);
 });

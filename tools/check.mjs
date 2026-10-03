@@ -533,6 +533,9 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
     const has = await page.evaluate(() => !!document.querySelector('[data-story-video]'));
     let v = null;
     if (has) {
+      // The clip waits for the yarn heading beside it to be written (§14 tests that); here the words are finished
+      // with a tap first, so this tests the clip on its own.
+      await page.evaluate(() => document.querySelector('.story .yarn--play')?.closest('h2').dispatchEvent(new PointerEvent('pointerdown')));
       await page.evaluate(() => document.querySelector('[data-story-video]').scrollIntoView({ block: 'center' }));
       await page.waitForTimeout(2500);
       const state = () => page.evaluate(() => { const box = document.querySelector('[data-story-video]'); const el = box.querySelector('video'); return { playing: !el.paused && el.currentTime > 0, label: box.querySelector('[data-video-toggle]').getAttribute('aria-label') }; });
@@ -671,64 +674,112 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   }
 }
 
-// 14. Yarn heading (docs/yarn-heading.md): "stitched with love" is written by one strand of yarn. It waits as a dashed
-//     pattern, writes itself (hook, yarn from the ball) and ends finished: nothing still moving, the strand whole, the
-//     i's dotted, the hook gone. A tap on the heading finishes it at once. It waits for the logo intro to end, and with
-//     reduced motion it's simply there. The heading still reads as plain words.
+// 14. Yarn lettering (docs/yarn-story-plan.md): the hero's "stitched with love" is drawn in yarn, still and readable
+//     at once. Our story's "One stitch at a time" is blank until the whole heading is on screen, then a crochet hook
+//     and a yarn ball arrive and write it, and it ends finished: nothing still moving, the strand whole, the i's
+//     dotted, the hook and ball gone. A tap, or scrolling it away, finishes it at once. It waits for the logo intro.
+//     The clip beside it waits for the words. With reduced motion it's simply there. The headings read as plain words.
 {
-  const has = await fetch(URL).then((r) => r.text()).then((t) => t.includes('class="yarn"'), () => false);
-  if (!has) console.log('SKIP  Yarn heading                                      the hero heading isn\'t "*stitched with love*"');
-  else {
-    const phone = devices['Pixel 7'];
-    const state = (page) => page.evaluate(() => {
-      const svg = document.querySelector('.yarn');
-      const op = (s) => +getComputedStyle(svg.querySelector(s)).opacity;
-      return {
-        play: document.documentElement.classList.contains('yarn-play'),
-        writing: svg.classList.contains('is-writing'),
-        written: svg.classList.contains('is-written'),
-        offset: parseFloat(getComputedStyle(svg.querySelector('.yarn__draw')).strokeDashoffset) || 0,
-        knot: op('.yarn__knot'),
-        hook: op('.yarn__hook'),
-        moving: document.getAnimations().filter((a) => a.effect?.target?.closest?.('.yarn') && a.playState === 'running').length,
-        heading: document.querySelector('h1').textContent.replace(/\s+/g, ' ').trim(),
-      };
-    });
+  const home = await fetch(URL).then((r) => r.text()).catch(() => '');
+  const hasHero = /class="hero[\s\S]*?class="yarn"/.test(home);
+  const hasStory = home.includes('yarn yarn--play');
+  const phone = devices['Pixel 7'];
+  const state = (page, sel) => page.evaluate((sel) => {
+    const svg = document.querySelector(sel);
+    if (!svg) return null;
+    const op = (s) => (svg.querySelector(s) ? +getComputedStyle(svg.querySelector(s)).opacity : 0);
+    const draw = svg.querySelector('.yarn__draw');
+    const video = document.querySelector('[data-story-video] video');
+    return {
+      play: document.documentElement.classList.contains('yarn-play'),
+      ready: svg.classList.contains('is-ready'),
+      writing: svg.classList.contains('is-writing'),
+      written: svg.classList.contains('is-written'),
+      shown: getComputedStyle(svg.querySelector('.yarn__strand')).visibility === 'visible',
+      offset: draw ? parseFloat(getComputedStyle(draw).strokeDashoffset) || 0 : 0,
+      knot: op('.yarn__knot'),
+      hook: op('.yarn__hook'),
+      ball: op('.yarn__ball'),
+      moving: document.getAnimations().filter((a) => a.effect?.target?.closest?.(sel) && a.playState === 'running').length,
+      heading: svg.closest('h1, h2').textContent.replace(/\s+/g, ' ').trim(),
+      video: video ? !video.paused : null,
+    };
+  }, sel);
+  const toHeading = (page) => page.evaluate(() => { const h = document.querySelector('.story h2'); scrollTo(0, scrollY + h.getBoundingClientRect().top - innerHeight * 0.45); });
+  const STORY = '.story .yarn';
 
+  if (!hasHero) console.log('SKIP  Yarn lettering, hero                              the hero heading isn\'t "*stitched with love*"');
+  else {
+    const { browser, page } = await open(chromium, phone, { reducedMotion: 'no-preference' });
+    const s = await state(page, '.hero .yarn, h1 .yarn');
+    record('Yarn lettering: hero is still and whole at once', s.shown && s.knot === 1 && !s.writing && !s.written && s.moving === 0 && !(await page.$('h1 .yarn__hook, h1 .yarn__ball')), `strand shown: ${s.shown}, knots: ${s.knot}, still moving: ${s.moving}`);
+    record('Yarn lettering: the hero heading reads as words', s.heading.endsWith('stitched with love'), `"${s.heading}"`);
+    await browser.close();
+  }
+
+  if (!hasStory) console.log('SKIP  Yarn lettering, story                             Our story\'s heading isn\'t "One stitch at a time"');
+  else {
     let { browser, page, errors } = await open(chromium, phone, { reducedMotion: 'no-preference' });
-    await page.waitForFunction(() => document.querySelector('.yarn')?.classList.contains('is-written'), null, { timeout: 15000 }).catch(() => {});
+    let s = await state(page, STORY);
+    const blank = !s.shown && !s.ready;
+    await toHeading(page);
+    await page.waitForFunction((sel) => document.querySelector(sel)?.classList.contains('is-written'), STORY, { timeout: 12000 }).catch(() => {});
     await page.waitForTimeout(1800);
-    let s = await state(page);
-    record('Yarn heading: writes itself, then rests', s.play && s.written && s.offset === 0 && s.knot === 1 && s.hook === 0 && s.moving === 0, `written: ${s.written}, strand left: ${s.offset}, knots: ${s.knot}, hook: ${s.hook}, still moving: ${s.moving}`);
-    record('Yarn heading: the heading reads as words', s.heading.endsWith('stitched with love'), `"${s.heading}"`);
-    record('Yarn heading: no script errors', errors.length === 0, errors[0] || 'none');
+    s = await state(page, STORY);
+    record('Yarn lettering: story blank until seen', blank, `blank before scrolling to it: ${blank}`);
+    record('Yarn lettering: story writes itself, then rests', s.play && s.written && s.offset === 0 && s.knot === 1 && s.hook === 0 && s.ball === 0 && s.moving === 0, `written: ${s.written}, strand left: ${s.offset}, knots: ${s.knot}, hook: ${s.hook}, ball: ${s.ball}, still moving: ${s.moving}`);
+    record('Yarn lettering: the story heading reads as words', s.heading === 'One stitch at a time', `"${s.heading}"`);
+    record('Yarn lettering: no script errors', errors.length === 0, errors[0] || 'none');
     await browser.close();
 
     ({ browser, page } = await open(chromium, phone, { reducedMotion: 'no-preference' }));
-    await page.waitForFunction(() => document.querySelector('.yarn')?.classList.contains('is-writing'), null, { timeout: 8000 }).catch(() => {});
-    await page.click('h1');
+    await toHeading(page);
+    await page.waitForFunction((sel) => document.querySelector(sel)?.classList.contains('is-writing'), STORY, { timeout: 8000 }).catch(() => {});
+    await page.click('.story h2');
     await page.waitForTimeout(250);
-    s = await state(page);
-    record('Yarn heading: a tap finishes it at once', s.written && s.offset === 0, `written: ${s.written}, strand left: ${s.offset}`);
+    s = await state(page, STORY);
+    const tap = s.written && s.offset === 0;
+    await page.close();
+    page = await (await browser.newContext({ ...phone, reducedMotion: 'no-preference' })).newPage();
+    await page.addInitScript(() => { try { localStorage.setItem('yb-intro-seen', String(Date.now())); } catch {} });
+    await page.goto(URL, { waitUntil: 'load' });
+    await page.waitForTimeout(1500);
+    await toHeading(page);
+    await page.waitForFunction((sel) => document.querySelector(sel)?.classList.contains('is-writing'), STORY, { timeout: 8000 }).catch(() => {});
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForTimeout(400);
+    s = await state(page, STORY);
+    record('Yarn lettering: a tap, or scrolling away, finishes it', tap && s.written && s.offset === 0, `after a tap: ${tap}, after scrolling away: ${s.written}`);
     await browser.close();
 
-    // The logo intro never plays for test browsers, so it's stood in for: the class goes on as the page starts and
-    // comes off 1.5 s after load. The writing must wait for that, then 2.5 s more.
-    ({ browser, page } = await open(chromium, phone, {
-      reducedMotion: 'no-preference',
-      init: () => new MutationObserver((m, o) => { if (document.documentElement) { document.documentElement.classList.add('yb-intro'); o.disconnect(); } }).observe(document, { childList: true }),
-    }));
-    await page.evaluate(() => document.documentElement.classList.remove('yb-intro'));
-    await page.waitForTimeout(1500);
-    const early = (await state(page)).writing;
-    await page.waitForTimeout(2500);
-    const later = (await state(page)).writing;
-    record('Yarn heading: waits for the logo intro', !early && later, `writing 1.5 s after the intro: ${early}, 4 s after: ${later}`);
+    // The logo intro never plays for test browsers, so it's stood in for: the class goes on as the page starts, and
+    // the splash then leaves as usual (2.7 s). The heading is put in view at once, so only the intro holds it back.
+    browser = await chromium.launch();
+    page = await (await browser.newContext({ ...phone, reducedMotion: 'no-preference' })).newPage();
+    await page.addInitScript(() => new MutationObserver((m, o) => { if (document.documentElement) { document.documentElement.classList.add('yb-intro'); o.disconnect(); } }).observe(document, { childList: true }));
+    await page.goto(URL, { waitUntil: 'domcontentloaded' });
+    await toHeading(page);
+    await page.waitForTimeout(800);
+    const early = await page.evaluate((sel) => document.documentElement.classList.contains('yb-intro') && document.querySelector(sel).classList.contains('is-ready'), STORY);
+    const later = await page.waitForFunction((sel) => !document.documentElement.classList.contains('yb-intro') && document.querySelector(sel).classList.contains('is-writing'), STORY, { timeout: 8000 }).then(() => true, () => false);
+    record('Yarn lettering: waits for the logo intro', !early && later, `started during the intro: ${early}, writing after it: ${later}`);
     await browser.close();
+
+    if (home.includes('data-story-video')) {
+      ({ browser, page } = await open(chromium, devices['Desktop Chrome'], { reducedMotion: 'no-preference' }));
+      await toHeading(page);
+      await page.waitForTimeout(2500);
+      const during = await state(page, STORY);
+      await page.waitForFunction((sel) => document.querySelector(sel)?.classList.contains('is-written'), STORY, { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(1500);
+      const after = await state(page, STORY);
+      record('Yarn lettering: the clip waits for the words', during.writing && !during.written && during.video === false && after.video === true, `clip playing while writing: ${during.video}, after: ${after.video}`);
+      await browser.close();
+    }
 
     ({ browser, page } = await open(chromium, phone, { reducedMotion: 'reduce' }));
-    s = await state(page);
-    record('Yarn heading, reduced motion: simply there', !s.play && s.offset === 0 && s.knot === 1, `writing: ${s.play}, strand left: ${s.offset}`);
+    s = await state(page, STORY);
+    record('Yarn lettering, reduced motion: simply there', !s.play && s.shown && s.offset === 0 && s.knot === 1, `writing: ${s.play}, strand shown: ${s.shown}, knots: ${s.knot}`);
     await browser.close();
   }
 }

@@ -37,6 +37,8 @@
 -%}
 
 <section class="section story scheme-{{ s.scheme }}" aria-labelledby="Story-{{ section.id }}" data-inview>
+  {%- assign yarn_words = s.heading | strip | downcase -%}
+  {%- if yarn_words == 'one stitch at a time' -%}{%- render 'yarn-lettering', part: 'script' -%}{%- endif -%}
   {%- comment -%}
     The yarn strand from the brand kit's pinned Instagram banner: one line that draws itself
     across the section as it scrolls past and ends in a crochet flower.
@@ -121,7 +123,15 @@
     <div class="story__copy" data-arrive="lines">
       {%- render 'icon', icon: 'makers', class: 'story__icon' -%}
       {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
-      <h2 id="Story-{{ section.id }}">{{ s.heading }}</h2>
+      {%- comment -%}
+        "One stitch at a time" is written in one strand of yarn by a crochet hook when it comes into view
+        (snippets/yarn-lettering, docs/yarn-story-plan.md §3); any other heading is plain text.
+      {%- endcomment -%}
+      {%- if yarn_words == 'one stitch at a time' -%}
+        <h2 id="Story-{{ section.id }}">{%- render 'yarn-lettering', words: yarn_words -%}</h2>
+      {%- else -%}
+        <h2 id="Story-{{ section.id }}">{{ s.heading }}</h2>
+      {%- endif -%}
       {%- if s.text != blank -%}<div class="rte story__text">{{ s.text }}</div>{%- endif -%}
 
       {%- if s.stat_value != blank -%}
