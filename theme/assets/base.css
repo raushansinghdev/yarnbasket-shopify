@@ -482,6 +482,17 @@ html.is-turning body::after {
 /* Lite mode (data saver, 2G, low-memory phones): no decorative loops. Feedback animations stay. */
 html.lite :is(.hero__flower, .footer__flower) { animation: none !important; }
 
+/* No blur: lite mode, or ?blur=off while the blur is being judged on real phones (docs/fluid-feel-plan.md phase C).
+   A blur is redrawn on every frame something moves under it, so the header and the chips on photos become nearly
+   solid instead, and what passes under them doesn't show through sharp. */
+html.no-blur :is(.site-header, .hero__tag, .hero__pill, .hero__controls, .occasion__label, .story__toggle) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html.no-blur .site-header { background-color: var(--header-bg, color-mix(in srgb, var(--blush-soft) 96%, transparent)); }
+html.no-blur.header-scrolled .site-header { --header-bg: color-mix(in srgb, var(--blush-soft) 96%, transparent); }
+html.no-blur :is(.hero__tag, .hero__pill, .hero__controls, .occasion__label, .story__toggle) { background: color-mix(in srgb, var(--white) 96%, transparent); }
+
 img.img-wait { opacity: 0; }
 img.img-in { animation: img-in 250ms var(--ease-out); }
 @keyframes img-in { from { opacity: 0; } }

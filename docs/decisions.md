@@ -4,6 +4,9 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 
 ## 2026-10-04 (fluid feel, docs/fluid-feel-plan.md)
 
+- **Blur (phase C): a switch to compare, decision open.** `?blur=off` removes every backdrop blur for the tab's visit (header becomes Blush Soft at 96%, chips on photos white at 96%); `?blur=on` restores it. Raushan compares on a Galaxy S24 Ultra in Chrome. The switch is temporary and goes once this is decided.
+  - **Lite mode has no blur**, decided now: a blur is redrawn on every frame something moves under it, and lite mode is the phones that can least afford it.
+- **Section CSS is not split per page (phase D).** The 175 KB was the local server's uncompressed copy; it is about 29 KB compressed, cached after the first page, and parses in 3.7ms at 4x slower CPU. A split would risk late styles for nothing felt. The CSS budget in motion-plan.md is now 40 KB compressed. Reopen only if PageSpeed on the live site flags it.
 - **Arrivals finish about twice as fast; the choreography is unchanged** (Raushan: the store felt heavy; go-ahead given on the condition that it stays alive, smooth and accessible). Measured before: content kept arriving for 1.1–1.6s after a scroll stopped, over the motion plan's 1s budget.
   - Arrival 800 → 450ms (`--dur-arrive`), photos settling 1000 → 500ms, ink-rise headings 900 → 600ms, stitches 1400 → 900ms, stars and promise icons quicker in step.
   - `--stagger` 90 → 50ms, at most 4 steps (was 6). `--rise` 24 → 12px.

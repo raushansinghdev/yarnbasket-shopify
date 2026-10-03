@@ -224,7 +224,7 @@ Each pattern is built once, as a snippet or a small module in `theme.js`, and re
 | CLS | < 0.05 (good is 0.1) |
 | Slow frames while scrolling (4x CPU) | 0 |
 | `theme.js` | < 25 KB raw; per-page modules loaded only where used |
-| CSS on any page | < 60 KB raw |
+| CSS on any page | < 40 KB compressed (was "60 KB raw"; see fluid-feel-plan.md phase D) |
 | Third-party apps | Each one justified in decisions.md, loaded deferred or on interaction |
 | Arrival durations | Everything in view settled within 700ms of landing on a screen; stagger ≤ 4 steps (fluid-feel-plan.md) |
 | Loops on screen | ≤ 1 decorative loop per screen |

@@ -1,7 +1,8 @@
 # Fluid feel plan: why the store feels heavy, and what to change
 
 Status: **Phases A and B done 2026-10-04** (Raushan's go: phase by phase, test, then push, without giving up the alive
-feel, smoothness or accessibility). Phase C needs Raushan's phones; phase D waits for the theme to be published. Results are in section 6.
+feel, smoothness or accessibility). **Phase C: the switch is built, the decision waits for Raushan's comparison.**
+**Phase D: the CSS split is measured and dropped; the rest waits for the theme to be published.** Results are in section 6.
 
 Raushan's report: the whole store feels heavy, even on the local server. Scrolling and clicking feel slow.
 This plan is a tuning pass on `docs/motion-plan.md`, not a replacement. The motion plan's principles stand
@@ -162,3 +163,27 @@ arriving within 700ms. This would have caught the problem.
 - **To check after publish:** that fetched-ahead pages are not counted as visits in Shopify analytics (the fetch
   runs no scripts, so they should not be).
 - Check section 17 (six checks). `npm run check`: 194/194.
+
+### Phase C (2026-10-04): switch built, decision open
+
+- **The switch:** open any page with `?blur=off` and the blur is gone for the rest of that tab's visit; `?blur=on`
+  brings it back. Without blur the header is Blush Soft at 96% (was 88% with a 14px blur) and the chips on photos
+  are white at 96%.
+- **Lite mode drops the blur for good** (data saver, 2G, phones with 2 GB or less): those are the phones a blur
+  costs most on, and lite mode already skips decoration.
+- **Raushan tests on a Galaxy S24 Ultra in Chrome.** That is a flagship: it shows whether the blur is worth its
+  look, but it will probably scroll smoothly either way. Whether a budget Android stutters is still unmeasured.
+- **Recommendation:** if the two look close to the same on the S24, remove the blur for everyone. It can only cost
+  frames on cheaper phones, and at 88–94% opacity it shows very little.
+- Check 6 (lite has no blurred element) and 6b (the switch).
+
+### Phase D (2026-10-04): the CSS split is not worth doing
+
+- The 175 KB figure is the local dev server's copy: uncompressed, with every comment ("GENERATED LOCALLY").
+- Compressed it is about 29 KB (brotli) to 36 KB (gzip), fetched once and then cached; minified, about 23 KB.
+- Parsing it takes 3.7ms on a phone at 4x slower CPU.
+- Splitting it across some twenty files would save a few KB on a first visit and nothing felt, and would risk
+  styles arriving late. **Dropped**, unless PageSpeed on the live site says otherwise.
+- The motion plan's "CSS < 60 KB raw" budget measured the wrong thing; it is now 40 KB compressed.
+- Still waiting for the theme to be published: real page timings on yarnbasket.in, PageSpeed, and the analytics
+  check for fetched-ahead pages.

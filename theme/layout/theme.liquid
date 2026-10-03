@@ -4,16 +4,22 @@
     {%- render 'meta-tags' -%}
 
     {%- comment -%}
-      Lite mode for data saver, 2G and low-memory phones: decorative loops, the logo intro, photo fade-ins and the
-      hero autoplay are skipped; every tap and drawer animation stays. Decided before first paint.
+      Lite mode for data saver, 2G and low-memory phones: decorative loops, the logo intro, photo fade-ins, the
+      hero autoplay and backdrop blur are skipped; every tap and drawer animation stays. Decided before first paint.
+      ?blur=off and ?blur=on switch the blur for the rest of the tab's visit, to compare the two on a real phone
+      (docs/fluid-feel-plan.md phase C); the switch goes once that is decided.
     {%- endcomment -%}
     <script>
       (function () {
         try {
-          var c = navigator.connection || {};
+          var c = navigator.connection || {}, root = document.documentElement;
           if (c.saveData || /(^|-)2g$/.test(c.effectiveType || '') || (navigator.deviceMemory && navigator.deviceMemory <= 2)) {
-            document.documentElement.classList.add('lite');
+            root.classList.add('lite', 'no-blur');
           }
+          var blur = /[?&]blur=(on|off)/.exec(location.search);
+          if (blur) sessionStorage.setItem('blur', blur[1]);
+          blur = sessionStorage.getItem('blur');
+          if (blur) root.classList.toggle('no-blur', blur === 'off');
         } catch (e) {}
       })();
     </script>
