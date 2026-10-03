@@ -16,8 +16,9 @@
   @param {number} [index] - Position in the grid, used for staggered reveal and placeholder art
   @param {number} [demo] - Which demo product (1–8) to show when product is blank. Defaults to index + 1.
   @param {boolean} [skip_bestseller] - Don't show the Bestseller badge (in a list that is already the bestsellers)
-  @param {boolean} [compact] - The easy-read card for lists (search results, suggestion rows; docs/search-results-plan.md
-    §5): a square photo and the name in plain Jost 16px, 2 lines at most. The home page keeps the editorial card.
+  @param {boolean} [compact] - The easy-read card for lists (search results, collections, suggestion rows, and the home
+    page's Bestsellers since 2026-10-03; docs/search-results-plan.md §5): a square photo and the name in plain
+    Jost 16px, 2 lines at most. Without it: the editorial card (Cormorant italic name), still used by Featured products.
 {%- enddoc -%}
 {%- liquid
   assign img_sizes = sizes | default: '(min-width: 990px) 25vw, 50vw'

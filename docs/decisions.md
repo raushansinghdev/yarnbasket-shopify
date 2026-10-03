@@ -2,6 +2,13 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-03 (home Bestsellers uses the collection page's card)
+
+- **The home page's Bestsellers cards are the compact card** (Raushan liked the collection page's): plain Jost name at 16px (2 lines at most), the smaller photo corners and badge, and the collection grid's spacing. This reverses search-results-plan §5's "the home page cards don't change".
+  - A product now looks the same on the home page and on the collection its "See all" opens.
+  - Still 2 across on phones and 4 on desktop (not the collection's 3 and 5): each craft shows four, which would leave a gap.
+  - The editorial card (Cormorant italic name) is left only in the Featured products section, which the home page doesn't use.
+
 ## 2026-10-03 (price details count sale prices)
 
 - **Price details start from list prices.** Raushan found that a product on sale (₹1,199 struck through, ₹999) didn't show in the breakdown. A "compare at" price is not a Shopify discount, so Shopify's before-discount total leaves it out. Now Items is the cart at list prices, "Product discount" takes the sale prices off (one row for all products), then each Shopify discount, and the rows add up to the subtotal. The struck-through total beside Checkout uses the same number, so it agrees with the lines above it.

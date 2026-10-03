@@ -102,13 +102,13 @@
         <ul class="product-grid" role="list" data-arrive="stagger">
           {%- if fav.products_count > 0 -%}
             {%- for product in fav.products limit: per -%}
-              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: product, index: forloop.index0, skip_bestseller: true -%}</li>
+              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: product, index: forloop.index0, skip_bestseller: true, compact: true, sizes: '(min-width: 990px) 25vw, calc(50vw - 24px)' -%}</li>
             {%- endfor -%}
           {%- else -%}
             {%- assign picks = '1,4,6,7' | split: ',' -%}
             {%- for pick in picks limit: per -%}
               {%- assign pick_n = pick | plus: 0 -%}
-              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: blank, index: forloop.index0, demo: pick_n, skip_bestseller: true -%}</li>
+              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: blank, index: forloop.index0, demo: pick_n, skip_bestseller: true, compact: true, sizes: '(min-width: 990px) 25vw, calc(50vw - 24px)' -%}</li>
             {%- endfor -%}
           {%- endif -%}
         </ul>
@@ -155,12 +155,12 @@
         <ul class="product-grid" role="list" {% if n == 0 %}data-arrive="stagger"{% endif %}>
           {%- if c.products_count > 0 -%}
             {%- for product in c.products limit: per -%}
-              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: product, index: forloop.index0, skip_bestseller: true -%}</li>
+              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: product, index: forloop.index0, skip_bestseller: true, compact: true, sizes: '(min-width: 990px) 25vw, calc(50vw - 24px)' -%}</li>
             {%- endfor -%}
           {%- else -%}
             {%- for pick in picks limit: per -%}
               {%- assign pick_n = pick | plus: 0 -%}
-              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: blank, index: forloop.index0, demo: pick_n, skip_bestseller: true -%}</li>
+              <li style="--i: {{ forloop.index0 | modulo: 4 }}">{%- render 'product-card', product: blank, index: forloop.index0, demo: pick_n, skip_bestseller: true, compact: true, sizes: '(min-width: 990px) 25vw, calc(50vw - 24px)' -%}</li>
             {%- endfor -%}
           {%- endif -%}
         </ul>
@@ -263,6 +263,10 @@
   /* The end of the shelf (docs/home-calm-plan.md S5): the site's one solid Cocoa button, centred under the products
      and sized to its words, like the hero's on desktop. */
   .shop__panel { display: grid; }
+  /* The same card and spacing as the collection page (decisions.md, 2026-10-03), so a product looks the same when
+     you go from here to "See all". Still 2 across on phones and 4 on desktop: a craft shows four. */
+  .shop .product-grid { gap: var(--space-6) var(--space-3); }
+  @media (min-width: 768px) { .shop .product-grid { gap: var(--space-6) var(--space-5); } }
   .shop__panel[hidden] { display: none; }
   .shop__all { justify-self: center; min-height: 52px; margin-top: var(--space-7); padding: 0 1.375rem 0 1.625rem; gap: .625rem; }
   .shop__count { font-variant-numeric: tabular-nums; }
