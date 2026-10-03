@@ -67,6 +67,13 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 
 ## 2026-10-03 (home Bestsellers uses the collection page's card)
 
+## 2026-10-04 (Our story is shorter on phones, docs/story-phone-plan.md)
+
+- **The story clip is 4:3 landscape on every screen** (was 4:5). Raushan's call: hands at work are a wide subject, and a landscape frame shows them in less height. The real clip is filmed with the phone held sideways; a vertical Reel would lose 40% of its height. A photo, when there's no video, still keeps its own shape.
+- **On phones and tablets the yarn-ball icon sits beside "How it's made"** at 32px instead of taking a row at 52px, and the panel's bottom padding and the gap under the clip are one step smaller. Desktop keeps the 52px icon above the label.
+- **Result at 360 × 800:** the section is 671px (was 886px) and the Blush panel 555px (was 771px), so the whole panel fits one screen. Check 6c fails if it stops fitting.
+- **Known in the demo only:** the logo animation was made for 4:5, so the play button sits on the end of "Handmade with love". It goes with the demo assets.
+
 - **The home page's Bestsellers cards are the compact card** (Raushan liked the collection page's): plain Jost name at 16px (2 lines at most), the smaller photo corners and badge, and the collection grid's spacing. This reverses search-results-plan §5's "the home page cards don't change".
   - A product now looks the same on the home page and on the collection its "See all" opens.
   - Still 2 across on phones and 4 on desktop (not the collection's 3 and 5): each craft shows four, which would leave a gap.

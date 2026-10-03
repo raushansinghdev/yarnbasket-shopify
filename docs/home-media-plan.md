@@ -154,7 +154,7 @@ The campaign card is **4:3 and exactly as tall as the square photos**, so it's s
 
 ### What changes in the section
 - A new **Video** setting (Shopify's own video picker: upload in Content → Files). Shopify hosts and serves it in sizes suited to the device, with no YouTube or Vimeo player.
-- The video takes the place of the photo, **4:5 on every screen size** (the photo is 4:5 today), so the layout doesn't change. `object-fit: cover` centres it.
+- The video takes the place of the photo, **4:3 landscape on every screen size** (it was 4:5 until 2026-10-04; see `story-phone-plan.md`). `object-fit: cover` centres it.
 - With no video, the photo shows as today.
 
 ### How it plays
@@ -181,10 +181,10 @@ The campaign card is **4:3 and exactly as tall as the square photos**, so it's s
 - **JavaScript:** a small `assets/story-video.js` (target ≤ 2 KB), loaded only when a video is set. `theme.js` is at 24.9 of 25 KB, so nothing goes there.
 
 ### Filming guide (for Raushan)
-- Hold the phone **vertically** and keep it steady: lean it against something or use a tripod. Use daylight from a window.
-- Show hands, hook and yarn, with the piece growing. Keep it in the **middle** of the frame: the 4:5 crop trims the top and bottom of a vertical video.
+- Hold the phone **sideways (landscape)** and keep it steady: lean it against something or use a tripod. Use daylight from a window.
+- Show hands, hook and yarn, with the piece growing. Keep it in the **middle** of the frame: the 4:3 frame trims the sides of a 16:9 video a little.
 - 10–20 seconds, with no text, stickers or music. Filming the last few seconds so they flow back into the first makes a smooth loop.
-- Your Instagram Reels footage works if it follows these rules.
+- Instagram Reels footage is vertical, so only the middle 60% of its height would show. Film this clip separately.
 
 ---
 

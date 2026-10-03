@@ -64,12 +64,12 @@
       {%- if v_small != blank -%}
         {%- comment -%}
           Muted, inline and looping, playing only while at least half of it is on screen, and nothing downloads until
-          the section is near (assets/story-video.js). The still frame is a lazy image of the same 4:5 shape, so
+          the section is near (assets/story-video.js). The still frame is a lazy image of the same 4:3 shape, so
           nothing jumps when the video takes over. It never plays by itself with reduced motion, lite mode or data
           saver; the play button is always there (WCAG 2.2.2). The clip has no sound, so its name says what it shows
           (WCAG 1.2.1), and the text beside it says the rest.
         {%- endcomment -%}
-        <div class="media story__media story__media--video" style="--ratio: 4 / 5" data-story-video>
+        <div class="media story__media story__media--video" data-story-video>
           <video
             class="story__video"
             muted
@@ -179,10 +179,11 @@
 
   .story__grid { display: grid; gap: var(--space-7); align-items: center; }
   /* The Blush is painted underneath the yarn strand, so the strand still runs across the panel. */
-  .story__grid--panel { position: relative; background: none; padding: var(--space-5) var(--space-5) var(--space-7); gap: var(--space-6); }
+  .story__grid--panel { position: relative; background: none; padding: var(--space-5) var(--space-5) var(--space-6); gap: var(--space-5); }
   .story__grid--panel::before { content: ""; position: absolute; inset: 0; z-index: -2; border-radius: inherit; background: var(--blush); }
   .story__grid--panel .story__media { border-radius: var(--radius-md); }
-  .story__media { --ratio: 4 / 5; border-radius: var(--radius-lg); }
+  /* Landscape, so the whole panel fits one phone screen (docs/story-phone-plan.md). A photo keeps its own shape. */
+  .story__media { --ratio: 4 / 3; border-radius: var(--radius-lg); }
 
   /* The clip: the still frame sits on top until the video is actually playing, then fades away. */
   .story__poster { z-index: 1; transition: opacity var(--dur-panel) ease; }
@@ -208,6 +209,13 @@
   @media (hover: hover) { .story__toggle:hover { background: var(--white); } }
   .story__copy { display: grid; gap: var(--space-4); justify-items: start; max-width: 32rem; }
   .story__icon { width: 52px; height: 52px; color: var(--color-heading); }
+  /* Phones and tablets: the icon shares a row with the small label instead of taking one to itself. */
+  @media (max-width: 989px) {
+    .story__copy { grid-template-columns: auto minmax(0, 1fr); column-gap: var(--space-3); }
+    .story__copy > * { grid-column: 1 / -1; }
+    .story__copy > .story__icon { grid-column: 1; align-self: center; width: 32px; height: 32px; }
+    .story__icon + .eyebrow { grid-column: 2; align-self: center; }
+  }
   .story__text { color: var(--color-ink); }
   .story__stat {
     display: flex;
@@ -270,7 +278,7 @@
       "type": "video",
       "id": "video",
       "label": "Video",
-      "info": "Optional: 10–20 seconds of hands at work, filmed vertically and kept in the middle (it's shown 4:5). No text or music; it plays without sound. Upload in Content → Files. It replaces the photo."
+      "info": "Optional: 10–20 seconds of hands at work, filmed with the phone held sideways (it's shown landscape, 4:3). No text or music; it plays without sound. Upload in Content → Files. It replaces the photo."
     },
     {
       "type": "text",
@@ -282,7 +290,7 @@
       "type": "image_picker",
       "id": "image",
       "label": "Photo",
-      "info": "Hands at work: crocheting, winding yarn or finishing a piece. Portrait. Shown when there's no video."
+      "info": "Hands at work: crocheting, winding yarn or finishing a piece. Landscape keeps the section short on phones. Shown when there's no video."
     },
     { "type": "checkbox", "id": "panel", "label": "Blush panel", "default": true, "info": "Sets the story on a rounded panel in the brand colour." },
     { "type": "text", "id": "eyebrow", "label": "Small label", "default": "How it's made" },

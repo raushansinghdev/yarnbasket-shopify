@@ -181,6 +181,30 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
   const before = await page.evaluate(() => ({
     imgs: [...document.querySelectorAll('#SearchPanel img')].filter((img) => img.complete && img.naturalWidth).length,
+// 6c. Our story on a phone (docs/story-phone-plan.md): the whole Blush panel fits one 360 × 800 screen, the clip is
+//     landscape, and the icon shares a row with the small label.
+{
+  const { browser, page } = await open(chromium, { viewport: { width: 360, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, { reducedMotion: 'reduce' });
+  const s = await page.evaluate(() => {
+    const box = (sel) => document.querySelector(sel)?.getBoundingClientRect();
+    const panel = box('.story__grid'); const media = box('.story__media--video'); const icon = box('.story__copy > .story__icon'); const label = box('.story__copy > .eyebrow');
+    if (!panel) return null;
+    return {
+      panel: Math.round(panel.height),
+      screen: innerHeight,
+      shape: media ? +(media.width / media.height).toFixed(2) : null,
+      sameRow: icon && label ? icon.top < label.bottom && label.top < icon.bottom : null,
+    };
+  });
+  if (!s) console.log('SKIP  Story, phone                                       no story section on the home page');
+  else {
+    record('Story, phone 360: the panel fits one screen', s.panel <= s.screen, `panel ${s.panel}px of ${s.screen}px`);
+    if (s.shape !== null) record('Story, phone 360: the clip is landscape (4:3)', Math.abs(s.shape - 4 / 3) < 0.02, `width / height ${s.shape}`);
+    if (s.sameRow !== null) record('Story, phone 360: icon beside the label', s.sameRow, `same row: ${s.sameRow}`);
+  }
+  await browser.close();
+}
+
     js: performance.getEntriesByType('resource').filter((r) => /search\.js/.test(r.name)).length,
   }));
   record(`Search, ${label}: nothing loads before it opens`, before.imgs === 0 && before.js === 0, `${before.imgs} photos, ${before.js} search.js requests`);
