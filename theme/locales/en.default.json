@@ -413,5 +413,8 @@
   "story": {
     "play": "Play video",
     "pause": "Pause video"
+  },
+  "gifting": {
+    "shop": "Shop"
   }
 }

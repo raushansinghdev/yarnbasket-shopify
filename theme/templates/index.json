@@ -76,7 +76,8 @@
         "eyebrow": "Gifting",
         "heading": "A gift for every occasion",
         "text": "Thoughtful handmade gifts that last, for the people you never forget.",
-        "scheme": "soft"
+        "scheme": "white",
+        "link_label": "All gifts"
       },
       "blocks": {
         "o1": {
@@ -94,7 +95,7 @@
         "o3": {
           "type": "occasion",
           "settings": {
-            "label": "Valentine's"
+            "label": "Thank you"
           }
         },
         "o4": {
@@ -103,10 +104,11 @@
             "label": "For her"
           }
         },
-        "o5": {
-          "type": "occasion",
+        "under": {
+          "type": "price",
           "settings": {
-            "label": "Under ₹999"
+            "kicker": "Gifts under",
+            "amount": "₹999"
           }
         }
       },
@@ -115,7 +117,7 @@
         "o2",
         "o3",
         "o4",
-        "o5"
+        "under"
       ]
     },
     "reviews": {

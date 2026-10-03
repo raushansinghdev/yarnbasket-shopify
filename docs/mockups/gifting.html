@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gifting shelf mockup</title>
+<!-- docs/gifting-plan.md G1: the Gifting section as an occasion shelf, between the end of Bestsellers and the top of
+     Our story, on two band colours. Open this file directly; photos are the theme's demo assets. -->
+<style>
+  @font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 600; src: url("../../theme/assets/cormorant-garamond-600-italic.woff2") format("woff2"); }
+  @font-face { font-family: "Jost"; font-weight: 100 900; src: url("../../theme/assets/jost-variable.woff2") format("woff2"); }
+  :root {
+    --cocoa: #6B4F43; --cocoa-deep: #4E3A31; --blush: #F2D4CC; --rose: #E3A69C; --white: #fff; --soft: #FBF1EE; --taupe-ink: #705B52;
+    --gutter: clamp(1.25rem, .6rem + 3vw, 4rem); --section: clamp(3.5rem, 2.6rem + 4.5vw, 7rem);
+    --serif: "Cormorant Garamond", Georgia, serif; --sans: "Jost", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--soft); color: var(--cocoa); font-family: var(--sans); }
+  .wrap { max-width: 80rem; margin: 0 auto; padding-inline: var(--gutter); }
+  .variant-label { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; background: var(--cocoa-deep); color: #fff; padding: 10px var(--gutter); }
+
+  /* Context: the end of Bestsellers. */
+  .ctx-top { padding-top: 28px; padding-bottom: var(--section); }
+  .ctx-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (min-width: 990px) { .ctx-cards { grid-template-columns: repeat(4, 1fr); gap: 24px; } }
+  .ctx-card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 18px; display: block; }
+  .ctx-card p { font-family: var(--serif); font-style: italic; font-weight: 600; font-size: 1.15rem; color: var(--cocoa-deep); margin-top: 10px; }
+  .ctx-card span { font-weight: 500; }
+  .ctx-btn { display: flex; justify-content: center; margin-top: 40px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; background: var(--cocoa-deep); color: #FBF6EF; border-radius: 999px; padding: 15px 28px; font-size: 1.05rem; font-weight: 500; }
+  /* Context: the top of Our story. */
+  .ctx-bottom { padding-top: var(--section); padding-bottom: 40px; }
+  .ctx-panel { background: var(--blush); border-radius: 28px; height: 140px; }
+
+  /* The proposal. */
+  .gifts { padding-block: var(--section); }
+  .gifts--white { background: var(--white); }
+  .gifts--blush { background: var(--blush); }
+  .head { display: grid; gap: 10px; margin-bottom: 28px; }
+  .head-row { display: flex; align-items: end; justify-content: space-between; gap: 24px; }
+  .icon { width: 44px; height: 44px; color: var(--cocoa-deep); }
+  .eyebrow { font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 500; color: var(--taupe-ink); }
+  h2 { font-family: var(--serif); font-style: italic; font-weight: 600; font-size: clamp(2rem, 1.6rem + 2vw, 3.125rem); line-height: 1.05; color: var(--cocoa-deep); }
+  .sub { color: var(--taupe-ink); font-size: 1.05rem; line-height: 1.6; display: none; }
+  .all { display: none; font-size: .8rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; color: var(--cocoa-deep); border-bottom: 1.5px solid currentColor; padding-bottom: 3px; white-space: nowrap; }
+  @media (min-width: 990px) { .sub, .all { display: block; } }
+
+  .row { display: grid; grid-auto-flow: column; grid-auto-columns: 62%; gap: 12px; overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); scroll-snap-type: x mandatory; }
+  .row::-webkit-scrollbar { display: none; }
+  @media (min-width: 990px) { .row { grid-auto-flow: row; grid-template-columns: repeat(5, 1fr); overflow: visible; margin: 0; padding: 0; gap: 20px; } }
+  .tile { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: 18px; overflow: hidden; scroll-snap-align: start; text-decoration: none; }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tile .label { position: absolute; left: 10px; bottom: 10px; display: inline-flex; align-items: center; gap: 8px; background: rgb(255 255 255 / .94); border-radius: 999px; padding: 9px 16px 10px; font-family: var(--serif); font-style: italic; font-weight: 600; font-size: 1.25rem; line-height: 1; color: var(--cocoa-deep); box-shadow: 0 8px 22px -14px rgb(78 58 49 / .55); }
+  .arrow { width: 15px; height: 15px; opacity: .6; }
+  /* The price tile: no photo, the number is the picture. */
+  .tile--price { display: grid; align-content: center; justify-items: center; gap: 6px; text-align: center; color: var(--cocoa-deep); padding: 20px; }
+  .gifts--white .tile--price { background: var(--blush); }
+  .gifts--blush .tile--price { background: var(--soft); box-shadow: inset 0 0 0 1px #DDB2A7; }
+  .tile--price .icon { width: 40px; height: 40px; margin-bottom: 6px; }
+  .tile--price .k { font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 500; color: var(--taupe-ink); }
+  .tile--price .n { font-family: var(--serif); font-style: italic; font-weight: 600; font-size: 3.4rem; line-height: 1; }
+  .tile--price .go { margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; border-bottom: 1.5px solid currentColor; padding-bottom: 3px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="arrow" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="gift" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="7" y="16" width="26" height="18" rx="2"/><rect x="5" y="11" width="30" height="6" rx="1.5"/><path d="M20 11v23"/><path d="M20 11c-3-6-10-6-9-2 .6 2.6 5 2 9 2zM20 11c3-6 10-6 9-2-.6 2.6-5 2-9 2z"/></g></symbol>
+  <symbol id="bouquet" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="14" cy="11" r="4"/><circle cx="26" cy="11" r="4"/><circle cx="20" cy="7" r="4"/><circle cx="20" cy="15" r="3"/><path d="M9 18h22l-11 18z"/></g></symbol>
+</svg>
+
+<template id="shelf">
+  <div class="wrap">
+    <div class="head">
+      <svg class="icon"><use href="#bouquet"/></svg>
+      <p class="eyebrow">Gifting</p>
+      <div class="head-row">
+        <h2>A gift for every occasion</h2>
+        <a class="all" href="#">All gifts →</a>
+      </div>
+      <p class="sub">Thoughtful handmade gifts that last, for the people you never forget.</p>
+    </div>
+    <div class="row">
+      <a class="tile" href="#"><img src="../../theme/assets/demo-p3-a-600.webp" alt=""><span class="label">Birthday<svg class="arrow"><use href="#arrow"/></svg></span></a>
+      <a class="tile" href="#"><img src="../../theme/assets/demo-p2-a-600.webp" alt=""><span class="label">Anniversary<svg class="arrow"><use href="#arrow"/></svg></span></a>
+      <a class="tile" href="#"><img src="../../theme/assets/demo-p5-a-600.webp" alt=""><span class="label">Thank you<svg class="arrow"><use href="#arrow"/></svg></span></a>
+      <a class="tile" href="#"><img src="../../theme/assets/demo-p8-b-600.webp" alt=""><span class="label">For her<svg class="arrow"><use href="#arrow"/></svg></span></a>
+      <a class="tile tile--price" href="#"><svg class="icon"><use href="#gift"/></svg><span class="k">Gifts under</span><span class="n">₹999</span><span class="go">Shop<svg class="arrow"><use href="#arrow"/></svg></span></a>
+    </div>
+  </div>
+</template>
+
+<template id="top">
+  <div class="wrap ctx-top">
+    <div class="ctx-cards">
+      <div class="ctx-card"><img src="../../theme/assets/demo-p6-a-600.webp" alt=""><p>Flower Hair Clips, Set of 8<br><span>₹399</span></p></div>
+      <div class="ctx-card"><img src="../../theme/assets/demo-p7-a-600.webp" alt=""><p>Lily of the Valley Bag Charm<br><span>₹349</span></p></div>
+    </div>
+    <div class="ctx-btn"><span class="btn">Shop all gifts <svg class="arrow" style="opacity:1"><use href="#arrow"/></svg></span></div>
+  </div>
+</template>
+
+<p class="variant-label">A · White band (plan's recommendation)</p>
+<div data-ctx="top"></div>
+<section class="gifts gifts--white" data-shelf></section>
+<div class="wrap ctx-bottom"><div class="ctx-panel"></div></div>
+
+<p class="variant-label">B · Blush band</p>
+<div data-ctx="top"></div>
+<section class="gifts gifts--blush" data-shelf></section>
+<div class="wrap ctx-bottom"><div class="ctx-panel"></div></div>
+
+<script>
+  document.querySelectorAll('[data-shelf]').forEach((s) => s.append(document.getElementById('shelf').content.cloneNode(true)));
+  document.querySelectorAll('[data-ctx="top"]').forEach((s) => s.append(document.getElementById('top').content.cloneNode(true)));
+</script>
+</body>
+</html>

@@ -75,6 +75,7 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
 - [x] **FAQ:** the gift line, with the amount, is in the automatic "Shipping and offers" answer (`offers.faq_gift`, so it follows the threshold). The Terms draft has it in §5 "Free gift", with no amount, so changing the threshold won't need a Terms edit.
 
 ## Store setup
+- [ ] **Occasion collections (docs/gifting-plan.md §8, G3):** tag products `occasion-birthday` / `-anniversary` / `-thank-you` / `-for-her`, create the 5 automated collections (four by tag, "Gifts under ₹999" by price), pick them on the home page's Shop by occasion tiles and in the Gifts menu.
 - [ ] Currency format `₹{{amount_no_decimals}}` (Settings → General → Store currency)
 - [ ] Search & Discovery: synonyms, Popular searches menu, product filters (search-plan §10)
 - [ ] Bestsellers collection

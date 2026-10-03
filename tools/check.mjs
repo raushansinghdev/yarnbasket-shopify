@@ -784,6 +784,50 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   }
 }
 
+// 15. Gifting (docs/gifting-plan.md): the occasion shelf stands apart from its neighbours (its own background), every
+//     tile is a link to its own collection (or, with Demo content, to all products), phones swipe the row without the
+//     page scrolling sideways, desktop shows every tile in one row, and axe finds nothing.
+{
+  const home = await fetch(URL).then((r) => r.text()).catch(() => '');
+  if (!home.includes('class="section occasions')) console.log('SKIP  Gifting                                           no "Shop by occasion" section on the home page');
+  else {
+    const look = (page) => page.evaluate(() => {
+      const sec = document.querySelector('.occasions');
+      const wrap = sec.closest('.shopify-section');
+      const bg = (el) => (el ? getComputedStyle(el.querySelector('.section') || el).backgroundColor : null);
+      const row = sec.querySelector('.occasions__list');
+      const tiles = [...sec.querySelectorAll('.occasion')];
+      return {
+        bg: getComputedStyle(sec).backgroundColor,
+        before: bg(wrap.previousElementSibling),
+        after: bg(wrap.nextElementSibling),
+        links: tiles.map((a) => a.getAttribute('href')),
+        named: tiles.every((a) => a.textContent.trim().length > 1),
+        swipes: row.scrollWidth > row.clientWidth + 4,
+        oneRow: new Set(tiles.map((a) => Math.round(a.getBoundingClientRect().top))).size === 1,
+        sideways: document.documentElement.scrollWidth > innerWidth,
+      };
+    });
+    let { browser, page, errors } = await open(chromium, devices['Pixel 7'], { reducedMotion: 'no-preference' });
+    await page.evaluate(() => document.querySelector('.occasions').scrollIntoView({ block: 'start' }));
+    await page.waitForTimeout(1800); // the tiles' arrival has finished, so axe sees their real colours
+    const p = await look(page);
+    const own = p.links.every((h) => h && h !== '/collections' && (h === '/collections/all' || p.links.filter((x) => x === h).length === 1));
+    record('Gifting: stands apart from its neighbours', p.bg !== p.before && p.bg !== p.after, `background ${p.bg}, before ${p.before}, after ${p.after}`);
+    record('Gifting: each tile goes to its own collection', p.links.length > 0 && own && p.named, `${p.links.length} tiles: ${[...new Set(p.links)].join(', ')}`);
+    record('Gifting, phone: the row swipes, the page doesn\'t', p.swipes && !p.sideways, `row swipes: ${p.swipes}, page scrolls sideways: ${p.sideways}`);
+    await page.addScriptTag({ content: axe.source });
+    const v = await page.evaluate(async () => (await window.axe.run(document.querySelector('.occasions'), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+    record('Gifting: axe', v.length === 0 && errors.length === 0, (v.join(', ') || '0 violations') + (errors.length ? `; errors: ${errors[0]}` : ''));
+    await browser.close();
+
+    ({ browser, page } = await open(chromium, devices['Desktop Chrome'], { reducedMotion: 'no-preference' }));
+    const d = await look(page);
+    record('Gifting, desktop: every tile in one row', d.oneRow && !d.swipes, `one row: ${d.oneRow}, scrolls: ${d.swipes}`);
+    await browser.close();
+  }
+}
+
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
 process.exit(failed.length ? 1 : 0);

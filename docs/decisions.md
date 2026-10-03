@@ -2,6 +2,15 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-03 (Gifting, docs/gifting-plan.md)
+
+- **Gifting stays right after Bestsellers, as an occasion shelf on its own White band.** It used to look merged with Bestsellers: the same background with one shared gap, a footnote to "Shop all gifts", and text-only pills.
+  - Each occasion is a photo tile with its name on a label.
+  - The last tile is "Gifts under ₹999" in Blush, with the price as its picture.
+  - Phones swipe; desktop shows all five in one row.
+- **Every tile goes to its own automated collection.** Occasions fill from tags (`occasion-…`), and Under ₹999 fills by price. A tile whose collection is empty or not chosen hides, so nothing leads nowhere (the old pills all opened the all-collections page). The Gifts menu uses the same collections.
+- **Permanent occasions:** Birthday, Anniversary, Thank you, For her, Under ₹999. Valentine's and the other dated occasions belong to the seasonal hero campaign.
+
 ## 2026-10-03 (yarn lettering round 2 and home order, docs/yarn-story-plan.md)
 
 - **The hero's "stitched with love" is still yarn lettering, readable at once, with no motion.** The round 1 writing (below) hid half the headline for several seconds on the first screen, pulled the eye from the products, and repeated on every visit.

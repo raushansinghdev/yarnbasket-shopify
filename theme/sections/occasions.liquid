@@ -1,77 +1,177 @@
-{%- assign s = section.settings -%}
+{%- comment -%}
+  Shop by occasion (docs/gifting-plan.md): a shelf of occasion tiles on its own band, right after Bestsellers.
+  Each tile is one link to its own collection: a photo with the occasion on a label, and a "Gifts under ₹999" tile
+  with the price as its picture. A tile whose collection is empty or not chosen doesn't show, so nothing leads
+  nowhere; while Demo content is on, a tile with no collection shows a demo photo and goes to all products.
+  Phones swipe (about 1.7 tiles in view); desktop shows them all in one row.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign demo_photos = 'p3-a,p2-a,p5-a,p8-b' | split: ','
+  assign photo_n = 0
+  # The tile's real width (60% of the row on phones), so a phone picks a ~600px photo, not a 1200px one: the row's
+  # photos load with the page (theme.js readies swipe rows before they arrive), so they count towards its weight.
+  assign tile_sizes = '(min-width: 990px) 18vw, (min-width: 750px) 34vw, calc(60vw - 26px)'
+-%}
 
 <section class="section occasions scheme-{{ s.scheme }}" aria-labelledby="Occasions-{{ section.id }}">
-  <div class="section-head section-head--center" data-arrive="lines">
+  <div class="section-head section-head--split" data-arrive="lines">
     {%- render 'icon', icon: 'bouquets' -%}
     {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
     <h2 id="Occasions-{{ section.id }}">{{ s.heading }}</h2>
-    {%- if s.text != blank -%}<p class="section-head__sub muted">{{ s.text }}</p>{%- endif -%}
+    {%- if s.text != blank -%}<p class="section-head__sub muted occasions__sub">{{ s.text }}</p>{%- endif -%}
+    {%- if s.link_label != blank -%}
+      <a class="link section-head__link occasions__all" href="{{ s.link | default: routes.all_products_collection_url }}">
+        {{- s.link_label -}}
+        {%- render 'icon', icon: 'arrow' -%}
+      </a>
+    {%- endif -%}
   </div>
 
-  <ul class="occasions__list scroller" role="list">
+  <ul class="occasions__list scroller" role="list" data-arrive="stagger">
     {%- for block in section.blocks -%}
-      <li style="--i: {{ forloop.index0 | modulo: 6 }}" {{ block.shopify_attributes }}>
-        <a class="chip" href="{{ block.settings.link | default: routes.collections_url }}">
-          {{- block.settings.label -}}
-          {%- render 'icon', icon: 'arrow' -%}
-        </a>
+      {%- liquid
+        assign b = block.settings
+        assign col = b.collection
+        assign demo = false
+        if col == blank and settings.demo_content
+          assign demo = true
+        elsif col == blank or col.products_count == 0
+          continue
+        endif
+        if demo
+          assign url = routes.all_products_collection_url
+        else
+          assign url = col.url
+        endif
+      -%}
+      <li {{ block.shopify_attributes }}>
+        {%- if block.type == 'price' -%}
+          <a class="occasion occasion--price" href="{{ url }}">
+            {%- render 'icon', icon: 'gift' -%}
+            <span class="occasion__kicker">{{ b.kicker }}</span>
+            <span class="occasion__amount">{{ b.amount }}</span>
+            <span class="occasion__go" aria-hidden="true">{{ 'gifting.shop' | t }}{%- render 'icon', icon: 'arrow' -%}</span>
+          </a>
+        {%- else -%}
+          {%- liquid
+            assign label = b.label | default: col.title
+            assign img = b.image | default: col.image | default: col.products.first.featured_image
+          -%}
+          <a class="occasion media" href="{{ url }}">
+            {%- if demo -%}
+              {%- assign k = photo_n | modulo: 4 -%}
+              {%- render 'demo-image', name: demo_photos[k], sizes: tile_sizes, class: 'occasion__img' -%}
+              {%- assign photo_n = photo_n | plus: 1 -%}
+            {%- elsif img != blank -%}
+              {%- render 'image', image: img, sizes: tile_sizes, width: 900, decorative: true, class: 'occasion__img' -%}
+            {%- else -%}
+              {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+            {%- endif -%}
+            <span class="occasion__label">{{ label }}{%- render 'icon', icon: 'arrow' -%}</span>
+          </a>
+        {%- endif -%}
       </li>
     {%- endfor -%}
   </ul>
 </section>
 
 {% stylesheet %}
-  .occasions__list {
-    --scroller-item: max-content;
-    --scroller-gap: var(--space-3);
-    justify-content: start;
-  }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: 52px;
-    padding: 0 var(--space-5);
-    border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-pill);
-    background: var(--color-bg);
-    color: var(--color-heading);
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-weight: 600;
-    font-size: 1.25rem;
-    line-height: 1;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background-color var(--dur-state) ease, color var(--dur-state) ease, border-color var(--dur-state) ease, transform var(--dur-press) ease;
-  }
-  .chip .icon { width: 16px; height: 16px; margin-right: -4px; opacity: .55; transition: transform var(--dur-panel) var(--ease-out), opacity var(--dur-state) ease; }
-  .chip:active { transform: scale(.97); }
-  @media (hover: hover) {
-    .chip:hover { background: var(--blush); border-color: var(--rose); }
-    .chip:hover .icon { opacity: 1; transform: translateX(3px); }
-  }
-  @media (min-width: 750px) {
+  /* Phones: the sub-line and "All gifts" give way to the tiles (Bestsellers' button sits just above). */
+  .occasions__sub, .occasions__all { display: none; }
+  .occasions__list { --scroller-item: 60%; --scroller-gap: var(--space-3); }
+  @media (min-width: 750px) { .occasions__list { --scroller-item: 36%; } }
+  @media (min-width: 990px) {
+    .occasions__sub { display: block; }
+    .occasions__all { display: inline-flex; }
     .occasions__list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      grid-auto-columns: minmax(0, 1fr);
+      gap: var(--space-5);
       overflow: visible;
       margin-inline: 0;
       padding-inline: 0;
     }
   }
+
+  .occasion { display: block; color: var(--color-heading); text-decoration: none; }
+  .occasion.media { --ratio: 4 / 5; }
+  .occasion__img { transition: scale 700ms var(--ease-out); }
+  .occasion__label {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    max-width: calc(100% - 20px);
+    padding: 9px 16px 10px;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--white) 92%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 22px -14px rgb(78 58 49 / .55);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--cocoa-deep);
+    white-space: nowrap;
+  }
+  .occasion__label .icon, .occasion__go .icon { flex: none; width: 15px; height: 15px; transition: translate var(--dur-panel) var(--ease-out); }
+  .occasion__label .icon { opacity: .6; }
+
+  /* The price tile: no photo, the number is the picture. */
+  .occasion--price {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: var(--space-2);
+    aspect-ratio: 4 / 5;
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
+    background: var(--blush);
+    text-align: center;
+    transition: background-color var(--dur-state) ease;
+  }
+  .scheme-blush .occasion--price { background: var(--blush-soft); box-shadow: inset 0 0 0 1px var(--color-line-strong); }
+  .occasion--price > .icon { width: 40px; height: 40px; margin-bottom: var(--space-1); }
+  .occasion__kicker { font-size: var(--fs-label); letter-spacing: var(--tracking-label); text-transform: uppercase; font-weight: 500; color: var(--cocoa); }
+  .occasion__amount { font-family: var(--font-serif); font-style: italic; font-weight: 600; font-size: clamp(2.75rem, 2.3rem + 1.6vw, 3.5rem); line-height: 1; }
+  .occasion__go {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding-bottom: 3px;
+    border-bottom: 1.5px solid currentColor;
+    font-size: .8125rem;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+
+  .occasion:active { scale: .98; transition: scale var(--dur-press) ease; }
+  @media (hover: hover) {
+    .occasion:hover .occasion__img { scale: 1.04; }
+    .occasion:hover :is(.occasion__label, .occasion__go) .icon { opacity: 1; translate: 3px 0; }
+    .occasion--price:hover { background: color-mix(in srgb, var(--blush) 82%, var(--rose)); }
+  }
+  @media (prefers-reduced-motion: reduce) { .occasion__img, .occasion:active { transition: none; scale: none; } }
 {% endstylesheet %}
 
 {% schema %}
 {
   "name": "Shop by occasion",
   "tag": "div",
-  "max_blocks": 8,
+  "max_blocks": 6,
   "settings": [
     { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Gifting" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "A gift for every occasion" },
-    { "type": "textarea", "id": "text", "label": "Text", "default": "Thoughtful handmade gifts that last, for the people you never forget." },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "Thoughtful handmade gifts that last, for the people you never forget.", "info": "Shown on desktop." },
+    { "type": "text", "id": "link_label", "label": "Link label", "default": "All gifts", "info": "Shown on desktop, beside the heading." },
+    { "type": "url", "id": "link", "label": "Link", "info": "Leave empty for all products." },
     {
       "type": "select",
       "id": "scheme",
@@ -81,7 +181,8 @@
         { "value": "soft", "label": "Soft blush" },
         { "value": "blush", "label": "Blush" }
       ],
-      "default": "soft"
+      "default": "white",
+      "info": "White sets it apart from Bestsellers above it."
     }
   ],
   "blocks": [
@@ -89,8 +190,29 @@
       "type": "occasion",
       "name": "Occasion",
       "settings": [
-        { "type": "text", "id": "label", "label": "Label", "default": "Birthday" },
-        { "type": "url", "id": "link", "label": "Link", "info": "Point each occasion at its own collection, so it can rank for searches like \"crochet bouquet for anniversary\"." }
+        { "type": "text", "id": "label", "label": "Label", "default": "Birthday", "info": "Leave empty to use the collection's name." },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "An automated collection by tag, e.g. occasion-birthday. The tile hides while it's empty, and its page can rank for searches like \"crochet bouquet for birthday\"."
+        },
+        { "type": "image_picker", "id": "image", "label": "Photo", "info": "Portrait, 4:5. Leave empty to use the collection's image or its first product's photo." }
+      ]
+    },
+    {
+      "type": "price",
+      "name": "Price tile",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "kicker", "label": "Small label", "default": "Gifts under" },
+        { "type": "text", "id": "amount", "label": "Amount", "default": "₹999" },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "An automated collection: price is less than the amount, and tag is not free-gift. The tile hides while it's empty."
+        }
       ]
     }
   ],
@@ -100,9 +222,9 @@
       "blocks": [
         { "type": "occasion", "settings": { "label": "Birthday" } },
         { "type": "occasion", "settings": { "label": "Anniversary" } },
-        { "type": "occasion", "settings": { "label": "Valentine's" } },
+        { "type": "occasion", "settings": { "label": "Thank you" } },
         { "type": "occasion", "settings": { "label": "For her" } },
-        { "type": "occasion", "settings": { "label": "Under ₹999" } }
+        { "type": "price" }
       ]
     }
   ]
