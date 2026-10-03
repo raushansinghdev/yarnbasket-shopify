@@ -115,7 +115,7 @@ Also: delivery, Cash on Delivery and returns appear nowhere above the fold. The 
 
 | # | Question | Choice | Status |
 |---|---|---|---|
-| H1 | Hero photos on phones | **Peek row:** portrait photos at 62% width, the next one peeking in | Approved |
+| H1 | Hero photos on phones | **Peek row:** portrait photos at 62% width, the next one peeking in (square since 2026-10-03, 68% since 2026-10-04: see decisions.md) | Approved |
 | H2 | The two big buttons | **Phones: one text link** "Shop all crochet →". **Desktop: one pill** with the arrow knob (changed in v2, see §3.2) | Phones approved; **desktop to review** |
 | H3 | "Find a gift" | Leaves the hero. Gifting lives in "A gift for every occasion" and the menu | Approved |
 | H4 | Intro text | Shorter: "Bouquets, keychains, clips and charms, crocheted by hand." | Approved |

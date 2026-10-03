@@ -1196,6 +1196,49 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   await lite.browser.close();
 }
 
+// 19. Compact footer (docs/footer-compact-plan.md): on a 360px phone the footer is at most 400px tall with no short
+//     rule (the row of stitches is the one divider); every link is at least 32px tall; the corner flowers keep 17px
+//     from every word and the basket; no sideways scroll down to 320. A desktop keeps the rule, at most 460px tall.
+if (want('19')) {
+  const measure = async (engine, viewport, phone = true) => {
+    const { browser, page } = await open(engine, { viewport, deviceScaleFactor: 2, isMobile: phone, hasTouch: phone }, { reducedMotion: 'reduce' });
+    const r = await page.evaluate(() => {
+      const f = document.querySelector('.footer');
+      if (!f) return null;
+      // The words themselves, not the links' 40px tap boxes.
+      const words = [...f.querySelectorAll('a, p')].flatMap((el) => { const range = document.createRange(); range.selectNodeContents(el); return [...range.getClientRects()]; });
+      words.push(f.querySelector('.footer__mark').getBoundingClientRect());
+      const gaps = [...f.querySelectorAll('.footer__flower')].filter((el) => el.getClientRects().length).map((el) => {
+        const a = el.getBoundingClientRect();
+        return Math.round(Math.min(...words.map((t) => Math.hypot(Math.max(t.left - a.right, a.left - t.right, 0), Math.max(t.top - a.bottom, a.top - t.bottom, 0)))));
+      });
+      return {
+        height: Math.round(f.getBoundingClientRect().height),
+        rule: f.querySelector('.footer__rule').getClientRects().length > 0,
+        link: Math.min(...[...f.querySelectorAll('a')].map((a) => Math.round(a.getBoundingClientRect().height))),
+        clear: gaps.length ? Math.min(...gaps) : null,
+        // Each wrapped row of help links, a social row and a payment row add height when they are set up.
+        extra: Math.round((f.querySelector('.footer__menus')?.getBoundingClientRect().height ?? 0) - 60) + ['.footer__social', '.footer__payments'].reduce((n, s) => n + (f.querySelector(s) ? Math.round(f.querySelector(s).getBoundingClientRect().height) + 20 : 0), 0),
+        sideways: document.documentElement.scrollWidth > innerWidth + 1,
+      };
+    });
+    await browser.close();
+    return r;
+  };
+  for (const [label, engine] of QUICK ? [['Chrome', chromium]] : [['Chrome', chromium], ['Safari', webkit]]) {
+    const p = await measure(engine, { width: 360, height: 800 });
+    if (!p) { record(`Footer, ${label}`, false, 'no footer on the home page'); continue; }
+    record(`Footer, ${label} 360: compact, one divider`, p.height <= 400 + Math.max(0, p.extra) && !p.rule, `${p.height}px (limit ${400 + Math.max(0, p.extra)}), short rule shown: ${p.rule}`);
+    record(`Footer, ${label} 360: links at least 32px tall`, p.link >= 32, `smallest ${p.link}px`);
+    for (const width of [320, 360, 390]) {
+      const s = width === 360 ? p : await measure(engine, { width, height: 800 });
+      record(`Footer, ${label} ${width}: flowers clear of words`, (s.clear === null || s.clear >= 17) && !s.sideways, `nearest ${s.clear}px, sideways scroll: ${s.sideways}`);
+    }
+  }
+  const d = await measure(chromium, { width: 1280, height: 800 }, false);
+  if (d) record('Footer, desktop 1280: trimmed, rule kept', d.height <= 460 + Math.max(0, d.extra) && d.rule, `${d.height}px (limit ${460 + Math.max(0, d.extra)}), short rule shown: ${d.rule}`);
+}
+
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
 process.exit(failed.length ? 1 : 0);

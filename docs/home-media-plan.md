@@ -8,7 +8,7 @@ Status: **built 2026-10-02** (stages A–E). Raushan reviewed the plan, changed 
   - **Measured at 360 × 780:** photos 198 × 198, and the craft circles start at **644px (was 691)**. At 390 × 844 (iPhone): 215 × 215, circles at 662. At 1280 × 800: the frame is 449 × 449.
 - **Campaign block (B):**
   - Built as specified: at most one; "Show from" / "Show until"; it's slide 1 and gets `fetchpriority=high`, while the product photo loses its priority.
-  - On phones the card is 4:3 at `62% × 4/3` (264 × 198 at 360, so the next photo still peeks in by 64px). At 44% × 4/3 on tablets.
+  - On phones the card is 4:3 at `68% × 4/3` (290 × 217 at 360, so the next photo still peeks in by 38px; it was 62% until 2026-10-04). At 44% × 4/3 on tablets.
   - The desktop photo comes through `<picture>`. Without one, the phone photo is shown whole (`object-fit: contain`, Soft blush mat). With only a desktop photo, the phone card is square.
   - The CTA switches to the campaign's button label and link while it's live.
   - **Theme editor only:** a campaign outside its dates still shows, with a dark note ("Not on the site now: shows … to …"); a campaign with no end date says so.
@@ -74,7 +74,7 @@ Raushan asked whether banner-style photos (wide images, process photos, videos o
 ### What changes
 On phones and tablets (below 990px), the swipe-row photos go from **4:5 to 1:1**:
 - Raushan's product photos are 1254px squares, so **nothing is cropped**.
-- Everything else stays: 62% of the row wide (44% on tablets), a 12px gap, the next photo peeking in, the name and price labels, the main photo as the page's LCP image, and loading one photo ahead.
+- Everything else stays: 62% of the row wide (68% since 2026-10-04; 44% on tablets), a 12px gap, the next photo peeking in, the name and price labels, the main photo as the page's LCP image, and loading one photo ahead.
 
 ### Numbers (360 × 780 phone, content 328px wide)
 

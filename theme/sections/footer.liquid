@@ -126,23 +126,26 @@
   .footer {
     position: relative;
     overflow: clip;
-    padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+    /* Compact (docs/footer-compact-plan.md): the footer signs off, so it takes less room than a section. */
+    padding-top: 2.5rem;
+    padding-bottom: max(var(--space-5), env(safe-area-inset-bottom));
     text-align: center;
   }
   .footer.scheme-blush { border-top: 1px solid var(--color-line-strong); }
   .footer a { color: inherit; text-decoration: none; }
 
   /* The banner: logo lockup, short rule, crafts on one line. */
-  .footer__banner { position: relative; display: grid; justify-items: center; gap: var(--space-5); padding-bottom: var(--space-8); }
+  /* The help row sits right under the crafts, so brand, crafts and help read as one block. */
+  .footer__banner { position: relative; display: grid; justify-items: center; gap: 1.25rem; padding-bottom: var(--space-2); }
   .footer__logo { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-3) var(--space-4); max-width: 100%; text-align: left; }
-  .footer__mark { width: 76px; height: 76px; flex: none; transition: transform var(--dur-panel) var(--ease-out); }
+  .footer__mark { width: 56px; height: 56px; flex: none; transition: transform var(--dur-panel) var(--ease-out); }
   .footer__lockup { display: grid; gap: 8px; min-width: 0; }
   .footer__name {
     font-family: var(--font-serif);
     font-style: italic;
     font-weight: 600;
     /* Capped by the screen's width, so the name stays on one line beside the basket at large text. */
-    font-size: min(2.375rem, 11.5vw);
+    font-size: min(2rem, 9.5vw);
     line-height: 1;
     color: var(--color-heading);
   }
@@ -155,7 +158,8 @@
   }
   @media (hover: hover) { .footer__logo:hover .footer__mark { transform: rotate(-6deg); } }
 
-  .footer__rule { width: min(220px, 50%); height: 1px; background: var(--color-line-strong); }
+  /* Phones have one divider, the row of stitches above the copyright line; the short rule starts at 750px. */
+  .footer__rule { display: none; width: min(220px, 50%); height: 1px; background: var(--color-line-strong); }
   /* The short rule draws itself as the banner arrives. */
   @media (prefers-reduced-motion: no-preference) {
     .footer__banner.is-arriving > .footer__rule { animation-name: rule-draw; animation-duration: 600ms; }
@@ -185,7 +189,7 @@
   .footer__social .icon-btn { color: var(--color-heading); }
 
   /* Help and policy links: one quiet centred row per menu, wrapping on phones. */
-  .footer__menus { display: grid; gap: var(--space-2); padding-bottom: var(--space-6); }
+  .footer__menus { display: grid; gap: var(--space-2); padding-bottom: 1.25rem; }
   .footer__menu ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 var(--space-5); }
   .footer__menu a {
     display: inline-flex;
@@ -202,8 +206,8 @@
   .footer__base {
     display: grid;
     justify-items: center;
-    gap: var(--space-3);
-    padding-top: var(--space-5);
+    gap: var(--space-1);
+    padding-top: 1.25rem;
     /* A row of stitches instead of a plain rule, as on the brand's Instagram covers. */
     background: repeating-linear-gradient(90deg, var(--color-line-strong) 0 7px, transparent 7px 13px) top left / 100% 1.5px no-repeat;
     font-size: .8125rem;
@@ -251,14 +255,20 @@
   @media (max-width: 749px) {
     .footer__flower--a { width: 36px; top: var(--space-4); left: -22px; }
     .footer__flower--b { width: 30px; top: var(--space-3); right: -10px; }
-    .footer__flower--c { width: 30px; top: auto; bottom: 170px; left: 6px; }
-    .footer__flower--d { width: 46px; top: auto; bottom: 186px; right: -18px; }
+    .footer__flower--c { width: 30px; top: auto; bottom: 126px; left: 6px; }
+    .footer__flower--d { width: 46px; top: auto; bottom: 153px; right: -18px; }
   }
   /* Narrow phones: the logo fills the width, so only the two flowers with clear space stay. */
   @media (max-width: 389px) {
     .footer__flower--a, .footer__flower--d { display: none; }
+    .footer__flower--b { width: 24px; top: 2px; }
   }
   @media (min-width: 750px) {
+    .footer { padding-top: var(--space-8); padding-bottom: max(var(--space-6), env(safe-area-inset-bottom)); }
+    .footer__banner { gap: var(--space-5); padding-bottom: var(--space-6); }
+    .footer__rule { display: block; }
+    .footer__menus { padding-bottom: var(--space-5); }
+    .footer__base { gap: var(--space-3); padding-top: var(--space-5); }
     .footer__mark { width: 104px; height: 104px; }
     .footer__name { font-size: 3.25rem; }
     .footer__tagline { font-size: .8125rem; letter-spacing: .3em; }

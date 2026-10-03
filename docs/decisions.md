@@ -2,6 +2,39 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-04 (compact footer, docs/footer-compact-plan.md)
+
+- **The footer is about 30% shorter on phones and 15% shorter on desktop, with the same content.** Raushan found it too tall. It was 520px on a 360 × 800 phone (65% of a screen) for a logo and seven links, and about 210px of that was empty space. It is now 369px at 320 to 430 wide, 441px at 1280 (was 516) and 474px at 768.
+- **Phones (under 750px):**
+  - 40px above the logo (was 58), 24px at the bottom (was 32).
+  - Basket 56px (was 76), name 32px (was 38). The header carries the name; the footer signs off.
+  - No short rule: the row of stitches above the copyright line is the one divider. The rule and its draw-in stay from 750px.
+  - The help row sits 8px under the crafts (was 64), so brand, crafts and help read as one block.
+  - Copyright and policy links are 4px apart (was 12); the policy links are 32px tall, so they keep their own air.
+- **Desktop and tablets:** 64px above the logo (was the section space, 99px at 1280), 32px under the crafts (was 64), 24px under the help row (was 32). Logo size, rule and one-line crafts are unchanged.
+- **Not changed:** content and order, tap heights (40px crafts and help, 32px policies), Soft blush, the flowers and their motion. No accordion: seven links don't need hiding.
+- **Flowers still keep 17px from every word** (the 2026-10-01 rule): the left one sits beside the help row, and under 390px the top-right one is 24px (was 30) because the logo now starts higher. Measured nearest: 23px at 320, 29px at 360, 24px at 390.
+- **Check 19:** at 360 the footer is at most 400px with no short rule; links at least 32px tall; flowers 17px clear at 320, 360 and 390; desktop at most 460px with the rule. The limits grow by the height of extra help rows, social icons and payment icons once those are set up.
+- **Still to come (launch admin):** the footer menu holds only "Search", which the header already offers. Real help links add 40px per wrapped row.
+
+## 2026-10-04 (the header is not pinned while scrolling down)
+
+- **The header keeps hiding on the way down and returning on the way up.** Raushan asked whether it should stay on screen, since it is the only route to search and the menu. It has to be reachable, not always visible, and it is: about 48px of upward scroll brings it back from anywhere on any page.
+  - It is the same gesture as Chrome's own address bar on Android.
+  - The catalogue is small and browse-led; shoppers scrolling down are looking at products, and a pinned bar would take about 60px of every phone screen.
+- **The header does not slide back in when something is added to the cart.** The added-to-cart pop-up (cart-plan.md, D2) already says so with the photo, the title and View cart for about 8 seconds; a second thing moving at the top would repeat it. The badge updates while hidden and is correct when the header returns.
+- **Reopen only if shoppers are seen not finding search or the menu after launch.** Pinning is a small change in the header block of `assets/theme.js`.
+- No code change.
+
+## 2026-10-04 (phone first screen: design review, three small fixes)
+
+- **Review of the first screen at 360px (Raushan asked for a designer's verdict).** The layout is sound: one 20px left edge and one right edge shared by the header, heading, photo row, Bestsellers and the grid; 24px gaps inside a group and a larger pause between groups; products on the first screen. Three things were off, all fixed:
+  - **Hero photos are 68% of the row on phones (was 62%).** At 360px the first label ("Sunflower bouquet ₹1,299") needed about 183px and had 178px, so it wrapped to two lines beside a one-line neighbour. Now the photo is 217px (was 198), every label is one line (28px tall at 360, 390 and 412), and half of the next photo shows (111px) instead of two-thirds with its price cut. A campaign card is `68% × 4/3` (290px at 360; the next photo peeks in by 38px). Tablets stay at 44%.
+  - **Section headings are 28px on phones (was about 33px).** `--fs-h2` is `clamp(1.75rem, 1.2rem + 2.5vw, 3.125rem)`. The hero heading is 38px, so the ratio went from 1.16 to 1.36 and "Bestsellers" no longer competes with it. This applies to every section heading and to the collection and cart page titles; the desktop maximum (50px) is unchanged.
+  - **The pause before Bestsellers is 48px (was 56px)**, plus the hero's 8px, to pay back most of the taller photo. It is still more than twice the gaps inside each group.
+- **Measured at 360 × 780:** craft circles start at 588px. Checks 10 and 12 pass (24/24, Chrome).
+- **Left alone on purpose:** the search icon sits closer to the logo than the menu icon does (the cost of a centred name with one icon on the left and two on the right); "stitched with love" is wider than the serif lines; the cut-off fourth circle is the swipe cue; the chosen circle keeps ring, bold label and underline.
+
 ## 2026-10-04 (fluid feel, docs/fluid-feel-plan.md)
 
 - **No backdrop blur anywhere (phase C).** Raushan compared with and without on a Galaxy S24 Ultra in Chrome and could see no difference, and chose to remove it. The header is Blush Soft at 96% (was 88% with a 14px blur); chips on photos are white at 96%. A blur is redrawn on every frame something moves under it, so it could only cost frames on cheaper phones. Don't add `backdrop-filter` back; check 6b fails if any appears.

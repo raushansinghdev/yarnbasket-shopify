@@ -233,7 +233,7 @@
         With a product chosen, a photo shows its name and live price (hero-tag), and that label names the link.
       {%- endcomment -%}
       {%- liquid
-        assign img_sizes = '(min-width: 990px) 46vw, (min-width: 600px) 44vw, 62vw'
+        assign img_sizes = '(min-width: 990px) 46vw, (min-width: 600px) 44vw, 68vw'
         assign demo_slides = ''
         if photo_count == 0 and settings.demo_content
           assign demo_slides = 'bee-keychain|Bee crochet keychain|bee-chick-keychain-set|Bee keychain,cat-hair|Crochet flower hair clips|flower-hair-clips-set-of-8|Flower hair clips,cat-charms|Lily of the valley bag charm|lily-of-the-valley-bag-charm|Lily bag charm' | split: ','
@@ -303,7 +303,7 @@
                   {%- endif -%}
                   {{- c_phone | image_url: width: 1800 | image_tag:
                     widths: '480, 640, 828, 1080, 1440, 1800',
-                    sizes: '(min-width: 990px) 46vw, (min-width: 600px) 59vw, 83vw',
+                    sizes: '(min-width: 990px) 46vw, (min-width: 600px) 59vw, 91vw',
                     loading: img_loading,
                     fetchpriority: c_fetch,
                     class: 'hero__img',
@@ -697,18 +697,19 @@
     .hero__media::-webkit-scrollbar { display: none; }
     .hero__slide {
       position: relative;
-      flex: 0 0 62%;
+      /* 68%: at 360px the photo is 218px, a name and price fit on one line, and half of the next photo shows. */
+      flex: 0 0 68%;
       aspect-ratio: 1;
       overflow: hidden;
       border-radius: var(--radius-lg);
       background: var(--color-surface);
       scroll-snap-align: start;
     }
-    /* A single photo fills the width, square, rather than sitting alone at 62%. */
+    /* A single photo fills the width, square, rather than sitting alone at 68%. */
     .hero__frame:not([data-hero-slides]) .hero__slide { flex-basis: 100%; aspect-ratio: 1; }
     /* A campaign is a 4:3 card exactly as tall as the squares beside it: wider, never taller (home-media-plan §3). */
-    .hero__slide.hero__slide--campaign { flex-basis: calc(62% * 4 / 3); aspect-ratio: 4 / 3; }
-    .hero__slide.hero__slide--square { flex-basis: 62%; aspect-ratio: 1; }
+    .hero__slide.hero__slide--campaign { flex-basis: calc(68% * 4 / 3); aspect-ratio: 4 / 3; }
+    .hero__slide.hero__slide--square { flex-basis: 68%; aspect-ratio: 1; }
     .hero__controls, .hero__flower { display: none; }
     /* The row's last card: "See all gifts", narrower than a photo, so it reads as the end of the row. */
     .hero__all {
@@ -748,7 +749,7 @@
   /* When Bestsellers follows the hero, it moves up too: the hero already gives it room. */
   @media (max-width: 989px) {
     /* A clear pause after the photo row (home-calm-plan S4), so the hero and Bestsellers read as two chapters. */
-    .shopify-section:has(> .hero) + .shopify-section > [data-shop-crafts] { padding-top: 3.5rem; }
+    .shopify-section:has(> .hero) + .shopify-section > [data-shop-crafts] { padding-top: 3rem; }
     .shopify-section:has(> .hero) + .shopify-section > [data-shop-crafts] .section-head { gap: var(--space-1); }
   }
 
