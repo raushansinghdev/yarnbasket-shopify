@@ -153,7 +153,8 @@
      The hero's heading keeps a narrow 12ch measure, so there it may be as wide as the screen allows. */
   .yarn-word { display: block; }
   .yarn { display: block; width: min(var(--yarn-w-phone), 100%); max-width: none; height: auto; margin: .04em 0 .06em -.1em; overflow: visible; }
-  h1 .yarn { width: min(var(--yarn-w-phone), calc(100vw - 2 * var(--gutter))); }
+  /* In the hero the lettering follows a line of type: room for that line's descenders and comma above the tall letters. */
+  h1 .yarn { width: min(var(--yarn-w-phone), calc(100vw - 2 * var(--gutter))); margin-top: .2em; }
   h2:has(> .yarn-word) { justify-self: stretch; }
   @media (min-width: 990px) {
     .yarn { width: min(var(--yarn-w), 100%); }
