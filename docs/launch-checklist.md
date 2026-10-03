@@ -42,7 +42,7 @@ Things to finish in the Shopify admin (Raushan) before the store opens. Deferred
   3. **Branding:** home page `https://yarnbasket.in`, privacy `https://yarnbasket.in/policies/privacy-policy`, terms `https://yarnbasket.in/policies/terms-of-service`, authorised domain `yarnbasket.in`. Then upload the logo (`docs/branding/`) and submit for brand verification, so Google's popup says "Yarn Basket".
   4. **When the @yarnbasket.in Workspace email exists:** add it as Owner (IAM), and make it the support and developer contact email.
   5. Test: sign in with a Gmail that has never signed in before, on Android Chrome and iPhone Safari, on the live domain.
-- [ ] Checkout & accounts branding: being done now on the dev store, with every value listed in account-branding-plan §3 (logo and sign-in photo are in `docs/branding/`)
+- [x] **Checkout & accounts branding: done 2026-10-03** (Settings → Checkout → Customize, "Yarn Basket configuration"). Values are in decisions.md 2026-10-03 "Checkout and account pages branded". Sign in with Shop is off.
 - [ ] Customer accounts: sign-in links on; sign-in optional at checkout; shipping phone number required
 - [ ] Self-serve returns, with made-to-order pieces as final sale (return rules)
 - [ ] Notification emails: logo and Cocoa accent

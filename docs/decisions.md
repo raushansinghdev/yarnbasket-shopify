@@ -29,6 +29,17 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **Shopify's sign-in, profile and order pages get styled, not replaced** (no theme can host them with current accounts). Colours, logo and fonts are set in the checkout and accounts editor to match our account page: Soft blush page, white cards, Cocoa Deep buttons and links, our horizontal logo, Jost (plus Cormorant if listed). The desktop sign-in photo is the pink tulips and daisy bouquet. Done now on the dev store with Raushan; the `account.` domain follows at launch.
 - **Help is out of the account dropdown.** The navigation's Help menu (Track order, Shipping & delivery, FAQ, Contact, Our story) stays as it is. It's the customer-service menu for everyone, including guests. Order problems go through each order card's "Need help?", and Shopify's account menu keeps Help because those pages have no store navigation.
 
+## 2026-10-03 (checkout and account pages branded, docs/account-branding-plan.md §3)
+
+Set by Raushan in Settings → Checkout → Customize, guided step by step:
+- **Logo:** `docs/branding/logo-name-640.png` (basket icon + "Yarn Basket", without the tagline, which would be unreadable at this size), 140px, left. On the sign-in page Shopify centres it.
+- **Colour palette:** Cocoa Deep `#4E3A31`, white `#FFFFFF`, Soft blush `#FBF1EE`. Main and header backgrounds `#FBF1EE`. Accent (links, cart icon) and buttons Cocoa Deep. The order summary background is Soft blush. Input-field error colour `#A3341F`. Fields stay white (Transparent off).
+- **Fonts:** headings **Cormorant** (it looked clear on the phone preview), body **Jost**.
+- **Sign-in page:** Soft blush background, with photo `docs/branding/signin-photo-pink-tulips-daisy.jpg` on the right on desktop (phones don't show it).
+- **Sign in with Shop: off** (Customer accounts → Authentication). It was the loudest, off-brand button. Now it's Google and the email code; Facebook stays unconnected.
+- Unchanged: one-page checkout, address autocompletion on, Buy again on, no "always show discount code" box (offers are automatic). The editor has no corner-radius setting.
+- Still open: the Orders page's "no orders yet" collection (§3.6) waits for a Bestsellers collection (Store setup in the checklist).
+
 ## 2026-10-03 (home calm-down, docs/home-calm-plan.md)
 
 - **Phone hero: one statement per screen.** The description is hidden on phones when there's a photo row (desktop keeps it), with a little more air around the heading and a 64px pause before Bestsellers. The first screen goes from 8 text styles to 5, and the photos start 46px sooner.
