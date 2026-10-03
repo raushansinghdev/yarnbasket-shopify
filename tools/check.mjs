@@ -1,6 +1,7 @@
 // Yarn Basket theme checks: speed, smoothness, motion and accessibility, across Chrome, Safari (WebKit) and Firefox.
 // Usage: npm run check            (full run against the local `shopify theme dev` server)
 //        npm run check:quick      (Chrome only)
+//        npm run check -- --only 4,5,18   (only those sections; add --quick for Chrome only)
 //        node tools/check.mjs --url https://yarnbasket-in.myshopify.com/?preview_theme_id=…
 // Budgets come from docs/motion-plan.md, section 6. Exits non-zero if any check fails.
 import { chromium, webkit, firefox, devices } from 'playwright';
@@ -9,6 +10,11 @@ import axe from 'axe-core';
 const args = process.argv.slice(2);
 const URL = args.includes('--url') ? args[args.indexOf('--url') + 1] : 'http://127.0.0.1:9292/';
 const QUICK = args.includes('--quick');
+// --only 4,5,18 runs just those sections (the numbers in the comments below): enough to verify the work in hand.
+// The full run is for now and then, after a batch of work (Raushan, 2026-10-04).
+const ONLY = args.includes('--only') ? new Set(String(args[args.indexOf('--only') + 1] || '').split(',').map((s) => s.trim()).filter(Boolean)) : null;
+const ran = new Set();
+const want = (id) => { const yes = !ONLY || ONLY.has(id); if (yes) ran.add(id); return yes; };
 
 const BUDGET = { lcpMs: 2000, slowFrames: 0, phoneImagesKB: 1000, ownJsKB: 25, cartJsKB: 22 };
 const results = [];
@@ -51,7 +57,7 @@ const runs = QUICK
     ];
 
 // 1. Arrivals, errors, layout, per browser
-for (const [label, engine, device] of runs) {
+for (const [label, engine, device] of want('1') ? runs : []) {
   const { browser, page, errors } = await open(engine, device);
   const pendingAtLoad = await page.evaluate(() => document.querySelectorAll('.is-pending').length);
   await scrollWholePage(page);
@@ -72,7 +78,7 @@ for (const [label, engine, device] of runs) {
 
 // 1b. Arrivals never keep the shopper waiting (docs/fluid-feel-plan.md): 700ms after landing on any screen of the
 //     home page, nothing in view is still hidden or faded by an arrival.
-for (const [label, device] of [['desktop', devices['Desktop Chrome']], ['phone', devices['Pixel 7']]]) {
+for (const [label, device] of want('1b') ? [['desktop', devices['Desktop Chrome']], ['phone', devices['Pixel 7']]] : []) {
   const { browser, page } = await open(chromium, device);
   const late = await page.evaluate(async () => {
     const worst = [];
@@ -91,7 +97,7 @@ for (const [label, device] of [['desktop', devices['Desktop Chrome']], ['phone',
 }
 
 // 2. Smoothness: slow frames during a cold scroll, CPU slowed 4x (Chrome only: it exposes CPU throttling)
-for (const [label, device] of [['desktop', devices['Desktop Chrome']], ['phone', devices['Pixel 7']]]) {
+for (const [label, device] of want('2') ? [['desktop', devices['Desktop Chrome']], ['phone', devices['Pixel 7']]] : []) {
   const { browser, ctx, page } = await open(chromium, device);
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
@@ -104,7 +110,7 @@ for (const [label, device] of [['desktop', devices['Desktop Chrome']], ['phone',
 }
 
 // 3. Speed: LCP and phone image weight
-{
+if (want('3')) {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ ...devices['Pixel 7'] });
   await ctx.addInitScript(skipIntro);
@@ -134,9 +140,13 @@ for (const [label, device] of [['desktop', devices['Desktop Chrome']], ['phone',
 }
 
 // 4. Accessibility (axe, WCAG 2.2 AA + best practice), phone and desktop
-for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
+for (const [label, device] of want('4') ? [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]] : []) {
   const { browser, page } = await open(chromium, device, { reducedMotion: 'reduce' });
   await scrollWholePage(page);
+  // Back to the top first: where the scroll ends the header is slid off above the screen, and axe counts whatever
+  // sits behind it up there as a covered tap target (an FAQ row, 68px tall, came out as 22px).
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.waitForTimeout(600);
   await page.addScriptTag({ content: axe.source });
   const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
   record(`Accessibility, ${label} (axe)`, v.length === 0, v.join(', ') || '0 violations');
@@ -144,7 +154,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 }
 
 // 5. Reduced motion: complete and still
-{
+if (want('5')) {
   const { browser, page } = await open(chromium, devices['Pixel 7'], { reducedMotion: 'reduce' });
   const pending = await page.evaluate(() => document.querySelectorAll('.is-pending').length);
   record('Reduced motion: nothing waits to appear', pending === 0, `${pending} waiting`);
@@ -152,7 +162,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 }
 
 // 6. Lite mode (data saver): no loops, no intro, slideshow paused
-{
+if (want('6')) {
   const { browser, page } = await open(chromium, devices['Pixel 7'], {
     keepIntro: true,
     init: () => Object.defineProperty(navigator, 'connection', { value: { saveData: true, effectiveType: '4g' } }),
@@ -167,7 +177,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 }
 
 // 6b. No backdrop blur anywhere (docs/fluid-feel-plan.md phase C): it is redrawn on every frame of a scroll
-for (const path of ['', 'collections/all', 'cart', 'search?q=flower']) {
+for (const path of want('6b') ? ['', 'collections/all', 'cart', 'search?q=flower'] : []) {
   const { browser, page } = await open(chromium, devices['Pixel 7']);
   if (path) await page.goto(new globalThis.URL('/' + path, URL).href, { waitUntil: 'load' });
   const blurred = await page.evaluate(() => [...document.querySelectorAll('*')].filter((el) => getComputedStyle(el).backdropFilter !== 'none').map((el) => el.className || el.tagName));
@@ -175,15 +185,9 @@ for (const path of ['', 'collections/all', 'cart', 'search?q=flower']) {
   await browser.close();
 }
 
-// 7. Search (docs/search-plan.md): the panel opens with focus in the field, results arrive as you type,
-//    nothing in it loads before it's opened, and axe passes with results showing. Phone and desktop.
-for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
-  const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
-  const before = await page.evaluate(() => ({
-    imgs: [...document.querySelectorAll('#SearchPanel img')].filter((img) => img.complete && img.naturalWidth).length,
 // 6c. Our story on a phone (docs/story-phone-plan.md): the whole Blush panel fits one 360 × 800 screen, the clip is
 //     landscape, and the icon shares a row with the small label.
-{
+if (want('6c')) {
   const { browser, page } = await open(chromium, { viewport: { width: 360, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, { reducedMotion: 'reduce' });
   const s = await page.evaluate(() => {
     const box = (sel) => document.querySelector(sel)?.getBoundingClientRect();
@@ -205,6 +209,12 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   await browser.close();
 }
 
+// 7. Search (docs/search-plan.md): the panel opens with focus in the field, results arrive as you type,
+//    nothing in it loads before it's opened, and axe passes with results showing. Phone and desktop.
+for (const [label, device] of want('7') ? [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]] : []) {
+  const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
+  const before = await page.evaluate(() => ({
+    imgs: [...document.querySelectorAll('#SearchPanel img')].filter((img) => img.complete && img.naturalWidth).length,
     js: performance.getEntriesByType('resource').filter((r) => /search\.js/.test(r.name)).length,
   }));
   record(`Search, ${label}: nothing loads before it opens`, before.imgs === 0 && before.js === 0, `${before.imgs} photos, ${before.js} search.js requests`);
@@ -225,7 +235,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   record(`Search, ${label}: Esc clears, then closes`, closed && errors.length === 0, `closed: ${closed}${errors.length ? `, errors: ${errors[0]}` : ''}`);
   await browser.close();
 }
-{
+if (want('7')) {
   const { browser, page } = await open(chromium, devices['Pixel 7'], { reducedMotion: 'reduce' });
   await page.goto(new globalThis.URL('/search?q=flower', URL).href, { waitUntil: 'load' });
   await page.waitForTimeout(1000);
@@ -236,7 +246,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 }
 // Results page (docs/search-results-plan.md): one search box (the header's pill steps back), the lens jumps to it,
 // sort works in place and is announced with focus kept, and no results still has a way on. Phone and desktop.
-for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
+for (const [label, device] of want('7') ? [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]] : []) {
   const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
   const results = (q) => new globalThis.URL(`/search?q=${q}&options%5Bprefix%5D=last`, URL).href;
   await page.goto(results('bouquet'), { waitUntil: 'load' });
@@ -264,7 +274,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 // 8. Cart (docs/cart-plan.md): add from a product page → pop-up → drawer; +, bin, Undo; Back closes the drawer;
 //    the stock limit says why; axe on the drawer and the page; the page works without JavaScript. Needs products:
 //    import tools/test-products.csv first (skipped otherwise).
-{
+if (want('8')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift')), () => []);
   const single = products.find((p) => p.variants.length === 1 && p.variants[0].available && !/lily/.test(p.handle));
@@ -353,7 +363,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //     the added-to-cart pop-up is one 64px pill with "Added to cart" on one line and no rewards line. One product is
 //     one line even when Shopify splits it in two for the gift's discount, and its + changes the whole quantity.
 //     Checked with a step ahead and with everything unlocked, on a 320, a 360 and a 390px phone. Needs products.
-{
+if (want('8b')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift') && p.variants[0].available && !/lily/.test(p.handle)), () => []);
   const cheap = products.filter((p) => p.variants.length === 1).sort((a, b) => a.variants[0].price - b.variants[0].price)[0];
@@ -483,7 +493,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //    Shopify's sheet (phones) and Esc returns to the menu button; the Saved page draws the list, Remove + Undo work;
 //    a shared link is read-only with "Save all"; axe on the Saved (full and empty) and Track pages. Until Raushan
 //    creates the Saved and Track pages, they're previewed on /pages/contact with ?view=. Needs products.
-{
+if (want('9')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift')), () => []);
   const handles = products.filter((p) => p.variants.some((v) => v.available)).slice(0, 3).map((p) => p.handle);
@@ -578,7 +588,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //     name; the trust line is plain text, not a tab stop; no sideways scroll from 320 to 412 wide. A calmer first
 //     screen (docs/home-calm-plan.md): on phones with a photo row the hero description is hidden, and Bestsellers ends
 //     in one solid button, centred, phone and desktop.
-{
+if (want('10')) {
   const phone = { viewport: { width: 360, height: 780 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
   for (const [label, engine] of QUICK ? [['Chrome', chromium]] : [['Chrome', chromium], ['Safari', webkit]]) {
     const { browser, page, errors } = await open(engine, phone, { reducedMotion: 'reduce' });
@@ -638,7 +648,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //     line is there and passes axe, and the admin agrees with the theme: Shopify's real shipping rates (Delhi) have a
 //     ₹0 rate from the free-shipping amount and none below it, the flat fee matches, and the gift arrives free.
 //     Needs products; the admin checks are skipped while the offers are off.
-{
+if (want('11')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const phone = { viewport: { width: 360, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
   const { browser, page, errors } = await open(chromium, phone, { reducedMotion: 'reduce' });
@@ -718,7 +728,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //     downloads nothing until the section is near, plays muted while it's in view, pauses on the button and when
 //     scrolled away, and never starts by itself with reduced motion or data saver (nothing is even fetched).
 //     Campaign cards are tested by hand: they need a dated block and Files images (home-media-plan "As built").
-{
+if (want('12')) {
   const phone = { viewport: { width: 360, height: 780 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
   const media = async (device, opts = {}) => {
     const { browser, page, errors } = await open(chromium, device, { reducedMotion: opts.reduce ? 'reduce' : 'no-preference', init: opts.init });
@@ -821,7 +831,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //     Phones (docs/account-phone-plan.md): the greeting row goes to Your details, which is its own page there (axe,
 //     one h1, the details, Edit, Sign out, a way back); desktop keeps the card and the greeting is plain. Recently
 //     viewed on the account page can be cleared.
-{
+if (want('13')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const acct = (await fetch(site('/pages/account'))).ok ? site('/pages/account') : site('/pages/contact?view=account');
   const demoUrl = site('/pages/contact?view=account-demo');
@@ -927,7 +937,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //     and a yarn ball arrive and write it, and it ends finished: nothing still moving, the strand whole, the i's
 //     dotted, the hook and ball gone. A tap, or scrolling it away, finishes it at once. It waits for the logo intro.
 //     The clip beside it waits for the words. With reduced motion it's simply there. The headings read as plain words.
-{
+if (want('14')) {
   const home = await fetch(URL).then((r) => r.text()).catch(() => '');
   const hasHero = /class="hero[\s\S]*?class="yarn"/.test(home);
   const hasStory = home.includes('yarn yarn--play');
@@ -1035,7 +1045,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 // 15. Gifting (docs/gifting-plan.md): the occasion shelf stands apart from its neighbours (its own background), every
 //     tile is a link to its own collection (or, with Demo content, to all products), phones swipe the row without the
 //     page scrolling sideways, desktop shows every tile in one row, and axe finds nothing.
-{
+if (want('15')) {
   const home = await fetch(URL).then((r) => r.text()).catch(() => '');
   if (!home.includes('class="section occasions')) console.log('SKIP  Gifting                                           no "Shop by occasion" section on the home page');
   else {
@@ -1082,7 +1092,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //     browser's text size at 130% (desktop) and 200% (phone) nothing is pushed past the screen and the cart button
 //     can still be reached; hero photo labels show whole names on a 360px phone; and when the network drops, the
 //     cart says so in its own words and goes back to the quantity Shopify has.
-{
+if (want('16')) {
   const base = URL.replace(/\/$/, '').replace(/\/\?.*$/, '');
   const big = async (device, size, path = '/') => {
     const browser = await chromium.launch();
@@ -1163,7 +1173,7 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
 //     thin line shows at the top (after 300ms, never for a link within the page, gone on the new page; with reduced
 //     motion it appears without moving), and on a phone in Chrome the links in view are fetched ahead, so the tapped
 //     page comes from that fetch.
-{
+if (want('17')) {
   const line = async (label, engine, device, reducedMotion) => {
     const { browser, page } = await open(engine, device, { reducedMotion });
     await page.route('**/collections/**', async (route) => { if (route.request().isNavigationRequest()) await new Promise((r) => setTimeout(r, 1500)); route.continue(); });
@@ -1220,6 +1230,42 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
   await lite.browser.close();
 }
 
+// 18. Our promise (docs/promise-strip-plan.md): on a 360px phone the promises sit in one row (2 × 2 when there are
+//     four) in a card no taller than 180px, titles only; no title is cut off down to 320 wide; a desktop still shows
+//     the sentences.
+if (want('18')) {
+  const measure = async (engine, viewport, phone = true) => {
+    const { browser, page } = await open(engine, { viewport, deviceScaleFactor: 2, isMobile: phone, hasTouch: phone }, { reducedMotion: 'reduce' });
+    const r = await page.evaluate(() => {
+      const box = document.querySelector('.promise__box');
+      if (!box) return null;
+      const items = [...box.querySelectorAll('.promise__item')];
+      const texts = [...box.querySelectorAll('.promise__text')];
+      return {
+        count: items.length,
+        rows: new Set(items.map((li) => Math.round(li.getBoundingClientRect().top))).size,
+        height: Math.round(box.getBoundingClientRect().height),
+        texts: texts.length,
+        shown: texts.filter((p) => p.getClientRects().length).length,
+        cut: [...box.querySelectorAll('.promise__title')].filter((p) => p.scrollWidth > p.clientWidth + 1).length,
+        sideways: document.documentElement.scrollWidth > innerWidth + 1,
+      };
+    });
+    await browser.close();
+    return r;
+  };
+  for (const [label, engine] of QUICK ? [['Chrome', chromium]] : [['Chrome', chromium], ['Safari', webkit]]) {
+    const p = await measure(engine, { width: 360, height: 800 });
+    if (!p) { record(`Promise, ${label}`, true, 'no promise section on the home page: skipped'); continue; }
+    const rows = p.count === 4 ? 2 : 1;
+    record(`Promise, ${label} 360: one slim row, titles only`, p.rows === rows && p.height <= (rows === 2 ? 280 : 180) && p.shown === 0, `${p.count} promises in ${p.rows} row(s), card ${p.height}px, ${p.shown} sentence(s) shown`);
+    const s = await measure(engine, { width: 320, height: 640 });
+    record(`Promise, ${label} 320: no title cut off`, s.cut === 0 && !s.sideways, `${s.cut} cut off, sideways scroll: ${s.sideways}, card ${s.height}px`);
+  }
+  const d = await measure(chromium, { width: 1280, height: 800 }, false);
+  if (d && d.texts) record('Promise, desktop: one row with the sentences', d.rows === 1 && d.shown === d.texts, `${d.rows} row(s), ${d.shown} of ${d.texts} sentence(s) shown`);
+}
+
 // 19. Compact footer (docs/footer-compact-plan.md): on a 360px phone the footer is at most 400px tall with no short
 //     rule (the row of stitches is the one divider); every link is at least 32px tall; the corner flowers keep 17px
 //     from every word and the basket; no sideways scroll down to 320. A desktop keeps the rule, at most 460px tall.
@@ -1264,5 +1310,10 @@ if (want('19')) {
 }
 
 const failed = results.filter((r) => !r.ok);
-console.log(`\n${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
+if (ONLY) {
+  const missing = [...ONLY].filter((id) => !ran.has(id));
+  if (missing.length || !results.length) { console.log(`\nNo section numbered ${missing.join(', ') || '(none given)'}; nothing to trust here.`); process.exit(1); }
+  console.log(`\nOnly sections ${[...ran].join(', ')} ran; the rest were skipped.`);
+}
+console.log(`${ONLY ? '' : '\n'}${results.length - failed.length}/${results.length} checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);
 process.exit(failed.length ? 1 : 0);

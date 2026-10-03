@@ -3,7 +3,7 @@
 <section class="section promise scheme-{{ s.scheme }}" aria-label="{{ s.label | escape }}">
   <div class="promise__box{% if s.panel %} promise__box--panel panel-blush{% endif %}">
     {%- if s.panel -%}{%- render 'stitch', radius: 20 -%}{%- else -%}{%- render 'stitch', radius: 28 -%}{%- endif -%}
-    <ul class="promise__list" role="list" data-arrive="stagger" style="--count: {{ section.blocks.size | at_least: 1 }}">
+    <ul class="promise__list{% if section.blocks.size == 4 %} promise__list--four{% endif %}" role="list" data-arrive="stagger" style="--count: {{ section.blocks.size | at_least: 1 }}">
       {%- for block in section.blocks -%}
         <li class="promise__item" style="--i: {{ forloop.index0 | times: 2 }}" {{ block.shopify_attributes }}>
           {%- render 'icon', icon: block.settings.icon -%}
@@ -19,9 +19,10 @@
   .promise__box { position: relative; padding: var(--space-7) var(--space-5); }
   /* As on the brand's Instagram covers: a Blush card with the row of stitches sewn just inside its edge. */
   .promise__box--panel .stitch { inset: 12px; width: calc(100% - 24px); height: calc(100% - 24px); }
+  /* One row at every width (docs/promise-strip-plan.md). On phones: small icons, titles only. */
   .promise__list {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--count), minmax(0, 1fr));
     gap: var(--space-7) var(--space-4);
   }
   .promise__item { display: grid; justify-items: center; align-content: start; gap: var(--space-2); text-align: center; }
@@ -40,12 +41,18 @@
     .promise__item.is-arriving .icon--brand { animation: pop-in 500ms var(--ease-spring) calc(60ms + var(--i, 0) * var(--stagger)) backwards; }
   }
   @keyframes pop-in { from { opacity: 0; scale: .4; } }
-  @media (max-width: 989px) {
-    .promise__item:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  @media (max-width: 749px) {
+    .promise__box { padding: var(--space-6) var(--space-5); }
+    .promise__list { gap: var(--space-5) var(--space-2); }
+    /* Four don't fit side by side on a 360px phone. */
+    .promise__list--four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .promise__item { gap: var(--space-1); }
+    .promise__item .icon--brand { width: 32px; height: 32px; margin-bottom: var(--space-1); }
+    .promise__title { font-size: 1rem; text-wrap: balance; }
+    .promise__text { display: none; }
   }
   @media (min-width: 990px) {
     .promise__box { padding: var(--space-8) var(--space-7); }
-    .promise__list { grid-template-columns: repeat(var(--count), minmax(0, 1fr)); }
   }
 {% endstylesheet %}
 
@@ -95,7 +102,7 @@
           "default": "makers"
         },
         { "type": "text", "id": "title", "label": "Title", "default": "Handmade in India" },
-        { "type": "text", "id": "text", "label": "Text" }
+        { "type": "text", "id": "text", "label": "Text", "info": "Shown on tablets and computers. Phones show the title only." }
       ]
     }
   ],

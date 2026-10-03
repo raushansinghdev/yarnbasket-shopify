@@ -35,6 +35,19 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **Measured at 360 × 780:** craft circles start at 588px. Checks 10 and 12 pass (24/24, Chrome).
 - **Left alone on purpose:** the search icon sits closer to the logo than the menu icon does (the cost of a centred name with one icon on the left and two on the right); "stitched with love" is wider than the serif lines; the cut-off fourth circle is the swipe cue; the chosen circle keeps ring, bold label and underline.
 
+## 2026-10-04 (Our promise is a slim strip on phones, docs/promise-strip-plan.md)
+
+- **On phones the promises sit in one row, titles only.** Raushan asked whether the card earned its space: it was 560px tall on a 360 × 800 phone, 70% of a screen, for three short promises. It is now 141px (320 to 390 wide, Chrome and Safari).
+  - Under 750px: three columns, icon 32px (was 48), title 16px (was 22) wrapped evenly, sentences hidden, 32px padding top and bottom.
+  - 750 to 989px: one row with the sentences (was two columns with the third promise alone on its own row).
+  - Desktop is unchanged.
+  - Four promises: 2 × 2 on phones, one row from 750px.
+- **The Blush card and stitched border stay**, as decided on 2026-10-01: the promise is a brand moment. Don't flatten it into a plain icon row.
+- **The position stays** (after Customer love, before FAQ), as decided on 2026-10-03.
+- **The sentences are still in `templates/index.json`:** tablets and desktop show them. The editor's "Text" setting says phones show the title only.
+- Check 18: one row, card at most 180px, no sentence shown on a 360px phone; no title cut off at 320; sentences shown on desktop.
+- **Product page:** `snippets/offer-terms.liquid` is its one trust row. Don't add this strip there as a second one; if "Made to last" is wanted on the product page, it goes into that row.
+
 ## 2026-10-04 (fluid feel, docs/fluid-feel-plan.md)
 
 - **No backdrop blur anywhere (phase C).** Raushan compared with and without on a Galaxy S24 Ultra in Chrome and could see no difference, and chose to remove it. The header is Blush Soft at 96% (was 88% with a 14px blur); chips on photos are white at 96%. A blur is redrawn on every frame something moves under it, so it could only cost frames on cheaper phones. Don't add `backdrop-filter` back; check 6b fails if any appears.
