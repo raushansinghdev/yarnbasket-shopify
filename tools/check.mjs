@@ -404,6 +404,21 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
       record('Compact cart: cart page has no "Ships in", no ₹0 notes', !/Ships in/.test(text) && !/−₹0\)/.test(text), `"Ships in": ${/Ships in/.test(text)}, "(−₹0)": ${/−₹0\)/.test(text)}`);
       const pg = await page.evaluate(() => ({ lines: document.querySelectorAll('.cart-page .cart-line').length, products: new Set([...document.querySelectorAll('.cart-page .cart-line')].map((l) => l.dataset.variant + l.dataset.properties)).size, bar: [...document.querySelectorAll('.cart-page .rewards.is-done .rewards__track')].some((t) => getComputedStyle(t).display !== 'none') }));
       record('Compact cart: cart page draws one line per product, no finished bar', pg.lines === pg.products && !pg.bar, `${pg.lines} line(s) for ${pg.products} product(s), finished bar shown: ${pg.bar}`);
+      // A sale price ("compare at") is not a Shopify discount, so the price details count it themselves: the item total is
+      // at list prices, "Product discount" takes the sale off, and the rows add up to the subtotal.
+      const sale = products.find((p) => +p.variants[0].compare_at_price > +p.variants[0].price);
+      if (sale) {
+        await page.request.post(site('/cart/add.js'), { data: { items: [{ id: sale.variants[0].id, quantity: 2 }] } });
+        await page.goto(site('/cart'), { waitUntil: 'load' });
+        await page.waitForTimeout(1500);
+        const off = Math.round((sale.variants[0].compare_at_price - sale.variants[0].price) * 2);
+        const rows = await page.evaluate(() => [...document.querySelectorAll('#CartDetails-page .cart-details__row')].map((r) => [r.querySelector('dt').textContent.trim(), r.querySelector('dd').textContent.replace(/\s+/g, ' ').trim()]));
+        const num = (label) => +(rows.find((r) => r[0] === label)?.[1] || '').replace(/[^\d.]/g, '');
+        const taken = rows.filter((r) => r[1].startsWith('−')).reduce((n, r) => n + +r[1].replace(/[^\d.]/g, ''), 0);
+        // "You save" is everything taken off, plus the shipping fee struck through beside "Free" (when the fee is set).
+        const save = await page.evaluate(() => ({ line: document.querySelector('#CartDetails-page .cart-details__saved')?.textContent.trim() || '', fee: +(document.querySelector('#CartDetails-page .cart-details__row s')?.textContent.replace(/[^\d.]/g, '') || 0) }));
+        record('Compact cart: price details count a sale price', num('Product discount') === off && num('Item total') - taken === num('Subtotal') && +save.line.replace(/[^\d.]/g, '') === taken + save.fee, `${rows.map((r) => r.join(' ')).join(', ')}; "${save.line}"`);
+      } else console.log('SKIP  Compact cart: price details count a sale price   no product with a compare-at price');
     }
     await page.request.post(site('/cart/clear.js'));
     record(`Compact cart, ${w}px: no script errors`, errors.length === 0, errors[0] || 'none');

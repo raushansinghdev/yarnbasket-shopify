@@ -4,6 +4,7 @@
     "social_meesho": "https://www.meesho.com/SSCreator",
     "demo_content": true,
     "free_shipping_threshold": 999,
+    "shipping_fee": 99,
     "gift_threshold": 1499,
     "gift_product": "sunflower-keychain-free-gift"
   }

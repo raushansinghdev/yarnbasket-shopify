@@ -22,7 +22,11 @@
       break
     endif
   endfor
-  assign saved = cart.original_total_price | minus: cart.total_price
+  capture list_total
+    render 'cart-list-total'
+  endcapture
+  assign list_total = list_total | plus: 0
+  assign saved = list_total | minus: cart.total_price
 -%}
 <div class="cart-summary cart-summary--{{ place }}">
   {%- render 'cart-rewards', place: place -%}
@@ -32,7 +36,7 @@
     {%- if place == 'drawer' -%}
       <button type="button" class="cart-summary__amount" data-details data-total>
         <span class="visually-hidden">{{ 'cart.subtotal' | t }}</span>
-        {%- if saved > 0 -%}<s aria-hidden="true">{{ cart.original_total_price | money }}</s>{%- endif -%}
+        {%- if saved > 0 -%}<s aria-hidden="true">{{ list_total | money }}</s>{%- endif -%}
         <span class="cart-summary__now">{{ cart.total_price | money }}</span>
         <span class="visually-hidden">{{ 'cart.details' | t }}</span>
       </button>

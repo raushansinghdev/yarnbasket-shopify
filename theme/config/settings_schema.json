@@ -98,7 +98,7 @@
         "id": "shipping_fee",
         "label": "Standard shipping fee (₹)",
         "default": 0,
-        "info": "Optional. Under the free-shipping amount the cart says \"Shipping ₹…\" instead of \"Shipping calculated at checkout\". Must match your paid rate in Settings → Shipping and delivery."
+        "info": "Optional. Under the free-shipping amount the cart says \"Shipping ₹…\" instead of \"Shipping calculated at checkout\". From that amount, the price details strike it through beside \"Free\" and count it in \"You save\". Must match your paid rate in Settings → Shipping and delivery."
       },
       {
         "type": "number",

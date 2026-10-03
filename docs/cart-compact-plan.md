@@ -12,7 +12,9 @@ Status: **built and tested 2026-10-03, in three rounds.** Not committed yet. `np
 
 - **The pinned bottom is only the amount and Checkout.** The amount has a dotted underline and is a real button ("Subtotal ₹2,245, Price details" to a screen reader). With a discount, the price before it is struck through above.
 - **"Price details" is a card at the end of the drawer's list**, after the gift note. Tapping the amount scrolls to it, moves focus to its heading and outlines the card for a moment.
-  - Rows: Items and each discount (only when something was taken off), Shipping, Subtotal, then "Prices include all taxes."
+  - Rows: Item total, "Product discount" and each Shopify discount (only when something was taken off), Shipping, Subtotal, "You save ₹… on this order" (only when something was saved), then "Prices include all taxes."
+  - Free shipping with the flat fee set reads "~~₹99~~ Free" on the Shipping row, and the fee counts in "You save". With no fee set it's just "Free": the theme never guesses a fee.
+  - Item total is the cart at list prices: each line at the higher of its "compare at" price and its price (`cart-list-total.liquid`). "Product discount" is what the sale prices take off, one row for all products. Shopify's own `cart.original_total_price` leaves sale prices out, so the first build showed no Items row for a cart whose only saving was a sale price (fixed 2026-10-03). The struck-through amount beside Checkout and in the cart page's pinned bar is the same list total.
   - Shipping says "Free", "₹79, added at checkout" (the flat fee setting) or "Calculated at checkout". It's never added into the subtotal.
 - **The cart page's summary card has the same rows.** The pinned bar's amount on phones is a link to the card.
 - **The rewards words and the hidden finished bar are the same in the drawer and on the page:** "Free shipping and free gift unlocked".

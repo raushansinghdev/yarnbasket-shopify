@@ -1,0 +1,22 @@
+{%- doc -%}
+  The cart at list prices, in paise, as plain text: every line at the higher of its "compare at" price and its price
+  before discounts. A sale price (compare at) is not a Shopify discount, so cart.original_total_price leaves it out;
+  the price details and the struck-through total start from this number instead, the same one the lines strike through
+  (snippets/cart-line).
+
+  @example
+  {%- capture list_total -%}{%- render 'cart-list-total' -%}{%- endcapture -%}
+  {%- assign list_total = list_total | plus: 0 -%}
+{%- enddoc -%}
+{%- liquid
+  assign list_total = 0
+  for item in cart.items
+    assign each = item.original_price
+    if item.variant.compare_at_price > each
+      assign each = item.variant.compare_at_price
+    endif
+    assign line = each | times: item.quantity
+    assign list_total = list_total | plus: line
+  endfor
+  echo list_total
+-%}

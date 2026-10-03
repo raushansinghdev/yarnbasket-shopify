@@ -38,9 +38,11 @@
       {%- comment -%} Phones: total and Checkout pinned to the bottom while the summary's button is off screen. {%- endcomment -%}
       <div class="cart-bar" data-cart-bar>
         {%- comment -%} The amount goes to the summary card, where the price details are. {%- endcomment -%}
-        {%- assign saved = cart.original_total_price | minus: cart.total_price -%}
+        {%- capture list_total -%}{%- render 'cart-list-total' -%}{%- endcapture -%}
+        {%- assign list_total = list_total | plus: 0 -%}
+        {%- assign saved = list_total | minus: cart.total_price -%}
         <a class="cart-bar__total" href="#CartSummary" tabindex="-1" data-total>
-          {%- if saved > 0 -%}<s>{{ cart.original_total_price | money }}</s>{%- endif -%}
+          {%- if saved > 0 -%}<s>{{ list_total | money }}</s>{%- endif -%}
           <span class="cart-bar__now">{{ cart.total_price | money }}</span>
         </a>
         <button type="submit" form="CartForm" name="checkout" class="btn cart-bar__btn" tabindex="-1" aria-hidden="true">

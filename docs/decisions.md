@@ -2,6 +2,16 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-03 (price details count sale prices)
+
+- **Price details start from list prices.** Raushan found that a product on sale (₹1,199 struck through, ₹999) didn't show in the breakdown. A "compare at" price is not a Shopify discount, so Shopify's before-discount total leaves it out. Now Items is the cart at list prices, "Product discount" takes the sale prices off (one row for all products), then each Shopify discount, and the rows add up to the subtotal. The struck-through total beside Checkout uses the same number, so it agrees with the lines above it.
+
+- **"Items" is now "Item total"** (Raushan: "Items" didn't say it was a price). "Total price" was passed over because it reads like a second total next to Subtotal.
+- **Free shipping shows what it's worth: "~~₹99~~ Free" on one row**, not a "Shipping ₹99" row and a "Shipping discount −₹99" row (Raushan's first idea). One row says the same in less room, and it's how Indian shoppers already see it elsewhere. The fee is the "Standard shipping fee" theme setting, which must match the paid rate at checkout. A struck-through average for live courier rates (Raushan's second idea, ₹149) was dropped: it isn't what that shopper would have paid.
+- **Shipping is a flat ₹99 under ₹999 and free from ₹999** (Raushan, after checking floreal.in's checkout at several pincodes: ₹99 standard, ₹129 express, free above their amount). The theme setting is 99, and the store's India rate was changed the same day from Shopify's default ₹379 to "Standard" ₹99 (free from ₹999 was already on it), so the check "Offers: shipping rates match Theme settings" passes. Express (₹129) is not offered yet: open question.
+- **Claude can change some admin settings now** (Raushan, 2026-10-03): write access for shipping, discounts, products and collections, menus and redirects, pages and files. Orders, customers, payments and inventory stay off, and publishing the theme stays Raushan's. Each admin change is read first, read back after and written down here, because the admin isn't in git.
+- **"You save ₹… on this order" under the subtotal** adds up sale prices, discounts, the gift's worth and the waived shipping fee, so the whole saving is one number.
+
 ## 2026-10-03 (account page on phones)
 
 Plan and checks: `account-phone-plan.md`.

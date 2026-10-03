@@ -58,8 +58,8 @@ Things to finish in the Shopify admin (Raushan) before the store opens. Deferred
 ## Offers: free shipping, free gift, COD (docs/offers-plan.md §5, §7)
 The theme side is built. Everything stays hidden until these are done, and `npm run check` section 11 then compares the theme with the admin. Do them in this order:
 - [ ] **Meesho average order value** (last 3 months). Free shipping should sit about 15–30% above it. The plan's amounts are ₹999 and ₹1,499.
-- [ ] **Shipping rates** (Settings → Shipping and delivery → India). Today there's one rate, "मानक" at **₹379**, which is Shopify's default.
-  - "Standard": the real fee (for example ₹79), condition "order price" ₹0 – ₹998.99
+- [x] **Shipping rates** (Settings → Shipping and delivery → India). Done 2026-10-03 by Claude through the Admin API, on Raushan's go: the one India rate, "मानक" at ₹379 (Shopify's default), is now "Standard" at **₹99**, free from ₹999 (the rate's own "free from" condition, which was already there). Read back from the store, and the check below passes.
+  - "Standard": **₹99** (decided 2026-10-03, the same as floreal.in), for orders under ₹999.
   - "Free shipping": ₹0, condition "order price" ₹999 and up
 - [x] **Gift product: import `tools/gift-product.csv`** (Products → Import → upload it → "Upload and preview" → "Import products"). It's a separate product, "Sunflower Keychain" (handle `sunflower-keychain-free-gift`, tag `free-gift`, type "Free gift", ₹249, 30 in stock, 40 g), with the single-sunflower photo. It isn't the keychain you sell, so paid keychains are never mistaken for the gift. Then on the product page, check the weight and stock, and keep it out of every collection. **Theme settings already point at it** (Free gift from 1499; settings_data.json, 2026-10-02).
 - [x] **Collection "Shop"** (automated): every product except the gift (for example "Tag is not equal to free-gift", and tag the gift `free-gift`).
@@ -69,7 +69,7 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
   - Maximum uses per order: 1
   - Combinations: allow product discounts and shipping discounts
   - Done 2026-10-03: "Free sunflower keychain over ₹1,499", Active, read back through the read-only admin login (product, order and shipping combinations all on). A later sale must also allow product discounts, or the gift stops being free during it.
-- [ ] **Theme settings → Cart:** Free shipping from 999 ✓, Free gift from 1499 ✓ and the gift product ✓ are set. Still to do: Standard shipping fee (the same as your paid rate), and Cash on delivery only once COD works at checkout.
+- [ ] **Theme settings → Cart:** Free shipping from 999 ✓, Free gift from 1499 ✓ and the gift product ✓ are set. Standard shipping fee 99 ✓ (set 2026-10-03, the same as the Standard rate above). Still to do: Cash on delivery only once COD works at checkout.
 - [x] Run `npm run check` (83/83 on 2026-10-03): "Offers: shipping rates match Theme settings" and "Offers: the free gift arrives free" must pass. Changing an amount later means changing it in three places: Theme settings, the shipping rate and the discount. Then run the check.
 - [ ] **CA question:** how to treat free gifts under GST (input tax credit on goods given away free may need reversing, Section 17(5)(h)).
 - [x] **FAQ:** the gift line, with the amount, is in the automatic "Shipping and offers" answer (`offers.faq_gift`, so it follows the threshold). The Terms draft has it in §5 "Free gift", with no amount, so changing the threshold won't need a Terms edit.
