@@ -308,14 +308,12 @@
   .site-header {
     position: relative;
     z-index: 1;
-    background-color: var(--header-bg, color-mix(in srgb, var(--blush-soft) 88%, transparent));
-    -webkit-backdrop-filter: saturate(1.4) blur(14px);
-    backdrop-filter: saturate(1.4) blur(14px);
+    background-color: var(--header-bg, color-mix(in srgb, var(--blush-soft) 96%, transparent));
     border-bottom: 1px solid transparent;
     transition: border-color var(--dur-state) ease, background-color var(--dur-panel) ease, box-shadow var(--dur-panel) ease;
   }
   html.header-scrolled .site-header {
-    --header-bg: color-mix(in srgb, var(--blush-soft) 88%, transparent);
+    --header-bg: color-mix(in srgb, var(--blush-soft) 96%, transparent);
     border-bottom-color: var(--color-line);
     box-shadow: 0 12px 28px -24px rgb(78 58 49 / .5);
   }

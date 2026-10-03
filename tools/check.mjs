@@ -161,24 +161,17 @@ for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', device
     lite: document.documentElement.classList.contains('lite'),
     flower: getComputedStyle(document.querySelector('.hero__flower')).animationName,
     intro: !!document.getElementById('yb-splash'),
-    blurred: [...document.querySelectorAll('*')].filter((el) => getComputedStyle(el).backdropFilter !== 'none').length,
   }));
-  record('Lite mode (data saver)', r.lite && r.flower === 'none' && !r.intro && r.blurred === 0, `lite=${r.lite}, flower animation=${r.flower}, intro shown=${r.intro}, blurred elements=${r.blurred}`);
+  record('Lite mode (data saver)', r.lite && r.flower === 'none' && !r.intro, `lite=${r.lite}, flower animation=${r.flower}, intro shown=${r.intro}`);
   await browser.close();
 }
 
-// 6b. The blur switch (docs/fluid-feel-plan.md phase C): ?blur=off holds for the tab's visit, ?blur=on brings it back
-{
+// 6b. No backdrop blur anywhere (docs/fluid-feel-plan.md phase C): it is redrawn on every frame of a scroll
+for (const path of ['', 'collections/all', 'cart', 'search?q=flower']) {
   const { browser, page } = await open(chromium, devices['Pixel 7']);
-  const blurred = () => page.evaluate(() => [...document.querySelectorAll('*')].filter((el) => getComputedStyle(el).backdropFilter !== 'none').length);
-  const before = await blurred();
-  await page.goto(URL + '?blur=off', { waitUntil: 'load' });
-  const off = await blurred();
-  await page.goto(URL, { waitUntil: 'load' });
-  const kept = await blurred();
-  await page.goto(URL + '?blur=on', { waitUntil: 'load' });
-  const on = await blurred();
-  record('Blur switch', before > 0 && off === 0 && kept === 0 && on === before, `blurred elements: ${before} by default, ${off} with ?blur=off, ${kept} on the next page, ${on} with ?blur=on`);
+  if (path) await page.goto(new globalThis.URL('/' + path, URL).href, { waitUntil: 'load' });
+  const blurred = await page.evaluate(() => [...document.querySelectorAll('*')].filter((el) => getComputedStyle(el).backdropFilter !== 'none').map((el) => el.className || el.tagName));
+  record(`No backdrop blur: /${path}`, blurred.length === 0, blurred.length ? blurred.join(', ') : 'none');
   await browser.close();
 }
 

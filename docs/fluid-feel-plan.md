@@ -1,7 +1,7 @@
 # Fluid feel plan: why the store feels heavy, and what to change
 
 Status: **Phases A and B done 2026-10-04** (Raushan's go: phase by phase, test, then push, without giving up the alive
-feel, smoothness or accessibility). **Phase C: the switch is built, the decision waits for Raushan's comparison.**
+feel, smoothness or accessibility). **Phase C done: the blur is removed for everyone.**
 **Phase D: the CSS split is measured and dropped; the rest waits for the theme to be published.** Results are in section 6.
 
 Raushan's report: the whole store feels heavy, even on the local server. Scrolling and clicking feel slow.
@@ -164,18 +164,14 @@ arriving within 700ms. This would have caught the problem.
   runs no scripts, so they should not be).
 - Check section 17 (six checks). `npm run check`: 194/194.
 
-### Phase C (2026-10-04): switch built, decision open
+### Phase C (2026-10-04): the blur is removed
 
-- **The switch:** open any page with `?blur=off` and the blur is gone for the rest of that tab's visit; `?blur=on`
-  brings it back. Without blur the header is Blush Soft at 96% (was 88% with a 14px blur) and the chips on photos
-  are white at 96%.
-- **Lite mode drops the blur for good** (data saver, 2G, phones with 2 GB or less): those are the phones a blur
-  costs most on, and lite mode already skips decoration.
-- **Raushan tests on a Galaxy S24 Ultra in Chrome.** That is a flagship: it shows whether the blur is worth its
-  look, but it will probably scroll smoothly either way. Whether a budget Android stutters is still unmeasured.
-- **Recommendation:** if the two look close to the same on the S24, remove the blur for everyone. It can only cost
-  frames on cheaper phones, and at 88–94% opacity it shows very little.
-- Check 6 (lite has no blurred element) and 6b (the switch).
+- A temporary `?blur=off` switch let Raushan compare on a Galaxy S24 Ultra in Chrome. He could see no difference.
+- **Removed for everyone:** the header is Blush Soft at 96% (was 88% with a 14px blur) and the chips on photos
+  (hero tags and controls, gifting labels, the story video's button) are white at 96%. The switch is gone.
+- Why: a blur is redrawn on every frame something moves under it, and at 88–94% opacity it showed almost nothing.
+- Not measured: whether a budget Android scrolls more smoothly for it. It cannot be slower.
+- Check 6b: no element on the home, collection, cart or search page has a backdrop blur.
 
 ### Phase D (2026-10-04): the CSS split is not worth doing
 
