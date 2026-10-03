@@ -2,6 +2,11 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-03 (announcement bar: no icon)
+
+- **The announcement bar has no icon, only words.** With a dot between the parts, the truck read as belonging to "Free shipping" alone, so "Partial COD available" looked like the lesser message. A second icon was weighed and dropped: COD has no icon that reads at 16px, and two icons crowd a 360px line. The message block's icon is "None", and the line built from Theme settings has none either. The icon choice stays in the editor for a one-part campaign message (a gift, a delivery cut-off).
+- **The truck is not moved to the middle** (Raushan asked, worried about a camera cut-out covering "₹999"). In a browser the page starts under the status and address bars, so a cut-out never covers it.
+
 ## 2026-10-03 (Compact cart, docs/cart-compact-plan.md)
 
 - **The drawer's pinned bottom is one row: subtotal on the left, Checkout on the right.** Raushan asked for it, so the products get the room. It went from about 285px to 140px (everything unlocked) or 190px (a step ahead).

@@ -15,7 +15,7 @@
           "type": "message",
           "settings": {
             "text": "Free shipping over ₹999 · Partial COD available",
-            "icon": "truck",
+            "icon": "none",
             "link": "",
             "show_until": ""
           }
