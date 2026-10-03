@@ -35,7 +35,13 @@ Things to finish in the Shopify admin (Raushan) before the store opens. Deferred
 - [ ] Customs information → default country of origin: India
 
 ## Accounts and checkout
-- [ ] Sign in with Google: being set up now on the dev store (account-hub-plan §7). At launch, only add the `account.yarnbasket.in` origins and redirect URIs to the same OAuth client, then verify the brand and add the logo in Google Cloud.
+- [x] **Sign in with Google: live 2026-10-03.** Google Cloud project "Yarn Basket", created with the business Gmail with Raushan's personal Gmail as a second Owner. OAuth client "Shopify customer accounts", app published ("In production"), no logo. Branding links point at yarnbasket-in.myshopify.com for now. The secret is only in Shopify.
+- [ ] **Google sign-in, launch-day changes** (Client ID and secret stay the same, and nothing changes in Shopify's Google settings):
+  1. **About a week before launch:** verify `yarnbasket.in` in Google Search Console with the business Gmail. Google's brand review needs it, and it can take days.
+  2. After the domain is connected in Shopify, open **Settings → Customer accounts → Authentication → Google**. Shopify then lists the new `account.yarnbasket.in` values. **Add** them to the OAuth client's JavaScript origins and redirect URIs, and **keep** the old ones.
+  3. **Branding:** home page `https://yarnbasket.in`, privacy `https://yarnbasket.in/policies/privacy-policy`, terms `https://yarnbasket.in/policies/terms-of-service`, authorised domain `yarnbasket.in`. Then upload the logo (`docs/branding/`) and submit for brand verification, so Google's popup says "Yarn Basket".
+  4. **When the @yarnbasket.in Workspace email exists:** add it as Owner (IAM), and make it the support and developer contact email.
+  5. Test: sign in with a Gmail that has never signed in before, on Android Chrome and iPhone Safari, on the live domain.
 - [ ] Checkout & accounts branding: being done now on the dev store, with every value listed in account-branding-plan §3 (logo and sign-in photo are in `docs/branding/`)
 - [ ] Customer accounts: sign-in links on; sign-in optional at checkout; shipping phone number required
 - [ ] Self-serve returns, with made-to-order pieces as final sale (return rules)
