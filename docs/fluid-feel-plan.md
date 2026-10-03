@@ -1,6 +1,7 @@
 # Fluid feel plan: why the store feels heavy, and what to change
 
-Status: **proposed 2026-10-04, waiting for Raushan's go.** Nothing in the theme has been changed yet.
+Status: **Phase A done 2026-10-04** (Raushan's go: phase by phase, test, then push, without giving up the alive
+feel, smoothness or accessibility). Phases B to D follow. Results are in section 6.
 
 Raushan's report: the whole store feels heavy, even on the local server. Scrolling and clicking feel slow.
 This plan is a tuning pass on `docs/motion-plan.md`, not a replacement. The motion plan's principles stand
@@ -78,7 +79,7 @@ and quantity taps update at once; only the toast and count wait for the server. 
 | Arrival duration | 800ms (photos 1000ms) | 450ms (photos 500ms) |
 | Stagger between siblings | 90ms, up to 6 steps | 50ms, up to 4 steps |
 | Rise distance | 24px | 12px |
-| When an arrival starts | 10% inside the screen | 15% before it enters the screen |
+| When an arrival starts | 10% inside the screen | As its first pixel enters the screen (not earlier, so a slow scroller still sees it) |
 | Ink-rise headings | 900ms | 600ms |
 | Photo fade-in | 700ms | 250ms |
 | Page cross-fade | 260ms | 150ms |
@@ -126,3 +127,20 @@ arriving within 700ms. This would have caught the problem.
    alive"). Recommended: yes; the same motion, about twice as quick.
 2. **Progress line for slow page loads** (Phase B). Recommended: yes, shown only after 300ms.
 3. **Blur** (Phase C): decide after the device comparison.
+
+---
+
+## 6. Results
+
+### Phase A (2026-10-04)
+
+- Built as in the table in section 4, with two additions in the same spirit: stitches sew in 900ms (was 1400ms),
+  and review stars and promise icons pop sooner.
+- Home page on a phone, time until nothing in view is still moving after a scroll stops: 1.1–1.6s before,
+  0.7–1.0s after. The longest part left is the stitched border sewing, which hides nothing.
+- New gate (check 1b): 700ms after landing on any screen, nothing in view is hidden or faded. Passes on desktop
+  and phone.
+- Header: stays hidden through a 40px wobble, returns after 60px up, returns near the top, and stays shown while
+  focus is inside it.
+- `npm run check`: 188/188 across Chrome desktop and phone, iPhone WebKit and Firefox. 0 slow frames at 4x CPU,
+  axe 0, reduced motion still static.

@@ -2,6 +2,17 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-04 (fluid feel, docs/fluid-feel-plan.md)
+
+- **Arrivals finish about twice as fast; the choreography is unchanged** (Raushan: the store felt heavy; go-ahead given on the condition that it stays alive, smooth and accessible). Measured before: content kept arriving for 1.1–1.6s after a scroll stopped, over the motion plan's 1s budget.
+  - Arrival 800 → 450ms (`--dur-arrive`), photos settling 1000 → 500ms, ink-rise headings 900 → 600ms, stitches 1400 → 900ms, stars and promise icons quicker in step.
+  - `--stagger` 90 → 50ms, at most 4 steps (was 6). `--rise` 24 → 12px.
+  - An arrival starts as its first pixel enters the screen, not once it is 10% inside, so there is no blank band at the bottom while scrolling. It does not start earlier than that: a slow scroller should still see it.
+  - New gate in `npm run check` (1b): 700ms after landing on any screen of the home page, nothing in view is still hidden or faded.
+- **Photos still loading fade in over 250ms** (was 700ms). **The page cross-fade is 150ms** (was 260ms).
+- **The header hides as soon as you scroll down, but returns only after 48px of upward travel** (was 6px either way), so a small wobble no longer slides it over the content. It still returns at once near the top and whenever focus is inside it.
+- **Left alone on purpose:** the logo intro, the hero entrance, the "One stitch at a time" writing, the hero slideshow, the card hover crossfade, drawers and accordions.
+
 ## 2026-10-04 (audit fixes, docs/audit-2026-10-03.md)
 
 - **Audits cover only what is built.** SEO, checkout, the product page and the starter pages are judged when their phase is built (Raushan).

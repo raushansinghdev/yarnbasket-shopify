@@ -63,13 +63,13 @@ Already in `base.css`; to be completed and documented so new code never invents 
 | `--dur-press` | 120ms | Tap or press feedback |
 | `--dur-state` | 200ms | Colour, hover, small state changes |
 | `--dur-panel` | 320ms | Drawers, dropdowns, accordions, swaps |
-| `--dur-enter` | 760ms | Arrivals |
+| `--dur-arrive` | 450ms | Arrivals (was 800ms until 2026-10-04, fluid-feel-plan.md) |
 | `--dur-hero` | 900ms | Hero entrance, ink-rise headings |
 | `--ease-out` | `cubic-bezier(.22,1,.36,1)` | Default for anything entering |
 | `--ease-in-out` | `cubic-bezier(.65,0,.35,1)` | Things moving between two places |
 | `--ease-spring` | `linear(...)` | Tiny playful pops only (icons, badge bump) |
-| **new** `--stagger` | 90ms | Delay step between siblings |
-| **new** `--rise` | 24px | Arrival distance |
+| **new** `--stagger` | 50ms | Delay step between siblings (was 90ms) |
+| **new** `--rise` | 12px | Arrival distance (was 24px) |
 | **new** `--ease-exit` | `cubic-bezier(.4,0,1,1)` | Things leaving (exits are faster: about 70% of the entry duration) |
 
 Rule: exits are quicker than entries, and nothing a shopper waits on is longer than `--dur-panel`.
@@ -226,7 +226,7 @@ Each pattern is built once, as a snippet or a small module in `theme.js`, and re
 | `theme.js` | < 25 KB raw; per-page modules loaded only where used |
 | CSS on any page | < 60 KB raw |
 | Third-party apps | Each one justified in decisions.md, loaded deferred or on interaction |
-| Arrival durations | ≤ 1s; stagger ≤ 6 steps visible at once |
+| Arrival durations | Everything in view settled within 700ms of landing on a screen; stagger ≤ 4 steps (fluid-feel-plan.md) |
 | Loops on screen | ≤ 1 decorative loop per screen |
 
 **Test harness, moved into the repo** (`tools/`, run with `npm run check`):
