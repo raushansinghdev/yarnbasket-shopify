@@ -110,5 +110,7 @@ Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with 
 - [ ] Search & Discovery → Product recommendations: "Complementary products" for the main pieces (feeds "Pairs well with")
 - [ ] Reviews app chosen and installed; check its script against the speed budget
 - [ ] Facebook & Instagram channel installed; ViewContent, AddToCart and Purchase seen in Events Manager with our no-reload add to cart
-- [ ] After Shiprocket Checkout is on: "Buy it now" and the sticky bar still reach checkout; the trust row's COD line says partial COD
+- [ ] After Shiprocket Checkout is on: "Buy it now" hands over to it. Shopify's own Buy it now goes to Shopify's checkout and would skip Shiprocket, so the button must become theirs, or ours adding the piece and opening their checkout. Also: the trust card's COD line says partial COD
+- [ ] Theme settings → Cart → "Most of one piece per order" is 9 (round 4). It is a theme limit, not enforced at checkout: fine for ordinary shoppers; a checkout rule would need an app
+- [ ] Meta's Pixel Helper on a phone: ViewContent on the product page, AddToCart from the pinned Add to cart, InitiateCheckout from Buy it now
 - [ ] Open a product from a real Instagram ad link on a phone: no intro, photo first, buy button visible

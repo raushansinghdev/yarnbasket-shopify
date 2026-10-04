@@ -3,7 +3,6 @@
   - Photos: the swipe is the browser's own; this keeps the dots, the count and the thumbnails in step with it.
   - Options: a new choice changes the price, badge, buttons, photo and the page's address, with no reload.
   - Quantity: the stepper stops at 1 and at the stock limit (cart.js only steps cart lines).
-  - The sticky buy bar (phones): on once the main Add to cart is scrolled past, never over the footer.
   - Share: the phone's share sheet, or the link copied.
   Adding to the cart itself is cart.js. Without this file the page still shows every photo and the form still posts.
 */
@@ -106,10 +105,15 @@ const setQty = (n) => {
   const toggle = (button, off) => (off ? button.setAttribute('aria-disabled', 'true') : button.removeAttribute('aria-disabled'));
   toggle($('.qty__minus', qty), value <= floor);
   toggle($('.qty__plus', qty), value >= max);
+  // At the most one order can hold, the line about larger orders shows.
+  const limit = $('[data-limit]');
+  if (limit) limit.hidden = value < +limit.dataset.cap;
 };
 
 const update = (variant) => {
   const ok = !!variant?.available;
+  // Sold out: no quantity and no Buy it now; the pinned bar offers to make one.
+  $('[data-buy]')?.classList.toggle('is-out', !ok);
   adds.forEach((button, i) => {
     button.disabled = !ok;
     if (labels[i] && button.getAttribute('aria-busy') !== 'true') labels[i].textContent = ok ? words.labelAdd : words.labelOut;
@@ -140,10 +144,6 @@ const update = (variant) => {
   badge.textContent = variant.badge;
   badge.hidden = !variant.badge;
   swap($('[data-price]'));
-  const barPrice = $('[data-buybar-price]');
-  if (barPrice) barPrice.textContent = variant.price;
-  const barChoice = $('[data-buybar-choice]');
-  if (barChoice) barChoice.textContent = variant.options.join(' · ');
 
   if (qty) {
     variant.max ? (qty.dataset.max = qtyInput.max = variant.max) : (delete qty.dataset.max, qtyInput.removeAttribute('max'));
@@ -184,27 +184,6 @@ if (qty) {
   });
   qtyInput.addEventListener('change', () => setQty(qtyInput.value));
   setQty(qtyInput.value);
-}
-
-/* ---------- The sticky buy bar ---------- */
-const bar = $('[data-buybar]');
-const main = $('.pdp__add');
-if (bar && main && 'IntersectionObserver' in window) {
-  const footer = $('.shopify-section-group-footer-group') || $('footer');
-  const phone = matchMedia('(max-width: 989px)');
-  // "Seen" includes still below the screen: the bar never comes before the button.
-  let mainSeen = true;
-  let footerSeen = false;
-  const set = () => {
-    const on = phone.matches && !mainSeen && !footerSeen;
-    bar.classList.toggle('is-on', on);
-    // The pop-ups sit above the bar while it shows.
-    root.style.setProperty('--buybar', on ? `${bar.offsetHeight}px` : '0px');
-  };
-  bar.hidden = false;
-  new IntersectionObserver(([entry]) => ((mainSeen = entry.isIntersecting), set()), { rootMargin: '0px 0px 99999px 0px' }).observe(main);
-  if (footer) new IntersectionObserver(([entry]) => ((footerSeen = entry.isIntersecting), set())).observe(footer);
-  phone.addEventListener('change', set);
 }
 
 /* ---------- Share ---------- */

@@ -2,6 +2,14 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-04 (product page, round 4)
+
+- **Phones: the buy buttons are pinned to the bottom for the whole page**, one set, placed with CSS. Raushan found the come-and-go bar "not proper" and asked for the best way; the fixed bar is what Flipkart, Myntra and Meesho shoppers know and it needs no JavaScript. This supersedes round 1 (bar from arrival plus page buttons) and round 3 (bar after scrolling past).
+- **At most 9 of one piece per order** (Raushan): a theme setting, enforced on the product page and in the cart, not at checkout. Larger orders go to WhatsApp because they need a shipping quote.
+- **Two columns from 750px**; the photo column is the sticky one.
+- **Add to cart errors show in the pop-up**, not under the form.
+- **Shiprocket Checkout and Buy it now:** Shopify's button would skip Shiprocket; handled at install (launch-checklist.md).
+
 ## 2026-10-04 (product page, round 3)
 
 - **Option pills swipe sideways on phones** (Raushan's suggestion), one row per option, bleeding to the screen edge so a cut-off pill signals more. Wrapping stays from 750px.

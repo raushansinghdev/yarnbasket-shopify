@@ -125,6 +125,13 @@
         "info": "Give it its real price, track its stock and keep it out of collections. An automatic \"Buy X get Y\" discount makes it free (docs/offers-plan.md §5.4). The cart adds it once the order reaches the amount above, and the step hides itself when the gift is sold out."
       },
       {
+        "type": "number",
+        "id": "max_per_item",
+        "label": "Most of one piece per order",
+        "default": 9,
+        "info": "The quantity stops here on product pages and in the cart, with a line sending larger orders to WhatsApp. Leave at 0 for no limit. Stock still wins when it is lower."
+      },
+      {
         "type": "checkbox",
         "id": "cod_available",
         "label": "Cash on delivery available",

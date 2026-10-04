@@ -72,7 +72,7 @@ const errsOf = (p) => { const e = []; p.on('pageerror', (x) => e.push('pageerror
   await ctx.setOffline(true);
   await p.locator('.pdp__add').click();
   await p.waitForTimeout(1500);
-  const off1 = await p.evaluate(() => ({ error: document.querySelector('[data-add-error]')?.textContent, hidden: document.querySelector('[data-add-error]')?.hidden, label: document.querySelector('[data-add-label]')?.textContent.trim(), busy: document.querySelector('.pdp__add').getAttribute('aria-busy') }));
+  const off1 = await p.evaluate(() => ({ error: document.querySelector('.cart-toast.is-error .cart-toast__title')?.textContent, hidden: !document.querySelector('.cart-toast.is-error'), label: document.querySelector('[data-add-label]')?.textContent.trim(), busy: document.querySelector('.pdp__add').getAttribute('aria-busy') }));
   await ctx.setOffline(false);
   await p.locator('.pdp__add').click();
   await p.waitForTimeout(2500);

@@ -329,7 +329,7 @@ if (want('8')) {
       await page.click('.pdp__add');
       await page.waitForSelector('.cart-toast', { timeout: 8000 }).catch(() => {});
       await page.click('.pdp__add');
-      const msg = await page.waitForSelector('[data-add-error]:not([hidden])', { timeout: 8000 }).then((el) => el.textContent(), () => '');
+      const msg = await page.waitForSelector('.cart-toast.is-error .cart-toast__title', { timeout: 8000 }).then((el) => el.textContent(), () => '');
       record('Cart, phone: the stock limit says why', !!msg.trim(), msg.trim() || 'no message');
     }
 
@@ -440,7 +440,9 @@ if (want('8b')) {
     // Past the top step (free shipping, then the gift), so every reward is unlocked and the gift line is in the cart.
     if (one.drawer.top > 0) {
       const unit = cheap.variants[0].price * 100;
-      await page.request.post(site('/cart/add.js'), { data: { items: [{ id: cheap.variants[0].id, quantity: Math.ceil(one.drawer.top / unit) }] } });
+      // One more of the cheap piece, and a dearer one to pass the step: the cap (9 per piece) rules out many cheap ones.
+      const dear = products.filter((p) => p !== cheap).sort((a, b) => b.variants[0].price - a.variants[0].price)[0];
+      await page.request.post(site('/cart/add.js'), { data: { items: [{ id: cheap.variants[0].id, quantity: 1 }, { id: dear.variants[0].id, quantity: Math.min(9, Math.ceil(Math.max(0, one.drawer.top - unit) / (dear.variants[0].price * 100)) || 1) }] } });
       const all = await addAndOpen();
       judge('all unlocked', all);
       await details('all unlocked');
@@ -1360,8 +1362,9 @@ if (want('20')) {
         zoomLoaded: performance.getEntriesByType('resource').some((r) => /product-zoom/.test(r.name)),
         second: document.querySelectorAll('.gallery__img')[1]?.complete,
         buy: (() => {
-          const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills .pill');
-          return { rowTop: Math.abs(q.top - a.top), rowH: Math.abs(q.height - a.height), left: Math.abs(q.left - n.left), right: Math.abs(a.right - n.right), pills: Math.abs(pill.left - q.left) };
+          const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills .pill'); const bar = box('.pdp__cta');
+          // Phones: the two buttons are pinned to the bottom, side by side, on the page's own margins.
+          return { rowTop: Math.abs(a.top - n.top), rowH: Math.abs(a.height - n.height), left: Math.abs(a.left - pill.left), right: Math.abs(n.right - q.right), pills: Math.abs(bar.bottom - innerHeight), h: Math.min(a.height, n.height), w: Math.min(a.width, n.width) };
         })(),
         ld: [...document.querySelectorAll('script[type="application/ld+json"]')].map((el) => { try { return JSON.parse(el.textContent); } catch { return null; } }),
         shownPrice: document.querySelector('[data-price-now]').textContent.replace(/[^\d.]/g, ''),
@@ -1374,7 +1377,7 @@ if (want('20')) {
     record('Product: photos to details within two screens', first.detailsEnd <= 1600, `details end at ${first.detailsEnd}px (limit 1600)`);
     record('Product: every text block closed', first.open === 0 && first.closed >= 2, `${first.closed} blocks, ${first.open} open`);
     const b = first.buy;
-    record('Product: buy box lines up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1, `row top ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left ${b.left.toFixed(1)}, right ${b.right.toFixed(1)}, pills ${b.pills.toFixed(1)} (px off)`);
+    record('Product: buy buttons pinned to the bottom, lined up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1 && b.h >= 48 && b.w >= 140, `tops ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left edge ${b.left.toFixed(1)}, right edge ${b.right.toFixed(1)}, off the bottom ${b.pills.toFixed(1)} (px off); each ${Math.round(b.w)} x ${Math.round(b.h)}px`);
     record('Product: second photo ready, viewer not loaded', first.second === true && !first.zoomLoaded, `second photo loaded: ${first.second}; product-zoom.js fetched: ${first.zoomLoaded}`);
     const graph = first.ld.flatMap((d) => (d ? d['@graph'] || [d] : [{ '@type': 'unparsable' }]));
     const products = graph.filter((g) => g['@type'] === 'Product');
@@ -1392,12 +1395,11 @@ if (want('20')) {
     await page.waitForTimeout(400);
     const picked = await page.evaluate(() => ({
       price: document.querySelector('[data-price-now]').textContent,
-      bar: document.querySelector('[data-buybar-price]').textContent,
       search: location.search,
       said: document.querySelector('[data-variant-status]').textContent,
       max: document.querySelector('.pdp .qty').dataset.max,
     }));
-    record('Product: variant changes price and address', /1,999/.test(picked.price) && /1,999/.test(picked.bar) && /utm_source=ig/.test(picked.search) && /variant=\d+/.test(picked.search) && /6 roses/.test(picked.said), `${picked.price}; ${picked.search}; said "${picked.said}"`);
+    record('Product: variant changes price and address', /1,999/.test(picked.price) && /utm_source=ig/.test(picked.search) && /variant=\d+/.test(picked.search) && /6 roses/.test(picked.said), `${picked.price}; ${picked.search}; said "${picked.said}"`);
 
     // Quantity stops at 1 and at the stock limit.
     const minus = page.locator('.pdp .qty__minus');
@@ -1407,7 +1409,10 @@ if (want('20')) {
     const low = await page.locator('.pdp .qty__input').inputValue();
     for (let i = 0; i < +picked.max + 3; i++) await plus.click({ force: true });
     const high = await page.locator('.pdp .qty__input').inputValue();
-    record('Product: quantity stays between 1 and stock', low === '1' && high === picked.max, `low ${low}, high ${high} (stock ${picked.max})`);
+    await page.locator('.pdp .qty__input').fill('99');
+    await page.locator('.pdp .qty__input').dispatchEvent('change');
+    const typed = await page.locator('.pdp .qty__input').inputValue();
+    record('Product: quantity stays between 1 and the limit', low === '1' && high === picked.max && typed === picked.max && +picked.max <= 9, `low ${low}, high ${high}, typing 99 gives ${typed} (limit ${picked.max}: the lower of stock and 9)`);
     await page.locator('.pdp .qty__input').fill('1');
     await page.locator('.pdp .qty__input').dispatchEvent('change');
 
@@ -1454,7 +1459,7 @@ if (want('20')) {
     const rows = await page.evaluate(() => ({
       titles: [...document.querySelectorAll('.product-row__title')].filter((h) => h.getClientRects().length).map((h) => h.textContent.trim()),
       self: [...document.querySelectorAll('.recs .card__link')].some((a) => a.getAttribute('href').split('?')[0] === location.pathname),
-      small: [...document.querySelectorAll('.pdp button, .pdp a, .pdp summary, .pdp .pill__label, .buybar button')].filter((el) => el.getClientRects().length && !el.closest('.rte')).map((el) => { const r = el.getBoundingClientRect(); return { h: Math.round(r.height), w: Math.round(r.width), c: el.className || el.tagName }; }).filter((r) => r.h < 44 && !/pdp__crumb/.test(r.c)).map((r) => `${r.c} ${r.w}x${r.h}`),
+      small: [...document.querySelectorAll('.pdp button, .pdp a, .pdp summary, .pdp .pill__label')].filter((el) => el.getClientRects().length && !el.closest('.rte')).map((el) => { const r = el.getBoundingClientRect(); return { h: Math.round(r.height), w: Math.round(r.width), c: el.className || el.tagName }; }).filter((r) => r.h < 44 && !/pdp__crumb/.test(r.c)).map((r) => `${r.c} ${r.w}x${r.h}`),
     }));
     record('Product: "You may also like" loads, without this piece', rows.titles.some((t) => /also like/i.test(t)) && !rows.self, `rows: ${rows.titles.join(', ') || 'none'}; shows itself: ${rows.self}`);
     record('Product: tap targets at least 44px', rows.small.length === 0, rows.small.join(', ') || 'all fine');
@@ -1466,43 +1471,40 @@ if (want('20')) {
     await browser.close();
   }
 
-  // A short screen (in-app browser): the bar comes only once the main button has been scrolled past (the options
-  // come first), and never over the footer.
+  // A short screen (in-app browser): Add to cart and Buy it now are on screen from arrival to the end of the page,
+  // one set of buttons, with the name and price above them and the footer's last line clear of them.
   {
     const { browser, page } = await visit(ROSE, SHORT);
     const bar = async () => page.evaluate(() => {
-      const on = document.querySelector('[data-buybar]')?.classList.contains('is-on');
-      const m = document.querySelector('.pdp__add').getBoundingClientRect();
-      return { on, main: m.top < innerHeight && m.bottom > 0, lift: getComputedStyle(document.documentElement).getPropertyValue('--buybar').trim() };
+      const seen = (sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return r.height >= 44 && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth; };
+      const top = document.querySelector('.pdp__cta').getBoundingClientRect().top;
+      return { add: seen('.pdp__add'), now: seen('.pdp__now-btn'), top, price: document.querySelector('[data-price-now]').getBoundingClientRect().bottom, lift: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--buybar')) || getComputedStyle(document.body).paddingBottom, pad: parseFloat(getComputedStyle(document.body).paddingBottom), adds: document.querySelectorAll('[data-add]').length };
     });
     const start = await bar();
-    await page.evaluate(() => document.querySelector('.pdp__add').scrollIntoView({ block: 'center' }));
-    await page.waitForTimeout(700);
+    await page.evaluate(() => scrollTo(0, 900));
+    await page.waitForTimeout(500);
     const middle = await bar();
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(900);
     const end = await bar();
-    // Straight past the button in one jump (the rating link does this), then back up to the top.
-    await page.evaluate(() => scrollTo(0, document.querySelector('.pdp__details').getBoundingClientRect().bottom + scrollY));
-    await page.waitForTimeout(900);
-    const past = await bar();
-    await page.evaluate(() => scrollTo(0, 0));
-    await page.waitForTimeout(900);
-    const back = await bar();
-    record('Product 360 x 640: no bar before the buy box', !start.on && start.lift === '0px' && !back.on, `on arrival: bar ${start.on}, pop-ups lifted ${start.lift}; back at the top: bar ${back.on}`);
-    record('Product 360 x 640: bar after the buy box', past.on && !past.main && past.lift !== '0px', `past the button: bar ${past.on}, pop-ups lifted ${past.lift}`);
-    record('Product 360 x 640: bar hides by the button and footer', !middle.on && middle.main && !end.on, `beside the main button: bar ${middle.on}; at the footer: bar ${end.on}`);
+    const footer = await page.evaluate(() => { const f = (document.querySelector('.shopify-section-group-footer-group') || document.querySelector('footer')); return Math.round(f.getBoundingClientRect().bottom); });
+    record('Product 360 x 640: buy buttons on screen the whole page', [start, middle, end].every((b) => b.add && b.now) && start.adds === 1, `arrival ${start.add && start.now}, middle ${middle.add && middle.now}, end ${end.add && end.now}; Add to cart buttons on the page: ${start.adds}`);
+    record('Product 360 x 640: name and price above the buttons', start.price <= start.top, `price ends ${Math.round(start.price)}px, buttons start ${Math.round(start.top)}px`);
+    record('Product 360 x 640: footer and pop-ups clear the buttons', footer <= end.top + 1 && start.pad >= 60, `footer ends ${footer}px, buttons start ${Math.round(end.top)}px; page padded ${start.pad}px`);
     await browser.close();
   }
 
   // Sold out, sale, one-photo, the free gift.
   {
     const { browser, page } = await visit('products/daisy-crochet-headband', PHONE);
-    const r = await page.evaluate(() => ({ off: document.querySelector('.pdp__add').disabled, label: document.querySelector('.pdp__add [data-add-label]').textContent.trim(), ask: document.querySelector('[data-ask-text]').textContent.trim(), lifted: !!document.querySelector('.pdp__info > .recs') }));
-    record('Product, sold out: says so, offers to make one', r.off && /sold out/i.test(r.label) && /make one/i.test(r.ask) && r.lifted, `button off: ${r.off} "${r.label}"; "${r.ask}"; similar pieces under the buy box: ${r.lifted}`);
+    const r = await page.evaluate(() => ({ off: document.querySelector('.pdp__add').disabled, label: document.querySelector('.pdp__add [data-add-label]').textContent.trim(), ask: document.querySelector('[data-ask-text]').textContent.trim(), lifted: !!document.querySelector('.pdp__info > .recs'), qty: document.querySelector('.pdp .qty').getClientRects().length, now: document.querySelector('.pdp__now-btn').getClientRects().length, make: (() => { const m = document.querySelector('.pdp__make'); const r = m.getBoundingClientRect(); return r.height >= 44 && r.bottom <= innerHeight && /wa\.me|contact/.test(m.href); })() }));
+    record('Product, sold out: says so, offers to make one', r.off && /sold out/i.test(r.label) && /make one/i.test(r.ask) && r.lifted && !r.qty && !r.now && r.make, `button off: ${r.off} "${r.label}"; "${r.ask}"; similar pieces under the buy box: ${r.lifted}; quantity shown: ${!!r.qty}; Buy it now shown: ${!!r.now}; "Ask us to make one" in the bar: ${r.make}`);
     await page.goto(at('products/pink-tulip-daisy-bouquet'), { waitUntil: 'load' });
     const sale = await page.evaluate(() => document.querySelector('[data-price]').textContent.replace(/\s+/g, ' ').trim());
-    record('Product, on sale: both prices, named', /Sale price ?₹999 ?Regular price ?₹1,199/.test(sale), sale);
+    const saleBadge = await page.evaluate(() => document.querySelector('[data-badge]').textContent.trim());
+    const ogPrice = await page.evaluate(() => document.querySelector('meta[property="og:price:amount"]').content);
+    record('Product, on sale: both prices, named, and the saving', /Sale price ?₹999 ?Regular price ?₹1,199/.test(sale) && /Save ₹200/.test(saleBadge), `${sale}; badge "${saleBadge}"`);
+    record('Product: the shared price is a plain number', /^\d+(\.\d+)?$/.test(ogPrice), `og:price:amount "${ogPrice}"`);
     await page.goto(at('products/sunflower-daisy-keychain'), { waitUntil: 'load' });
     const one = await page.evaluate(() => ({ photos: document.querySelectorAll('.gallery__slide').length, meta: !!document.querySelector('.gallery__meta') }));
     record('Product, one photo: no dots or count', one.photos === 1 && !one.meta, `${one.photos} photo, dots/count: ${one.meta}`);
@@ -1527,7 +1529,6 @@ if (want('20')) {
         total: document.querySelector('[data-gallery-total]').textContent,
         meta: !document.querySelector('.gallery__meta').hidden,
         six: [...document.querySelectorAll('.pill__input')].find((i) => i.dataset.value === '6 roses').disabled,
-        bar: document.querySelector('.buybar__line').textContent.replace(/\s+/g, ' ').trim(),
         search: location.search,
         swatches: [...document.querySelectorAll('.options__group')].map((g) => g.querySelectorAll('.pill__photo').length),
         id: new FormData(document.querySelector('[data-product-form]')).get('id'),
@@ -1537,9 +1538,9 @@ if (want('20')) {
       const b = await page.evaluate(() => {
         const box = (sel) => document.querySelector(sel).getBoundingClientRect();
         const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills .pill');
-        return { rowTop: Math.abs(q.top - a.top), rowH: Math.abs(q.height - a.height), left: Math.abs(q.left - n.left), right: Math.abs(a.right - n.right), pills: Math.abs(pill.left - q.left), qty: Math.round(q.width) };
+        return { rowTop: Math.abs(a.top - n.top), rowH: Math.abs(a.height - n.height), left: Math.abs(a.left - pill.left), right: Math.abs(n.right - q.right), pills: 0, qty: Math.round(q.width) };
       });
-      record('Product, no stock limit: buy box lines up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1 && b.qty < 160, `row top ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left ${b.left.toFixed(1)}, right ${b.right.toFixed(1)} (px off); quantity ${b.qty}px wide`);
+      record('Product, no stock limit: buy box lines up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1 && b.qty < 125, `row top ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left ${b.left.toFixed(1)}, right ${b.right.toFixed(1)} (px off); quantity ${b.qty}px wide`);
       await pick('Pink');
       await page.waitForTimeout(500);
       const pink = await state();
@@ -1563,7 +1564,7 @@ if (want('20')) {
       record('Product 360, options: one swipe row each', rows.heights.every((n) => n === 1) && !rows.sideways && rows.lastIn, `pill rows per option: ${rows.heights.join(', ')}; page scrolls sideways: ${rows.sideways}; last colour reachable: ${rows.lastIn}`);
       record('Product, colours: a photo swatch per colour, none on sizes', start.swatches[0] === 3 && start.swatches[1] === 0, `colour pills with a photo: ${start.swatches[0]} of 3, size pills: ${start.swatches[1]}`);
       record('Product, colours: the label names the choice', start.legends[0] === 'Colour: Red' && yellow.legends[0] === 'Colour: Yellow' && /Size: 3 roses/.test(yellow.legends[1]), `${start.legends.join(' | ')} → ${yellow.legends.join(' | ')}`);
-      record('Product, colours: price, link and bar follow', /1,299/.test(yellow.price) && /variant=\d+/.test(yellow.search) && /Yellow · 3 roses/.test(yellow.bar) && yellow.id !== start.id, `${yellow.price}, ${yellow.search}, bar "${yellow.bar}"`);
+      record('Product, colours: price and link follow', /1,299/.test(yellow.price) && /variant=\d+/.test(yellow.search) && yellow.id !== start.id, `${yellow.price}, ${yellow.search}`);
       // Only the chosen colour's photos are in the row; the dots, count and thumbnails match.
       const only = (st, colour, n) => st.photos.length === n && st.photos.every((p) => p === colour) && st.thumbs === n && st.dots === n && st.total === String(n) && st.meta === n > 1;
       record('Product, colours: only the chosen colour\'s photos', only(start, 'Red', 2) && only(pink, 'Pink', 1) && only(yellow, 'Yellow', 1), `Red: ${start.photos.join(', ')} (count ${start.total}); Pink: ${pink.photos.join(', ')}; Yellow: ${yellow.photos.join(', ')} (dots and count shown: ${yellow.meta})`);
@@ -1578,6 +1579,21 @@ if (want('20')) {
       await page.waitForTimeout(300);
       record('Product, colours: the viewer shows that colour only', inViewer.photos.length === 2 && inViewer.photos.every((p) => p === 'Red') && inViewer.total === '2', `viewer: ${inViewer.photos.join(', ')} of ${inViewer.total}`);
       record('Product, colours: a sold-out pair is off, then back', pink.six === true && yellow.six === false, `Pink: "6 roses" disabled ${pink.six}; Yellow: disabled ${yellow.six}`);
+
+      // No stock limit here, so the cap of 9 is the limit: plus stops there and the line about larger orders shows.
+      {
+        const plus = page.locator('.pdp .qty__plus');
+        const limit = () => page.evaluate(() => { const l = document.querySelector('[data-limit]'); return { shown: !l.hidden, text: l.textContent.replace(/\s+/g, ' ').trim(), href: l.querySelector('a').href }; });
+        const before = await limit();
+        for (let i = 0; i < 12; i++) await plus.click({ force: true });
+        const at9 = await page.locator('.pdp .qty__input').inputValue();
+        const after = await limit();
+        await page.locator('.pdp .qty__input').fill('1');
+        await page.locator('.pdp .qty__input').dispatchEvent('change');
+        record('Product: at most 9, larger orders go to WhatsApp', at9 === '9' && !before.shown && after.shown && /wa\.me|contact/.test(after.href), `plus stops at ${at9}; line shown before: ${before.shown}, at 9: ${after.shown} ("${after.text}")`);
+        const rating = await page.evaluate(() => Math.round(document.querySelector('a.pdp__rating').getBoundingClientRect().height));
+        record('Product: the rating link is 44px tall', rating >= 44, `${rating}px`);
+      }
 
       // The rating by the name takes you down to the reviews.
       await page.evaluate(() => scrollTo(0, 0));
@@ -1612,14 +1628,54 @@ if (want('20')) {
         termClip: [...document.querySelectorAll('.offer-terms li')].filter((li) => li.scrollWidth > li.clientWidth + 1).length,
         card: Math.round(document.querySelector('.assure').getBoundingClientRect().height),
         ask: Math.round(document.querySelector('[data-ask]').getBoundingClientRect().height),
+        reviews: Math.round(document.querySelector('#reviews').getBoundingClientRect().height),
         faq: [...document.querySelectorAll('.faq--compact summary')].map((s) => Math.round(s.getBoundingClientRect().height)),
         circles: [circle('.gallery [data-save]'), circle('[data-share]'), circle('[data-zoom]')],
       };
     });
     record('Product: no rating line without real ratings', !plain.rating, `rating shown: ${plain.rating}`);
     record('Product 360: delivery terms and ask line are one compact card', plain.terms.length >= 2 && plain.terms.every((n) => n <= 2) && plain.termRows <= 2 && plain.termClip === 0 && plain.ask >= 44 && plain.card <= 150, `lines per term: ${plain.terms.join(', ')}; ${plain.termRows} row(s); clipped: ${plain.termClip}; ask row ${plain.ask}px; card ${plain.card}px tall`);
+    record('Product 360: reviews block is compact', plain.reviews > 100 && plain.reviews < 500, `${plain.reviews}px tall (was 559)`);
     record('Product 360: compact FAQ rows', plain.faq.length >= 2 && plain.faq.every((h) => h >= 48 && h <= 60), `row heights: ${plain.faq.join(', ')}px`);
     record('Product 360: photo buttons are 40px circles', plain.circles.every((n) => n >= 40), `save ${plain.circles[0]}px, share ${plain.circles[1]}px, look closer ${plain.circles[2]}px`);
+    await browser.close();
+  }
+
+  // A tablet: two columns, so the name, price and buttons are on the first screen. A phone on its side: the photo
+  // fits the screen's height.
+  {
+    const { browser, page } = await visit('products/rose-crochet-bouquet-colour-test', { viewport: { width: 768, height: 1024 }, hasTouch: true });
+    const t = await page.evaluate(() => {
+      const g = document.querySelector('.pdp__gallery').getBoundingClientRect(); const i = document.querySelector('.pdp__info').getBoundingClientRect(); const a = document.querySelector('.pdp__add').getBoundingClientRect();
+      return { beside: i.left >= g.right - 1, add: Math.round(a.bottom), fixed: getComputedStyle(document.querySelector('.pdp__cta')).position === 'fixed', sideways: document.documentElement.scrollWidth > innerWidth + 1 };
+    });
+    record('Product, tablet 768: two columns, buy box on the first screen', t.beside && t.add <= 1024 && !t.fixed && !t.sideways, `beside: ${t.beside}; Add to cart ends ${t.add}px of 1024; sideways: ${t.sideways}`);
+    await page.setViewportSize({ width: 740, height: 360 });
+    await page.waitForTimeout(400);
+    const l = await page.evaluate(() => ({ photo: Math.round(document.querySelector('.gallery__slide').getBoundingClientRect().height), name: Math.round(document.querySelector('.pdp__title').getBoundingClientRect().top) }));
+    record('Product, phone on its side: the photo fits the screen', l.photo <= 360 && l.name <= 720, `photo ${l.photo}px tall of 360; name starts ${l.name}px down`);
+    await browser.close();
+  }
+
+  // The most of one piece per order (Theme settings → Cart, 9) counts what the cart already holds, and the cart's
+  // own stepper stops there too.
+  {
+    const { browser, page } = await visit('products/rose-crochet-bouquet-colour-test', PHONE);
+    await page.locator('.pdp .qty__input').fill('9');
+    await page.locator('.pdp .qty__input').dispatchEvent('change');
+    await page.locator('.pdp__add').click();
+    await page.waitForSelector('.cart-toast:not(.is-error)', { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(2600);
+    await page.locator('.pdp .qty__input').fill('1');
+    await page.locator('.pdp .qty__input').dispatchEvent('change');
+    await page.locator('.pdp__add').click();
+    const said = await page.waitForSelector('.cart-toast.is-error .cart-toast__title', { timeout: 8000 }).then((el) => el.textContent(), () => '');
+    const held = await page.evaluate(async () => (await (await fetch('/cart.js')).json()).items.filter((i) => /colour test/.test(i.product_title)).reduce((n, i) => n + i.quantity, 0));
+    await page.goto(at('cart'), { waitUntil: 'load' });
+    const line = await page.evaluate(() => { const li = document.querySelector('.cart-line:not(.is-gift)'); return { plus: li.querySelector('.qty__plus').getAttribute('aria-disabled'), note: li.querySelector('[data-line-note]').textContent.trim() }; });
+    record('Product: a tenth of one piece is refused, and says why', held === 9 && /already have 9/.test(said), `cart holds ${held}; "${said.trim()}"`);
+    record('Cart: the stepper stops at 9 and points to WhatsApp', line.plus === 'true' && /9 is the most/.test(line.note), `plus off: ${line.plus}; "${line.note}"`);
+    await page.context().request.post(at('cart/clear.js'));
     await browser.close();
   }
 
@@ -1629,9 +1685,9 @@ if (want('20')) {
     const r = await page.evaluate(() => {
       const f = document.querySelector('[data-product-form]');
       const data = new FormData(f);
-      return { id: data.get('id'), action: f.getAttribute('action'), photos: document.querySelectorAll('.gallery__img').length, bar: document.querySelector('[data-buybar]')?.hidden };
+      return { id: data.get('id'), action: f.getAttribute('action'), photos: document.querySelectorAll('.gallery__img').length, bar: getComputedStyle(document.querySelector('.pdp__cta')).position === 'fixed' && document.querySelector('.pdp__add').getBoundingClientRect().bottom <= innerHeight };
     });
-    record('Product, no JavaScript: form posts a variant', /^\d+$/.test(r.id || '') && /\/cart\/add/.test(r.action) && r.bar === true, `id ${r.id} to ${r.action}; ${r.photos} photos; buy bar hidden: ${r.bar}`);
+    record('Product, no JavaScript: form posts a variant', /^\d+$/.test(r.id || '') && /\/cart\/add/.test(r.action) && r.bar === true, `id ${r.id} to ${r.action}; ${r.photos} photos; buttons still pinned: ${r.bar}`);
     await browser.close();
   }
 
@@ -1641,12 +1697,18 @@ if (want('20')) {
     const d = await page.evaluate(() => {
       const g = document.querySelector('.pdp__gallery').getBoundingClientRect();
       const i = document.querySelector('.pdp__info').getBoundingClientRect();
-      return { beside: i.left >= g.right - 1 && Math.abs(i.top - g.top) < 40, thumbs: document.querySelectorAll('.gallery__thumb').length, bar: getComputedStyle(document.querySelector('[data-buybar]')).display, sideways: document.documentElement.scrollWidth > innerWidth + 1 };
+      return { beside: i.left >= g.right - 1 && Math.abs(i.top - g.top) < 40, thumbs: document.querySelectorAll('.gallery__thumb').length, bar: getComputedStyle(document.querySelector('.pdp__cta')).position, sideways: document.documentElement.scrollWidth > innerWidth + 1 };
     });
     await page.locator('.gallery__thumb').nth(1).click();
     await page.waitForTimeout(500);
     const count = await page.evaluate(() => document.querySelector('[data-gallery-count]').textContent);
-    record('Product, desktop: two columns, thumbnails work', d.beside && d.thumbs >= 2 && d.bar === 'none' && !d.sideways && count === '2', `beside: ${d.beside}, ${d.thumbs} thumbnails, second shows photo ${count}, buy bar: ${d.bar}`);
+    record('Product, desktop: two columns, thumbnails work', d.beside && d.thumbs >= 2 && d.bar !== 'fixed' && !d.sideways && count === '2', `beside: ${d.beside}, ${d.thumbs} thumbnails, second shows photo ${count}, buttons in the page: ${d.bar !== 'fixed'}`);
+    // The photo stays in view while the details scroll (it is the shorter column).
+    await page.evaluate(() => document.querySelector('.pdp__details').lastElementChild.scrollIntoView({ block: 'end' }));
+    await page.waitForTimeout(300);
+    const stuck = await page.evaluate(() => { const g = document.querySelector('.gallery__track').getBoundingClientRect(); return { y: Math.round(scrollY), top: Math.round(g.top), bottom: Math.round(g.bottom) }; });
+    record('Product, desktop: the photo stays beside the details', stuck.bottom > 200 && stuck.top < 800, `scrolled ${stuck.y}px, photo from ${stuck.top}px to ${stuck.bottom}px`);
+    await page.evaluate(() => scrollTo(0, 0));
     const circle = (sel) => page.evaluate((s) => { const el = document.querySelector(s); const r = el.getBoundingClientRect(); const i = parseFloat(getComputedStyle(el, '::before').inset) || 0; return Math.round(r.width - i * 2); }, sel);
     const sizes = [await circle('.gallery [data-save]'), await circle('[data-share]'), await circle('[data-zoom]')];
     record('Product, desktop: photo buttons are 44px circles', sizes.every((n) => n >= 44), `save ${sizes[0]}px, share ${sizes[1]}px, look closer ${sizes[2]}px`);

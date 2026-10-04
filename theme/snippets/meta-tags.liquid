@@ -64,7 +64,7 @@
   <meta property="og:image:alt" content="{{ og_image.alt | default: og_title | escape }}">
 {%- endif %}
 {%- if request.page_type == 'product' %}
-  <meta property="og:price:amount" content="{{ product.price | money_without_currency | strip_html }}">
+  <meta property="og:price:amount" content="{{ product.price | divided_by: 100.0 | round: 2 }}">
   <meta property="og:price:currency" content="{{ cart.currency.iso_code }}">
 {%- endif %}
 <meta name="twitter:card" content="summary_large_image">

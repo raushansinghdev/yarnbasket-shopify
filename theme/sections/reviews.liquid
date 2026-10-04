@@ -1,9 +1,10 @@
 {%- assign s = section.settings -%}
 {%- comment -%} On a product page the rating by the name links here (#reviews, docs/product-page-plan.md round 2). {%- endcomment -%}
-{%- if request.page_type == 'product' -%}{%- assign anchor = 'id="reviews" tabindex="-1"' -%}{%- endif -%}
+{%- comment -%} Under a product the block is shorter: no icon, less padding, so the quotes come up sooner (round 4). {%- endcomment -%}
+{%- if request.page_type == 'product' -%}{%- assign anchor = 'id="reviews" tabindex="-1"' -%}{%- assign compact = ' reviews--compact' -%}{%- endif -%}
 
 {%- if section.blocks.size > 0 -%}
-  <section class="section reviews scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}" {{ anchor }}>
+  <section class="section reviews{{ compact }} scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}" {{ anchor }}>
     <div class="section-head" data-arrive="lines">
       {%- render 'icon', icon: 'reviews' -%}
       {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
@@ -42,7 +43,7 @@
   </section>
 {%- elsif settings.demo_content -%}
   {%- comment -%} Sample reviews so the layout can be judged. They say "Sample" on purpose; turn demo content off before launch. {%- endcomment -%}
-  <section class="section reviews scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}" {{ anchor }}>
+  <section class="section reviews{{ compact }} scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}" {{ anchor }}>
     <div class="section-head" data-arrive="lines">
       {%- render 'icon', icon: 'reviews' -%}
       {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
@@ -82,7 +83,7 @@
     </ul>
   </section>
 {%- elsif request.design_mode -%}
-  <section class="section reviews scheme-{{ s.scheme }}">
+  <section class="section reviews{{ compact }} scheme-{{ s.scheme }}">
     <p class="reviews__empty">{{ 'reviews.empty_editor' | t }}</p>
   </section>
 {%- elsif request.page_type == 'product' -%}
@@ -92,6 +93,10 @@
 
 {% stylesheet %}
   .reviews .section-head .icon--brand { width: 44px; height: 44px; }
+  .reviews--compact { padding-block: var(--space-7); }
+  .reviews--compact .section-head { margin-bottom: var(--space-5); }
+  .reviews--compact .section-head .icon--brand { display: none; }
+  .reviews--compact .review__inner { padding: var(--space-5); }
   .reviews__list { --scroller-item: 84%; --scroller-gap: var(--space-4); }
   .review__inner {
     display: grid;

@@ -78,9 +78,20 @@
       assign max = qty
     endif
   endif
+  # At most this many of one piece per order (Theme settings → Cart); the stock limit wins when it is lower.
+  assign cap = settings.max_per_item | default: 0
+  assign capped = false
+  if cap > 0
+    if max == blank or max > cap
+      assign max = cap
+      assign capped = true
+    endif
+  endif
   assign note = blank
   if item.variant.available == false
     assign note = 'cart.sold_out' | t
+  elsif capped and qty >= max
+    assign note = 'cart.cap' | t: count: cap
   elsif max != blank and qty >= max
     assign note = 'cart.max' | t
   endif
@@ -98,6 +109,9 @@
   data-title="{{ title }}"
   data-variant="{{ item.variant_id }}"
   data-qty="{{ qty }}"
+  {% if capped %}
+    data-capped
+  {% endif %}
   {% if more != blank %}
     data-more="{{ more }}"
   {% endif %}

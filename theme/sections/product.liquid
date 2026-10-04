@@ -2,9 +2,11 @@
   The product page (docs/product-page-plan.md). Most visitors land here straight from an ad, on a phone, so it is
   built phone first: photos, then name and price, the options, one aligned buy box (quantity + Add to cart, then
   Buy it now), the delivery terms, and every longer text closed until asked for.
+  On phones Add to cart and Buy it now are pinned to the bottom of the screen for the whole page (round 4): the
+  same two buttons, placed with CSS, so there is one set and it works without JavaScript.
   cart.js adds without leaving the page and shows the added-to-cart pop-up; without JavaScript the form posts to
-  /cart. product.js (loaded only here) keeps price, button, photo and URL in step with the chosen variant, steps the
-  quantity, and shows the sticky buy bar on phones once the main button has been scrolled past.
+  /cart. product.js (loaded only here) keeps price, button, photo and URL in step with the chosen variant and steps
+  the quantity.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -55,6 +57,18 @@
   assign ship_from = settings.free_shipping_threshold | default: 0 | times: 100
   assign ship_fee = settings.shipping_fee | default: 0 | times: 100
   assign rating_count = product.metafields.reviews.rating_count.value | default: 0
+
+  comment
+    At most this many of one piece per order (Theme settings → Cart); larger orders go through WhatsApp.
+  endcomment
+  assign cap = settings.max_per_item | default: 0
+  assign bulk_text = 'products.bulk_message' | t: count: cap, title: product.title, url: page_url
+  if whatsapp != blank
+    assign bulk_tail = bulk_text | replace: '&amp;', '&' | replace: '&#39;', "'" | replace: '&quot;', '"' | url_encode
+    assign bulk_url = wa | append: bulk_tail
+  else
+    assign bulk_url = ask_url
+  endif
 -%}
 
 <div class="pdp page-grid" data-product>
@@ -93,7 +107,8 @@
           elsif current.inventory_management == 'shopify' and current.inventory_policy == 'deny' and current.inventory_quantity <= 3
             assign badge = 'products.last_few' | t
           elsif on_sale
-            assign badge = 'products.sale' | t
+            assign saving = current.compare_at_price | minus: current.price | money_without_trailing_zeros
+            assign badge = 'products.save' | t: amount: saving
           endif
         -%}
         <div class="pdp__price-row">
@@ -104,8 +119,8 @@
             <s class="pdp__was" data-price-was {% unless on_sale %}hidden{% endunless %}>{{ current.compare_at_price | money }}</s>
           </p>
           <span class="pdp__badge" data-badge {% if badge == blank %}hidden{% endif %}>{{ badge }}</span>
+          {%- if shop.taxes_included -%}<span class="pdp__tax">{{ 'products.tax_included' | t }}</span>{%- endif -%}
         </div>
-        {%- if shop.taxes_included -%}<p class="pdp__tax">{{ 'products.tax_included' | t }}</p>{%- endif -%}
       {%- endunless -%}
     </div>
 
@@ -140,37 +155,62 @@
           <input type="hidden" name="id" value="{{ current.id }}">
         {%- endif -%}
 
-        <div class="pdp__buy">
-          {%- liquid
-            assign max = blank
-            if current.inventory_management == 'shopify' and current.inventory_policy == 'deny' and current.inventory_quantity > 0
-              assign max = current.inventory_quantity
-            endif
-            assign qty_id = 'ProductQty-' | append: section.id
-            assign safe_title = product.title | escape
-            render 'quantity', id: qty_id, name: 'quantity', value: 1, title: safe_title, max: max, floor: 1
-          -%}
-          <button
-            type="submit"
-            class="btn pdp__add"
-            aria-describedby="ProductAddError-{{ section.id }}"
-            data-add
-            {% unless current.available %}
-              disabled
-            {% endunless %}
-          >
-            {%- render 'icon', icon: 'cart' -%}
-            <span
-              data-add-label
-              data-label-add="{{ 'products.add_to_cart' | t }}"
-              data-label-out="{{ 'products.sold_out' | t }}"
+        {%- comment -%}
+          The buy box. From 750px: quantity and Add to cart on one row, Buy it now under them. On phones the
+          quantity is a row in the page and the two buttons are pinned to the bottom of the screen (.pdp__cta).
+          Sold out (is-out): no quantity and no Buy it now; the bar offers to make one instead.
+        {%- endcomment -%}
+        <div class="pdp__buy{% unless current.available %} is-out{% endunless %}" data-buy>
+          <div class="pdp__qty">
+            <span class="pdp__qty-label" aria-hidden="true">{{ 'products.quantity' | t }}</span>
+            {%- liquid
+              assign max = blank
+              if current.inventory_management == 'shopify' and current.inventory_policy == 'deny' and current.inventory_quantity > 0
+                assign max = current.inventory_quantity
+              endif
+              if cap > 0
+                if max == blank or max > cap
+                  assign max = cap
+                endif
+              endif
+              assign qty_id = 'ProductQty-' | append: section.id
+              assign safe_title = product.title | escape
+              render 'quantity', id: qty_id, name: 'quantity', value: 1, title: safe_title, max: max, floor: 1
+            -%}
+          </div>
+          <div class="pdp__cta">
+            <button
+              type="submit"
+              class="btn pdp__add"
+              data-add
+              {% unless current.available %}
+                disabled
+              {% endunless %}
             >
-              {%- if current.available %}{{ 'products.add_to_cart' | t }}{% else %}{{ 'products.sold_out' | t }}{% endif -%}
-            </span>
-          </button>
-          <div class="pdp__now-btn">{{ form | payment_button }}</div>
+              {%- render 'icon', icon: 'cart' -%}
+              <span
+                data-add-label
+                data-label-add="{{ 'products.add_to_cart' | t }}"
+                data-label-out="{{ 'products.sold_out' | t }}"
+              >
+                {%- if current.available %}{{ 'products.add_to_cart' | t }}{% else %}{{ 'products.sold_out' | t }}{% endif -%}
+              </span>
+            </button>
+            <div class="pdp__now-btn">{{ form | payment_button }}</div>
+            <a class="btn pdp__make" href="{{ make_url }}" {% if whatsapp != blank %}target="_blank" rel="noopener"{% endif %}>
+              {{- 'products.ask_make_short' | t -}}
+              {%- if whatsapp != blank -%}<span class="visually-hidden"> ({{ 'accessibility.new_window' | t }})</span>{%- endif -%}
+            </a>
+          </div>
         </div>
-        <p class="pdp__error" id="ProductAddError-{{ section.id }}" role="alert" data-add-error hidden></p>
+        {%- if cap > 0 -%}
+          <div role="status">
+            <p class="pdp__limit" data-limit data-cap="{{ cap }}" hidden>
+              {{ 'products.limit' | t: count: cap }}
+              <a href="{{ bulk_url }}" {% if whatsapp != blank %}target="_blank" rel="noopener"{% endif %}>{{ 'products.limit_ask' | t }}</a>
+            </p>
+          </div>
+        {%- endif -%}
       {% endform %}
 
       <div class="assure">
@@ -253,25 +293,6 @@
 </div>
 
 {%- unless is_gift -%}
-  {%- comment -%}
-    The sticky buy bar (phones): a second button for the same form, not a second form. product.js shows it once
-    the main button has been scrolled past (never before it: the options come first), and hides it at the footer.
-  {%- endcomment -%}
-  <div class="buybar" data-buybar hidden>
-    <div class="buybar__text">
-      <span class="buybar__title">{{ product.title }}</span>
-      <span class="buybar__line">
-        <span class="buybar__price" data-buybar-price>{{ current.price | money }}</span>
-        {%- unless product.has_only_default_variant -%}
-          <span class="buybar__choice" data-buybar-choice>{{ current.options | join: ' · ' }}</span>
-        {%- endunless -%}
-      </span>
-    </div>
-    <button type="submit" form="{{ form_id }}" class="btn buybar__add" data-add {% unless current.available %}disabled{% endunless %}>
-      <span data-add-label>{%- if current.available %}{{ 'products.add_to_cart' | t }}{% else %}{{ 'products.sold_out' | t }}{% endif -%}</span>
-    </button>
-  </div>
-
   <script type="application/json" data-variants>
     [
       {%- for variant in product.variants -%}
@@ -282,11 +303,17 @@
           elsif variant.inventory_management == 'shopify' and variant.inventory_policy == 'deny' and variant.inventory_quantity <= 3
             assign v_badge = 'products.last_few' | t
           elsif variant.compare_at_price > variant.price
-            assign v_badge = 'products.sale' | t
+            assign v_saving = variant.compare_at_price | minus: variant.price | money_without_trailing_zeros
+            assign v_badge = 'products.save' | t: amount: v_saving
           endif
           assign v_max = 0
           if variant.inventory_management == 'shopify' and variant.inventory_policy == 'deny' and variant.inventory_quantity > 0
             assign v_max = variant.inventory_quantity
+          endif
+          if cap > 0
+            if v_max == 0 or v_max > cap
+              assign v_max = cap
+            endif
           endif
           assign v_was = ''
           if variant.compare_at_price > variant.price
@@ -338,7 +365,7 @@
   }
   @media (hover: hover) { .pdp__crumb:hover { color: var(--color-heading); text-decoration: underline; text-underline-offset: 4px; } }
   .pdp__title { font-size: clamp(1.75rem, 1.5rem + 1.2vw, 2.5rem); line-height: 1.1; text-wrap: balance; }
-  .pdp__rating { display: inline-flex; align-items: center; justify-self: start; gap: var(--space-1); min-height: 32px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); text-decoration: none; }
+  .pdp__rating { display: inline-flex; align-items: center; justify-self: start; gap: var(--space-1); min-height: 44px; margin-block: -6px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); text-decoration: none; }
   .pdp__rating-count { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
   .pdp__rating .icon { width: 16px; height: 16px; fill: currentColor; }
   .pdp__rating-count { font-weight: 400; color: var(--color-muted); }
@@ -358,26 +385,63 @@
     line-height: 1.3;
   }
   .pdp__tax { font-size: .8125rem; color: var(--color-muted); }
+  .pdp__limit { font-size: .8125rem; color: var(--color-ink); }
+  .pdp__limit a { color: var(--color-heading); font-weight: 500; text-underline-offset: 3px; }
   /* The price and button answer a new choice with the site's "swap": the new value fades up 4px. */
   @media (prefers-reduced-motion: no-preference) {
     html:not(.lite) .pdp .is-swapping { animation: pdp-swap var(--dur-state) var(--ease-out); }
   }
   @keyframes pdp-swap { from { opacity: 0; translate: 0 4px; } }
 
-  /* The buy box: quantity and Add to cart on one row, Buy it now under them, all 54px tall with the same edges. */
+  /* The buy box. From 750px: quantity and Add to cart on one row, Buy it now under them, all 54px tall with the
+     same edges (the two wrappers dissolve, so the three are one flex row that wraps). */
   .pdp__form { display: grid; gap: var(--space-2); }
-  /* With large text the button has no room beside the quantity, so it takes the next row instead of clipping its words. */
   .pdp__buy { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-  /* A fixed middle cell: a number field with no stock limit is wide by default and pushed the button to the next row. */
-  .pdp__buy .qty { flex: none; height: 54px; grid-template-columns: var(--tap) 2.75rem var(--tap); }
-  .pdp__buy .qty__btn { height: 51px; }
+  .pdp__qty, .pdp__cta { display: contents; }
+  .pdp__qty-label { display: none; }
+  /* One digit is the most (the cap is 9), so the number cell is narrow and the buttons 44px. */
+  .pdp__buy .qty { flex: none; height: 54px; grid-template-columns: 44px 1.75rem 44px; }
+  .pdp__buy .qty__btn { width: 44px; height: 51px; }
+  /* With large text the button has no room beside the quantity, so it takes the next row instead of clipping its words. */
   .pdp__add { flex: 1 1 8rem; padding-inline: var(--space-4); }
   .pdp__add .icon { width: 22px; height: 22px; }
   @media (hover: hover) { .pdp__add:hover .icon { transform: translateX(2px); } }
-  .pdp__add:disabled, .buybar__add:disabled { --btn-bg: var(--taupe-ink); cursor: not-allowed; transform: none; box-shadow: none; }
-  .pdp__add[aria-busy="true"], .buybar__add[aria-busy="true"] { cursor: progress; }
+  .pdp__add:disabled { --btn-bg: var(--taupe-ink); cursor: not-allowed; transform: none; box-shadow: none; }
+  .pdp__add[aria-busy="true"] { cursor: progress; }
   .pdp__now-btn { flex: 1 0 100%; }
   .pdp__now-btn:empty { display: none; }
+  /* Sold out: nothing to count and nothing to buy now. */
+  .pdp__make, .pdp__buy.is-out .pdp__qty, .pdp__buy.is-out .pdp__now-btn { display: none; }
+
+  /* Phones: Add to cart and Buy it now are pinned to the bottom of the screen from arrival to the end of the page
+     (Raushan, round 4): always one tap away, never appearing or disappearing. The page keeps the quantity row.
+     --buybar lifts the pop-ups above the bar and pads the page so the footer's last line clears it. */
+  @media (max-width: 749px) {
+    :root:has(.pdp__cta) { --buybar: calc(3rem + 1px + var(--space-2) + max(var(--space-2), env(safe-area-inset-bottom))); }
+    body:has(.pdp__cta) { padding-bottom: var(--buybar); }
+    .pdp__qty { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); width: 100%; }
+    .pdp__qty-label { display: block; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
+    .pdp__buy .qty { height: var(--tap); }
+    .pdp__buy .qty__btn { height: calc(var(--tap) - 3px); }
+    .pdp__cta {
+      position: fixed;
+      inset: auto 0 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+      gap: var(--space-2);
+      padding: var(--space-2) var(--gutter) max(var(--space-2), env(safe-area-inset-bottom));
+      border-top: 1px solid var(--color-line-strong);
+      background: var(--white);
+      box-shadow: 0 -10px 24px -18px rgb(78 58 49 / .5);
+    }
+    .pdp__cta > * { min-width: 0; }
+    .pdp__cta .btn, .pdp__cta .pdp__now-btn .shopify-payment-button__button--unbranded { min-height: 3rem; padding-inline: var(--space-3); }
+    .pdp__add .icon { display: none; }
+    .pdp__buy.is-out .pdp__make { display: inline-flex; }
+    /* Sold out leaves nothing of the buy box in the page, so its row gives the space back. */
+    .pdp__form:has(.is-out) { display: block; height: 0; margin-top: calc(var(--space-5) * -1); }
+  }
   /* Shopify's "Buy it now" (unbranded): our quiet outlined pill instead of its default blue block. */
   .pdp__now-btn .shopify-payment-button__button--unbranded {
     min-height: 54px;
@@ -388,7 +452,6 @@
     font: 500 1rem var(--font-sans);
   }
   .pdp__now-btn .shopify-payment-button__button--unbranded:hover:not([disabled]) { background: var(--blush-soft); border-color: var(--cocoa); }
-  .pdp__error { padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--blush-soft); color: #9A3B2E; font-weight: 500; font-size: var(--fs-small); }
   .pdp__select {
     width: 100%;
     min-height: var(--tap);
@@ -453,43 +516,29 @@
   }
   @media (hover: hover) { .detail summary:hover .detail__toggle { background: var(--color-surface); } }
 
-  /* The sticky buy bar. Phones only. It slides up from the bottom edge and keeps clear of the home indicator. */
-  .buybar {
-    position: fixed;
-    inset: auto 0 0;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-2) var(--gutter) max(var(--space-2), env(safe-area-inset-bottom));
-    border-top: 1px solid var(--color-line-strong);
-    background: var(--white);
-    box-shadow: 0 -10px 24px -18px rgb(78 58 49 / .5);
-    translate: 0 110%;
-    visibility: hidden;
-    transition: translate var(--dur-panel) var(--ease-out), visibility 0s var(--dur-panel);
+  /* Short phone screens (an in-app browser, about 640px tall): the page is a little tighter so the name and the
+     price sit above the pinned buttons on arrival. The photo's own trim is in snippets/product-gallery. */
+  @media (max-width: 749px) and (max-height: 700px) {
+    .pdp { row-gap: var(--space-3); }
+    .pdp__price-row { margin-top: 0; }
   }
-  .buybar[hidden] { display: none; }
-  .buybar.is-on { translate: none; visibility: visible; transition-delay: 0s; }
-  .buybar__text { display: grid; flex: 1; min-width: 0; line-height: 1.25; }
-  .buybar__title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: var(--fs-small); color: var(--color-ink); }
-  .buybar__line { display: flex; gap: var(--space-2); align-items: baseline; min-width: 0; }
-  .buybar__price { font-weight: 500; color: var(--color-heading); font-variant-numeric: tabular-nums; }
-  .buybar__choice { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: var(--fs-small); color: var(--color-muted); }
-  .buybar__add { flex: none; min-height: var(--tap); }
-  @media (prefers-reduced-motion: reduce) { .buybar { transition: none; } }
-  html.lite .buybar { transition: none; }
 
-  /* Desktop: photos on the left, everything about buying on the right, staying in view while the photos scroll. */
+  /* From 750px: photos on the left and staying in view, everything about buying on the right. */
+  @media (min-width: 750px) {
+    .pdp.page-grid {
+      grid-template-columns: minmax(var(--gutter), 1fr) calc(var(--content-width) * .5) calc(var(--content-width) * .5) minmax(var(--gutter), 1fr);
+      align-items: start;
+      padding-block: var(--space-5) var(--space-8);
+    }
+    .pdp.page-grid > .pdp__gallery { grid-column: 2; padding-right: var(--space-5); position: sticky; top: calc(var(--header-height) + var(--space-4)); }
+    .pdp.page-grid > .pdp__info { grid-column: 3; }
+  }
   @media (min-width: 990px) {
     .pdp.page-grid {
       grid-template-columns: minmax(var(--gutter), 1fr) calc(var(--content-width) * .56) calc(var(--content-width) * .44) minmax(var(--gutter), 1fr);
-      align-items: start;
       padding-block: var(--space-6) var(--space-9);
     }
-    .pdp.page-grid > .pdp__gallery { grid-column: 2; padding-right: var(--space-8); }
-    .pdp.page-grid > .pdp__info { grid-column: 3; position: sticky; top: calc(var(--header-height) + var(--space-4)); }
-    .buybar { display: none; }
+    .pdp.page-grid > .pdp__gallery { padding-right: var(--space-8); }
   }
 {% endstylesheet %}
 

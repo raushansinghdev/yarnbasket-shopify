@@ -18,7 +18,7 @@
   {% render 'product-gallery', product: product, current: product.selected_or_first_available_variant %}
 {%- enddoc -%}
 {%- liquid
-  assign sizes = '(min-width: 990px) min(46vw, 620px), 100vw'
+  assign sizes = '(min-width: 990px) min(46vw, 620px), (min-width: 750px) 46vw, 100vw'
   assign region = 'products.gallery' | t: title: product.title
 
   comment
@@ -416,11 +416,20 @@
   /* Photos of the colours that aren't chosen (data-group) wait hidden; product.js swaps them in. */
   .gallery__meta[hidden], .zoom__slide[hidden], .zoom__count[hidden] { display: none; }
 
+  /* A short phone screen: the photo gives up a tenth of its height so the name and price clear the pinned buttons
+     (the whole photo is one tap away in the viewer). A phone on its side: the photo fits the screen's height. */
+  @media (max-width: 749px) and (max-height: 700px) { .gallery__slide { --ratio: 1.125; } }
+  @media (max-width: 749px) and (max-height: 500px) and (orientation: landscape) {
+    .gallery__slide { aspect-ratio: auto; height: max(12rem, 100svh - 10rem); }
+    .gallery__slide > .gallery__img { object-fit: contain; }
+  }
+  /* Beside the buying column from 750px: rounded, like a card. */
+  @media (min-width: 750px) { .gallery__track { border-radius: var(--radius-md); } }
   @media (min-width: 990px) {
     .gallery, .zoom { --photo-btn: 52px; --photo-icon: 24px; }
     .gallery__actions { top: var(--space-3); right: var(--space-3); }
     .gallery { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--space-4); align-items: start; }
-    .gallery__track { grid-column: 2; grid-row: 1; border-radius: var(--radius-md); }
+    .gallery__track { grid-column: 2; grid-row: 1; }
     .gallery > .gallery__slide { grid-column: 1 / -1; border-radius: var(--radius-md); }
     .gallery__dots { display: none; }
     .gallery__thumbs { grid-column: 1; grid-row: 1; display: grid; gap: var(--space-3); }

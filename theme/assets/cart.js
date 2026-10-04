@@ -155,6 +155,8 @@ const lineNote = (li, msg, error) => {
   note.hidden = !msg;
   note.classList.toggle('is-error', !!error);
 };
+// Why a line can't go higher: the stock, or the most one order can hold (Theme settings → Cart).
+const limitNote = (li) => ('capped' in li.dataset ? S.cap : S.max);
 const failed = (key, err) => {
   const msg = why(err);
   const tell = () => {
@@ -291,7 +293,7 @@ document.addEventListener('change', (event) => {
   if (n <= 0) return remove(li);
   if (n > max) {
     n = max;
-    lineNote(li, S.max);
+    lineNote(li, limitNote(li));
   }
   showQty(li, n);
   if (n !== +li.dataset.qty) commit(li.dataset.key, n);
@@ -344,6 +346,15 @@ document.addEventListener('submit', (event) => {
   const label = button?.querySelector('[data-add-label]');
   const original = label?.textContent;
   const error = form.querySelector('[data-add-error]');
+  // The most of one piece per order counts what the cart already holds.
+  const adding = asItems(form).items[0];
+  const have = +box()?.querySelector(`.cart-line[data-variant="${adding.id}"]`)?.dataset.qty || 0;
+  if (S.capCount && have + adding.quantity > S.capCount) {
+    const msg = have ? fmt(S.capHave, { have }) : S.cap;
+    toast(msg, null, true);
+    say(msg);
+    return;
+  }
   button?.setAttribute('aria-busy', 'true');
   if (label) {
     button.style.minWidth = `${button.offsetWidth}px`;
@@ -466,7 +477,7 @@ document.addEventListener('click', (event) => {
   if (step) {
     const li = step.closest('.cart-line');
     const key = li.dataset.key;
-    if (step.getAttribute('aria-disabled') === 'true') return lineNote(li, S.max);
+    if (step.getAttribute('aria-disabled') === 'true') return lineNote(li, limitNote(li));
     const n = Math.max(0, (+li.querySelector('.qty__input').value || 0) + +step.dataset.step);
     if (n === 0) return remove(li);
     showQty(li, n);

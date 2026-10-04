@@ -315,6 +315,36 @@ percentage badges, a cluster of social share buttons.
 - Check 20: 49 checks, all passing. product.js is 10.0 KB against its 10 KB limit: the next addition needs a trim
   or a deliberate raise.
 
+## Round 4 (2026-10-04, after an audit of the whole page)
+
+Tested at 360 × 640, 360 × 800, 390 × 844, 768 × 1024, 740 × 360, 1280 and 1440 on the colour test product, a
+one-option, a no-option, the sold-out and the sale product.
+
+- **Phones: Add to cart and Buy it now are pinned to the bottom of the screen for the whole page.** One set of
+  buttons (the page's own, placed with CSS), so nothing appears, disappears or duplicates, and it works without
+  JavaScript. The page keeps a "Quantity" row. This replaces the bar of rounds 1 and 3, which came and went; the
+  old `.buybar` and its code in product.js are gone. Considered and dropped: buttons only in the page (700 to
+  870px down on arrival), a bar after scrolling past (nothing to tap on arrival), a bar plus the page's buttons
+  (two Add to cart buttons at once).
+  - Wrong colour by accident (no change-of-mind returns): the options are on the first screen above the bar, a
+    colour is always pre-chosen and named, and the pop-up says what went in.
+  - Screens under 700px tall: the photo gives up a tenth of its height so the name and price sit above the bar.
+  - Add to cart stays the filled button: the cart is where free shipping and the gift show.
+- **At most 9 of one piece per order** (Theme settings → Cart, 0 = no limit; stock wins when lower). The quantity
+  field is narrower (116px). At 9 a line sends larger orders to WhatsApp. The cart's stepper stops at 9 too, and
+  adding more than the cart can take is refused with the reason. Not enforced at checkout.
+- **Sold out:** no quantity and no Buy it now (it used to look like a working button); the bar shows "Sold out"
+  and "Ask us to make one".
+- **Two columns from 750px** (was 990), so a tablet shows name, price and buttons on arrival. The photo column is
+  the one that stays in view while the details scroll. A phone on its side fits the photo to the screen's height.
+- **Small:** "Incl. of all taxes" sits on the price row; the sale badge says the saving ("Save ₹200"); the rating
+  link is 44px tall; the shared price tag is a plain number (was "1,199"); the reviews block under a product is
+  shorter (no icon, less padding); errors from Add to cart show in the pop-up, since the button is no longer next
+  to the form.
+- Check 20: 58 checks, all passing. product.js is 9.2 KB (limit 10).
+- For launch: Buy it now must hand over to Shiprocket Checkout, and the Meta pixel's events need checking
+  (launch-checklist.md).
+
 ## Photo guide (for Raushan)
 
 Five square photos per product, at least 1200px, in this order:

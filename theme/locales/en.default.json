@@ -34,7 +34,7 @@
     "shipping_later": "Calculated at checkout",
     "taxes_in": "Prices include all taxes.",
     "taxes_out": "Taxes are calculated at checkout.",
-    "ships": "Ships in 1–2 days",
+    "ships": "Ships in 1⁠–⁠2 days",
     "each": "{{ price }} each",
     "quantity": "Quantity, {{ title }}",
     "decrease": "Decrease quantity, {{ title }}",
@@ -71,7 +71,9 @@
     "extras_text": "Add a little something to go with it.",
     "extras_add": "Add",
     "extras_add_label": "Add {{ title }} to cart",
-    "extras_choose": "Choose"
+    "extras_choose": "Choose",
+    "cap": "{{ count }} is the most of one piece per order. For more, message us on WhatsApp.",
+    "cap_have": "You already have {{ have }} of this in your cart. {{ count }} is the most per order."
   },
   "customers": {
     "login": {
@@ -251,7 +253,12 @@
     "zoom_prev": "Previous photo",
     "zoom_next": "Next photo",
     "zoom_hint_mouse": "Double-click to zoom",
-    "rating_link": "Read the reviews"
+    "rating_link": "Read the reviews",
+    "save": "Save {{ amount }}",
+    "limit": "{{ count }} is the most per order.",
+    "limit_ask": "Need more? Ask us on WhatsApp",
+    "bulk_message": "Hi Yarn Basket! I’d like more than {{ count }} of “{{ title }}” ({{ url }}). Can you help?",
+    "ask_make_short": "Ask us to make one"
   },
   "reviews": {
     "rating": "{{ rating }} out of 5 stars",
