@@ -1,10 +1,10 @@
 {
- "note": "Edit the numbers here, then run: python3 tools/catalog-build.py && python3 tools/catalog-upload.py prices. price = multiplier x (sum of parts + packaging), nearest ten, minus one. Packaging is counted once per listing, by product type. A part with null has no cost yet: listings that use it keep the placeholder price typed in catalog.json. All figures in rupees.",
+ "note": "Edit the numbers here, then run: python3 tools/catalog-build.py && python3 tools/catalog-upload.py prices. price = multiplier x (sum of parts + packaging), nearest ten, minus one. Each part's cost already includes its packaging (Raushan, 2026-10-04), so several pieces are simply the cost times the count and the packaging table is 0; put an amount there only to add something per listing on top. A part with null has no cost yet: listings that use it keep the placeholder price typed in catalog.json. All figures in rupees.",
  "multiplier": 3,
  "packaging": {
-  "Bouquets": 30,
-  "Flower pots": 20,
-  "default": 15
+  "Bouquets": 0,
+  "Flower pots": 0,
+  "default": 0
  },
  "parts": {
   "sunflower": 50,

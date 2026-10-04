@@ -19,13 +19,16 @@ Decided with Raushan on 2026-10-04. Built the same day (see "As built").
   upload changes only prices, the free gift's included (it copies the sunflower keychain).
 - A part with `null` has no cost yet; listings that use it keep their typed placeholder price.
 
-### Costs from Raushan, 2026-10-04 (per piece, before packaging)
+### Costs from Raushan, 2026-10-04 (per piece, packaging included)
 
 Sunflower, rose, daisy ₹50; tulip ₹45; bee ₹45; flower keychain ₹15; evil eye ₹30; peacock feather ₹25; octopus ₹30;
 lily charm ₹20; flower pot ₹70; headband ₹50; claw clip ₹30; curtain tie-back ₹50. Chick keychain ₹55 (from the Meesho
-cost file). These replaced the Meesho file's figures, which had single bouquets ₹10 higher. He wrote "including
-packaging of only one product"; I read that as packaging counted once per listing, since a ₹15 keychain can't contain
-₹15 of packaging and his older figures for pairs and trios are these per-flower costs with no packaging in them.
+cost file).
+
+**Each figure already includes the packaging for that one piece** (Raushan, 2026-10-04, after I first read it the
+other way): several pieces are the figure times the count, with nothing added per listing. So the packaging table in
+`costs.json` is 0 and the working rule is **price = 3 × the sum of the pieces**. The ₹30 / ₹20 / ₹15 above is his
+earlier answer and no longer added. These figures also replaced the Meesho file's, which had single bouquets ₹10 higher.
 **Not known yet: a pair of hair clips** (four hair listings wait on it).
 
 Where a rupee of the price goes at 3×:
