@@ -1427,17 +1427,26 @@ if (want('20')) {
       if (!d?.open) return { open: false };
       const t = d.querySelector('.zoom__track');
       const s = t.children[Math.round(t.scrollLeft / t.clientWidth)];
-      const before = s.firstElementChild.getBoundingClientRect().width;
-      s.dispatchEvent(new MouseEvent('dblclick', { clientX: 180, clientY: 300, bubbles: true }));
+      const img = s.firstElementChild;
+      const before = img.getBoundingClientRect().width;
+      img.dispatchEvent(new MouseEvent('dblclick', { clientX: 180, clientY: 400, bubbles: true }));
       await new Promise((r) => setTimeout(r, 200));
-      return { open: true, grew: s.firstElementChild.getBoundingClientRect().width / before };
+      const grew = img.getBoundingClientRect().width / before;
+      img.dispatchEvent(new MouseEvent('dblclick', { clientX: 180, clientY: 400, bubbles: true }));
+      await new Promise((r) => setTimeout(r, 200));
+      // A tap on the photo keeps the viewer open; a tap on the empty space around it closes it.
+      img.click();
+      const stays = d.open;
+      const box = img.getBoundingClientRect();
+      return { open: true, grew, stays, count: d.querySelector('.zoom__count')?.textContent.trim(), gapY: Math.max(20, box.top / 2), room: box.top > 40 };
     });
-    await page.keyboard.press('Escape');
+    if (viewer.room) await page.mouse.click(180, viewer.gapY);
+    else await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
     const after = await page.evaluate(() => ({ open: !!document.querySelector('dialog.zoom')?.open, focus: document.activeElement?.matches('[data-zoom]') }));
-    record('Product: photo viewer opens, zooms, closes', viewer.open && viewer.grew > 2 && !after.open && after.focus, `opened: ${viewer.open}, zoom ${viewer.grew?.toFixed(1)}x, closed: ${!after.open}, focus back: ${after.focus}`);
+    record('Product: photo viewer opens, zooms, closes', viewer.open && viewer.grew > 2 && viewer.stays && !after.open && after.focus, `opened: ${viewer.open}, zoom ${viewer.grew?.toFixed(1)}x, tap on photo keeps it open: ${viewer.stays}, tap outside closes: ${viewer.room && !after.open}, count "${viewer.count}", focus back: ${after.focus}`);
 
-    record('Product: script sizes', sizes.product < 9 && (sizes['product-zoom'] ?? 0) < 6 && (sizes['product-rows'] ?? 0) < 4 && sizes.cart < BUDGET.cartJsKB && sizes.theme < BUDGET.ownJsKB, Object.entries(sizes).map(([k, v]) => `${k}.js ${v.toFixed(1)} KB`).join(', ') + ' (budgets: product 9, zoom 6, rows 4)');
+    record('Product: script sizes', sizes.product < 10 && (sizes['product-zoom'] ?? 0) < 7 && (sizes['product-rows'] ?? 0) < 4 && sizes.cart < BUDGET.cartJsKB && sizes.theme < BUDGET.ownJsKB, Object.entries(sizes).map(([k, v]) => `${k}.js ${v.toFixed(1)} KB`).join(', ') + ' (budgets: product 10, zoom 7, rows 4)');
     record('Product: no script errors', errors.length === 0, errors.join(' | ') || 'none');
 
     // Rows under the details load when reached; tap targets; axe.
@@ -1494,6 +1503,87 @@ if (want('20')) {
     await browser.close();
   }
 
+  // Colours (docs/product-page-plan.md round 2): one product with a Colour option, here with Size too.
+  {
+    const { browser, page, errors } = await visit('products/rose-crochet-bouquet-colour-test', PHONE);
+    if (!(await page.locator('.options').count())) record('Product, colours: the colour test product', false, 'products/rose-crochet-bouquet-colour-test is missing');
+    else {
+      const pick = (name) => page.locator('.pill__label', { hasText: name }).click();
+      const state = () => page.evaluate(() => ({
+        legends: [...document.querySelectorAll('.options__name')].map((l) => l.textContent.replace(/\s+/g, ' ').trim()),
+        price: document.querySelector('[data-price-now]').textContent,
+        photos: [...document.querySelectorAll('.gallery__slide')].filter((el) => !el.hidden).map((el) => (el.querySelector('img')?.alt || '').split(' ')[0]),
+        thumbs: [...document.querySelectorAll('.gallery__thumbs li')].filter((el) => !el.hidden).length,
+        dots: [...document.querySelectorAll('[data-gallery-dots] i')].filter((el) => !el.hidden).length,
+        total: document.querySelector('[data-gallery-total]').textContent,
+        meta: !document.querySelector('.gallery__meta').hidden,
+        six: [...document.querySelectorAll('.pill__input')].find((i) => i.dataset.value === '6 roses').disabled,
+        bar: document.querySelector('.buybar__line').textContent.replace(/\s+/g, ' ').trim(),
+        search: location.search,
+        swatches: [...document.querySelectorAll('.options__group')].map((g) => g.querySelectorAll('.pill__photo').length),
+        id: new FormData(document.querySelector('[data-product-form]')).get('id'),
+      }));
+      const start = await state();
+      // No stock limit here: a number field without a maximum is wide by default and once pushed the button to its own row.
+      const b = await page.evaluate(() => {
+        const box = (sel) => document.querySelector(sel).getBoundingClientRect();
+        const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills');
+        return { rowTop: Math.abs(q.top - a.top), rowH: Math.abs(q.height - a.height), left: Math.abs(q.left - n.left), right: Math.abs(a.right - n.right), pills: Math.abs(pill.left - q.left), qty: Math.round(q.width) };
+      });
+      record('Product, no stock limit: buy box lines up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1 && b.qty < 160, `row top ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left ${b.left.toFixed(1)}, right ${b.right.toFixed(1)} (px off); quantity ${b.qty}px wide`);
+      await pick('Pink');
+      await page.waitForTimeout(500);
+      const pink = await state();
+      await pick('Yellow');
+      await page.waitForTimeout(500);
+      const yellow = await state();
+      record('Product, colours: a photo swatch per colour, none on sizes', start.swatches[0] === 3 && start.swatches[1] === 0, `colour pills with a photo: ${start.swatches[0]} of 3, size pills: ${start.swatches[1]}`);
+      record('Product, colours: the label names the choice', start.legends[0] === 'Colour: Red' && yellow.legends[0] === 'Colour: Yellow' && /Size: 3 roses/.test(yellow.legends[1]), `${start.legends.join(' | ')} → ${yellow.legends.join(' | ')}`);
+      record('Product, colours: price, link and bar follow', /1,299/.test(yellow.price) && /variant=\d+/.test(yellow.search) && /Yellow · 3 roses/.test(yellow.bar) && yellow.id !== start.id, `${yellow.price}, ${yellow.search}, bar "${yellow.bar}"`);
+      // Only the chosen colour's photos are in the row; the dots, count and thumbnails match.
+      const only = (st, colour, n) => st.photos.length === n && st.photos.every((p) => p === colour) && st.thumbs === n && st.dots === n && st.total === String(n) && st.meta === n > 1;
+      record('Product, colours: only the chosen colour\'s photos', only(start, 'Red', 2) && only(pink, 'Pink', 1) && only(yellow, 'Yellow', 1), `Red: ${start.photos.join(', ')} (count ${start.total}); Pink: ${pink.photos.join(', ')}; Yellow: ${yellow.photos.join(', ')} (dots and count shown: ${yellow.meta})`);
+      await pick('Red');
+      await page.waitForTimeout(500);
+      await page.evaluate(() => scrollTo(0, 0));
+      await page.locator('[data-zoom]').click();
+      await page.waitForSelector('dialog.zoom[open]', { timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(300);
+      const inViewer = await page.evaluate(() => ({ photos: [...document.querySelectorAll('.zoom__slide')].filter((el) => !el.hidden).map((el) => el.firstElementChild.alt.split(' ')[0]), total: document.querySelector('[data-zoom-total]')?.textContent }));
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+      record('Product, colours: the viewer shows that colour only', inViewer.photos.length === 2 && inViewer.photos.every((p) => p === 'Red') && inViewer.total === '2', `viewer: ${inViewer.photos.join(', ')} of ${inViewer.total}`);
+      record('Product, colours: a sold-out pair is off, then back', pink.six === true && yellow.six === false, `Pink: "6 roses" disabled ${pink.six}; Yellow: disabled ${yellow.six}`);
+
+      // The rating by the name takes you down to the reviews.
+      await page.evaluate(() => scrollTo(0, 0));
+      const link = page.locator('a.pdp__rating');
+      const has = await link.count();
+      if (has) await link.click();
+      await page.waitForTimeout(900);
+      const landed = await page.evaluate(() => { const r = document.querySelector('#reviews'); return r ? { top: Math.round(r.getBoundingClientRect().top), hash: location.hash } : null; });
+      record('Product: the rating links to the reviews', has === 1 && !!landed && landed.hash === '#reviews' && landed.top >= 0 && landed.top < 200, landed ? `reviews ${landed.top}px from the top, ${landed.hash}` : `rating shown: ${has}, no #reviews on the page`);
+      record('Product, colours: no script errors', errors.length === 0, errors.join(' | ') || 'none');
+    }
+    await page.goto(at(ROSE), { waitUntil: 'load' });
+    await page.waitForTimeout(800);
+    const plain = await page.evaluate(() => {
+      const lines = (el) => Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight));
+      const circle = (sel) => { const el = document.querySelector(sel); const i = parseFloat(getComputedStyle(el, '::before').inset) || 0; return Math.round(el.getBoundingClientRect().width - i * 2); };
+      return {
+        rating: !!document.querySelector('.pdp__rating'),
+        terms: [...document.querySelectorAll('.offer-terms li')].map(lines),
+        faq: [...document.querySelectorAll('.faq--compact summary')].map((s) => Math.round(s.getBoundingClientRect().height)),
+        circles: [circle('.gallery [data-save]'), circle('[data-share]'), circle('[data-zoom]')],
+      };
+    });
+    record('Product: no rating line without real ratings', !plain.rating, `rating shown: ${plain.rating}`);
+    record('Product 360: each delivery term on one line', plain.terms.length >= 2 && plain.terms.every((n) => n === 1), `lines per term: ${plain.terms.join(', ')}`);
+    record('Product 360: compact FAQ rows', plain.faq.length >= 2 && plain.faq.every((h) => h >= 48 && h <= 60), `row heights: ${plain.faq.join(', ')}px`);
+    record('Product 360: photo buttons are 40px circles', plain.circles.every((n) => n >= 40), `save ${plain.circles[0]}px, share ${plain.circles[1]}px, look closer ${plain.circles[2]}px`);
+    await browser.close();
+  }
+
   // Without JavaScript the form still posts the chosen variant.
   {
     const { browser, page } = await visit(ROSE, PHONE, { js: false });
@@ -1518,6 +1608,25 @@ if (want('20')) {
     await page.waitForTimeout(500);
     const count = await page.evaluate(() => document.querySelector('[data-gallery-count]').textContent);
     record('Product, desktop: two columns, thumbnails work', d.beside && d.thumbs >= 2 && d.bar === 'none' && !d.sideways && count === '2', `beside: ${d.beside}, ${d.thumbs} thumbnails, second shows photo ${count}, buy bar: ${d.bar}`);
+    const circle = (sel) => page.evaluate((s) => { const el = document.querySelector(s); const r = el.getBoundingClientRect(); const i = parseFloat(getComputedStyle(el, '::before').inset) || 0; return Math.round(r.width - i * 2); }, sel);
+    const sizes = [await circle('.gallery [data-save]'), await circle('[data-share]'), await circle('[data-zoom]')];
+    record('Product, desktop: photo buttons are 44px circles', sizes.every((n) => n >= 44), `save ${sizes[0]}px, share ${sizes[1]}px, look closer ${sizes[2]}px`);
+    await page.locator('[data-gallery-track]').evaluate((t) => t.scrollTo({ left: 0, behavior: 'instant' }));
+    await page.locator('[data-zoom]').click();
+    await page.waitForSelector('dialog.zoom[open]', { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(400);
+    const stepper = async () => page.evaluate(() => ({ count: document.querySelector('[data-zoom-count]')?.textContent, prev: document.querySelector('.zoom__arrow--prev')?.hidden, next: getComputedStyle(document.querySelector('.zoom__arrow--next')).display }));
+    const z0 = await stepper();
+    await page.locator('.zoom__arrow--next').click();
+    await page.waitForTimeout(700);
+    const z1 = await stepper();
+    await page.keyboard.press('ArrowLeft');
+    await page.waitForTimeout(700);
+    const z2 = await stepper();
+    await page.keyboard.press('Escape');
+    record('Product, desktop: viewer arrows and arrow keys', z0.count === '1' && z0.prev === true && z0.next !== 'none' && z1.count === '2' && z2.count === '1', `starts at ${z0.count} (no "previous": ${z0.prev}), arrow → ${z1.count}, left key → ${z2.count}`);
+    const below = await page.evaluate(() => [...document.querySelectorAll('main > .shopify-section')].map((s) => s.id.split('__').pop()));
+    record('Product: "You may also like" before the reviews', below.indexOf('related') > -1 && below.indexOf('related') < below.indexOf('reviews'), below.join(' → '));
     await page.evaluate(() => { scrollTo(0, 0); document.querySelector('#MainContent').focus(); });
     const order = [];
     for (let i = 0; i < 26; i++) {

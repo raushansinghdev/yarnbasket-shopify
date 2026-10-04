@@ -19,18 +19,38 @@ const slides = track ? [...track.children] : [];
 const dots = $$('[data-gallery-dots] i');
 const thumbs = $$('[data-go]');
 const count = $('[data-gallery-count]');
+// The photos in the row now: with colours, the other colours' photos are hidden (data-group).
+const live = () => slides.filter((slide) => !slide.hidden);
 let shown = 0;
 
-const show = (n) => {
-  if (n === shown || !slides[n]) return;
+const show = (n, again) => {
+  const slide = live()[n];
+  if (!slide || (n === shown && !again)) return;
   shown = n;
-  dots.forEach((dot, i) => dot.classList.toggle('is-on', i === n));
-  thumbs.forEach((thumb, i) => (i === n ? thumb.setAttribute('aria-current', 'true') : thumb.removeAttribute('aria-current')));
+  const at = slides.indexOf(slide);
+  dots.forEach((dot, i) => dot.classList.toggle('is-on', i === at));
+  thumbs.forEach((thumb, i) => (i === at ? thumb.setAttribute('aria-current', 'true') : thumb.removeAttribute('aria-current')));
   if (count) count.textContent = n + 1;
   // A clip stops when it's swiped away.
-  slides.forEach((slide, i) => i !== n && $('video', slide)?.pause());
+  slides.forEach((other) => other !== slide && $('video', other)?.pause());
 };
 const go = (n, instant) => track?.scrollTo({ left: n * track.clientWidth, behavior: instant || calm ? 'instant' : 'smooth' });
+const goTo = (slide, instant) => go(Math.max(0, live().indexOf(slide)), instant);
+
+// A new colour: its photos (and the ones every colour shares) take the row; the dots, count and thumbnails follow.
+const regroup = (media) => {
+  const key = slides.find((slide) => +slide.dataset.mediaId === media)?.dataset.group;
+  if (!key || live().every((slide) => !slide.dataset.group || slide.dataset.group === key)) return false;
+  slides.forEach((slide, i) => {
+    const off = !!slide.dataset.group && slide.dataset.group !== key;
+    slide.hidden = off;
+    if (dots[i]) dots[i].hidden = off;
+    if (thumbs[i]) thumbs[i].parentElement.hidden = off;
+  });
+  $('[data-gallery-total]').textContent = live().length;
+  $('.gallery__meta').hidden = live().length < 2;
+  return true;
+};
 
 if (track && slides.length > 1) {
   let frame = 0;
@@ -38,23 +58,22 @@ if (track && slides.length > 1) {
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(() => show(Math.round(track.scrollLeft / track.clientWidth)));
   }, { passive: true });
-  thumbs.forEach((thumb) => thumb.addEventListener('click', () => go(+thumb.dataset.go)));
+  thumbs.forEach((thumb) => thumb.addEventListener('click', () => goTo(slides[+thumb.dataset.go])));
   // A link to one variant opens on that variant's photo.
-  const first = slides.findIndex((slide) => 'current' in slide.dataset);
-  if (first > 0) go(first, true);
+  const first = slides.find((slide) => 'current' in slide.dataset);
+  if (first && live().indexOf(first) > 0) goTo(first, true);
 }
 
 // A closer look: the viewer's code arrives on the first tap of a photo (or of the round button, for keyboards).
 const gallery = $('[data-gallery]');
 const expand = $('[data-zoom]');
 if (gallery && expand) {
-  const photos = $$('.gallery__img', gallery);
-  const look = (n, from) => import(gallery.dataset.zoomSrc).then((viewer) => viewer.open(gallery, n, from, (left) => go(slides.indexOf(photos[left].parentElement), true)));
+  const look = (slide) => import(gallery.dataset.zoomSrc).then((viewer) => viewer.open(gallery, slide, expand, (left) => goTo(left, true)));
   expand.hidden = false;
-  expand.addEventListener('click', () => look(Math.max(0, photos.indexOf($('.gallery__img', slides[shown]))), expand));
+  expand.addEventListener('click', () => look($('.gallery__img', live()[shown]) ? live()[shown] : live().find((slide) => $('.gallery__img', slide))));
   track.addEventListener('click', (event) => {
-    const n = photos.indexOf(event.target.closest('.gallery__img'));
-    if (n > -1) look(n, expand);
+    const slide = event.target.closest('.gallery__img')?.parentElement;
+    if (slide) look(slide);
   });
 }
 
@@ -100,8 +119,9 @@ const update = (variant) => {
     ask.href = ok ? ask.dataset.askUrl : ask.dataset.makeUrl;
     $('[data-ask-text]', ask).textContent = ok ? ask.dataset.askLabel : ask.dataset.makeLabel;
   }
-  // Which other choices can still be made from here.
+  // Which other choices can still be made from here, and the chosen value beside each option's name.
   const now = chosen();
+  $$('[data-option-chosen]').forEach((el) => (el.textContent = now[el.dataset.optionChosen - 1] || ''));
   inputs.forEach((input) => {
     const other = [...now];
     other[input.dataset.option - 1] = input.dataset.value;
@@ -122,6 +142,8 @@ const update = (variant) => {
   swap($('[data-price]'));
   const barPrice = $('[data-buybar-price]');
   if (barPrice) barPrice.textContent = variant.price;
+  const barChoice = $('[data-buybar-choice]');
+  if (barChoice) barChoice.textContent = variant.options.join(' · ');
 
   if (qty) {
     variant.max ? (qty.dataset.max = qtyInput.max = variant.max) : (delete qty.dataset.max, qtyInput.removeAttribute('max'));
@@ -133,8 +155,12 @@ const update = (variant) => {
   url.searchParams.set('variant', variant.id);
   history.replaceState(history.state, '', url);
 
-  const photo = slides.findIndex((slide) => +slide.dataset.mediaId === variant.media);
-  if (photo > -1) go(photo);
+  const swapped = regroup(variant.media);
+  const photo = slides.find((slide) => +slide.dataset.mediaId === variant.media);
+  if (photo && !photo.hidden) {
+    goTo(photo, swapped);
+    show(live().indexOf(photo), swapped);
+  }
 
   if (status) {
     const said = ok ? status.dataset.chosen.replace('[price]', variant.price) : status.dataset.chosenOut;

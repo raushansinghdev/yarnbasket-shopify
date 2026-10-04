@@ -41,9 +41,10 @@
       "type": "faq",
       "settings": {
         "eyebrow": "Good to know",
-        "heading": "Questions, answered",
+        "heading": "Good to know",
         "link_label": "",
-        "scheme": "soft"
+        "scheme": "white",
+        "compact": true
       },
       "blocks": {
         "q1": {
@@ -90,8 +91,8 @@
   "order": [
     "main",
     "pairs",
-    "reviews",
     "related",
+    "reviews",
     "faq",
     "recent"
   ]

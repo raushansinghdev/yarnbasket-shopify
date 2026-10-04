@@ -2,6 +2,22 @@
 
 Status: **built 2026-10-04** (stages P-0 to P-5), on test products. Check §20: 30/30. Waiting for Raushan's look on a real phone, opened from an Instagram link.
 
+## Round 2 (2026-10-04, after Raushan's first look), built
+
+- **Viewer:** a tap on the empty space around the photo closes it (the photo itself never does). On desktop it has previous / next arrows and the ← → keys; a "2 / 5" count top left; the zoom hint fades after the first zoom and reads "Double-click to zoom" with a mouse.
+- **Save, Share and "look closer" on the photo are bigger:** a 40px circle on phones (was 32), a 44px circle in a 52px button on desktop, with a hover. The heart on product cards is unchanged. The unused worded Save style is gone from `save-button.liquid`.
+- **Colours are one product with a Colour option** (decisions.md). An option named Colour or Color shows a round swatch cut from that colour's own photo; the label names the choice ("Colour: Red", also "Size: 3 roses"); choosing slides to that colour's photo and changes price, stock and link; the sticky bar names the choice ("Yellow · 3 roses").
+  - **Only the chosen colour's photos are in the gallery** (Raushan: with Red chosen, the yellow and pink photos must not show). Shopify has no photo-per-colour grouping of its own, so the rule is by order: the photo picked on a colour's variant starts that colour's group, and the photos after it, up to the next colour's photo, belong to it. The swipe row, dots, count, thumbnails and the viewer all show that group only. A photo before the first group, or with `#all` in its alt text, shows for every colour (a size chart, the packaging); `#all` is never read out or shown.
+  - To set one up: Products → the product → Variants → add the option "Colour" with its values; open each colour's variant and pick its main photo; then drag the product's photos into colour order (all the red ones, then all the yellow ones, each colour starting with the photo picked on its variant).
+  - Not grouped: a product where fewer than two variants have a photo. Then every photo shows, as before.
+  - Test product: "Rose Crochet Bouquet (colour test)" (`rose-crochet-bouquet-colour-test`), Colour × Size, two red photos and one each for yellow and pink, Pink / 6 roses sold out, a test rating of 4.8 (12). Its yellow and pink photos are the red photo recoloured by computer, so it is test data only.
+- **The rating by the name is a link to the reviews** (`#reviews`), like Amazon and Flipkart. It shows only with real ratings. The reviews app's list goes at that anchor when it is installed.
+- **Order below the buy box:** Pairs well with → You may also like → reviews → FAQ → Recently viewed.
+- **Trust row:** one term per line under 480px (each used to wrap over two lines at 360px).
+- **FAQ on the product page is compact** (a `Compact` setting on the FAQ section): small label heading, 56px rows, White.
+- **Bug fixed:** on a product with no stock limit the quantity field stretched and pushed Add to cart onto its own row (Raushan spotted it). The quantity is now a fixed width, and check §20 measures the buy box on a no-limit product too.
+- Check §20 is now 46 checks. Sizes: product.js 9.5 KB, product-zoom.js 6.4 KB. The limits went from 9 and 6 to **10 and 7 KB** for the colour grouping; I had said I would trim instead of raising them, and didn't manage to. Neither file loads on any other page.
+
 ## As built (2026-10-04)
 
 Everything in the plan below is built. Where the build differs from the plan:

@@ -2,6 +2,16 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-04 (product page round 2, docs/product-page-plan.md "Round 2")
+
+- **Colours are one product with a Colour option, never one listing per colour.** One page collects the reviews, sales and ad learning; each colour keeps its own photo, price, stock and `?variant=` link, so an ad for yellow lands on yellow; Meta's catalog reads the colours as one item group. A separate listing only for a genuinely different design that people search for by another name.
+- **The gallery shows only the chosen colour's photos** (Raushan). Grouping is by photo order: a colour's variant photo starts its group; `#all` in a photo's alt text shows it for every colour. How to set it up is in product-page-plan.md, Round 2.
+- **Colour pills show a round swatch cut from that colour's own photo,** because "Mixed" and two-tone yarn can't be a flat dot. Other options stay text.
+- **"You may also like" comes before the reviews** (Raushan): the reviews row is about the shop, not this piece, so other pieces are the more useful thing to see first.
+- **Ratings sit by the name and link down to the reviews** (Raushan, like Amazon and Flipkart). Only real per-product ratings show there; the hand-picked quotes never get stars beside the price.
+- **The viewer closes on a tap outside the photo** (Raushan), and has arrows on desktop.
+- **Save, Share and "look closer" are 40px circles on phones and 44px on desktop** (Raushan found 32px too small, most of all on desktop). Card hearts stay 32px.
+
 ## 2026-10-04 (product page, docs/product-page-plan.md)
 
 - **The product page is a landing page.** Most traffic will come from Meta ads straight to a product (Raushan), usually in Instagram's in-app browser. So it is designed phone first, tested at 360 × 640 as well as 360 × 800, and has to stand on its own for someone who never saw the home page.

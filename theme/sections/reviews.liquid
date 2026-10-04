@@ -1,7 +1,9 @@
 {%- assign s = section.settings -%}
+{%- comment -%} On a product page the rating by the name links here (#reviews, docs/product-page-plan.md round 2). {%- endcomment -%}
+{%- if request.page_type == 'product' -%}{%- assign anchor = 'id="reviews" tabindex="-1"' -%}{%- endif -%}
 
 {%- if section.blocks.size > 0 -%}
-  <section class="section reviews scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}">
+  <section class="section reviews scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}" {{ anchor }}>
     <div class="section-head" data-arrive="lines">
       {%- render 'icon', icon: 'reviews' -%}
       {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
@@ -40,7 +42,7 @@
   </section>
 {%- elsif settings.demo_content -%}
   {%- comment -%} Sample reviews so the layout can be judged. They say "Sample" on purpose; turn demo content off before launch. {%- endcomment -%}
-  <section class="section reviews scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}">
+  <section class="section reviews scheme-{{ s.scheme }}" aria-labelledby="Reviews-{{ section.id }}" {{ anchor }}>
     <div class="section-head" data-arrive="lines">
       {%- render 'icon', icon: 'reviews' -%}
       {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
@@ -83,6 +85,9 @@
   <section class="section reviews scheme-{{ s.scheme }}">
     <p class="reviews__empty">{{ 'reviews.empty_editor' | t }}</p>
   </section>
+{%- elsif request.page_type == 'product' -%}
+  {%- comment -%} No quotes yet: the rating's link still has somewhere to land (the reviews app's list goes here). {%- endcomment -%}
+  <div {{ anchor }}></div>
 {%- endif -%}
 
 {% stylesheet %}

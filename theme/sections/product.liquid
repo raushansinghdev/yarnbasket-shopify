@@ -73,11 +73,12 @@
 
       {%- if rating_count > 0 -%}
         {%- assign rating = product.metafields.reviews.rating.value.rating | round: 1 -%}
-        <p class="pdp__rating">
+        {%- comment -%} Like Amazon and Flipkart: the rating sits by the name and takes you down to the reviews (#reviews, sections/reviews). {%- endcomment -%}
+        <a class="pdp__rating" href="#reviews">
           {%- render 'icon', icon: 'star' -%}
           <span aria-hidden="true">{{ rating }} <span class="pdp__rating-count">({{ rating_count }})</span></span>
-          <span class="visually-hidden">{{ 'products.rating' | t: rating: rating, count: rating_count }}</span>
-        </p>
+          <span class="visually-hidden">{{ 'products.rating' | t: rating: rating, count: rating_count }}. {{ 'products.rating_link' | t }}</span>
+        </a>
       {%- endif -%}
 
       {%- unless is_gift -%}
@@ -256,7 +257,12 @@
   <div class="buybar" data-buybar hidden>
     <div class="buybar__text">
       <span class="buybar__title">{{ product.title }}</span>
-      <span class="buybar__price" data-buybar-price>{{ current.price | money }}</span>
+      <span class="buybar__line">
+        <span class="buybar__price" data-buybar-price>{{ current.price | money }}</span>
+        {%- unless product.has_only_default_variant -%}
+          <span class="buybar__choice" data-buybar-choice>{{ current.options | join: ' · ' }}</span>
+        {%- endunless -%}
+      </span>
     </div>
     <button type="submit" form="{{ form_id }}" class="btn buybar__add" data-add {% unless current.available %}disabled{% endunless %}>
       <span data-add-label>{%- if current.available %}{{ 'products.add_to_cart' | t }}{% else %}{{ 'products.sold_out' | t }}{% endif -%}</span>
@@ -329,7 +335,8 @@
   }
   @media (hover: hover) { .pdp__crumb:hover { color: var(--color-heading); text-decoration: underline; text-underline-offset: 4px; } }
   .pdp__title { font-size: clamp(1.75rem, 1.5rem + 1.2vw, 2.5rem); line-height: 1.1; text-wrap: balance; }
-  .pdp__rating { display: flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
+  .pdp__rating { display: inline-flex; align-items: center; justify-self: start; gap: var(--space-1); min-height: 32px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); text-decoration: none; }
+  .pdp__rating-count { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
   .pdp__rating .icon { width: 16px; height: 16px; fill: currentColor; }
   .pdp__rating-count { font-weight: 400; color: var(--color-muted); }
   .pdp__price-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-top: var(--space-2); }
@@ -358,7 +365,8 @@
   .pdp__form { display: grid; gap: var(--space-2); }
   /* With large text the button has no room beside the quantity, so it takes the next row instead of clipping its words. */
   .pdp__buy { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-  .pdp__buy .qty { height: 54px; }
+  /* A fixed middle cell: a number field with no stock limit is wide by default and pushed the button to the next row. */
+  .pdp__buy .qty { flex: none; height: 54px; grid-template-columns: var(--tap) 2.75rem var(--tap); }
   .pdp__buy .qty__btn { height: 51px; }
   .pdp__add { flex: 1 1 8rem; padding-inline: var(--space-4); }
   .pdp__add .icon { width: 22px; height: 22px; }
@@ -457,7 +465,9 @@
   .buybar.is-on { translate: none; visibility: visible; transition-delay: 0s; }
   .buybar__text { display: grid; flex: 1; min-width: 0; line-height: 1.25; }
   .buybar__title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: var(--fs-small); color: var(--color-ink); }
+  .buybar__line { display: flex; gap: var(--space-2); align-items: baseline; min-width: 0; }
   .buybar__price { font-weight: 500; color: var(--color-heading); font-variant-numeric: tabular-nums; }
+  .buybar__choice { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: var(--fs-small); color: var(--color-muted); }
   .buybar__add { flex: none; min-height: var(--tap); }
   @media (prefers-reduced-motion: reduce) { .buybar { transition: none; } }
   html.lite .buybar { transition: none; }

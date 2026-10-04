@@ -3,18 +3,16 @@
   name stays the same either way. saved.js keeps the list in this browser and reveals the button; without JavaScript
   there's nothing to save into, so it stays hidden.
   - card: a heart on the photo's top-right corner, beside the card's link (never inside it). 32px drawn, 48px to tap.
-  - page: an outlined "♡ Save" button beside Add to cart.
+  On the product page the same heart sits on the photo's corner, a little larger (snippets/product-gallery).
 
   @param {product} product - The product
-  @param {string} [style] - 'card' (default) or 'page'
 {%- enddoc -%}
 {%- liquid
-  assign look = style | default: 'card'
   assign title = product.title | escape
 -%}
 <button
   type="button"
-  class="save-btn save-btn--{{ look }}{% if look == 'page' %} btn btn--ghost{% endif %}"
+  class="save-btn save-btn--card"
   aria-pressed="false"
   data-save="{{ product.handle }}"
   data-title="{{ title }}"
@@ -22,11 +20,7 @@
   hidden
 >
   {%- render 'icon', icon: 'heart' -%}
-  {%- if look == 'page' -%}
-    {{ 'saved.save' | t }}
-  {%- else -%}
-    <span class="visually-hidden">{{ 'saved.save_label' | t: title: product.title }}</span>
-  {%- endif -%}
+  <span class="visually-hidden">{{ 'saved.save_label' | t: title: product.title }}</span>
 </button>
 
 {% stylesheet %}
@@ -65,12 +59,6 @@
   .card--compact .save-btn--card { top: -4px; right: -4px; }
   /* The search panel is for getting somewhere fast; its typed results have no hearts, so its picks don't either. */
   .search-panel .save-btn { display: none; }
-
-  .save-btn--page { min-height: var(--tap); gap: var(--space-2); }
-  .product-form .save-btn--page { width: 100%; margin-top: var(--space-2); }
-  .save-btn--page .icon { width: 20px; height: 20px; }
-  .save-btn--page[aria-pressed="true"] { --btn-line: var(--cocoa); background: var(--blush-soft); }
-  @media (hover: hover) { .save-btn--page:hover .icon { transform: none; } }
 
   /* A little pop as it fills (not when un-saving, and not with reduced motion or the lite mode). */
   @media (prefers-reduced-motion: no-preference) {

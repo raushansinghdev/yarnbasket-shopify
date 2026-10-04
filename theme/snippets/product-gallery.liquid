@@ -9,6 +9,7 @@
     open the phone's share sheet or copy the link.
   - Desktop: a strip of thumbnail buttons beside the photo.
   With one photo there are no dots, counter or thumbnails.
+  A product with a photo on each colour's variant shows only the chosen colour's photos (see the comment below).
 
   @param {product} product - The product
   @param {variant} [current] - The chosen variant: its photo is shown first
@@ -17,30 +18,130 @@
   {% render 'product-gallery', product: product, current: product.selected_or_first_available_variant %}
 {%- enddoc -%}
 {%- liquid
-  assign slides = product.media | where: 'media_type', 'image'
-  assign videos = product.media | where: 'media_type', 'video'
-  assign slides = slides | concat: videos
-  assign total = slides.size
   assign sizes = '(min-width: 990px) min(46vw, 620px), 100vw'
   assign region = 'products.gallery' | t: title: product.title
+
+  comment
+    Photos by colour. A photo picked on a variant (Products → the variant → its photo) starts a group, and the photos
+    after it, up to the next variant's photo, belong to the same group. Only the chosen variant's group is in the
+    row; the rest are rendered hidden and product.js swaps groups on a new choice. A photo before the first group,
+    or with "#all" in its alt text, is shown for every choice (a size chart, the packaging).
+    With fewer than two variant photos there are no groups and every photo shows.
+  endcomment
+  assign starts = ','
+  assign start_count = 0
+  for variant in product.variants
+    if variant.featured_media
+      assign key = variant.featured_media.id | append: ','
+      assign probe = ',' | append: key
+      unless starts contains probe
+        assign starts = starts | append: key
+        assign start_count = start_count | plus: 1
+      endunless
+    endif
+  endfor
+  assign grouped = false
+  if start_count > 1
+    assign grouped = true
+  endif
+
+  if grouped
+    comment
+      The admin's order decides the groups, so photos and clips stay in it.
+    endcomment
+    assign slides = product.media | where: 'media_type', 'none'
+    for media in product.media
+      if media.media_type == 'image' or media.media_type == 'video'
+        assign one = product.media | where: 'id', media.id
+        assign slides = slides | concat: one
+      endif
+    endfor
+  else
+    comment
+      Photos first, then clips: the first slide is always a photo, the page's main image.
+    endcomment
+    assign slides = product.media | where: 'media_type', 'image'
+    assign videos = product.media | where: 'media_type', 'video'
+    assign slides = slides | concat: videos
+  endif
+  assign total = slides.size
+
+  assign current_group = current.featured_media.id | append: ''
+  if current_group == ''
+    assign current_group = starts | remove_first: ',' | split: ',' | first
+  endif
+  comment
+    One entry per slide: its group ("x" for a photo every choice shows), and "1" when it starts out visible.
+  endcomment
+  assign groups = ''
+  assign live = ''
+  assign live_total = 0
+  assign live_photos = 0
+  assign group = 'x'
+  for media in slides
+    assign slide_group = 'x'
+    if grouped
+      assign probe = ',' | append: media.id | append: ','
+      if starts contains probe
+        assign group = media.id | append: ''
+      endif
+      assign slide_group = group
+      if media.alt contains '#all'
+        assign slide_group = 'x'
+      endif
+    endif
+    assign groups = groups | append: slide_group | append: ','
+    if slide_group == 'x' or slide_group == current_group
+      assign live = live | append: '1,'
+      assign live_total = live_total | plus: 1
+      if media.media_type == 'image'
+        assign live_photos = live_photos | plus: 1
+      endif
+    else
+      assign live = live | append: '0,'
+    endif
+  endfor
+  assign groups = groups | split: ','
+  assign live = live | split: ','
 -%}
 <div class="gallery" data-gallery data-zoom-src="{{ 'product-zoom.js' | asset_url }}">
   {%- if total > 0 -%}
     <ul class="gallery__track" role="list" tabindex="0" aria-label="{{ region | escape }}" data-gallery-track>
+      {%- assign seen = 0 -%}
       {%- for media in slides -%}
         {%- liquid
           assign position = 'products.photo_of' | t: title: product.title, index: forloop.index, count: total
-          assign alt = media.alt | default: position
+          assign alt = media.alt | remove: '#all' | strip | default: position
           if media.alt == product.title and total > 1
             assign alt = position
           endif
+          assign slide_group = groups[forloop.index0]
+          assign on = live[forloop.index0]
+          if on == '1'
+            assign seen = seen | plus: 1
+          endif
         -%}
-        <li class="gallery__slide media" data-media-id="{{ media.id }}" {% if current.featured_media.id == media.id %}data-current{% endif %}>
+        <li
+          class="gallery__slide media"
+          data-media-id="{{ media.id }}"
+          {% if slide_group != 'x' %}
+            data-group="{{ slide_group }}"
+          {% endif %}
+          {% if current.featured_media.id == media.id %}
+            data-current
+          {% endif %}
+          {% if on == '1' and seen == 1 %}
+            data-first
+          {% endif %}
+          {% if on != '1' %}
+            hidden
+          {% endif %}
+        >
           {%- if media.media_type == 'video' -%}
             {{- media | video_tag: image_size: '1100x', controls: true, preload: 'none', playsinline: true, muted: true, class: 'gallery__video' -}}
-          {%- elsif forloop.first -%}
+          {%- elsif on == '1' and seen == 1 -%}
             {%- render 'image', image: media.preview_image, sizes: sizes, width: 1600, loading: 'eager', priority: true, alt: alt, class: 'gallery__img' -%}
-          {%- elsif forloop.index == 2 -%}
+          {%- elsif on == '1' and seen == 2 -%}
             {%- render 'image', image: media.preview_image, sizes: sizes, width: 1600, loading: 'eager', alt: alt, class: 'gallery__img' -%}
           {%- else -%}
             {%- render 'image', image: media.preview_image, sizes: sizes, width: 1600, alt: alt, class: 'gallery__img' -%}
@@ -61,17 +162,23 @@
   </div>
 
   {%- if total > 1 -%}
-    <div class="gallery__meta" aria-hidden="true">
+    <div class="gallery__meta" aria-hidden="true" {% if live_total < 2 %}hidden{% endif %}>
       <span class="gallery__dots" data-gallery-dots>
-        {%- for media in slides -%}<i{% if forloop.first %} class="is-on"{% endif %}></i>{%- endfor -%}
+        {%- assign seen = 0 -%}
+        {%- for media in slides -%}
+          {%- if live[forloop.index0] == '1' -%}{%- assign seen = seen | plus: 1 -%}{%- endif -%}
+          <i{% if live[forloop.index0] == '1' and seen == 1 %} class="is-on"{% endif %}{% if live[forloop.index0] != '1' %} hidden{% endif %}></i>
+        {%- endfor -%}
       </span>
-      <span class="gallery__count"><span data-gallery-count>1</span> / {{ total }}</span>
+      <span class="gallery__count"><span data-gallery-count>1</span> / <span data-gallery-total>{{ live_total }}</span></span>
     </div>
 
     <ul class="gallery__thumbs" role="list" data-gallery-thumbs>
+      {%- assign seen = 0 -%}
       {%- for media in slides -%}
-        <li>
-          <button type="button" class="gallery__thumb media" data-go="{{ forloop.index0 }}" {% if forloop.first %}aria-current="true"{% endif %}>
+        {%- if live[forloop.index0] == '1' -%}{%- assign seen = seen | plus: 1 -%}{%- endif -%}
+        <li {% if live[forloop.index0] != '1' %}hidden{% endif %}>
+          <button type="button" class="gallery__thumb media" data-go="{{ forloop.index0 }}" {% if live[forloop.index0] == '1' and seen == 1 %}aria-current="true"{% endif %}>
             {%- render 'image', image: media.preview_image, sizes: '72px', width: 216, alt: '', class: 'gallery__thumb-img' -%}
             <span class="visually-hidden">{{ 'products.show_photo' | t: index: forloop.index, count: total }}</span>
             {%- if media.media_type == 'video' -%}<span class="gallery__thumb-play">{%- render 'icon', icon: 'play' -%}</span>{%- endif -%}
@@ -95,7 +202,21 @@
           {%- render 'icon', icon: 'close' -%}
           <span class="visually-hidden">{{ 'products.zoom_close' | t }}</span>
         </button>
-        <p class="zoom__hint" aria-hidden="true">{{ 'products.zoom_hint' | t }}</p>
+        {%- if total > 1 -%}
+          <p class="zoom__count" aria-hidden="true"><span data-zoom-count>1</span> / <span data-zoom-total>{{ live_photos }}</span></p>
+          <button type="button" class="zoom__arrow zoom__arrow--prev" data-zoom-step="-1">
+            {%- render 'icon', icon: 'back' -%}
+            <span class="visually-hidden">{{ 'products.zoom_prev' | t }}</span>
+          </button>
+          <button type="button" class="zoom__arrow zoom__arrow--next" data-zoom-step="1">
+            {%- render 'icon', icon: 'arrow' -%}
+            <span class="visually-hidden">{{ 'products.zoom_next' | t }}</span>
+          </button>
+        {%- endif -%}
+        <p class="zoom__hint" aria-hidden="true">
+          <span class="zoom__hint-touch">{{ 'products.zoom_hint' | t }}</span>
+          <span class="zoom__hint-mouse">{{ 'products.zoom_hint_mouse' | t }}</span>
+        </p>
       </dialog>
     </template>
   {%- endif -%}
@@ -118,15 +239,19 @@
   .gallery__slide { --ratio: 1; border-radius: 0; scroll-snap-align: center; scroll-snap-stop: always; }
   .gallery__slide > video { background: var(--color-surface); }
 
-  /* The heart and Share: 48px to tap, a 32px white circle to look at, the same as the heart on cards. */
+  /* The heart, Share and "look closer": 48px to tap with a 40px white circle on phones; a 44px circle in 52px on
+     desktop, where the photo is large and a small button gets lost (Raushan, 2026-10-04). Cards keep the 32px heart. */
+  .gallery { --photo-btn: var(--tap); --photo-btn-inset: 4px; --photo-icon: 22px; }
   .gallery__actions { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 2; display: grid; }
-  .gallery__actions .save-btn--card { position: relative; }
+  .gallery__actions .save-btn--card { position: relative; width: var(--photo-btn); height: var(--photo-btn); }
+  .gallery__actions .save-btn--card::before { inset: var(--photo-btn-inset); }
+  .gallery__actions .save-btn--card .icon { width: var(--photo-icon); height: var(--photo-icon); }
   .gallery__share {
     position: relative;
     display: grid;
     place-items: center;
-    width: var(--tap);
-    height: var(--tap);
+    width: var(--photo-btn);
+    height: var(--photo-btn);
     padding: 0;
     border: 0;
     background: none;
@@ -137,22 +262,22 @@
   .gallery__share::before {
     content: "";
     position: absolute;
-    inset: 8px;
+    inset: var(--photo-btn-inset);
     border-radius: 50%;
     background: rgb(255 255 255 / .9);
     box-shadow: 0 2px 8px -3px rgb(78 58 49 / .35);
     transition: scale var(--dur-press) ease;
   }
   .gallery__share:active::before { scale: .92; }
-  .gallery__share .icon { position: relative; width: 19px; height: 19px; stroke-width: 2; }
+  .gallery__share .icon { position: relative; width: calc(var(--photo-icon) - 1px); height: calc(var(--photo-icon) - 1px); stroke-width: 2; }
   .gallery__share:focus-visible { outline-offset: -4px; }
   /* "Look closer", bottom left: the same round button. Tapping the photo itself does the same. */
   .gallery__expand { position: absolute; left: var(--space-1); bottom: 0; z-index: 2; }
-  .gallery__expand, .zoom__close {
+  .gallery__expand, .zoom__close, .zoom__arrow {
     display: grid;
     place-items: center;
-    width: var(--tap);
-    height: var(--tap);
+    width: var(--photo-btn, var(--tap));
+    height: var(--photo-btn, var(--tap));
     padding: 0;
     border: 0;
     background: none;
@@ -160,15 +285,15 @@
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
-  .gallery__expand::before, .zoom__close::before {
+  .gallery__expand::before, .zoom__close::before, .zoom__arrow::before {
     content: "";
     position: absolute;
-    inset: 8px;
+    inset: var(--photo-btn-inset, 4px);
     border-radius: 50%;
     background: rgb(255 255 255 / .96);
     box-shadow: 0 2px 8px -3px rgb(78 58 49 / .35);
   }
-  .gallery__expand .icon, .zoom__close .icon { position: relative; width: 18px; height: 18px; stroke-width: 2; }
+  .gallery__expand .icon, .zoom__close .icon, .zoom__arrow .icon { position: relative; width: calc(var(--photo-icon, 22px) - 2px); height: calc(var(--photo-icon, 22px) - 2px); stroke-width: 2; }
   .gallery__expand:focus-visible { outline-offset: -4px; }
   .gallery__img { cursor: zoom-in; }
 
@@ -211,6 +336,32 @@
   .zoom__img { width: calc(min(100vw, 100dvh) * var(--zoom, 1)); max-width: none; height: auto; cursor: zoom-in; }
   .zoom__slide.is-zoomed .zoom__img { cursor: zoom-out; }
   .zoom__close { position: absolute; top: max(var(--space-2), env(safe-area-inset-top)); right: var(--space-2); }
+  .zoom__count {
+    position: absolute;
+    top: max(var(--space-5), calc(env(safe-area-inset-top) + var(--space-3)));
+    left: var(--space-4);
+    font-size: var(--fs-small);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-heading);
+  }
+  /* The empty space around a photo closes the viewer, so it shows the same pointer as the close button. */
+  .zoom__slide:not(.is-zoomed) { cursor: pointer; }
+  /* Previous and next: for a mouse. A finger swipes. */
+  .zoom__arrow { position: absolute; top: calc(50% - 26px); display: none; }
+  .zoom__arrow--prev { left: var(--space-3); }
+  .zoom__arrow--next { right: var(--space-3); }
+  .zoom__arrow[hidden] { display: none; }
+  .zoom__hint-mouse { display: none; }
+  .zoom__hint { transition: opacity var(--dur-panel) ease; }
+  .zoom.is-used .zoom__hint { opacity: 0; }
+  @media (hover: hover) and (pointer: fine) {
+    .zoom__arrow:not([hidden]) { display: grid; }
+    .zoom__hint-touch { display: none; }
+    .zoom__hint-mouse { display: inline; }
+    .gallery__actions .save-btn--card::before, .gallery__share::before, .gallery__expand::before, .zoom__close::before, .zoom__arrow::before { transition: scale var(--dur-state) var(--ease-out); }
+    .gallery__actions .save-btn--card:hover::before, .gallery__share:hover::before, .gallery__expand:hover::before, .zoom__close:hover::before, .zoom__arrow:hover::before { scale: 1.08; }
+  }
   .zoom__hint {
     position: absolute;
     inset: auto 0 max(var(--space-4), env(safe-area-inset-bottom));
@@ -262,8 +413,12 @@
     font-variant-numeric: tabular-nums;
   }
   .gallery__thumbs { display: none; }
+  /* Photos of the colours that aren't chosen (data-group) wait hidden; product.js swaps them in. */
+  .gallery__meta[hidden], .zoom__slide[hidden], .zoom__count[hidden] { display: none; }
 
   @media (min-width: 990px) {
+    .gallery, .zoom { --photo-btn: 52px; --photo-icon: 24px; }
+    .gallery__actions { top: var(--space-3); right: var(--space-3); }
     .gallery { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--space-4); align-items: start; }
     .gallery__track { grid-column: 2; grid-row: 1; border-radius: var(--radius-md); }
     .gallery > .gallery__slide { grid-column: 1 / -1; border-radius: var(--radius-md); }
@@ -284,10 +439,11 @@
     .gallery__thumb-play { position: absolute; inset: 0; display: grid; place-items: center; color: var(--white); background: rgb(78 58 49 / .28); }
     .gallery__thumb-play .icon { width: 22px; height: 22px; fill: currentColor; }
     /* With one photo there is no strip, so the photo takes both columns. */
-    .gallery:not(:has(.gallery__thumbs)) .gallery__track { grid-column: 1 / -1; }
+    .gallery:not(:has(.gallery__thumbs li:not([hidden]) ~ li:not([hidden]))) .gallery__track { grid-column: 1 / -1; }
+    .gallery:not(:has(.gallery__thumbs li:not([hidden]) ~ li:not([hidden]))) .gallery__thumbs { display: none; }
     /* The round "look closer" button belongs on the photo, not under the thumbnails. */
     .gallery__expand { left: calc(72px + var(--space-4) + var(--space-1)); }
-    .gallery:not(:has(.gallery__thumbs)) .gallery__expand { left: var(--space-1); }
+    .gallery:not(:has(.gallery__thumbs li:not([hidden]) ~ li:not([hidden]))) .gallery__expand { left: var(--space-1); }
   }
   @media (min-width: 990px) and (hover: hover) { .gallery__thumb:hover { opacity: 1; } }
   @media (prefers-reduced-motion: no-preference) {

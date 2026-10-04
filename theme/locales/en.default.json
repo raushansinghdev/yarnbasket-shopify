@@ -247,7 +247,11 @@
     "recently_viewed": "Recently viewed",
     "zoom_open": "View photos full screen",
     "zoom_close": "Close photos",
-    "zoom_hint": "Pinch or double-tap to zoom"
+    "zoom_hint": "Pinch or double-tap to zoom",
+    "zoom_prev": "Previous photo",
+    "zoom_next": "Next photo",
+    "zoom_hint_mouse": "Double-click to zoom",
+    "rating_link": "Read the reviews"
   },
   "reviews": {
     "rating": "{{ rating }} out of 5 stars",

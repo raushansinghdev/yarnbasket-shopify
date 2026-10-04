@@ -1,7 +1,10 @@
 {%- doc -%}
   The product's options as pills (docs/product-page-plan.md): real radio buttons in a fieldset, so arrow keys and
-  screen readers work with no script. A sold-out choice is struck through and can't be picked. A colour dot shows
-  when the option value has a swatch in the admin.
+  screen readers work with no script. A sold-out choice is struck through and can't be picked. The chosen value
+  is written beside the option's name ("Colour: Red").
+  Colours (an option named Colour or Color) show a round swatch cut from that colour's own photo, which works for
+  "Mixed" and two-tone yarn where a flat dot can't. Without a photo: the swatch colour set in the admin, then no
+  swatch. One product with a Colour option, not one listing per colour (docs/decisions.md, 2026-10-04).
   - One option: each pill is the variant itself (name="id"), so the form posts the right one without JavaScript.
   - Two or more: the pills are only choices; product.js finds the variant and writes it to the form's hidden id.
     Without JavaScript these are hidden and the form's plain select is used instead.
@@ -17,8 +20,17 @@
 {%- if product.options.size == 1 -%}{%- assign single = true -%}{%- endif -%}
 <div class="options{% unless single %} options--multi{% endunless %}" data-options>
   {%- for option in product.options_with_values -%}
+    {%- liquid
+      assign option_key = option.name | downcase | strip
+      assign is_colour = false
+      if option_key == 'colour' or option_key == 'color'
+        assign is_colour = true
+      endif
+    -%}
     <fieldset class="options__group">
-      <legend class="options__name">{{ option.name }}</legend>
+      <legend class="options__name">
+        {{- option.name }}: <span class="options__chosen" data-option-chosen="{{ option.position }}">{{ option.selected_value }}</span>
+      </legend>
       <div class="options__pills">
         {%- for value in option.values -%}
           {%- liquid
@@ -50,8 +62,20 @@
                 disabled
               {% endif %}
             >
-            <label class="pill__label{% if sold_out %} is-out{% endif %}" for="{{ input_id }}">
-              {%- if value.swatch.color -%}<i class="pill__dot" style="background: {{ value.swatch.color }}"></i>{%- endif -%}
+            {%- liquid
+              assign swatch_photo = blank
+              if is_colour and value.variant.featured_media
+                assign swatch_photo = value.variant.featured_media.preview_image
+              elsif is_colour and value.swatch.image
+                assign swatch_photo = value.swatch.image
+              endif
+            -%}
+            <label class="pill__label{% if sold_out %} is-out{% endif %}{% if swatch_photo != blank %} pill__label--photo{% endif %}" for="{{ input_id }}">
+              {%- if swatch_photo != blank -%}
+                <img class="pill__photo" src="{{ swatch_photo | image_url: width: 120, height: 120, crop: 'center' }}" alt="" width="40" height="40" loading="lazy">
+              {%- elsif value.swatch.color -%}
+                <i class="pill__dot" style="background: {{ value.swatch.color }}"></i>
+              {%- endif -%}
               {{- value.name -}}
               {%- if sold_out -%}<span class="visually-hidden"> ({{ 'products.sold_out' | t }})</span>{%- endif -%}
             </label>
@@ -69,6 +93,7 @@
   .options { display: grid; gap: var(--space-4); }
   .options__group { min-width: 0; margin: 0; padding: 0; border: 0; }
   .options__name { padding: 0; margin-bottom: var(--space-2); font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
+  .options__chosen { font-weight: 400; color: var(--color-ink); }
   .options__pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
   .pill { position: relative; display: inline-flex; }
   .pill__label {
@@ -91,6 +116,10 @@
   }
   .pill__label:active { scale: .97; }
   .pill__dot { width: 18px; height: 18px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(78 58 49 / .25); }
+  /* A colour's own photo, round, filling the pill's height: 40px inside the 48px pill. */
+  .pill__label--photo { padding-left: 3px; }
+  .pill__photo { width: 40px; height: 40px; flex: none; border-radius: 50%; object-fit: cover; background: var(--color-surface); }
+  .pill__input:disabled + .pill__label .pill__photo { opacity: .55; }
   .pill__input:checked + .pill__label { border-color: var(--cocoa-deep); background: var(--blush-soft); box-shadow: inset 0 0 0 .5px var(--cocoa-deep); }
   .pill__input:focus-visible + .pill__label { outline: 2px solid var(--color-ink); outline-offset: 2px; }
   .pill__label.is-out { color: var(--color-muted); text-decoration: line-through; text-decoration-thickness: 1px; }
