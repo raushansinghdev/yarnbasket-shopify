@@ -40,8 +40,8 @@
   assign make_text = 'products.make_message' | t: title: product.title, url: page_url
   if whatsapp != blank
     assign wa = 'https://wa.me/' | append: whatsapp | append: '?text='
-    assign ask_tail = ask_text | url_encode
-    assign make_tail = make_text | url_encode
+    assign ask_tail = ask_text | replace: '&amp;', '&' | replace: '&#39;', "'" | replace: '&quot;', '"' | url_encode
+    assign make_tail = make_text | replace: '&amp;', '&' | replace: '&#39;', "'" | replace: '&quot;', '"' | url_encode
     assign ask_url = wa | append: ask_tail
     assign make_url = wa | append: make_tail
   else
@@ -188,6 +188,7 @@
         >
           {%- render 'icon', icon: 'whatsapp' -%}
           <span data-ask-text>{%- if current.available %}{{ 'products.ask' | t }}{% else %}{{ 'products.ask_make' | t }}{% endif -%}</span>
+          {%- if whatsapp != blank -%}<span class="visually-hidden"> ({{ 'accessibility.new_window' | t }})</span>{%- endif -%}
         </a>
       </p>
     {%- endif -%}

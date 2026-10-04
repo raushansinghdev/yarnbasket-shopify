@@ -1,0 +1,23 @@
+{%- comment -%}
+  One small product card for a row. Never placed on a page: product-rows.js asks for it with the Section Rendering
+  API on the product's own URL (/products/<handle>?section_id=product-tile), so the card shows today's price and
+  stock. The free gift and sold-out pieces give nothing back.
+{%- endcomment -%}
+{%- liquid
+  assign skip = false
+  if product.available == false or product.tags contains 'free-gift' or product.id == settings.gift_product.id
+    assign skip = true
+  endif
+-%}
+{%- unless skip -%}
+  <li data-tile="{{ product.handle }}">
+    {%- render 'product-card', product: product, sizes: '(min-width: 990px) 190px, (min-width: 768px) 28vw, 40vw', skip_bestseller: true, compact: true -%}
+  </li>
+{%- endunless -%}
+
+{% schema %}
+{
+  "name": "Product tile",
+  "settings": []
+}
+{% endschema %}

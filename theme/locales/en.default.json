@@ -243,7 +243,8 @@
     "gift_only": "This little piece is our free gift: it’s added to your cart by itself when your order qualifies, so it isn’t sold on its own.",
     "gift_shop": "Shop all crochet",
     "chosen": "{{ option }}, {{ price }}",
-    "chosen_out": "{{ option }}, sold out"
+    "chosen_out": "{{ option }}, sold out",
+    "recently_viewed": "Recently viewed"
   },
   "reviews": {
     "rating": "{{ rating }} out of 5 stars",

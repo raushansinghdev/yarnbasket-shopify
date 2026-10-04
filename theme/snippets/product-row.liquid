@@ -10,6 +10,8 @@
   @param {string} [exclude] - Product ids to leave out, as ",123,456," (commas around every id)
   @param {number} [limit] - At most this many cards. Defaults to 6.
   @param {boolean} [demo] - Show demo cards instead (Demo content on, no products in the store)
+  @param {boolean} [shell] - Only the heading and an empty list (data-row-list), for a row that JavaScript fills
+    (Recently viewed on the product page)
 
   @example
   {% render 'product-row', title: 'Bestsellers', id: 'SearchPicks', products: collections.bestsellers.products %}
@@ -37,7 +39,12 @@
     {%- endfor -%}
   {%- endif -%}
 {%- endcapture -%}
-{%- if shown > 0 -%}
+{%- if shell -%}
+  <div class="product-row">
+    <h2 class="product-row__title eyebrow" id="{{ id }}">{{ title }}</h2>
+    <ul class="product-row__list scroller" role="list" data-row-list></ul>
+  </div>
+{%- elsif shown > 0 -%}
   <section class="product-row" aria-labelledby="{{ id }}">
     <h2 class="product-row__title eyebrow" id="{{ id }}">{{ title }}</h2>
     <ul class="product-row__list scroller" role="list">

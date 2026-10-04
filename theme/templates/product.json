@@ -12,9 +12,87 @@
     "main": {
       "type": "product",
       "settings": {}
+    },
+    "pairs": {
+      "type": "product-recommendations",
+      "settings": {
+        "intent": "complementary",
+        "heading": "Pairs well with",
+        "limit": 3
+      }
+    },
+    "reviews": {
+      "type": "reviews",
+      "settings": {
+        "eyebrow": "Customer love",
+        "heading": "Your words make our day",
+        "scheme": "soft"
+      }
+    },
+    "related": {
+      "type": "product-recommendations",
+      "settings": {
+        "intent": "related",
+        "heading": "You may also like",
+        "limit": 6
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "settings": {
+        "eyebrow": "Good to know",
+        "heading": "Questions, answered",
+        "link_label": "",
+        "scheme": "soft"
+      },
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "Is everything really handmade?",
+            "answer": "<p>Yes. Every bouquet, keychain, hair clip and bag charm is crocheted by hand in India, one stitch at a time.</p>"
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "Will the colours fade?",
+            "answer": "<p>Crochet never wilts and needs no water. Keep your pieces out of strong direct sunlight and their colours stay bright for years.</p>"
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "How do I care for my crochet?",
+            "answer": "<p>Hand wash in cool water. Press gently, don't wring. Dry flat in the shade.</p>"
+          }
+        },
+        "offers": {
+          "type": "offers",
+          "settings": {
+            "question": "Do you offer free shipping or cash on delivery?",
+            "extra": ""
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "offers"
+      ]
+    },
+    "recent": {
+      "type": "recently-viewed",
+      "settings": {}
     }
   },
   "order": [
-    "main"
+    "main",
+    "pairs",
+    "reviews",
+    "related",
+    "faq",
+    "recent"
   ]
 }

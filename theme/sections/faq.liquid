@@ -59,7 +59,8 @@
   {%- endfor -%}
 {%- endcapture -%}
 {%- assign questions = questions | strip | remove_last: ',' -%}
-{%- if questions != blank -%}
+{%- comment -%} Not on a product page: there the page's one structured thing is the Product (docs/product-page-plan.md). {%- endcomment -%}
+{%- if questions != blank and request.page_type != 'product' -%}
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",

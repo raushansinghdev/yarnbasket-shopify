@@ -295,6 +295,12 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 }
 .scroller:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 5px color-mix(in srgb, var(--rose) 45%, transparent); }
 
+/* Rows of other pieces under a product (sections/product-recommendations, recently-viewed): closer together than
+   full sections, so the page stays short. A sold-out piece shows its row right under the buy box on phones. */
+.recs { padding-block: var(--space-5); }
+.recs[hidden] { display: none; }
+.pdp__info > .recs { display: block; padding-block: 0; }
+
 /* ---------- Buttons and links ---------- */
 .btn {
   --btn-bg: var(--cocoa-deep);

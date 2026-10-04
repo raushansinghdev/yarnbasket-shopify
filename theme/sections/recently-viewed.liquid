@@ -1,0 +1,24 @@
+{%- comment -%}
+  Recently viewed, last on the product page (docs/product-page-plan.md, PP5). saved.js already keeps the last 8
+  product pages in this browser; product-rows.js fills this row from that list, one card per piece from
+  sections/product-tile. It stays hidden until the shopper has seen at least 2 other pieces, so someone arriving
+  from an ad never sees an empty row.
+{%- endcomment -%}
+{%- if product != blank -%}
+  <section class="page-grid recs" data-recent data-handle="{{ product.handle }}" data-url="{{ routes.root_url }}products/" aria-labelledby="Recent-{{ section.id }}" hidden>
+    {%- liquid
+      assign recent_id = 'Recent-' | append: section.id
+      assign recent_title = 'products.recently_viewed' | t
+      render 'product-row', title: recent_title, id: recent_id, shell: true
+    -%}
+  </section>
+  <script src="{{ 'product-rows.js' | asset_url }}" type="module"></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Recently viewed",
+  "settings": [],
+  "enabled_on": { "templates": ["product"] }
+}
+{% endschema %}

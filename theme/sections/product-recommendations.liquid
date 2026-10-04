@@ -1,0 +1,57 @@
+{%- comment -%}
+  A row of other pieces on the product page (docs/product-page-plan.md, PP7). Used twice in templates/product.json:
+  - "Pairs well with": the pieces picked for this product in the Search & Discovery app (complementary). Hidden
+    when there are no picks.
+  - "You may also like": Shopify's related products. Once the store has orders these come from what is bought
+    together; until Shopify has any, the Bestsellers stand in.
+  The page ships an empty marker; product-rows.js asks Shopify for this section when the marker is near the screen,
+  so the row costs nothing on first load. Sold-out pieces and the free gift are left out (snippets/product-row).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign heading_id = 'Recs-' | append: section.id
+-%}
+{%- if recommendations.performed -%}
+  {%- liquid
+    assign picks = recommendations.products
+    if recommendations.products_count == 0 and s.intent == 'related'
+      assign picks = collections['bestsellers'].products | default: settings.shop_all_collection.products
+    endif
+  -%}
+  {%- capture gift_skip -%}{% render 'gift-skip', products: picks %}{%- endcapture -%}
+  {%- assign gift_skip = gift_skip | strip -%}
+  <div class="page-grid recs" data-recs-ready>
+    {%- render 'product-row', title: s.heading, id: heading_id, products: picks, exclude: gift_skip, limit: s.limit -%}
+  </div>
+{%- elsif product != blank -%}
+  <div
+    data-recs
+    data-url="{{ routes.product_recommendations_url }}?product_id={{ product.id }}&limit={{ s.limit | plus: 2 }}&section_id={{ section.id }}&intent={{ s.intent }}"
+    {% if s.intent == 'related' and product.available == false %}
+      data-recs-lift
+    {% endif %}
+  ></div>
+  <script src="{{ 'product-rows.js' | asset_url }}" type="module"></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product row",
+  "settings": [
+    {
+      "type": "select",
+      "id": "intent",
+      "label": "Which pieces",
+      "options": [
+        { "value": "related", "label": "Similar pieces (automatic)" },
+        { "value": "complementary", "label": "Pairs well with (your picks)" }
+      ],
+      "default": "related",
+      "info": "Similar pieces come from Shopify and show the Bestsellers until it has data. \"Pairs well with\" shows the pieces you pick for each product in the Search & Discovery app, and hides when there are none."
+    },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "You may also like" },
+    { "type": "range", "id": "limit", "label": "How many", "min": 2, "max": 6, "step": 1, "default": 6 }
+  ],
+  "enabled_on": { "templates": ["product"] }
+}
+{% endschema %}
