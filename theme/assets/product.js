@@ -3,6 +3,7 @@
   - Photos: the swipe is the browser's own; this keeps the dots, the count and the thumbnails in step with it.
   - Options: a new choice changes the price, badge, buttons, photo and the page's address, with no reload.
   - Quantity: the stepper stops at 1 and at the stock limit (cart.js only steps cart lines).
+  - The buy bar (from 750px): on once Add to cart is scrolled past.
   - Share: the phone's share sheet, or the link copied.
   Adding to the cart itself is cart.js. Without this file the page still shows every photo and the form still posts.
 */
@@ -63,16 +64,17 @@ if (track && slides.length > 1) {
   if (first && live().indexOf(first) > 0) goTo(first, true);
 }
 
-// A closer look: the viewer's code arrives on the first tap of a photo or of the round button.
+// A closer look: the viewer's code arrives on the first tap of a photo (or of the button a keyboard reaches).
 const gallery = $('[data-gallery]');
 const expand = $('[data-zoom]');
 if (gallery && expand) {
-  const look = (slide) => import(gallery.dataset.zoomSrc).then((viewer) => viewer.open(gallery, slide, expand, (left) => goTo(left, true)));
+  const look = (slide, from = expand) => import(gallery.dataset.zoomSrc).then((viewer) => viewer.open(gallery, slide, from, (left) => goTo(left, true)));
   expand.hidden = false;
   expand.addEventListener('click', () => look($('.gallery__img', live()[shown]) ? live()[shown] : live().find((slide) => $('.gallery__img', slide))));
+  // A photo's tap hands focus back to the photos; the button shows only for the keyboard.
   track.addEventListener('click', (event) => {
     const slide = event.target.closest('.gallery__img')?.parentElement;
-    if (slide) look(slide);
+    if (slide) look(slide, track);
   });
 }
 
@@ -137,7 +139,7 @@ const update = (variant) => {
 
   const id = $('[data-variant-id]', form);
   if (id) id.value = variant.id;
-  $('[data-price-now]').textContent = variant.price;
+  $$('[data-price-now]').forEach((el) => (el.textContent = variant.price));
   $('[data-price-was]').textContent = variant.was;
   $$('[data-price-was], [data-price-sale], [data-price-regular]').forEach((el) => (el.hidden = !variant.was));
   const badge = $('[data-badge]');
@@ -157,6 +159,8 @@ const update = (variant) => {
 
   const swapped = regroup(variant.media);
   const photo = slides.find((slide) => +slide.dataset.mediaId === variant.media);
+  const small = photo && $('.gallery__img', photo);
+  if (small && $('.buybar__img')) $('.buybar__img').srcset = small.srcset;
   if (photo && !photo.hidden) {
     goTo(photo, swapped);
     show(live().indexOf(photo), swapped);
@@ -184,6 +188,20 @@ if (qty) {
   });
   qtyInput.addEventListener('change', () => setQty(qtyInput.value));
   setQty(qtyInput.value);
+}
+
+/* ---------- The buy bar (from 750px) ---------- */
+const bar = $('[data-buybar]');
+const main = $('.pdp__add');
+if (bar && main) {
+  // On once the button is above the screen, and never over the footer.
+  const footer = $('.shopify-section-group-footer-group') || $('footer');
+  let past = false;
+  let end = false;
+  const set = () => bar.classList.toggle('is-on', past && !end);
+  bar.hidden = false;
+  new IntersectionObserver(([entry]) => ((past = !entry.isIntersecting), set()), { rootMargin: '0px 0px 99999px 0px' }).observe(main);
+  if (footer) new IntersectionObserver(([entry]) => ((end = entry.isIntersecting), set())).observe(footer);
 }
 
 /* ---------- Share ---------- */

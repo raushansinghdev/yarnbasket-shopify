@@ -345,6 +345,28 @@ one-option, a no-option, the sold-out and the sale product.
 - For launch: Buy it now must hand over to Shiprocket Checkout, and the Meta pixel's events need checking
   (launch-checklist.md).
 
+## Round 5 (2026-10-04, after Raushan's look on desktop)
+
+Raushan: Add to cart and Buy it now are too big on desktop and go away after scrolling; the magnifier button on
+the photo isn't needed. Phones are unchanged (round 4's pinned buttons).
+
+- **Buy box from 750px: one 48px row**: quantity, Add to cart, Buy it now (was two full-width 54px rows, 116px in
+  all). Where the column is narrow (a tablet, large text) Buy it now takes the next row. The quantity field and
+  both buttons are 48px at every width now.
+- **A slim buy bar from 750px** (`.buybar`): slides up from the bottom of the screen once Add to cart has been
+  scrolled past, never on arrival and never over the footer. A small photo, the name, the chosen options, the
+  price and Add to cart: a second button for the same form. It follows a new choice (photo, options, price), is
+  out of the tab order while hidden, and the pop-ups sit clear of it. Phones don't have it.
+- **Considered and dropped: Flipkart's placement** (the buy row riding the bottom of the details column, at rest
+  under the last detail). Raushan liked it on Flipkart; tried here, the buttons end up under "Delivery &
+  replacement", away from the price and the options, and where they sit depends on the screen's height. Flipkart's
+  column is several screens long; ours is about 700px.
+- **The magnifier button is out of sight.** A click on the photo opens the viewer. The button stays in the page
+  for the keyboard and screen readers (a photo can't take focus) and shows only when tabbed to; closing a viewer
+  opened from a photo hands focus back to the photos.
+- "Buy it now" words are centred in the button (Shopify's own padding had them 4.5px low).
+- Check 20: 64 checks, all passing. product.js is 9.97 KB of its 10 KB limit: the next addition needs a trim.
+
 ## Photo guide (for Raushan)
 
 Five square photos per product, at least 1200px, in this order:

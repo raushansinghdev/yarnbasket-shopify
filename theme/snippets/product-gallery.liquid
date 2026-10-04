@@ -189,7 +189,10 @@
   {%- endif -%}
   <p class="gallery__said" role="status" data-share-status></p>
 
-  {%- comment -%} The full-screen viewer: product.js shows the button and loads product-zoom.js on the first tap. {%- endcomment -%}
+  {%- comment -%}
+    The full-screen viewer: product.js loads product-zoom.js on the first tap of a photo. The button is for the
+    keyboard and screen readers (a photo can't take focus); it shows only when tabbed to (Raushan, round 5).
+  {%- endcomment -%}
   {%- if total > 0 -%}
     <button type="button" class="gallery__expand" data-zoom hidden>
       {%- render 'icon', icon: 'search' -%}
@@ -239,7 +242,7 @@
   .gallery__slide { --ratio: 1; border-radius: 0; scroll-snap-align: center; scroll-snap-stop: always; }
   .gallery__slide > video { background: var(--color-surface); }
 
-  /* The heart, Share and "look closer": 48px to tap with a 40px white circle on phones; a 44px circle in 52px on
+  /* The heart and Share: 48px to tap with a 40px white circle on phones; a 44px circle in 52px on
      desktop, where the photo is large and a small button gets lost (Raushan, 2026-10-04). Cards keep the 32px heart. */
   .gallery { --photo-btn: var(--tap); --photo-btn-inset: 4px; --photo-icon: 22px; }
   .gallery__actions { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 2; display: grid; }
@@ -271,8 +274,10 @@
   .gallery__share:active::before { scale: .92; }
   .gallery__share .icon { position: relative; width: calc(var(--photo-icon) - 1px); height: calc(var(--photo-icon) - 1px); stroke-width: 2; }
   .gallery__share:focus-visible { outline-offset: -4px; }
-  /* "Look closer", bottom left: the same round button. Tapping the photo itself does the same. */
-  .gallery__expand { position: absolute; left: var(--space-1); bottom: 0; z-index: 2; }
+  /* "Look closer", bottom left: the same round button, seen only when the keyboard reaches it. Tapping the photo
+     does the same, and so does a click on this corner. */
+  .gallery__expand { position: absolute; left: var(--space-1); bottom: 0; z-index: 2; cursor: zoom-in; }
+  .gallery__expand:not(:focus-visible) { opacity: 0; }
   .gallery__expand, .zoom__close, .zoom__arrow {
     display: grid;
     place-items: center;
@@ -359,8 +364,8 @@
     .zoom__arrow:not([hidden]) { display: grid; }
     .zoom__hint-touch { display: none; }
     .zoom__hint-mouse { display: inline; }
-    .gallery__actions .save-btn--card::before, .gallery__share::before, .gallery__expand::before, .zoom__close::before, .zoom__arrow::before { transition: scale var(--dur-state) var(--ease-out); }
-    .gallery__actions .save-btn--card:hover::before, .gallery__share:hover::before, .gallery__expand:hover::before, .zoom__close:hover::before, .zoom__arrow:hover::before { scale: 1.08; }
+    .gallery__actions .save-btn--card::before, .gallery__share::before, .zoom__close::before, .zoom__arrow::before { transition: scale var(--dur-state) var(--ease-out); }
+    .gallery__actions .save-btn--card:hover::before, .gallery__share:hover::before, .zoom__close:hover::before, .zoom__arrow:hover::before { scale: 1.08; }
   }
   .zoom__hint {
     position: absolute;

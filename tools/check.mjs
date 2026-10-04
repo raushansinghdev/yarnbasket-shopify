@@ -1478,7 +1478,7 @@ if (want('20')) {
     const bar = async () => page.evaluate(() => {
       const seen = (sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return r.height >= 44 && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth; };
       const top = document.querySelector('.pdp__cta').getBoundingClientRect().top;
-      return { add: seen('.pdp__add'), now: seen('.pdp__now-btn'), top, price: document.querySelector('[data-price-now]').getBoundingClientRect().bottom, lift: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--buybar')) || getComputedStyle(document.body).paddingBottom, pad: parseFloat(getComputedStyle(document.body).paddingBottom), adds: document.querySelectorAll('[data-add]').length };
+      return { add: seen('.pdp__add'), now: seen('.pdp__now-btn'), top, price: document.querySelector('[data-price-now]').getBoundingClientRect().bottom, lift: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--buybar')) || getComputedStyle(document.body).paddingBottom, pad: parseFloat(getComputedStyle(document.body).paddingBottom), adds: [...document.querySelectorAll('[data-add]')].filter((el) => el.getClientRects().length).length };
     });
     const start = await bar();
     await page.evaluate(() => scrollTo(0, 900));
@@ -1630,14 +1630,15 @@ if (want('20')) {
         ask: Math.round(document.querySelector('[data-ask]').getBoundingClientRect().height),
         reviews: Math.round(document.querySelector('#reviews').getBoundingClientRect().height),
         faq: [...document.querySelectorAll('.faq--compact summary')].map((s) => Math.round(s.getBoundingClientRect().height)),
-        circles: [circle('.gallery [data-save]'), circle('[data-share]'), circle('[data-zoom]')],
+        circles: [circle('.gallery [data-save]'), circle('[data-share]')],
+        look: getComputedStyle(document.querySelector('[data-zoom]')).opacity,
       };
     });
     record('Product: no rating line without real ratings', !plain.rating, `rating shown: ${plain.rating}`);
     record('Product 360: delivery terms and ask line are one compact card', plain.terms.length >= 2 && plain.terms.every((n) => n <= 2) && plain.termRows <= 2 && plain.termClip === 0 && plain.ask >= 44 && plain.card <= 150, `lines per term: ${plain.terms.join(', ')}; ${plain.termRows} row(s); clipped: ${plain.termClip}; ask row ${plain.ask}px; card ${plain.card}px tall`);
     record('Product 360: reviews block is compact', plain.reviews > 100 && plain.reviews < 500, `${plain.reviews}px tall (was 559)`);
     record('Product 360: compact FAQ rows', plain.faq.length >= 2 && plain.faq.every((h) => h >= 48 && h <= 60), `row heights: ${plain.faq.join(', ')}px`);
-    record('Product 360: photo buttons are 40px circles', plain.circles.every((n) => n >= 40), `save ${plain.circles[0]}px, share ${plain.circles[1]}px, look closer ${plain.circles[2]}px`);
+    record('Product 360: photo buttons are 40px circles, no look-closer button on show', plain.circles.every((n) => n >= 40) && plain.look === '0', `save ${plain.circles[0]}px, share ${plain.circles[1]}px; look closer opacity ${plain.look}`);
     await browser.close();
   }
 
@@ -1650,6 +1651,13 @@ if (want('20')) {
       return { beside: i.left >= g.right - 1, add: Math.round(a.bottom), fixed: getComputedStyle(document.querySelector('.pdp__cta')).position === 'fixed', sideways: document.documentElement.scrollWidth > innerWidth + 1 };
     });
     record('Product, tablet 768: two columns, buy box on the first screen', t.beside && t.add <= 1024 && !t.fixed && !t.sideways, `beside: ${t.beside}; Add to cart ends ${t.add}px of 1024; sideways: ${t.sideways}`);
+    // The buy bar names the choice: a new colour changes its text and price, and it is out of reach until it shows.
+    const barText = () => page.evaluate(() => { const bar = document.querySelector('.buybar'); return { choice: bar.querySelector('.buybar__choice').textContent.replace(/\s+/g, ' ').trim(), price: bar.querySelector('[data-price-now]').textContent.trim(), hidden: getComputedStyle(bar).visibility === 'hidden' }; });
+    const tb0 = await barText();
+    await page.locator('.pill__label', { hasText: 'Yellow' }).click();
+    await page.waitForTimeout(500);
+    const tb1 = await barText();
+    record('Product, tablet 768: the buy bar follows the choice', tb0.hidden && /^Red · /.test(tb0.choice) && /^Yellow · /.test(tb1.choice) && /1,299/.test(tb1.price), `on arrival hidden: ${tb0.hidden}, "${tb0.choice}" ${tb0.price}; after Yellow: "${tb1.choice}" ${tb1.price}`);
     await page.setViewportSize({ width: 740, height: 360 });
     await page.waitForTimeout(400);
     const l = await page.evaluate(() => ({ photo: Math.round(document.querySelector('.gallery__slide').getBoundingClientRect().height), name: Math.round(document.querySelector('.pdp__title').getBoundingClientRect().top) }));
@@ -1708,12 +1716,52 @@ if (want('20')) {
     await page.waitForTimeout(300);
     const stuck = await page.evaluate(() => { const g = document.querySelector('.gallery__track').getBoundingClientRect(); return { y: Math.round(scrollY), top: Math.round(g.top), bottom: Math.round(g.bottom) }; });
     record('Product, desktop: the photo stays beside the details', stuck.bottom > 200 && stuck.top < 800, `scrolled ${stuck.y}px, photo from ${stuck.top}px to ${stuck.bottom}px`);
+    // The buy box is one 48px row. The buy bar: off on arrival, on once Add to cart is scrolled past, off at the footer.
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForTimeout(400);
+    const barState = () => page.evaluate(() => {
+      const bar = document.querySelector('.buybar'); const r = bar.getBoundingClientRect();
+      return { on: bar.classList.contains('is-on'), shown: getComputedStyle(bar).visibility === 'visible' && r.top < innerHeight - 40, top: Math.round(r.top), h: Math.round(r.height) };
+    });
+    const row = await page.evaluate(() => {
+      const box = (sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return { top: Math.round(r.top), h: Math.round(r.height), w: Math.round(r.width) }; };
+      return [box('.pdp__buy .qty'), box('.pdp__add'), box('.pdp__now-btn .shopify-payment-button__button--unbranded')];
+    });
+    const nowOff = await page.evaluate(() => { const btn = document.querySelector('.pdp__now-btn .shopify-payment-button__button--unbranded'); const range = document.createRange(); range.selectNodeContents(btn); const t = range.getBoundingClientRect(); const r = btn.getBoundingClientRect(); return Math.abs((t.top + t.bottom) / 2 - (r.top + r.bottom) / 2); });
+    record('Product, desktop: "Buy it now" words in the middle of the button', nowOff <= 1, `${nowOff.toFixed(1)}px off centre`);
+    record('Product, desktop: quantity, Add to cart, Buy it now on one 48px row', row.every((b) => b.h === 48 && Math.abs(b.top - row[0].top) <= 1) && row[1].w >= 128 && row[2].w >= 128, row.map((b) => `${b.w} x ${b.h} at ${b.top}`).join(', '));
+    const bar0 = await barState();
+    await page.evaluate(() => scrollTo(0, document.querySelector('.pdp__add').getBoundingClientRect().bottom + scrollY + 40));
+    await page.waitForTimeout(700);
+    const bar1 = await barState();
+    await page.locator('.buybar__add').click();
+    await page.waitForSelector('.cart-toast:not([hidden])', { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(400);
+    const barAdd = await page.evaluate(() => { const t = document.querySelector('.cart-toast:not([hidden])'); return { toast: !!t, bottom: t ? Math.round(t.getBoundingClientRect().bottom) : 0 }; });
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(700);
+    const bar2 = await barState();
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForTimeout(700);
+    const bar3 = await barState();
+    record('Product, desktop: buy bar only after Add to cart is scrolled past', !bar0.shown && bar1.shown && bar1.h <= 72 && !bar2.shown && !bar3.shown, `arrival: ${bar0.shown}; scrolled past: ${bar1.shown} (${bar1.h}px tall); at the footer: ${bar2.shown}; back at the top: ${bar3.shown}`);
+    record('Product, desktop: Add to cart in the bar, pop-up clear of it', barAdd.toast && barAdd.bottom <= bar1.top, `pop-up: ${barAdd.toast}, ends ${barAdd.bottom}px, bar starts ${bar1.top}px`);
     await page.evaluate(() => scrollTo(0, 0));
     const circle = (sel) => page.evaluate((s) => { const el = document.querySelector(s); const r = el.getBoundingClientRect(); const i = parseFloat(getComputedStyle(el, '::before').inset) || 0; return Math.round(r.width - i * 2); }, sel);
-    const sizes = [await circle('.gallery [data-save]'), await circle('[data-share]'), await circle('[data-zoom]')];
-    record('Product, desktop: photo buttons are 44px circles', sizes.every((n) => n >= 44), `save ${sizes[0]}px, share ${sizes[1]}px, look closer ${sizes[2]}px`);
+    const sizes = [await circle('.gallery [data-save]'), await circle('[data-share]')];
+    record('Product, desktop: photo buttons are 44px circles', sizes.every((n) => n >= 44), `save ${sizes[0]}px, share ${sizes[1]}px`);
+    // The look-closer button shows only for the keyboard; a click on the photo opens the viewer and Esc hands focus back to the photos.
+    const lookOff = await page.evaluate(() => getComputedStyle(document.querySelector('.gallery__expand')).opacity);
     await page.locator('[data-gallery-track]').evaluate((t) => t.scrollTo({ left: 0, behavior: 'instant' }));
-    await page.locator('[data-zoom]').click();
+    await page.locator('.gallery__slide[data-first] .gallery__img').click({ position: { x: 300, y: 200 } });
+    await page.waitForSelector('dialog.zoom[open]', { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(400);
+    const byPhoto = await page.evaluate(() => !!document.querySelector('dialog.zoom')?.open);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    const back = await page.evaluate(() => ({ track: document.activeElement?.matches('[data-gallery-track]'), look: getComputedStyle(document.querySelector('.gallery__expand')).opacity }));
+    await page.locator('[data-gallery-track]').evaluate((t) => t.scrollTo({ left: 0, behavior: 'instant' }));
+    await page.locator('.gallery__expand').click();
     await page.waitForSelector('dialog.zoom[open]', { timeout: 5000 }).catch(() => {});
     await page.waitForTimeout(400);
     const stepper = async () => page.evaluate(() => ({ count: document.querySelector('[data-zoom-count]')?.textContent, prev: document.querySelector('.zoom__arrow--prev')?.hidden, next: getComputedStyle(document.querySelector('.zoom__arrow--next')).display }));
@@ -1730,10 +1778,19 @@ if (want('20')) {
     record('Product: "You may also like" before the reviews', below.indexOf('related') > -1 && below.indexOf('related') < below.indexOf('reviews'), below.join(' → '));
     await page.evaluate(() => { scrollTo(0, 0); document.querySelector('#MainContent').focus(); });
     const order = [];
+    let lookOn = 'not reached';
     for (let i = 0; i < 26; i++) {
       await page.keyboard.press('Tab');
+      // With reduced motion every change still runs a 0.01ms transition, so the button is read a moment after it takes focus.
+      lookOn = await page.evaluate(async (was) => {
+        const el = document.activeElement;
+        if (!el.matches('.gallery__expand')) return was;
+        await new Promise((done) => setTimeout(done, 60));
+        return getComputedStyle(el).opacity;
+      }, lookOn);
       order.push(await page.evaluate(() => { const el = document.activeElement; return el.closest('.gallery__thumbs') ? 'thumb' : el.matches('[data-gallery-track]') ? 'photos' : el.matches('[data-save]') ? 'save' : el.matches('[data-share]') ? 'share' : el.matches('[data-zoom]') ? 'zoom' : el.matches('.pill__input') ? 'option' : el.closest('.qty') ? 'qty' : el.matches('.pdp__add') ? 'add' : el.closest('.pdp__now-btn') ? 'buy-now' : el.closest('.offer-terms') ? 'terms' : el.matches('[data-ask]') ? 'ask' : el.matches('summary') ? 'detail' : el.matches('.pdp__crumb') ? 'crumb' : 'other'; }));
     }
+    record('Product, desktop: look-closer button only for the keyboard', lookOff === '0' && byPhoto && back.track && back.look === '0' && lookOn === '1', `hidden to a mouse: ${lookOff === '0'}; photo click opens the viewer: ${byPhoto}; focus back on the photos: ${back.track}, button still hidden: ${back.look === '0'}; shown when tabbed to: ${lookOn === '1' ? true : lookOn}`);
     const seen = [...new Set(order)];
     const rank = ['photos', 'option', 'qty', 'add', 'buy-now', 'ask', 'detail'].map((k) => seen.indexOf(k));
     record('Product, keyboard: photos, options, buy, details in order', rank.every((n, i) => n > -1 && (i === 0 || n > rank[i - 1])), seen.join(' → '));

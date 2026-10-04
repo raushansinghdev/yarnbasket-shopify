@@ -2,6 +2,13 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-04 (product page, round 5)
+
+- **Desktop buy box is one 48px row** (quantity, Add to cart, Buy it now) under the options. Raushan found two full-width 54px rows too big.
+- **From 750px a slim bar at the bottom of the screen once the buy row is scrolled past**, off at the footer. Phones keep the pinned buttons of round 4; this does not reopen that decision (on a phone the buttons are 700px down on arrival, on desktop they are on the first screen).
+- **Not Flipkart's column-pinned buy row.** Raushan suggested it; it needs the buttons last in the column, so on our short column they sit under the details rows, away from price and options. Asked, Raushan chose to keep the row under the options.
+- **The magnifier button shows only for the keyboard.** Raushan: people know to click a photo. It stays in the page because a photo can't take focus.
+
 ## 2026-10-04 (product page, round 4)
 
 - **Phones: the buy buttons are pinned to the bottom for the whole page**, one set, placed with CSS. Raushan found the come-and-go bar "not proper" and asked for the best way; the fixed bar is what Flipkart, Myntra and Meesho shoppers know and it needs no JavaScript. This supersedes round 1 (bar from arrival plus page buttons) and round 3 (bar after scrolling past).
