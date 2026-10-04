@@ -15,23 +15,24 @@ Examples:
 
 | Listing | Pieces | Making cost | × 3 | Price |
 |---|---|---|---|---|
-| Single sunflower bouquet | 1 sunflower | 50 | 150 | ₹149 |
-| Rose trio | 3 roses | 150 | 450 | ₹449 |
-| Blue tulips + daisy | 2 tulips + 1 daisy | 140 | 420 | ₹419 |
-| Sunflower + evil eye keychain set | 15 + 30 | 45 | 135 | ₹139 |
+| Single sunflower bouquet | 1 sunflower | 55 | 165 | ₹169 |
+| Rose trio | 3 roses | 165 | 495 | ₹499 |
+| Blue tulips + daisy | 2 tulips + 1 daisy | 155 | 465 | ₹469 |
+| Sunflower + evil eye keychain set | 30 + 35 | 65 | 195 | ₹199 |
 | Headband + clips + claw clip | 50 + 15 + 30 | 95 | 285 | ₹289 |
 
-Cost of one piece, packaging included (Raushan, 2026-10-04):
+Cost of one piece, packaging included (Raushan, 2026-10-04; he raised most of them the same day by editing
+`costs.json`, which is the source of truth if this table and the file ever differ):
 
 | Piece | ₹ | Piece | ₹ |
 |---|---|---|---|
-| Sunflower, rose, daisy (bouquet stem) | 50 | Lily charm | 20 |
-| Tulip (bouquet stem) | 45 | Flower pot | 70 |
-| Bee (bouquet or keychain) | 45 | Headband | 50 |
-| Flower keychain (sunflower, daisy) | 15 | Hair clips, pair | 15 |
-| Evil eye keychain | 30 | Claw clip | 30 |
-| Peacock feather keychain | 25 | Curtain tie-back | 50 |
-| Octopus keychain | 30 | Chick keychain (from the Meesho cost file) | 55 |
+| Sunflower, rose, daisy (bouquet stem) | 55 | Lily charm | 30 |
+| Tulip (bouquet stem) | 50 | Flower pot | 75 |
+| Bee (bouquet or keychain) | 50 | Headband | 50 |
+| Flower keychain (sunflower, daisy) | 30 | Hair clips, pair | 15 |
+| Evil eye keychain | 35 | Claw clip | 30 |
+| Peacock feather keychain | 35 | Curtain tie-back | 50 |
+| Octopus keychain | 35 | Chick keychain | 55 |
 
 Where things are:
 
