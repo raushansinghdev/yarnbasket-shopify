@@ -2,6 +2,22 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-04 (product page, docs/product-page-plan.md)
+
+- **The product page is a landing page.** Most traffic will come from Meta ads straight to a product (Raushan), usually in Instagram's in-app browser. So it is designed phone first, tested at 360 × 640 as well as 360 × 800, and has to stand on its own for someone who never saw the home page.
+- **PP1 Details:** Materials and Care are written once in the theme editor; "Size & what's included" is the per-product field (`custom.size`). A product can override Materials or Care (`custom.materials`, `custom.care`).
+- **PP2 Reviews:** no stars until a product has real ratings. The reviews app is a pre-launch admin step.
+- **PP3 Custom ask:** one muted WhatsApp line under the trust row; "Ask us to make one" on a sold-out product.
+- **PP4 Save is the heart on the photo's corner,** the same as on cards, with Share under it. The buy box is two aligned rows: quantity + Add to cart, then Buy it now. This replaces the worded "♡ Save" button from account-plan AC4.
+- **PP5 Below the details:** hand-picked customer reviews, a short FAQ, the product rows, and Recently viewed last.
+- **PP6 Video** is supported as a later gallery slide; a photo is always first.
+- **PP7 Two product rows, not four.** "Pairs well with" (Raushan's picks in Search & Discovery, hidden when there are none) and "You may also like" (Shopify's related products, which use real purchase data once there are orders, and fall back to Bestsellers). Raushan asked about bestsellers / also bought / bought together; one row each for "goes with this" and "like this" covers them without four near-identical rows.
+- **PP8 Every text block is closed by default,** the description included (Raushan, to save space). Closed `<details>` text is still in the HTML for search engines.
+- **The logo intro no longer plays on product pages:** an ad visitor should see the piece they tapped, not an animation.
+- **The sticky buy bar shows whenever the main Add to cart is off-screen, including on arrival** on a short screen. The added-to-cart and Saved pop-ups sit above it.
+- **No return policy in the Product JSON-LD yet.** The rule is replacement if damaged with no change-of-mind returns; the markup is settled in the SEO phase so we never tell Google something looser than the Terms.
+- **Not reopened:** `offer-terms` is the one trust row, "Buy it now" stays, no per-product dispatch date, sales stay quiet (no % badge), no viewer counts or stock-pressure lines.
+
 ## 2026-10-04 (compact footer, docs/footer-compact-plan.md)
 
 - **The footer is about 30% shorter on phones and 15% shorter on desktop, with the same content.** Raushan found it too tall. It was 520px on a 360 × 800 phone (65% of a screen) for a logo and seven links, and about 210px of that was empty space. It is now 369px at 320 to 430 wide, 441px at 1280 (was 516) and 474px at 768.

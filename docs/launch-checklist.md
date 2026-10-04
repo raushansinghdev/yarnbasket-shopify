@@ -98,3 +98,14 @@ Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with 
   - If the trial or the quote fails: Shopify's checkout with Razorpay and a partial-COD app instead.
 - [ ] **Theme:** the cart's Checkout button opens Shiprocket Checkout (drawer and cart page); Theme settings → Cart → Cash on delivery on; the announcement bar's "Partial COD available" is then true.
 - [ ] **Each parcel:** photo on the scale with a tape measure, kept for weight disputes (7 working days to dispute).
+
+## Product page (docs/product-page-plan.md)
+
+- [ ] Every product: 5 photos in the guide's order, alt text on each, and "Size & what's included" filled in
+- [ ] Theme editor → a product page → Product section: Materials, Care and Delivery text
+- [ ] Theme editor → product page: real customer quotes in Reviews and 4–5 questions in FAQ (a separate copy from the home page's; edit both)
+- [ ] Search & Discovery → Product recommendations: "Complementary products" for the main pieces (feeds "Pairs well with")
+- [ ] Reviews app chosen and installed; check its script against the speed budget
+- [ ] Facebook & Instagram channel installed; ViewContent, AddToCart and Purchase seen in Events Manager with our no-reload add to cart
+- [ ] After Shiprocket Checkout is on: "Buy it now" and the sticky bar still reach checkout; the trust row's COD line says partial COD
+- [ ] Open a product from a real Instagram ad link on a phone: no intro, photo first, buy button visible
