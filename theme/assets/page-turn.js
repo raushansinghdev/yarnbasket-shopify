@@ -88,3 +88,17 @@ if (!lite && HTMLScriptElement.supports?.('speculationrules')) {
   addEventListener('pageshow', clear);
   addEventListener('pagehide', clear);
 }
+
+/* ---------- A card's photo grows into the product page's photo ----------
+   Chrome and Safari 18.2+ (cross-document view transitions); elsewhere the page simply changes. The name goes on the
+   one tapped card only, and comes off a product page's own photo first, so the name is never on two things. */
+if (!lite && 'startViewTransition' in document) {
+  addEventListener('click', (event) => {
+    const photo = event.target.closest?.('.card__link')?.querySelector('.card__img');
+    if (!photo) return;
+    document.querySelectorAll('.gallery__img, .card__img').forEach((img) => (img.style.viewTransitionName = 'none'));
+    photo.style.viewTransitionName = 'product-photo';
+  });
+  // Back to this page from the cache: the names are as they were.
+  addEventListener('pageshow', (event) => event.persisted && document.querySelectorAll('.gallery__img, .card__img').forEach((img) => (img.style.viewTransitionName = '')));
+}

@@ -460,6 +460,9 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 
 /* ---------- Motion ---------- */
 @view-transition { navigation: auto; }
+/* A tapped product card's photo grows into the product page's first photo (page-turn.js names the card's photo). */
+.gallery__slide:first-child > .gallery__img { view-transition-name: product-photo; }
+::view-transition-group(product-photo), ::view-transition-group(zoom-photo) { animation-duration: var(--dur-panel); animation-timing-function: var(--ease-out); }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 150ms; animation-timing-function: var(--ease-out); }
 
 /* The next page is taking a moment (page-turn.js adds the class 300ms after a tap): a thin line grows under the top

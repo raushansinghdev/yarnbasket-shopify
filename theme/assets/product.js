@@ -44,6 +44,20 @@ if (track && slides.length > 1) {
   if (first > 0) go(first, true);
 }
 
+// A closer look: the viewer's code arrives on the first tap of a photo (or of the round button, for keyboards).
+const gallery = $('[data-gallery]');
+const expand = $('[data-zoom]');
+if (gallery && expand) {
+  const photos = $$('.gallery__img', gallery);
+  const look = (n, from) => import(gallery.dataset.zoomSrc).then((viewer) => viewer.open(gallery, n, from, (left) => go(slides.indexOf(photos[left].parentElement), true)));
+  expand.hidden = false;
+  expand.addEventListener('click', () => look(Math.max(0, photos.indexOf($('.gallery__img', slides[shown]))), expand));
+  track.addEventListener('click', (event) => {
+    const n = photos.indexOf(event.target.closest('.gallery__img'));
+    if (n > -1) look(n, expand);
+  });
+}
+
 /* ---------- Options ---------- */
 const form = $('[data-product-form]');
 const variants = JSON.parse($('[data-variants]')?.textContent || '[]');

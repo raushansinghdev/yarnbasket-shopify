@@ -101,6 +101,8 @@ Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with 
 
 ## Product page (docs/product-page-plan.md)
 
+- [x] Product fields created 2026-10-04 (Settings → Custom data → Products): "Size & what's included", "Materials (only if different)", "Care (only if different)"
+- [ ] Delete the test products (tag `test-product`), including the extra photos and test Size text on "Red Rose Crochet Bouquet"
 - [ ] Every product: 5 photos in the guide's order, alt text on each, and "Size & what's included" filled in
 - [ ] Theme editor → a product page → Product section: Materials, Care and Delivery text
 - [ ] Theme editor → product page: real customer quotes in Reviews and 4–5 questions in FAQ (a separate copy from the home page's; edit both)

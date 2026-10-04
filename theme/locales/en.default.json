@@ -244,7 +244,10 @@
     "gift_shop": "Shop all crochet",
     "chosen": "{{ option }}, {{ price }}",
     "chosen_out": "{{ option }}, sold out",
-    "recently_viewed": "Recently viewed"
+    "recently_viewed": "Recently viewed",
+    "zoom_open": "View photos full screen",
+    "zoom_close": "Close photos",
+    "zoom_hint": "Pinch or double-tap to zoom"
   },
   "reviews": {
     "rating": "{{ rating }} out of 5 stars",

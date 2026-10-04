@@ -24,7 +24,7 @@
   assign sizes = '(min-width: 990px) min(46vw, 620px), 100vw'
   assign region = 'products.gallery' | t: title: product.title
 -%}
-<div class="gallery" data-gallery>
+<div class="gallery" data-gallery data-zoom-src="{{ 'product-zoom.js' | asset_url }}">
   {%- if total > 0 -%}
     <ul class="gallery__track" role="list" tabindex="0" aria-label="{{ region | escape }}" data-gallery-track>
       {%- for media in slides -%}
@@ -81,6 +81,24 @@
     </ul>
   {%- endif -%}
   <p class="gallery__said" role="status" data-share-status></p>
+
+  {%- comment -%} The full-screen viewer: product.js shows the button and loads product-zoom.js on the first tap. {%- endcomment -%}
+  {%- if total > 0 -%}
+    <button type="button" class="gallery__expand" data-zoom hidden>
+      {%- render 'icon', icon: 'search' -%}
+      <span class="visually-hidden">{{ 'products.zoom_open' | t }}</span>
+    </button>
+    <template data-zoom-template>
+      <dialog class="zoom" aria-label="{{ region | escape }}">
+        <div class="zoom__track" tabindex="0"></div>
+        <button type="button" class="zoom__close">
+          {%- render 'icon', icon: 'close' -%}
+          <span class="visually-hidden">{{ 'products.zoom_close' | t }}</span>
+        </button>
+        <p class="zoom__hint" aria-hidden="true">{{ 'products.zoom_hint' | t }}</p>
+      </dialog>
+    </template>
+  {%- endif -%}
 </div>
 
 {% stylesheet %}
@@ -128,6 +146,83 @@
   .gallery__share:active::before { scale: .92; }
   .gallery__share .icon { position: relative; width: 19px; height: 19px; stroke-width: 2; }
   .gallery__share:focus-visible { outline-offset: -4px; }
+  /* "Look closer", bottom left: the same round button. Tapping the photo itself does the same. */
+  .gallery__expand { position: absolute; left: var(--space-1); bottom: 0; z-index: 2; }
+  .gallery__expand, .zoom__close {
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--cocoa-deep);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .gallery__expand::before, .zoom__close::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / .96);
+    box-shadow: 0 2px 8px -3px rgb(78 58 49 / .35);
+  }
+  .gallery__expand .icon, .zoom__close .icon { position: relative; width: 18px; height: 18px; stroke-width: 2; }
+  .gallery__expand:focus-visible { outline-offset: -4px; }
+  .gallery__img { cursor: zoom-in; }
+
+  /* The viewer fills the screen on White. Each photo sits in its own scroll box; zooming makes the photo wider
+     (--zoom), so moving around it is the browser's own scrolling. */
+  .zoom {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--white);
+  }
+  .zoom::backdrop { background: var(--white); }
+  .zoom__track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    height: 100%;
+    overflow-x: auto;
+    overscroll-behavior: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .zoom__track::-webkit-scrollbar { display: none; }
+  .zoom__track:focus-visible { outline-offset: -3px; }
+  .zoom__slide {
+    display: grid;
+    place-items: safe center;
+    overflow: auto;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    scrollbar-width: none;
+    touch-action: pan-x pan-y;
+  }
+  .zoom__slide::-webkit-scrollbar { display: none; }
+  .zoom__slide.is-zoomed { overscroll-behavior: contain; cursor: zoom-out; }
+  .zoom__img { width: calc(min(100vw, 100dvh) * var(--zoom, 1)); max-width: none; height: auto; cursor: zoom-in; }
+  .zoom__slide.is-zoomed .zoom__img { cursor: zoom-out; }
+  .zoom__close { position: absolute; top: max(var(--space-2), env(safe-area-inset-top)); right: var(--space-2); }
+  .zoom__hint {
+    position: absolute;
+    inset: auto 0 max(var(--space-4), env(safe-area-inset-bottom));
+    text-align: center;
+    font-size: .8125rem;
+    color: var(--color-muted);
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html:not(.lite) .zoom[open] { animation: zoom-in var(--dur-state) var(--ease-out); }
+  }
+  @keyframes zoom-in { from { opacity: 0; } }
   /* "Link copied", where there's no share sheet: a small chip under the buttons for a moment. */
   .gallery__said {
     position: absolute;
@@ -190,6 +285,9 @@
     .gallery__thumb-play .icon { width: 22px; height: 22px; fill: currentColor; }
     /* With one photo there is no strip, so the photo takes both columns. */
     .gallery:not(:has(.gallery__thumbs)) .gallery__track { grid-column: 1 / -1; }
+    /* The round "look closer" button belongs on the photo, not under the thumbnails. */
+    .gallery__expand { left: calc(72px + var(--space-4) + var(--space-1)); }
+    .gallery:not(:has(.gallery__thumbs)) .gallery__expand { left: var(--space-1); }
   }
   @media (min-width: 990px) and (hover: hover) { .gallery__thumb:hover { opacity: 1; } }
   @media (prefers-reduced-motion: no-preference) {

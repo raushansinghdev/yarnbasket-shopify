@@ -48,12 +48,13 @@ const errsOf = (p) => { const e = []; p.on('pageerror', (x) => e.push('pageerror
   const before = p.url();
   await sel.selectOption({ index: 1 });
   await p.waitForTimeout(500);
-  info.afterVariantChange = { url: p.url() === before ? 'unchanged' : p.url(), priceShown: await p.locator('.product-info p').first().textContent() };
+  info.afterVariantChange = { url: p.url() === before ? 'unchanged' : p.url(), priceShown: await p.locator('[data-price-now]').first().textContent() };
   log('PDP', info);
   // gift page
   await p.goto(base + '/products/sunflower-keychain-free-gift', { waitUntil: 'load' });
-  const gift = await p.evaluate(() => ({ addBtn: document.querySelector('.product-form__add')?.textContent.trim(), disabled: document.querySelector('.product-form__add')?.disabled, robots: document.querySelector('meta[name=robots]')?.content || null }));
-  await p.locator('.product-form__add').click();
+  const gift = await p.evaluate(() => ({ addBtn: document.querySelector('.pdp__add')?.textContent.trim(), disabled: document.querySelector('.pdp__add')?.disabled, robots: document.querySelector('meta[name=robots]')?.content || null }));
+  // The gift's page has no buy box since 2026-10-04 (docs/product-page-plan.md); the click is for a theme that still has one.
+  if (await p.locator('.pdp__add').count()) await p.locator('.pdp__add').click();
   await p.waitForTimeout(3500);
   gift.afterAdd = await p.evaluate(async () => { const c = await (await fetch('/cart.js')).json(); return { items: c.items.map((i) => `${i.title} x${i.quantity} ${i.final_line_price}`), toast: document.querySelector('.cart-toast')?.innerText.replace(/\s+/g, ' '), status: document.querySelector('[data-cart-status]')?.textContent }; });
   log('GIFT PDP', gift);
@@ -69,11 +70,11 @@ const errsOf = (p) => { const e = []; p.on('pageerror', (x) => e.push('pageerror
   const ctx = await mk(390, 844); const p = await ctx.newPage(); const errs = errsOf(p);
   await p.goto(base + '/products/sunflower-crochet-pot', { waitUntil: 'load' });
   await ctx.setOffline(true);
-  await p.locator('.product-form__add').click();
+  await p.locator('.pdp__add').click();
   await p.waitForTimeout(1500);
-  const off1 = await p.evaluate(() => ({ error: document.querySelector('[data-add-error]')?.textContent, hidden: document.querySelector('[data-add-error]')?.hidden, label: document.querySelector('[data-add-label]')?.textContent.trim(), busy: document.querySelector('.product-form__add').getAttribute('aria-busy') }));
+  const off1 = await p.evaluate(() => ({ error: document.querySelector('[data-add-error]')?.textContent, hidden: document.querySelector('[data-add-error]')?.hidden, label: document.querySelector('[data-add-label]')?.textContent.trim(), busy: document.querySelector('.pdp__add').getAttribute('aria-busy') }));
   await ctx.setOffline(false);
-  await p.locator('.product-form__add').click();
+  await p.locator('.pdp__add').click();
   await p.waitForTimeout(2500);
   await p.goto(base + '/cart', { waitUntil: 'load' });
   await ctx.setOffline(true);
@@ -88,7 +89,7 @@ const errsOf = (p) => { const e = []; p.on('pageerror', (x) => e.push('pageerror
   await ctx.request.post(base + '/cart/clear.js');
   await p.goto(base + '/', { waitUntil: 'load' });
   await p.goto(base + '/products/sunflower-crochet-pot', { waitUntil: 'load' });
-  await p.locator('.product-form__add').click();
+  await p.locator('.pdp__add').click();
   await p.waitForTimeout(2500);
   await p.goBack({ waitUntil: 'load' });
   await p.waitForTimeout(800);

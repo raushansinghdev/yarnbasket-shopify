@@ -1,6 +1,26 @@
 # Product page (build-plan Phase 4)
 
-Status: **approved 2026-10-04, building** (stages P-0 to P-5 below). "As built" notes are added here as stages land.
+Status: **built 2026-10-04** (stages P-0 to P-5), on test products. Check §20: 30/30. Waiting for Raushan's look on a real phone, opened from an Instagram link.
+
+## As built (2026-10-04)
+
+Everything in the plan below is built. Where the build differs from the plan:
+
+- **Script sizes are larger than planned.** product.js is 8.2 KB (planned 6) and product-zoom.js 5.1 KB (planned 4); product-rows.js is 2.9 KB. Check §20 holds them to 9, 6 and 4 KB. None is loaded on any other page, the viewer loads only on the first tap of a photo, and theme.js and cart.js are unchanged.
+- **Dots are for looking, not tapping.** On phones the dots and the "1 / 5" count are not buttons (a 6px dot can't be a 48px tap target). The photos swipe, the desktop thumbnails are real buttons, and a round "look closer" button (bottom left of the photo) opens the viewer for keyboard users. Tapping a photo does the same.
+- **Sold-out options are disabled, not just struck through,** so nobody can add a piece that isn't there. The "Ask us to make one" line appears when the whole product (or the chosen variant) is sold out.
+- **Recently viewed has its own small loader** (product-rows.js + sections/product-tile). The Saved page's loader in saved-page.js was left alone rather than refactored into a shared file.
+- **Reviews row:** the section is on the page but shows nothing on the live store until quotes are added in the theme editor (with Demo content on it shows the sample quotes).
+- **FAQ:** a copy of the home page's four questions. An edit has to be made on both pages.
+- **Video:** uses the browser's own video controls (poster first, nothing loads until Play). Not tested with a real clip yet: no test product has one.
+- **Card → page photo morph:** built (page-turn.js names the tapped card's photo). It needs Chrome or Safari 18.2+ and can't be seen in the automated check; look at it on the phone.
+- **Not verified here:** pinch-zoom with real fingers (the check uses double-click), the share sheet, and how the page looks inside Instagram's in-app browser.
+
+Admin changes made (store, not in git): product field definitions `custom.size` ("Size & what's included"), `custom.materials` and `custom.care` ("only if different"); on the test product "Red Rose Crochet Bouquet", three more photos and a test Size text.
+
+Files: `sections/product.liquid`, `sections/product-recommendations.liquid`, `sections/recently-viewed.liquid`, `sections/product-tile.liquid`, `snippets/product-gallery.liquid`, `snippets/product-options.liquid`, `assets/product.js`, `assets/product-zoom.js`, `assets/product-rows.js`; small changes in `snippets/quantity.liquid` (floor), `snippets/product-row.liquid` (shell), `snippets/structured-data.liquid`, `sections/faq.liquid`, `layout/theme.liquid` (no intro), `assets/page-turn.js`, `assets/base.css`, `sections/cart-drawer.liquid` and `snippets/saved-toast.liquid` (pop-ups above the buy bar). `snippets/save-button.liquid` still has its unused "page" style.
+
+Verify: `npm run check -- --only 20 --url http://127.0.0.1:<port>/`.
 
 ## Context
 

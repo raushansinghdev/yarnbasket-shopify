@@ -290,7 +290,7 @@ if (want('8')) {
     await page.request.post(site('/cart/clear.js'));
     await page.goto(site(`/products/${single.handle}`), { waitUntil: 'load' });
     const url = page.url();
-    await page.click('.product-form__add');
+    await page.click('.pdp__add');
     const toast = await page.waitForSelector('.cart-toast', { timeout: 8000 }).then(() => true, () => false);
     const badge = await page.textContent('[data-cart-count]').catch(() => '');
     record(`Cart, ${label}: add shows the pop-up, stays on the page`, toast && page.url() === url && badge.trim() === '1', `pop-up: ${toast}, badge: "${badge.trim()}"`);
@@ -325,10 +325,10 @@ if (want('8')) {
 
     if (limited && label === 'phone') {
       await page.goto(site(`/products/${limited.handle}`), { waitUntil: 'load' });
-      await page.fill('.product-form__qty', '3');
-      await page.click('.product-form__add');
+      await page.fill('.pdp .qty__input', '3');
+      await page.click('.pdp__add');
       await page.waitForSelector('.cart-toast', { timeout: 8000 }).catch(() => {});
-      await page.click('.product-form__add');
+      await page.click('.pdp__add');
       const msg = await page.waitForSelector('[data-add-error]:not([hidden])', { timeout: 8000 }).then((el) => el.textContent(), () => '');
       record('Cart, phone: the stock limit says why', !!msg.trim(), msg.trim() || 'no message');
     }
@@ -376,7 +376,7 @@ if (want('8b')) {
       await page.goto(site(`/products/${cheap.handle}`), { waitUntil: 'load' });
       await page.waitForTimeout(2500);
       await settled();
-      await page.click('.product-form__add');
+      await page.click('.pdp__add');
       await page.waitForSelector('.cart-toast', { timeout: 8000 }).catch(() => {});
       await page.waitForTimeout(600);
       const toast = await page.evaluate(() => {
@@ -1307,6 +1307,242 @@ if (want('19')) {
   }
   const d = await measure(chromium, { width: 1280, height: 800 }, false);
   if (d) record('Footer, desktop 1280: trimmed, rule kept', d.height <= 460 + Math.max(0, d.extra) && d.rule, `${d.height}px (limit ${460 + Math.max(0, d.extra)}), short rule shown: ${d.rule}`);
+}
+
+// 20. The product page (docs/product-page-plan.md): a landing page for ad traffic, so it is measured on a short phone
+//     screen (360 x 640, an in-app browser) as well as 360 x 800 and desktop. Uses the store's test products.
+if (want('20')) {
+  const at = (path) => new globalThis.URL(path, URL).href;
+  const PHONE = { viewport: { width: 360, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+  const SHORT = { ...PHONE, viewport: { width: 360, height: 640 } };
+  const DESK = { viewport: { width: 1280, height: 800 } };
+  const visit = async (path, device, opts = {}) => {
+    const browser = await chromium.launch();
+    const ctx = await browser.newContext({ ...device, reducedMotion: opts.reducedMotion || 'reduce', javaScriptEnabled: opts.js !== false });
+    await ctx.addInitScript(() => {
+      window.__lcp = [];
+      window.__cls = 0;
+      try {
+        new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__lcp.push({ t: e.startTime, el: e.element?.className || '' }))).observe({ type: 'largest-contentful-paint', buffered: true });
+        new PerformanceObserver((l) => l.getEntries().forEach((e) => { if (!e.hadRecentInput) window.__cls += e.value; })).observe({ type: 'layout-shift', buffered: true });
+      } catch {}
+    });
+    const page = await ctx.newPage();
+    const errors = themeErrors(page);
+    const sizes = {};
+    page.on('response', async (res) => {
+      const m = res.url().match(/\/assets\/(product(?:-zoom|-rows)?|cart|theme)\.js/);
+      if (m) try { sizes[m[1]] = (await res.body()).length / 1024; } catch {}
+    });
+    if (opts.throttle) await (await ctx.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: 4 });
+    await page.goto(at(path), { waitUntil: 'load' });
+    await page.waitForTimeout(opts.js === false ? 300 : 1500);
+    return { browser, page, errors, sizes };
+  };
+  const ROSE = 'products/red-rose-crochet-bouquet';
+
+  // First screen, speed and layout.
+  {
+    const { browser, page, errors, sizes } = await visit(`${ROSE}?utm_source=ig`, PHONE, { throttle: true });
+    const first = await page.evaluate(() => {
+      const box = (sel) => document.querySelector(sel)?.getBoundingClientRect();
+      const lcp = window.__lcp.at(-1) || { t: 0, el: '' };
+      return {
+        lcp,
+        cls: window.__cls,
+        intro: !!document.querySelector('.splash'),
+        title: box('.pdp__title')?.bottom,
+        price: box('[data-price]')?.bottom,
+        sideways: document.documentElement.scrollWidth > innerWidth + 1,
+        open: document.querySelectorAll('.pdp__details details[open]').length,
+        closed: document.querySelectorAll('.pdp__details details').length,
+        detailsEnd: Math.round(box('.pdp__details').bottom + scrollY),
+        zoomLoaded: performance.getEntriesByType('resource').some((r) => /product-zoom/.test(r.name)),
+        second: document.querySelectorAll('.gallery__img')[1]?.complete,
+        buy: (() => {
+          const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills');
+          return { rowTop: Math.abs(q.top - a.top), rowH: Math.abs(q.height - a.height), left: Math.abs(q.left - n.left), right: Math.abs(a.right - n.right), pills: Math.abs(pill.left - q.left) };
+        })(),
+        ld: [...document.querySelectorAll('script[type="application/ld+json"]')].map((el) => { try { return JSON.parse(el.textContent); } catch { return null; } }),
+        shownPrice: document.querySelector('[data-price-now]').textContent.replace(/[^\d.]/g, ''),
+      };
+    });
+    record('Product: photo is the LCP, phone (4x slower CPU)', first.lcp.t < BUDGET.lcpMs && /gallery__img/.test(first.lcp.el), `${Math.round(first.lcp.t)}ms on "${first.lcp.el}" (budget ${BUDGET.lcpMs}ms)`);
+    record('Product: nothing jumps on load (CLS)', first.cls < 0.1, first.cls.toFixed(3));
+    record('Product: no logo intro', !first.intro, first.intro ? 'the intro is on the page' : 'none');
+    record('Product: name and price on the first screen', first.title < 800 && first.price < 800 && !first.sideways, `name ends ${Math.round(first.title)}px, price ${Math.round(first.price)}px of 800; sideways scroll: ${first.sideways}`);
+    record('Product: photos to details within two screens', first.detailsEnd <= 1600, `details end at ${first.detailsEnd}px (limit 1600)`);
+    record('Product: every text block closed', first.open === 0 && first.closed >= 2, `${first.closed} blocks, ${first.open} open`);
+    const b = first.buy;
+    record('Product: buy box lines up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1, `row top ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left ${b.left.toFixed(1)}, right ${b.right.toFixed(1)}, pills ${b.pills.toFixed(1)} (px off)`);
+    record('Product: second photo ready, viewer not loaded', first.second === true && !first.zoomLoaded, `second photo loaded: ${first.second}; product-zoom.js fetched: ${first.zoomLoaded}`);
+    const graph = first.ld.flatMap((d) => (d ? d['@graph'] || [d] : [{ '@type': 'unparsable' }]));
+    const products = graph.filter((g) => g['@type'] === 'Product');
+    const prices = (products[0]?.offers || []).map((o) => String(o.price).replace(/\.0$/, ''));
+    record('Product: one Product in the JSON-LD, price matches', products.length === 1 && prices.includes(first.shownPrice) && !graph.some((g) => /FAQPage|unparsable/.test(g['@type'])), `types: ${graph.map((g) => g['@type']).join(', ')}; offers ${prices.join(', ')}; page shows ${first.shownPrice}`);
+
+    // Swiping the photos keeps the dots and the count in step.
+    await page.evaluate(() => { const t = document.querySelector('[data-gallery-track]'); t.scrollTo({ left: t.clientWidth, behavior: 'instant' }); });
+    await page.waitForTimeout(400);
+    const swiped = await page.evaluate(() => ({ count: document.querySelector('[data-gallery-count]').textContent, dot: [...document.querySelectorAll('[data-gallery-dots] i')].findIndex((d) => d.classList.contains('is-on')) }));
+    record('Product: swipe moves dots and count', swiped.count === '2' && swiped.dot === 1, `count ${swiped.count}, dot ${swiped.dot + 1}`);
+
+    // A new choice: price, button, address (the ad's parameters stay), and one announcement.
+    await page.locator('.pill__label', { hasText: '6 roses' }).click();
+    await page.waitForTimeout(400);
+    const picked = await page.evaluate(() => ({
+      price: document.querySelector('[data-price-now]').textContent,
+      bar: document.querySelector('[data-buybar-price]').textContent,
+      search: location.search,
+      said: document.querySelector('[data-variant-status]').textContent,
+      max: document.querySelector('.pdp .qty').dataset.max,
+    }));
+    record('Product: variant changes price and address', /1,999/.test(picked.price) && /1,999/.test(picked.bar) && /utm_source=ig/.test(picked.search) && /variant=\d+/.test(picked.search) && /6 roses/.test(picked.said), `${picked.price}; ${picked.search}; said "${picked.said}"`);
+
+    // Quantity stops at 1 and at the stock limit.
+    const minus = page.locator('.pdp .qty__minus');
+    const plus = page.locator('.pdp .qty__plus');
+    // The buttons at a limit are aria-disabled, which Playwright won't click; a shopper still can, so force it.
+    await minus.click({ force: true });
+    const low = await page.locator('.pdp .qty__input').inputValue();
+    for (let i = 0; i < +picked.max + 3; i++) await plus.click({ force: true });
+    const high = await page.locator('.pdp .qty__input').inputValue();
+    record('Product: quantity stays between 1 and stock', low === '1' && high === picked.max, `low ${low}, high ${high} (stock ${picked.max})`);
+    await page.locator('.pdp .qty__input').fill('1');
+    await page.locator('.pdp .qty__input').dispatchEvent('change');
+
+    // Add to cart: the pop-up, the count.
+    await page.locator('.pdp__add').click();
+    await page.waitForSelector('.cart-toast:not([hidden])', { timeout: 8000 }).catch(() => {});
+    const added = await page.evaluate(() => ({ toast: !!document.querySelector('.cart-toast:not([hidden])'), count: document.querySelector('[data-cart-count]')?.textContent?.trim() }));
+    record('Product: Add to cart shows the pop-up', added.toast, `pop-up: ${added.toast}, cart count: ${added.count}`);
+
+    // The viewer: opens on a tap, zooms, closes with Esc and gives focus back.
+    await page.keyboard.press('Escape');
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.locator('[data-zoom]').click();
+    await page.waitForSelector('dialog.zoom[open]', { timeout: 5000 }).catch(() => {});
+    const viewer = await page.evaluate(async () => {
+      const d = document.querySelector('dialog.zoom');
+      if (!d?.open) return { open: false };
+      const t = d.querySelector('.zoom__track');
+      const s = t.children[Math.round(t.scrollLeft / t.clientWidth)];
+      const before = s.firstElementChild.getBoundingClientRect().width;
+      s.dispatchEvent(new MouseEvent('dblclick', { clientX: 180, clientY: 300, bubbles: true }));
+      await new Promise((r) => setTimeout(r, 200));
+      return { open: true, grew: s.firstElementChild.getBoundingClientRect().width / before };
+    });
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(400);
+    const after = await page.evaluate(() => ({ open: !!document.querySelector('dialog.zoom')?.open, focus: document.activeElement?.matches('[data-zoom]') }));
+    record('Product: photo viewer opens, zooms, closes', viewer.open && viewer.grew > 2 && !after.open && after.focus, `opened: ${viewer.open}, zoom ${viewer.grew?.toFixed(1)}x, closed: ${!after.open}, focus back: ${after.focus}`);
+
+    record('Product: script sizes', sizes.product < 9 && (sizes['product-zoom'] ?? 0) < 6 && (sizes['product-rows'] ?? 0) < 4 && sizes.cart < BUDGET.cartJsKB && sizes.theme < BUDGET.ownJsKB, Object.entries(sizes).map(([k, v]) => `${k}.js ${v.toFixed(1)} KB`).join(', ') + ' (budgets: product 9, zoom 6, rows 4)');
+    record('Product: no script errors', errors.length === 0, errors.join(' | ') || 'none');
+
+    // Rows under the details load when reached; tap targets; axe.
+    await scrollWholePage(page);
+    const rows = await page.evaluate(() => ({
+      titles: [...document.querySelectorAll('.product-row__title')].filter((h) => h.getClientRects().length).map((h) => h.textContent.trim()),
+      self: [...document.querySelectorAll('.recs .card__link')].some((a) => a.getAttribute('href').split('?')[0] === location.pathname),
+      small: [...document.querySelectorAll('.pdp button, .pdp a, .pdp summary, .pdp .pill__label, .buybar button')].filter((el) => el.getClientRects().length && !el.closest('.rte')).map((el) => { const r = el.getBoundingClientRect(); return { h: Math.round(r.height), w: Math.round(r.width), c: el.className || el.tagName }; }).filter((r) => r.h < 44 && !/pdp__crumb/.test(r.c)).map((r) => `${r.c} ${r.w}x${r.h}`),
+    }));
+    record('Product: "You may also like" loads, without this piece', rows.titles.some((t) => /also like/i.test(t)) && !rows.self, `rows: ${rows.titles.join(', ') || 'none'}; shows itself: ${rows.self}`);
+    record('Product: tap targets at least 44px', rows.small.length === 0, rows.small.join(', ') || 'all fine');
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForTimeout(600);
+    await page.addScriptTag({ content: axe.source });
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+    record('Product: accessibility, phone (axe)', v.length === 0, v.join(', ') || '0 violations');
+    await browser.close();
+  }
+
+  // A short screen (in-app browser): a buy button is on screen from the start, and never over the footer.
+  {
+    const { browser, page } = await visit(ROSE, SHORT);
+    const bar = async () => page.evaluate(() => {
+      const on = document.querySelector('[data-buybar]')?.classList.contains('is-on');
+      const m = document.querySelector('.pdp__add').getBoundingClientRect();
+      return { on, main: m.top < innerHeight && m.bottom > 0, lift: getComputedStyle(document.documentElement).getPropertyValue('--buybar').trim() };
+    });
+    const start = await bar();
+    await page.evaluate(() => document.querySelector('.pdp__add').scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(700);
+    const middle = await bar();
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(900);
+    const end = await bar();
+    record('Product 360 x 640: a buy button from the start', (start.on || start.main) && start.lift !== '0px', `bar ${start.on}, main button on screen ${start.main}, pop-ups lifted ${start.lift}`);
+    record('Product 360 x 640: bar hides by the button and footer', !middle.on && middle.main && !end.on, `beside the main button: bar ${middle.on}; at the footer: bar ${end.on}`);
+    await browser.close();
+  }
+
+  // Sold out, sale, one-photo, the free gift.
+  {
+    const { browser, page } = await visit('products/daisy-crochet-headband', PHONE);
+    const r = await page.evaluate(() => ({ off: document.querySelector('.pdp__add').disabled, label: document.querySelector('.pdp__add [data-add-label]').textContent.trim(), ask: document.querySelector('[data-ask-text]').textContent.trim(), lifted: !!document.querySelector('.pdp__info > .recs') }));
+    record('Product, sold out: says so, offers to make one', r.off && /sold out/i.test(r.label) && /make one/i.test(r.ask) && r.lifted, `button off: ${r.off} "${r.label}"; "${r.ask}"; similar pieces under the buy box: ${r.lifted}`);
+    await page.goto(at('products/pink-tulip-daisy-bouquet'), { waitUntil: 'load' });
+    const sale = await page.evaluate(() => document.querySelector('[data-price]').textContent.replace(/\s+/g, ' ').trim());
+    record('Product, on sale: both prices, named', /Sale price ?₹999 ?Regular price ?₹1,199/.test(sale), sale);
+    await page.goto(at('products/sunflower-daisy-keychain'), { waitUntil: 'load' });
+    const one = await page.evaluate(() => ({ photos: document.querySelectorAll('.gallery__slide').length, meta: !!document.querySelector('.gallery__meta') }));
+    record('Product, one photo: no dots or count', one.photos === 1 && !one.meta, `${one.photos} photo, dots/count: ${one.meta}`);
+    await page.goto(at('products/sunflower-keychain-free-gift'), { waitUntil: 'load' });
+    const gift = await page.evaluate(() => ({ form: !!document.querySelector('[data-product-form]'), note: !!document.querySelector('.pdp__gift') }));
+    record('Product, the free gift: no buy box', !gift.form && gift.note, `form: ${gift.form}, note: ${gift.note}`);
+    await browser.close();
+  }
+
+  // Without JavaScript the form still posts the chosen variant.
+  {
+    const { browser, page } = await visit(ROSE, PHONE, { js: false });
+    const r = await page.evaluate(() => {
+      const f = document.querySelector('[data-product-form]');
+      const data = new FormData(f);
+      return { id: data.get('id'), action: f.getAttribute('action'), photos: document.querySelectorAll('.gallery__img').length, bar: document.querySelector('[data-buybar]')?.hidden };
+    });
+    record('Product, no JavaScript: form posts a variant', /^\d+$/.test(r.id || '') && /\/cart\/add/.test(r.action) && r.bar === true, `id ${r.id} to ${r.action}; ${r.photos} photos; buy bar hidden: ${r.bar}`);
+    await browser.close();
+  }
+
+  // Desktop: two columns, thumbnails, keyboard order, axe.
+  {
+    const { browser, page, errors } = await visit(ROSE, DESK);
+    const d = await page.evaluate(() => {
+      const g = document.querySelector('.pdp__gallery').getBoundingClientRect();
+      const i = document.querySelector('.pdp__info').getBoundingClientRect();
+      return { beside: i.left >= g.right - 1 && Math.abs(i.top - g.top) < 40, thumbs: document.querySelectorAll('.gallery__thumb').length, bar: getComputedStyle(document.querySelector('[data-buybar]')).display, sideways: document.documentElement.scrollWidth > innerWidth + 1 };
+    });
+    await page.locator('.gallery__thumb').nth(1).click();
+    await page.waitForTimeout(500);
+    const count = await page.evaluate(() => document.querySelector('[data-gallery-count]').textContent);
+    record('Product, desktop: two columns, thumbnails work', d.beside && d.thumbs >= 2 && d.bar === 'none' && !d.sideways && count === '2', `beside: ${d.beside}, ${d.thumbs} thumbnails, second shows photo ${count}, buy bar: ${d.bar}`);
+    await page.evaluate(() => { scrollTo(0, 0); document.querySelector('#MainContent').focus(); });
+    const order = [];
+    for (let i = 0; i < 26; i++) {
+      await page.keyboard.press('Tab');
+      order.push(await page.evaluate(() => { const el = document.activeElement; return el.closest('.gallery__thumbs') ? 'thumb' : el.matches('[data-gallery-track]') ? 'photos' : el.matches('[data-save]') ? 'save' : el.matches('[data-share]') ? 'share' : el.matches('[data-zoom]') ? 'zoom' : el.matches('.pill__input') ? 'option' : el.closest('.qty') ? 'qty' : el.matches('.pdp__add') ? 'add' : el.closest('.pdp__now-btn') ? 'buy-now' : el.closest('.offer-terms') ? 'terms' : el.matches('[data-ask]') ? 'ask' : el.matches('summary') ? 'detail' : el.matches('.pdp__crumb') ? 'crumb' : 'other'; }));
+    }
+    const seen = [...new Set(order)];
+    const rank = ['photos', 'option', 'qty', 'add', 'buy-now', 'ask', 'detail'].map((k) => seen.indexOf(k));
+    record('Product, keyboard: photos, options, buy, details in order', rank.every((n, i) => n > -1 && (i === 0 || n > rank[i - 1])), seen.join(' → '));
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.addScriptTag({ content: axe.source });
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+    record('Product: accessibility, desktop (axe)', v.length === 0 && errors.length === 0, (v.join(', ') || '0 violations') + (errors.length ? `; errors: ${errors.join(' | ')}` : ''));
+    await browser.close();
+  }
+
+  // 200% text at 320px: nothing runs off the side, the buttons keep their words.
+  {
+    const { browser, page } = await visit(ROSE, { ...PHONE, viewport: { width: 320, height: 640 } });
+    await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
+    await page.waitForTimeout(400);
+    const big = await page.evaluate(() => ({ sideways: document.documentElement.scrollWidth > innerWidth + 1, clipped: [...document.querySelectorAll('.pdp__add, .pill__label, .detail summary')].filter((el) => el.scrollWidth > el.clientWidth + 1).length }));
+    record('Product: 200% text at 320px', !big.sideways && big.clipped === 0, `sideways scroll: ${big.sideways}, clipped controls: ${big.clipped}`);
+    await browser.close();
+  }
 }
 
 const failed = results.filter((r) => !r.ok);

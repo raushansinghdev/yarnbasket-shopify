@@ -356,15 +356,16 @@
 
   /* The buy box: quantity and Add to cart on one row, Buy it now under them, all 54px tall with the same edges. */
   .pdp__form { display: grid; gap: var(--space-2); }
-  .pdp__buy { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-2); }
+  /* With large text the button has no room beside the quantity, so it takes the next row instead of clipping its words. */
+  .pdp__buy { display: flex; flex-wrap: wrap; gap: var(--space-2); }
   .pdp__buy .qty { height: 54px; }
   .pdp__buy .qty__btn { height: 51px; }
-  .pdp__add { width: 100%; padding-inline: var(--space-4); }
+  .pdp__add { flex: 1 1 8rem; padding-inline: var(--space-4); }
   .pdp__add .icon { width: 22px; height: 22px; }
   @media (hover: hover) { .pdp__add:hover .icon { transform: translateX(2px); } }
   .pdp__add:disabled, .buybar__add:disabled { --btn-bg: var(--taupe-ink); cursor: not-allowed; transform: none; box-shadow: none; }
   .pdp__add[aria-busy="true"], .buybar__add[aria-busy="true"] { cursor: progress; }
-  .pdp__now-btn { grid-column: 1 / -1; }
+  .pdp__now-btn { flex: 1 0 100%; }
   .pdp__now-btn:empty { display: none; }
   /* Shopify's "Buy it now" (unbranded): our quiet outlined pill instead of its default blue block. */
   .pdp__now-btn .shopify-payment-button__button--unbranded {
