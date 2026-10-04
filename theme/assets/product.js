@@ -3,7 +3,7 @@
   - Photos: the swipe is the browser's own; this keeps the dots, the count and the thumbnails in step with it.
   - Options: a new choice changes the price, badge, buttons, photo and the page's address, with no reload.
   - Quantity: the stepper stops at 1 and at the stock limit (cart.js only steps cart lines).
-  - The sticky buy bar (phones): on screen whenever the main Add to cart isn't, and never over the footer.
+  - The sticky buy bar (phones): on once the main Add to cart is scrolled past, never over the footer.
   - Share: the phone's share sheet, or the link copied.
   Adding to the cart itself is cart.js. Without this file the page still shows every photo and the form still posts.
 */
@@ -64,7 +64,7 @@ if (track && slides.length > 1) {
   if (first && live().indexOf(first) > 0) goTo(first, true);
 }
 
-// A closer look: the viewer's code arrives on the first tap of a photo (or of the round button, for keyboards).
+// A closer look: the viewer's code arrives on the first tap of a photo or of the round button.
 const gallery = $('[data-gallery]');
 const expand = $('[data-zoom]');
 if (gallery && expand) {
@@ -150,7 +150,7 @@ const update = (variant) => {
     setQty(qtyInput.value);
   }
 
-  // The link in the address bar is this exact choice; anything an ad added to it stays.
+  // The address is this exact choice; what an ad added to it stays.
   const url = new URL(location.href);
   url.searchParams.set('variant', variant.id);
   history.replaceState(history.state, '', url);
@@ -168,7 +168,14 @@ const update = (variant) => {
   }
 };
 
-inputs.forEach((input) => input.addEventListener('change', () => update(match(chosen()))));
+// Phones: an option's pills swipe sideways in one row; the chosen pill is brought to its middle.
+const reveal = (smooth) => inputs.forEach(({ checked, parentElement: pill }) => {
+  const row = pill.parentElement;
+  if (checked) row.scrollTo({ left: pill.offsetLeft - row.offsetLeft - (row.clientWidth - pill.offsetWidth) / 2, behavior: smooth && !calm ? 'smooth' : 'instant' });
+});
+reveal();
+
+inputs.forEach((input) => input.addEventListener('change', () => (update(match(chosen())), reveal(true))));
 
 if (qty) {
   qty.addEventListener('click', (event) => {
@@ -185,16 +192,17 @@ const main = $('.pdp__add');
 if (bar && main && 'IntersectionObserver' in window) {
   const footer = $('.shopify-section-group-footer-group') || $('footer');
   const phone = matchMedia('(max-width: 989px)');
+  // "Seen" includes still below the screen: the bar never comes before the button.
   let mainSeen = true;
   let footerSeen = false;
   const set = () => {
     const on = phone.matches && !mainSeen && !footerSeen;
     bar.classList.toggle('is-on', on);
-    // The added-to-cart and Saved pop-ups sit above the bar while it shows.
+    // The pop-ups sit above the bar while it shows.
     root.style.setProperty('--buybar', on ? `${bar.offsetHeight}px` : '0px');
   };
   bar.hidden = false;
-  new IntersectionObserver(([entry]) => ((mainSeen = entry.isIntersecting), set())).observe(main);
+  new IntersectionObserver(([entry]) => ((mainSeen = entry.isIntersecting), set()), { rootMargin: '0px 0px 99999px 0px' }).observe(main);
   if (footer) new IntersectionObserver(([entry]) => ((footerSeen = entry.isIntersecting), set())).observe(footer);
   phone.addEventListener('change', set);
 }

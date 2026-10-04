@@ -1360,7 +1360,7 @@ if (want('20')) {
         zoomLoaded: performance.getEntriesByType('resource').some((r) => /product-zoom/.test(r.name)),
         second: document.querySelectorAll('.gallery__img')[1]?.complete,
         buy: (() => {
-          const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills');
+          const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills .pill');
           return { rowTop: Math.abs(q.top - a.top), rowH: Math.abs(q.height - a.height), left: Math.abs(q.left - n.left), right: Math.abs(a.right - n.right), pills: Math.abs(pill.left - q.left) };
         })(),
         ld: [...document.querySelectorAll('script[type="application/ld+json"]')].map((el) => { try { return JSON.parse(el.textContent); } catch { return null; } }),
@@ -1466,7 +1466,8 @@ if (want('20')) {
     await browser.close();
   }
 
-  // A short screen (in-app browser): a buy button is on screen from the start, and never over the footer.
+  // A short screen (in-app browser): the bar comes only once the main button has been scrolled past (the options
+  // come first), and never over the footer.
   {
     const { browser, page } = await visit(ROSE, SHORT);
     const bar = async () => page.evaluate(() => {
@@ -1481,7 +1482,15 @@ if (want('20')) {
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(900);
     const end = await bar();
-    record('Product 360 x 640: a buy button from the start', (start.on || start.main) && start.lift !== '0px', `bar ${start.on}, main button on screen ${start.main}, pop-ups lifted ${start.lift}`);
+    // Straight past the button in one jump (the rating link does this), then back up to the top.
+    await page.evaluate(() => scrollTo(0, document.querySelector('.pdp__details').getBoundingClientRect().bottom + scrollY));
+    await page.waitForTimeout(900);
+    const past = await bar();
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForTimeout(900);
+    const back = await bar();
+    record('Product 360 x 640: no bar before the buy box', !start.on && start.lift === '0px' && !back.on, `on arrival: bar ${start.on}, pop-ups lifted ${start.lift}; back at the top: bar ${back.on}`);
+    record('Product 360 x 640: bar after the buy box', past.on && !past.main && past.lift !== '0px', `past the button: bar ${past.on}, pop-ups lifted ${past.lift}`);
     record('Product 360 x 640: bar hides by the button and footer', !middle.on && middle.main && !end.on, `beside the main button: bar ${middle.on}; at the footer: bar ${end.on}`);
     await browser.close();
   }
@@ -1527,7 +1536,7 @@ if (want('20')) {
       // No stock limit here: a number field without a maximum is wide by default and once pushed the button to its own row.
       const b = await page.evaluate(() => {
         const box = (sel) => document.querySelector(sel).getBoundingClientRect();
-        const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills');
+        const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills .pill');
         return { rowTop: Math.abs(q.top - a.top), rowH: Math.abs(q.height - a.height), left: Math.abs(q.left - n.left), right: Math.abs(a.right - n.right), pills: Math.abs(pill.left - q.left), qty: Math.round(q.width) };
       });
       record('Product, no stock limit: buy box lines up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1 && b.qty < 160, `row top ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left ${b.left.toFixed(1)}, right ${b.right.toFixed(1)} (px off); quantity ${b.qty}px wide`);
@@ -1537,6 +1546,21 @@ if (want('20')) {
       await pick('Yellow');
       await page.waitForTimeout(500);
       const yellow = await state();
+      // Phones: each option is one row that swipes sideways; nothing wraps, the page itself doesn't scroll sideways.
+      const rows = await page.evaluate(async () => {
+        const groups = [...document.querySelectorAll('.options__pills')];
+        const colour = groups[0];
+        const last = colour.lastElementChild;
+        colour.scrollLeft = colour.scrollWidth;
+        await new Promise((done) => setTimeout(done, 300));
+        const r = last.getBoundingClientRect();
+        return {
+          heights: groups.map((g) => new Set([...g.children].map((pill) => Math.round(pill.getBoundingClientRect().top))).size),
+          sideways: document.documentElement.scrollWidth > innerWidth + 1,
+          lastIn: r.left >= 0 && r.right <= innerWidth,
+        };
+      });
+      record('Product 360, options: one swipe row each', rows.heights.every((n) => n === 1) && !rows.sideways && rows.lastIn, `pill rows per option: ${rows.heights.join(', ')}; page scrolls sideways: ${rows.sideways}; last colour reachable: ${rows.lastIn}`);
       record('Product, colours: a photo swatch per colour, none on sizes', start.swatches[0] === 3 && start.swatches[1] === 0, `colour pills with a photo: ${start.swatches[0]} of 3, size pills: ${start.swatches[1]}`);
       record('Product, colours: the label names the choice', start.legends[0] === 'Colour: Red' && yellow.legends[0] === 'Colour: Yellow' && /Size: 3 roses/.test(yellow.legends[1]), `${start.legends.join(' | ')} → ${yellow.legends.join(' | ')}`);
       record('Product, colours: price, link and bar follow', /1,299/.test(yellow.price) && /variant=\d+/.test(yellow.search) && /Yellow · 3 roses/.test(yellow.bar) && yellow.id !== start.id, `${yellow.price}, ${yellow.search}, bar "${yellow.bar}"`);
@@ -1563,6 +1587,17 @@ if (want('20')) {
       await page.waitForTimeout(900);
       const landed = await page.evaluate(() => { const r = document.querySelector('#reviews'); return r ? { top: Math.round(r.getBoundingClientRect().top), hash: location.hash } : null; });
       record('Product: the rating links to the reviews', has === 1 && !!landed && landed.hash === '#reviews' && landed.top >= 0 && landed.top < 200, landed ? `reviews ${landed.top}px from the top, ${landed.hash}` : `rating shown: ${has}, no #reviews on the page`);
+      const pinkId = await page.evaluate(() => JSON.parse(document.querySelector('[data-variants]').textContent).find((v) => v.options[0] === 'Pink' && v.available)?.id);
+      await page.setViewportSize({ width: 320, height: 640 });
+      await page.goto(at(`products/rose-crochet-bouquet-colour-test?variant=${pinkId}`), { waitUntil: 'load' });
+      await page.waitForTimeout(800);
+      const linked = await page.evaluate(() => {
+        const input = document.querySelector('.pill__input:checked');
+        const r = input.parentElement.getBoundingClientRect();
+        const row = input.closest('.options__pills');
+        return { value: input.dataset.value, inView: r.left >= 0 && r.right <= innerWidth, scrolls: row.scrollWidth > row.clientWidth + 1, pageTop: scrollY };
+      });
+      record('Product 320, options: a linked colour opens in view', linked.value === 'Pink' && linked.inView && linked.pageTop === 0, `chosen: ${linked.value}; fully in view: ${linked.inView}; row needs swiping: ${linked.scrolls}; page scrolled ${linked.pageTop}px`);
       record('Product, colours: no script errors', errors.length === 0, errors.join(' | ') || 'none');
     }
     await page.goto(at(ROSE), { waitUntil: 'load' });
@@ -1572,13 +1607,17 @@ if (want('20')) {
       const circle = (sel) => { const el = document.querySelector(sel); const i = parseFloat(getComputedStyle(el, '::before').inset) || 0; return Math.round(el.getBoundingClientRect().width - i * 2); };
       return {
         rating: !!document.querySelector('.pdp__rating'),
-        terms: [...document.querySelectorAll('.offer-terms li')].map(lines),
+        terms: [...document.querySelectorAll('.offer-terms li > :last-child')].map(lines),
+        termRows: new Set([...document.querySelectorAll('.offer-terms li')].map((li) => Math.round(li.getBoundingClientRect().top))).size,
+        termClip: [...document.querySelectorAll('.offer-terms li')].filter((li) => li.scrollWidth > li.clientWidth + 1).length,
+        card: Math.round(document.querySelector('.assure').getBoundingClientRect().height),
+        ask: Math.round(document.querySelector('[data-ask]').getBoundingClientRect().height),
         faq: [...document.querySelectorAll('.faq--compact summary')].map((s) => Math.round(s.getBoundingClientRect().height)),
         circles: [circle('.gallery [data-save]'), circle('[data-share]'), circle('[data-zoom]')],
       };
     });
     record('Product: no rating line without real ratings', !plain.rating, `rating shown: ${plain.rating}`);
-    record('Product 360: each delivery term on one line', plain.terms.length >= 2 && plain.terms.every((n) => n === 1), `lines per term: ${plain.terms.join(', ')}`);
+    record('Product 360: delivery terms and ask line are one compact card', plain.terms.length >= 2 && plain.terms.every((n) => n <= 2) && plain.termRows <= 2 && plain.termClip === 0 && plain.ask >= 44 && plain.card <= 150, `lines per term: ${plain.terms.join(', ')}; ${plain.termRows} row(s); clipped: ${plain.termClip}; ask row ${plain.ask}px; card ${plain.card}px tall`);
     record('Product 360: compact FAQ rows', plain.faq.length >= 2 && plain.faq.every((h) => h >= 48 && h <= 60), `row heights: ${plain.faq.join(', ')}px`);
     record('Product 360: photo buttons are 40px circles', plain.circles.every((n) => n >= 40), `save ${plain.circles[0]}px, share ${plain.circles[1]}px, look closer ${plain.circles[2]}px`);
     await browser.close();

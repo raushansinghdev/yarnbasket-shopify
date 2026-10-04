@@ -297,6 +297,24 @@ Taken: description, size and what's included, materials, care, delivery, replace
 recently viewed, share, wishlist (our heart). Left out on purpose: viewer counts and stock-pressure lines, discount
 percentage badges, a cluster of social share buttons.
 
+## Round 3 (2026-10-04, after Raushan's second look on a phone)
+
+- **Options swipe sideways on phones.** Each option (Colour, Size) is one row; it runs to the screen's edge so a
+  cut-off pill shows there are more. The chosen pill is brought into view, also on a `?variant=` link from an ad.
+  From 750px the pills wrap as before.
+- **The sticky buy bar comes only after the buy box.** It used to show on arrival too (button below the fold),
+  which put Add to cart on screen before the options and then hid it on scrolling down. Now: nothing on arrival,
+  the bar once the main button has been scrolled past, hidden at the footer.
+- **Delivery terms and the WhatsApp line are one card.** Three cells side by side (icon over a two-line label),
+  the ask line as a row under them. 136px at 360 wide, where the stacked lines took about 180px. With four terms
+  (COD on) the cells become a two-by-two grid.
+- **Good to know stays above Recently viewed**: it answers doubts about buying this piece; Recently viewed leads
+  away and is empty for someone arriving from an ad.
+- Found on the way: a row of pieces loading just after the rating link's jump pushed the reviews down the screen.
+  product-rows.js now holds the reviews in place.
+- Check 20: 49 checks, all passing. product.js is 10.0 KB against its 10 KB limit: the next addition needs a trim
+  or a deliberate raise.
+
 ## Photo guide (for Raushan)
 
 Five square photos per product, at least 1200px, in this order:

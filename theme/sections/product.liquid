@@ -4,7 +4,7 @@
   Buy it now), the delivery terms, and every longer text closed until asked for.
   cart.js adds without leaving the page and shows the added-to-cart pop-up; without JavaScript the form posts to
   /cart. product.js (loaded only here) keeps price, button, photo and URL in step with the chosen variant, steps the
-  quantity, and shows the sticky buy bar on phones whenever the main button is off screen.
+  quantity, and shows the sticky buy bar on phones once the main button has been scrolled past.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -173,25 +173,28 @@
         <p class="pdp__error" id="ProductAddError-{{ section.id }}" role="alert" data-add-error hidden></p>
       {% endform %}
 
-      {%- render 'offer-terms' -%}
+      <div class="assure">
+        {%- render 'offer-terms' -%}
 
-      <p class="pdp__ask">
-        <a
-          href="{% if current.available %}{{ ask_url }}{% else %}{{ make_url }}{% endif %}"
-          {% if whatsapp != blank %}
-            target="_blank" rel="noopener"
-          {% endif %}
-          data-ask
-          data-ask-url="{{ ask_url }}"
-          data-make-url="{{ make_url }}"
-          data-ask-label="{{ 'products.ask' | t }}"
-          data-make-label="{{ 'products.ask_make' | t }}"
-        >
-          {%- render 'icon', icon: 'whatsapp' -%}
-          <span data-ask-text>{%- if current.available %}{{ 'products.ask' | t }}{% else %}{{ 'products.ask_make' | t }}{% endif -%}</span>
-          {%- if whatsapp != blank -%}<span class="visually-hidden"> ({{ 'accessibility.new_window' | t }})</span>{%- endif -%}
-        </a>
-      </p>
+        <p class="pdp__ask">
+          <a
+            href="{% if current.available %}{{ ask_url }}{% else %}{{ make_url }}{% endif %}"
+            {% if whatsapp != blank %}
+              target="_blank" rel="noopener"
+            {% endif %}
+            data-ask
+            data-ask-url="{{ ask_url }}"
+            data-make-url="{{ make_url }}"
+            data-ask-label="{{ 'products.ask' | t }}"
+            data-make-label="{{ 'products.ask_make' | t }}"
+          >
+            {%- render 'icon', icon: 'whatsapp' -%}
+            <span data-ask-text>{%- if current.available %}{{ 'products.ask' | t }}{% else %}{{ 'products.ask_make' | t }}{% endif -%}</span>
+            {%- if whatsapp != blank -%}<span class="visually-hidden"> ({{ 'accessibility.new_window' | t }})</span>{%- endif -%}
+            {%- render 'icon', icon: 'chevron' -%}
+          </a>
+        </p>
+      </div>
     {%- endif -%}
 
     {%- comment -%} Every longer text is closed until asked for (PP8); closed text is still in the page for search engines. {%- endcomment -%}
@@ -251,8 +254,8 @@
 
 {%- unless is_gift -%}
   {%- comment -%}
-    The sticky buy bar (phones): a second button for the same form, not a second form. product.js shows it whenever
-    the main button is off screen, including on arrival on a short screen, and hides it at the footer.
+    The sticky buy bar (phones): a second button for the same form, not a second form. product.js shows it once
+    the main button has been scrolled past (never before it: the options come first), and hides it at the footer.
   {%- endcomment -%}
   <div class="buybar" data-buybar hidden>
     <div class="buybar__text">
@@ -398,20 +401,25 @@
     font: 400 1rem var(--font-sans);
   }
 
-  .pdp__ask { margin-top: calc(var(--space-2) * -1); }
+  /* The delivery terms and the WhatsApp line: one soft card. Hairlines are the card's own colour showing through 1px gaps. */
+  .assure { display: grid; gap: 1px; overflow: hidden; border-radius: var(--radius-md); background: var(--color-line-strong); }
+  .pdp__ask { background: var(--color-surface); }
   .pdp__ask a {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: var(--space-2);
     min-height: var(--tap);
+    padding: var(--space-1) var(--space-3);
     color: var(--color-heading);
-    font-size: var(--fs-small);
-    text-decoration: underline;
-    text-underline-offset: 4px;
-    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+    font-size: .8125rem;
+    font-weight: 500;
+    text-decoration: none;
   }
+  .pdp__ask a:focus-visible { outline-offset: -3px; border-radius: var(--radius-md); }
   .pdp__ask .icon { width: 20px; height: 20px; flex: none; }
-  @media (hover: hover) { .pdp__ask a:hover { text-decoration-color: currentColor; } }
+  .pdp__ask [data-ask-text] { flex: 1; min-width: 0; }
+  .pdp__ask .icon:last-child { width: 18px; height: 18px; rotate: -90deg; color: var(--color-muted); transition: translate var(--dur-state) ease; }
+  @media (hover: hover) { .pdp__ask a:hover .icon:last-child { translate: 3px 0; } }
   .pdp__gift { display: grid; gap: var(--space-4); justify-items: start; }
 
   /* Details: hairline rows, 56px closed, opening with the site's collapse. */

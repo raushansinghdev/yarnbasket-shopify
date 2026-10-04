@@ -31,8 +31,12 @@ document.querySelectorAll('[data-recs]').forEach((box) => {
       // Never this product itself (the Bestsellers stand-in can hold it), and no more than the row asks for.
       row.querySelectorAll('.card__link').forEach((link) => link.getAttribute('href').split('?')[0] === here && link.closest('li').remove());
       if (!row.querySelector('li')) return;
+      // Someone who just jumped to the reviews (the rating link) keeps them in place when a row arrives above.
+      const held = document.querySelector(':target');
+      const top = held?.getBoundingClientRect().top;
       if (lift) lift.before(row);
       else box.replaceWith(row);
+      if (held && top >= 0 && top < innerHeight / 2 && row.compareDocumentPosition(held) & 4) scrollBy({ top: held.getBoundingClientRect().top - top, behavior: 'instant' });
       hearts();
     })
     .catch(() => {});

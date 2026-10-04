@@ -1,7 +1,8 @@
 {%- doc -%}
   The product's options as pills (docs/product-page-plan.md): real radio buttons in a fieldset, so arrow keys and
   screen readers work with no script. A sold-out choice is struck through and can't be picked. The chosen value
-  is written beside the option's name ("Colour: Red").
+  is written beside the option's name ("Colour: Red"). On phones each option is one row that swipes sideways
+  (product.js keeps the chosen pill in view); from 750px the pills wrap.
   Colours (an option named Colour or Color) show a round swatch cut from that colour's own photo, which works for
   "Mixed" and two-tone yarn where a flat dot can't. Without a photo: the swatch colour set in the admin, then no
   swatch. One product with a Colour option, not one listing per colour (docs/decisions.md, 2026-10-04).
@@ -95,6 +96,22 @@
   .options__name { padding: 0; margin-bottom: var(--space-2); font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
   .options__chosen { font-weight: 400; color: var(--color-ink); }
   .options__pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  /* Phones: one row that swipes sideways and runs to the screen's edge, so a cut-off pill shows there are more. */
+  @media (max-width: 749px) {
+    .options__pills {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      margin: -4px calc(var(--gutter) * -1);
+      padding: 4px var(--gutter);
+      scroll-padding-inline: var(--gutter);
+      scroll-snap-type: x proximity;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+    }
+    .options__pills::-webkit-scrollbar { display: none; }
+    .pill { flex: none; scroll-snap-align: start; }
+    .pill__label { white-space: nowrap; }
+  }
   .pill { position: relative; display: inline-flex; }
   .pill__label {
     display: inline-flex;

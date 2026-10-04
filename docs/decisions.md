@@ -2,6 +2,13 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-04 (product page, round 3)
+
+- **Option pills swipe sideways on phones** (Raushan's suggestion), one row per option, bleeding to the screen edge so a cut-off pill signals more. Wrapping stays from 750px.
+- **Sticky buy bar only after the buy box**, reversing "a buy button on screen from arrival" from round 1. Raushan found it backwards on a phone; it also offered Add to cart before the options were seen.
+- **Delivery terms + WhatsApp line as one card** in place of the stacked lines from round 2.
+- **Good to know before Recently viewed**: unchanged.
+
 ## 2026-10-04 (product page round 2, docs/product-page-plan.md "Round 2")
 
 - **Colours are one product with a Colour option, never one listing per colour.** One page collects the reviews, sales and ad learning; each colour keeps its own photo, price, stock and `?variant=` link, so an ad for yellow lands on yellow; Meta's catalog reads the colours as one item group. A separate listing only for a genuinely different design that people search for by another name.
