@@ -4,32 +4,51 @@ Decided with Raushan on 2026-10-04. Built the same day (see "As built").
 
 ## The price rule
 
-**Price = 3 × (product cost + packaging)**, rounded to the nearest ten, minus one (270 → ₹269, 495 → ₹499).
+**Price = 3 × making cost**, rounded to the nearest ten, minus one.
 
-- Packaging, once per listing (a set counts once): **₹30** bouquets (sheet, ribbon, labour, corrugated box),
-  **₹20** flower pots, **₹15** everything else.
-- Costs include GST; GST is not a separate line (other business expenses cover it).
-- Colours of one piece share one cost.
-- The rule lives in `tools/catalog_pricing.py`. **The numbers are in `tools/catalog/costs.json`**: what one of each
-  part costs to make (one sunflower, one tulip, one flower keychain…), the packaging table and the multiplier. Each
-  variant in `tools/catalog/catalog.json` lists its `parts` (a trio of roses is `{"rose": 3}`), so a listing's cost is
-  the sum of its parts and a set never needs its own figure.
-- To change a cost: edit `costs.json`, then `python3 tools/catalog-build.py && python3 tools/catalog-upload.py prices`.
-  The build rewrites `tools/catalog/prices.csv` (every variant: parts, cost, packaging, price; opens in Excel) and the
-  upload changes only prices, the free gift's included (it copies the sunflower keychain).
-- A part with `null` has no cost yet; listings that use it keep their typed placeholder price.
+1. **Making cost** = the cost of each piece in the listing, added up. A piece's cost already includes its own
+   packaging, so nothing is added per listing. Colours don't change the cost.
+2. **Multiply by 3.**
+3. **Round** to the nearest ten and take one off, so prices end in 9.
 
-### Costs from Raushan, 2026-10-04 (per piece, packaging included)
+Examples:
 
-Sunflower, rose, daisy ₹50; tulip ₹45; bee ₹45; flower keychain ₹15; evil eye ₹30; peacock feather ₹25; octopus ₹30;
-lily charm ₹20; flower pot ₹70; headband ₹50; claw clip ₹30; curtain tie-back ₹50. Chick keychain ₹55 (from the Meesho
-cost file).
+| Listing | Pieces | Making cost | × 3 | Price |
+|---|---|---|---|---|
+| Single sunflower bouquet | 1 sunflower | 50 | 150 | ₹149 |
+| Rose trio | 3 roses | 150 | 450 | ₹449 |
+| Blue tulips + daisy | 2 tulips + 1 daisy | 140 | 420 | ₹419 |
+| Sunflower + evil eye keychain set | 15 + 30 | 45 | 135 | ₹139 |
+| Headband + clips + claw clip | 50 + 15 + 30 | 95 | 285 | ₹289 |
 
-**Each figure already includes the packaging for that one piece** (Raushan, 2026-10-04, after I first read it the
-other way): several pieces are the figure times the count, with nothing added per listing. So the packaging table in
-`costs.json` is 0 and the working rule is **price = 3 × the sum of the pieces**. The ₹30 / ₹20 / ₹15 above is his
-earlier answer and no longer added. These figures also replaced the Meesho file's, which had single bouquets ₹10 higher.
-**Not known yet: a pair of hair clips** (four hair listings wait on it).
+Cost of one piece, packaging included (Raushan, 2026-10-04):
+
+| Piece | ₹ | Piece | ₹ |
+|---|---|---|---|
+| Sunflower, rose, daisy (bouquet stem) | 50 | Lily charm | 20 |
+| Tulip (bouquet stem) | 45 | Flower pot | 70 |
+| Bee (bouquet or keychain) | 45 | Headband | 50 |
+| Flower keychain (sunflower, daisy) | 15 | Hair clips, pair | 15 |
+| Evil eye keychain | 30 | Claw clip | 30 |
+| Peacock feather keychain | 25 | Curtain tie-back | 50 |
+| Octopus keychain | 30 | Chick keychain (from the Meesho cost file) | 55 |
+
+Where things are:
+
+- **`tools/catalog/costs.json`**: the piece costs and the multiplier. This is the file to edit.
+- `tools/catalog/catalog.json`: each variant lists its `parts` (a trio of roses is `{"rose": 3}`).
+- `tools/catalog/prices.csv`: every variant with its parts, cost and price; opens in Excel. Regenerated, don't edit.
+- `tools/catalog_pricing.py`: the rule itself.
+- After changing a cost: `python3 tools/catalog-build.py && python3 tools/catalog-upload.py prices`. Only prices
+  change in the store, the free gift's included (it copies the sunflower keychain).
+
+Notes:
+
+- GST is not a separate line (other business expenses cover it).
+- History: on 2026-10-04 Raushan first gave packaging as a separate amount per listing (₹30 bouquets, ₹20 pots, ₹15
+  the rest), then gave per-piece costs with packaging inside them. `costs.json` still has a `packaging` table, set to
+  0; an amount there would be added once per listing.
+- A part with `null` in `costs.json` has no cost yet; listings that use it keep their typed placeholder price.
 
 Where a rupee of the price goes at 3×:
 

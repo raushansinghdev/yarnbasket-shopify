@@ -117,7 +117,6 @@ Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with 
 
 ## Catalogue (docs/catalog-plan.md)
 
-- [ ] The cost of a pair of hair clips into `tools/catalog/costs.json`, then `python3 tools/catalog-build.py && python3 tools/catalog-upload.py prices`
 - [ ] Redo the reward figures (gift ₹799, ₹50 off ₹999, ₹100 off ₹1,299) with the real courier rate and ad cost per order
 - [ ] Add Size text for keychains, pots, charms, hair pieces and the larger bouquets
 - [ ] Clean photos (no stickers, no text, real piece) for the held-back products, then list them

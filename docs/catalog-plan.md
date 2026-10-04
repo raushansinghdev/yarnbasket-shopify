@@ -64,7 +64,6 @@ Size text is set only where a dimension image gave it (single-stem bouquets, 10 
 
 ## Still open
 
-- The cost of a pair of hair clips; the hair clips and the hair sets with clips are on placeholder prices until then (docs/pricing-plan.md).
 - Sizes for keychains, pots, charms, hair pieces and the larger bouquets (Raushan, later).
 - Real stock counts in place of 100.
 - Clean photos for the held-back products.
