@@ -1,0 +1,2119 @@
+{
+ "source": "~/Desktop/SS Creation/crochet",
+ "vendor": "Yarn Basket",
+ "note": "Prices follow the rule in 'pricing' wherever a variant has a cost (Raushan, 2026-10-04). cost: null = cost not known yet, the typed price is a placeholder.",
+ "pricing": {
+  "multiplier": 3,
+  "packaging": {
+   "Bouquets": 30,
+   "Flower pots": 20,
+   "default": 15
+  }
+ },
+ "products": [
+  {
+   "handle": "sunflower-crochet-bouquet",
+   "title": "Sunflower Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "sunflower",
+    "occasion-birthday",
+    "occasion-thank-you",
+    "occasion-for-her"
+   ],
+   "option": "Size",
+   "variants": [
+    {
+     "value": "1 sunflower",
+     "price": 249,
+     "sku": "BQ_SF_1",
+     "cost": 60
+    },
+    {
+     "value": "2 sunflowers",
+     "price": 449,
+     "sku": "BQ_SF_2",
+     "cost": 100
+    },
+    {
+     "value": "3 sunflowers",
+     "price": 599,
+     "sku": "BQ_SF_3",
+     "cost": null
+    }
+   ],
+   "description": "<p>A sunflower that stays in bloom. Each one is crocheted by hand, petal by petal, then wrapped in black and gold and tied with a ribbon, ready to give.</p><p>Choose one stem, a pair or a full trio. No water, no wilting.</p>",
+   "size": "About 10 in (25 cm) tall and 4 in (10 cm) wide, wrap included.\nThe two and three sunflower bouquets are about 6 in (15 cm) wide.",
+   "seo_title": "Sunflower Crochet Bouquet, Handmade | Yarn Basket",
+   "seo_description": "Handmade crochet sunflower bouquet in black and gold wrap. One, two or three sunflowers that never wilt. Made by hand in India.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_SF_1 1.png",
+     "alt": "Crochet sunflower bouquet with one sunflower in black and gold wrap",
+     "variant": "1 sunflower"
+    },
+    {
+     "src": "Bouquet/BQ_SF_1 3.png",
+     "alt": "Crochet sunflower bouquet with one sunflower in black and gold wrap, view 2",
+     "variant": "1 sunflower"
+    },
+    {
+     "src": "Bouquet/BQ_SF_1 4.png",
+     "alt": "Crochet sunflower bouquet with one sunflower in black and gold wrap, view 3",
+     "variant": "1 sunflower"
+    },
+    {
+     "src": "sunflower/1 sunflower 3.png",
+     "alt": "Crochet sunflower bouquet with one sunflower in black and gold wrap, view 4",
+     "variant": "1 sunflower"
+    },
+    {
+     "src": "Bouquet/BQ_SF_2 1.png",
+     "alt": "Crochet sunflower bouquet with two sunflowers",
+     "variant": "2 sunflowers"
+    },
+    {
+     "src": "Bouquet/BQ_SF_2 2.png",
+     "alt": "Crochet sunflower bouquet with two sunflowers, view 2",
+     "variant": "2 sunflowers"
+    },
+    {
+     "src": "Bouquet/BQ_SF_2 3.png",
+     "alt": "Crochet sunflower bouquet with two sunflowers, view 3",
+     "variant": "2 sunflowers"
+    },
+    {
+     "src": "sunflower/2 sunflower 1.png",
+     "alt": "Crochet sunflower bouquet with two sunflowers, view 4",
+     "variant": "2 sunflowers"
+    },
+    {
+     "src": "sunflower/2 sunflower 2.png",
+     "alt": "Crochet sunflower bouquet with two sunflowers, view 5",
+     "variant": "2 sunflowers"
+    },
+    {
+     "src": "Bouquet/BQ_SF_3 3.png",
+     "alt": "Crochet sunflower bouquet with three sunflowers",
+     "variant": "3 sunflowers"
+    },
+    {
+     "src": "Bouquet/BQ_SF_3 1.png",
+     "alt": "Crochet sunflower bouquet with three sunflowers, view 2",
+     "variant": "3 sunflowers"
+    },
+    {
+     "src": "Bouquet/BQ_SF_3 2.png",
+     "alt": "Crochet sunflower bouquet with three sunflowers, view 3",
+     "variant": "3 sunflowers"
+    },
+    {
+     "src": "Bouquet/BQ_SF_3 4.png",
+     "alt": "Crochet sunflower bouquet with three sunflowers, view 4",
+     "variant": "3 sunflowers"
+    },
+    {
+     "src": "sunflower/3 sunflower bouquet 3.png",
+     "alt": "Crochet sunflower bouquet with three sunflowers, view 5",
+     "variant": "3 sunflowers"
+    },
+    {
+     "src": "sunflower/3 sunflower bouquet 4.png",
+     "alt": "Crochet sunflower bouquet with three sunflowers, view 6",
+     "variant": "3 sunflowers"
+    }
+   ]
+  },
+  {
+   "handle": "single-rose-crochet-bouquet",
+   "title": "Single Rose Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "rose",
+    "occasion-anniversary",
+    "occasion-for-her",
+    "occasion-thank-you"
+   ],
+   "option": "Colour",
+   "variants": [
+    {
+     "value": "Red",
+     "price": 249,
+     "sku": "BQ_RS_Red_1",
+     "cost": 60
+    },
+    {
+     "value": "Pink",
+     "price": 249,
+     "sku": "BQ_RS_Pink_1",
+     "cost": 60
+    },
+    {
+     "value": "Yellow",
+     "price": 249,
+     "sku": "BQ_RS_Yellow_1",
+     "cost": 60
+    }
+   ],
+   "description": "<p>One rose, made to be kept. The petals are crocheted by hand and shaped into a full bloom, with a leaf on the stem, black and gold wrap and a ribbon.</p><p>A small gift that says a lot, in red, pink or yellow.</p>",
+   "size": "About 10 in (25 cm) tall and 4 in (10 cm) wide, wrap included.",
+   "seo_title": "Single Rose Crochet Bouquet, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet rose in black and gold wrap, in red, pink or yellow. A forever flower for anniversaries, birthdays and thank-yous.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_RS_1 1.png",
+     "alt": "Red crochet rose bouquet with a single rose",
+     "variant": "Red"
+    },
+    {
+     "src": "Bouquet/BQ_RS_1 2.png",
+     "alt": "Red crochet rose bouquet with a single rose, view 2",
+     "variant": "Red"
+    },
+    {
+     "src": "rose/1 rose bouquet 1.png",
+     "alt": "Red crochet rose bouquet with a single rose, view 3",
+     "variant": "Red"
+    },
+    {
+     "src": "rose/1 rose bouquet 2.png",
+     "alt": "Red crochet rose bouquet with a single rose, view 4",
+     "variant": "Red"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Pink_1 1.png",
+     "alt": "Pink crochet rose bouquet with a single rose",
+     "variant": "Pink"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Pink_1 2.png",
+     "alt": "Pink crochet rose bouquet with a single rose, view 2",
+     "variant": "Pink"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Pink_1 3.png",
+     "alt": "Pink crochet rose bouquet with a single rose, view 3",
+     "variant": "Pink"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Yellow_1 1.png",
+     "alt": "Yellow crochet rose bouquet with a single rose",
+     "variant": "Yellow"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Yellow_1 2.png",
+     "alt": "Yellow crochet rose bouquet with a single rose, view 2",
+     "variant": "Yellow"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Yellow_1 3.png",
+     "alt": "Yellow crochet rose bouquet with a single rose, view 3",
+     "variant": "Yellow"
+    }
+   ]
+  },
+  {
+   "handle": "rose-trio-crochet-bouquet",
+   "title": "Rose Trio Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "rose",
+    "occasion-anniversary",
+    "occasion-for-her",
+    "occasion-birthday"
+   ],
+   "option": "Colour",
+   "variants": [
+    {
+     "value": "Red",
+     "price": 599,
+     "sku": "BQ_RS_Red_3",
+     "cost": 150
+    },
+    {
+     "value": "Yellow",
+     "price": 599,
+     "sku": "BQ_RS_Yellow_3",
+     "cost": 150
+    },
+    {
+     "value": "Mixed",
+     "price": 599,
+     "sku": "BQ_RS_Mix_3",
+     "cost": 150
+    }
+   ],
+   "description": "<p>Three hand-crocheted roses in one bouquet, wrapped in black and gold and tied with a ribbon. Full, soft and made to last for years.</p><p>Choose classic red, sunny yellow, or one each of pink, yellow and red.</p>",
+   "size": null,
+   "seo_title": "Rose Trio Crochet Bouquet, 3 Handmade Roses | Yarn Basket",
+   "seo_description": "Three handmade crochet roses in black and gold wrap: red, yellow or mixed. A forever bouquet for anniversaries and birthdays.",
+   "photos": [
+    {
+     "src": "rose/3 rose bouquet 1.png",
+     "alt": "Crochet bouquet of three red roses",
+     "variant": "Red"
+    },
+    {
+     "src": "rose/3 rose bouquet 4.png",
+     "alt": "Crochet bouquet of three red roses, view 2",
+     "variant": "Red"
+    },
+    {
+     "src": "rose/3 rose bouquet 7.png",
+     "alt": "Crochet bouquet of three red roses, view 3",
+     "variant": "Red"
+    },
+    {
+     "src": "rose/3 rose bouquet 5.png",
+     "alt": "Crochet bouquet of three red roses, view 4",
+     "variant": "Red"
+    },
+    {
+     "src": "rose/3 rose bouquet 8.png",
+     "alt": "Crochet bouquet of three red roses, view 5",
+     "variant": "Red"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Yellow_3 1.png",
+     "alt": "Crochet bouquet of three yellow roses",
+     "variant": "Yellow"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Yellow_3 2.png",
+     "alt": "Crochet bouquet of three yellow roses, view 2",
+     "variant": "Yellow"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Yellow_3 3.png",
+     "alt": "Crochet bouquet of three yellow roses, view 3",
+     "variant": "Yellow"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Yellow_3 4.png",
+     "alt": "Crochet bouquet of three yellow roses, view 4",
+     "variant": "Yellow"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Pink_1_Yellow_1_Red_1 3.png",
+     "alt": "Crochet bouquet of a pink, a yellow and a red rose",
+     "variant": "Mixed"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Pink_1_Yellow_1_Red_1 1.png",
+     "alt": "Crochet bouquet of a pink, a yellow and a red rose, view 2",
+     "variant": "Mixed"
+    },
+    {
+     "src": "Bouquet/BQ_RS_Pink_1_Yellow_1_Red_1 2.png",
+     "alt": "Crochet bouquet of a pink, a yellow and a red rose, view 3",
+     "variant": "Mixed"
+    }
+   ]
+  },
+  {
+   "handle": "red-rose-duo-crochet-bouquet",
+   "title": "Red Rose Duo Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "rose",
+    "occasion-anniversary",
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 449,
+     "sku": "BQ_RS_Red_2",
+     "cost": 100
+    }
+   ],
+   "description": "<p>Two red roses, crocheted by hand and wrapped together in black and gold. A classic for an anniversary or a date, and it will still look the same next year.</p>",
+   "size": null,
+   "seo_title": "Red Rose Duo Crochet Bouquet, Handmade | Yarn Basket",
+   "seo_description": "Two handmade crochet red roses in black and gold wrap. A forever bouquet for anniversaries and Valentine's Day.",
+   "photos": [
+    {
+     "src": "rose/2 rose bouquet 1.png",
+     "alt": "Crochet bouquet of two red roses in black and gold wrap",
+     "variant": null
+    },
+    {
+     "src": "rose/2 rose bouquet 3.png",
+     "alt": "Crochet bouquet of two red roses in black and gold wrap, view 2",
+     "variant": null
+    },
+    {
+     "src": "rose/2 rose bouquet 2.png",
+     "alt": "Crochet bouquet of two red roses in black and gold wrap, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "single-tulip-crochet-bouquet",
+   "title": "Single Tulip Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "tulip",
+    "occasion-birthday",
+    "occasion-thank-you",
+    "occasion-for-her"
+   ],
+   "option": "Colour",
+   "variants": [
+    {
+     "value": "Pink",
+     "price": 249,
+     "sku": "BQ_TLP_Pink_1",
+     "cost": 55
+    },
+    {
+     "value": "Blue",
+     "price": 249,
+     "sku": "BQ_TLP_Blue_1",
+     "cost": 55
+    },
+    {
+     "value": "Lavender",
+     "price": 249,
+     "sku": "BQ_TLP_Lvndr_1",
+     "cost": 55
+    },
+    {
+     "value": "White",
+     "price": 249,
+     "sku": "BQ_TLP_White_1",
+     "cost": 55
+    }
+   ],
+   "description": "<p>A single tulip with a long curved leaf, crocheted by hand and wrapped in black and gold with a ribbon.</p><p>Four colours: pink, blue, lavender and white. Lovely alone, and easy to pair.</p>",
+   "size": "About 10 in (25 cm) tall and 4 in (10 cm) wide, wrap included.",
+   "seo_title": "Single Tulip Crochet Bouquet, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet tulip in black and gold wrap, in pink, blue, lavender or white. A flower gift that never wilts.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_TLP_Pink_1 1.png",
+     "alt": "Pink crochet tulip bouquet with a single tulip",
+     "variant": "Pink"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Pink_1 2.png",
+     "alt": "Pink crochet tulip bouquet with a single tulip, view 2",
+     "variant": "Pink"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Pink_1 3.png",
+     "alt": "Pink crochet tulip bouquet with a single tulip, view 3",
+     "variant": "Pink"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_1 1.png",
+     "alt": "Blue crochet tulip bouquet with a single tulip",
+     "variant": "Blue"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_1 3.png",
+     "alt": "Blue crochet tulip bouquet with a single tulip, view 2",
+     "variant": "Blue"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_1 2.png",
+     "alt": "Blue crochet tulip bouquet with a single tulip, view 3",
+     "variant": "Blue"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Lvndr_1 1.png",
+     "alt": "Lavender crochet tulip bouquet with a single tulip",
+     "variant": "Lavender"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Lvndr_1 2.png",
+     "alt": "Lavender crochet tulip bouquet with a single tulip, view 2",
+     "variant": "Lavender"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_White_1 1.png",
+     "alt": "White crochet tulip bouquet with a single tulip",
+     "variant": "White"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_White_1 2.png",
+     "alt": "White crochet tulip bouquet with a single tulip, view 2",
+     "variant": "White"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_White_1 3.png",
+     "alt": "White crochet tulip bouquet with a single tulip, view 3",
+     "variant": "White"
+    }
+   ]
+  },
+  {
+   "handle": "daisy-crochet-bouquet",
+   "title": "Daisy Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "daisy",
+    "occasion-birthday",
+    "occasion-thank-you"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 249,
+     "sku": "BQ_DSY_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>A cheerful white daisy with a yellow centre, crocheted by hand and wrapped in black and gold with a ribbon. Simple, bright and made to be kept.</p>",
+   "size": "About 10 in (25 cm) tall and 4 in (10 cm) wide, wrap included.",
+   "seo_title": "Daisy Crochet Bouquet, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet daisy in black and gold wrap. A small, cheerful flower gift that never wilts.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_DSY_1 1.png",
+     "alt": "Crochet daisy bouquet with a single white daisy",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_DSY_1 3.png",
+     "alt": "Crochet daisy bouquet with a single white daisy, view 2",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_DSY_1 2.png",
+     "alt": "Crochet daisy bouquet with a single white daisy, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "blue-tulip-crochet-bouquet",
+   "title": "Blue Tulip Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "tulip",
+    "set",
+    "occasion-birthday",
+    "occasion-for-her"
+   ],
+   "option": "With",
+   "variants": [
+    {
+     "value": "Daisy",
+     "price": 599,
+     "sku": "BQ_TLP_Blue_2_DSY_1",
+     "cost": null
+    },
+    {
+     "value": "White tulip",
+     "price": 599,
+     "sku": "BQ_TLP_Blue_2_White_1",
+     "cost": null
+    },
+    {
+     "value": "Yellow rose",
+     "price": 599,
+     "sku": "BQ_TLP_Blue_2_RS_Yellow_1",
+     "cost": null
+    },
+    {
+     "value": "Pink rose",
+     "price": 599,
+     "sku": "BQ_TLP_Blue_2_RS_Pink_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>Two blue tulips, one light and one deep, with a third flower of your choice: a daisy, a white tulip, a yellow rose or a pink rose. Every stem is crocheted by hand, then wrapped in black and gold.</p>",
+   "size": null,
+   "seo_title": "Blue Tulip Crochet Bouquet, Handmade | Yarn Basket",
+   "seo_description": "Two handmade crochet blue tulips with a daisy, white tulip or rose, in black and gold wrap. A bouquet that lasts for years.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_DSY_1 1.png",
+     "alt": "Crochet bouquet of two blue tulips and a daisy",
+     "variant": "Daisy"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_DSY_1 2.png",
+     "alt": "Crochet bouquet of two blue tulips and a daisy, view 2",
+     "variant": "Daisy"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_DSY_1 3.png",
+     "alt": "Crochet bouquet of two blue tulips and a daisy, view 3",
+     "variant": "Daisy"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_White_1 1.png",
+     "alt": "Crochet bouquet of two blue tulips and a white tulip",
+     "variant": "White tulip"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_White_1 2.png",
+     "alt": "Crochet bouquet of two blue tulips and a white tulip, view 2",
+     "variant": "White tulip"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_White_1 3.png",
+     "alt": "Crochet bouquet of two blue tulips and a white tulip, view 3",
+     "variant": "White tulip"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_RS_Yellow_1 1.png",
+     "alt": "Crochet bouquet of two blue tulips and a yellow rose",
+     "variant": "Yellow rose"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_RS_Yellow_1 2.png",
+     "alt": "Crochet bouquet of two blue tulips and a yellow rose, view 2",
+     "variant": "Yellow rose"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_RS_Yellow_1 3.png",
+     "alt": "Crochet bouquet of two blue tulips and a yellow rose, view 3",
+     "variant": "Yellow rose"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_RS_Pink_1 1.png",
+     "alt": "Crochet bouquet of two blue tulips and a pink rose",
+     "variant": "Pink rose"
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_2_RS_Pink_1 2.png",
+     "alt": "Crochet bouquet of two blue tulips and a pink rose, view 2",
+     "variant": "Pink rose"
+    }
+   ]
+  },
+  {
+   "handle": "pink-tulips-daisy-crochet-bouquet",
+   "title": "Pink Tulips & Daisy Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "tulip",
+    "daisy",
+    "set",
+    "occasion-birthday",
+    "occasion-thank-you",
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 599,
+     "sku": "BQ_TLP_Pink_2_DSY_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>Two pink tulips, one bright and one soft, with a white daisy between them. Crocheted by hand and wrapped in black and gold, it is one of our prettiest bouquets to give.</p>",
+   "size": null,
+   "seo_title": "Pink Tulips & Daisy Crochet Bouquet | Yarn Basket",
+   "seo_description": "Two handmade crochet pink tulips and a daisy in black and gold wrap. A forever bouquet for birthdays and thank-yous.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_TLP_Pink_2_DSY_1 2.png",
+     "alt": "Crochet bouquet of two pink tulips and a white daisy",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Pink_2_DSY_1 1.png",
+     "alt": "Crochet bouquet of two pink tulips and a white daisy, view 2",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Pink_2_DSY_1 3.png",
+     "alt": "Crochet bouquet of two pink tulips and a white daisy, view 3",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Pink_2_DSY_1 4.png",
+     "alt": "Crochet bouquet of two pink tulips and a white daisy, view 4",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "pastel-tulip-trio-crochet-bouquet",
+   "title": "Pastel Tulip Trio Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "tulip",
+    "set",
+    "occasion-for-her",
+    "occasion-birthday",
+    "occasion-anniversary"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 599,
+     "sku": "BQ_TLP_Pink_2_Lvndr_1",
+     "cost": 135
+    }
+   ],
+   "description": "<p>Three tulips in bright pink, soft pink and lavender, crocheted by hand with long green leaves and wrapped in black and gold. Soft colours, for someone you are fond of.</p>",
+   "size": null,
+   "seo_title": "Pastel Tulip Trio Crochet Bouquet, Handmade | Yarn Basket",
+   "seo_description": "Three handmade crochet tulips in pink and lavender, in black and gold wrap. A soft forever bouquet for her.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_TLP_Pink_2_Lvndr_1 2.png",
+     "alt": "Crochet bouquet of two pink tulips and a lavender tulip",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Pink_2_Lvndr_1 1.png",
+     "alt": "Crochet bouquet of two pink tulips and a lavender tulip, view 2",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Pink_2_Lvndr_1 3.png",
+     "alt": "Crochet bouquet of two pink tulips and a lavender tulip, view 3",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Pink_2_Lvndr_1 4.png",
+     "alt": "Crochet bouquet of two pink tulips and a lavender tulip, view 4",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-daisy-bee-crochet-bouquet",
+   "title": "Sunflower, Daisy & Bee Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "sunflower",
+    "daisy",
+    "set",
+    "occasion-birthday",
+    "occasion-thank-you"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 649,
+     "sku": "BQ_SF_1_DSY_1_BEE_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>A sunflower, a daisy and a smiling little bee on its own stem. All three are crocheted by hand and wrapped in black and gold. It makes people smile, which is the point.</p>",
+   "size": null,
+   "seo_title": "Sunflower, Daisy & Bee Crochet Bouquet | Yarn Basket",
+   "seo_description": "A handmade crochet sunflower, daisy and smiling bee in black and gold wrap. A happy birthday gift that never wilts.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_SF_1_DSY_1_BEE_1 3.png",
+     "alt": "Crochet bouquet of a sunflower, a daisy and a smiling bee",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_SF_1_DSY_1_BEE_1 1.png",
+     "alt": "Crochet bouquet of a sunflower, a daisy and a smiling bee, view 2",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_SF_1_DSY_1_BEE_1 2.png",
+     "alt": "Crochet bouquet of a sunflower, a daisy and a smiling bee, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-roses-crochet-bouquet",
+   "title": "Sunflower & Roses Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "sunflower",
+    "rose",
+    "set",
+    "occasion-anniversary",
+    "occasion-birthday",
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 599,
+     "sku": "BQ_SF_1_RS_Red_1_Yellow_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>One sunflower above a red rose and a yellow rose. Three hand-crocheted flowers in warm colours, wrapped in black and gold and tied with a ribbon.</p>",
+   "size": null,
+   "seo_title": "Sunflower & Roses Crochet Bouquet, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet sunflower with a red and a yellow rose in black and gold wrap. A forever bouquet for someone special.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_SF_1_RS_Red_1_Yellow_1 2.png",
+     "alt": "Crochet bouquet of a sunflower, a red rose and a yellow rose",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_SF_1_RS_Red_1_Yellow_1 1.png",
+     "alt": "Crochet bouquet of a sunflower, a red rose and a yellow rose, view 2",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_SF_1_RS_Red_1_Yellow_1 3.png",
+     "alt": "Crochet bouquet of a sunflower, a red rose and a yellow rose, view 3",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_SF_1_RS_Red_1_Yellow_1 4.png",
+     "alt": "Crochet bouquet of a sunflower, a red rose and a yellow rose, view 4",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-crochet-keychain",
+   "title": "Sunflower Crochet Keychain",
+   "type": "Keychains",
+   "tags": [
+    "sunflower",
+    "occasion-thank-you"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 149,
+     "sku": "KC_SF_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>A palm-sized sunflower, crocheted by hand with a deep brown centre and a ring of golden petals.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Sunflower Crochet Keychain, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet sunflower keychain on a metal ring. A small, sunny gift for keys and bags.",
+   "photos": [
+    {
+     "src": "keychains/KC_SF_1 2.png",
+     "alt": "Crochet sunflower keychain held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1 1.png",
+     "alt": "Crochet sunflower keychain held in a hand, view 2",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "daisy-crochet-keychain",
+   "title": "Daisy Crochet Keychain",
+   "type": "Keychains",
+   "tags": [
+    "daisy",
+    "occasion-thank-you"
+   ],
+   "option": "Colour",
+   "variants": [
+    {
+     "value": "White",
+     "price": 149,
+     "sku": "KC_DSY_1",
+     "cost": null
+    },
+    {
+     "value": "Blue",
+     "price": 149,
+     "sku": "KC_DSY_Blue_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>A soft daisy with a raised centre, crocheted by hand. Choose classic white and yellow, or blue.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Daisy Crochet Keychain, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet daisy keychain in white or blue, on a metal ring. A small gift for keys and bags.",
+   "photos": [
+    {
+     "src": "keychains/KC_DSY_1 2.png",
+     "alt": "White crochet daisy keychain held in a hand",
+     "variant": "White"
+    },
+    {
+     "src": "keychains/KC_DSY_1 1.png",
+     "alt": "White crochet daisy keychain held in a hand, view 2",
+     "variant": "White"
+    },
+    {
+     "src": "keychains/KC_DSY_Blue_1 1.png",
+     "alt": "Blue crochet daisy keychain held in a hand",
+     "variant": "Blue"
+    },
+    {
+     "src": "keychains/KC_DSY_Blue_1 2.png",
+     "alt": "Blue crochet daisy keychain held in a hand, view 2",
+     "variant": "Blue"
+    }
+   ]
+  },
+  {
+   "handle": "evil-eye-crochet-keychain",
+   "title": "Evil Eye Crochet Keychain",
+   "type": "Keychains",
+   "tags": [
+    "evil-eye",
+    "occasion-thank-you",
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 149,
+     "sku": "KC_Evil_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>The evil eye, in rings of deep blue, white and sky blue, crocheted by hand. A small charm to carry with you or to give for good luck.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Evil Eye Crochet Keychain, Handmade Nazar | Yarn Basket",
+   "seo_description": "A handmade crochet evil eye (nazar) keychain on a metal ring. A good luck charm for keys and bags.",
+   "photos": [
+    {
+     "src": "keychains/KC_Evil_1 3.png",
+     "alt": "Crochet evil eye keychain held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_Evil_1 4.png",
+     "alt": "Crochet evil eye keychain held in a hand, view 2",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_Evil_1 1.png",
+     "alt": "Crochet evil eye keychain held in a hand, view 3",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_Evil_1 2.png",
+     "alt": "Crochet evil eye keychain held in a hand, view 4",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "peacock-feather-crochet-keychain",
+   "title": "Peacock Feather Crochet Keychain",
+   "type": "Keychains",
+   "tags": [
+    "peacock",
+    "occasion-thank-you",
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 179,
+     "sku": "KC_Mor_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>A peacock feather eye in green, gold and blue, crocheted by hand with a scalloped edge. Our largest keychain, and the most colourful.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Peacock Feather Crochet Keychain, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet peacock feather (mor pankh) keychain in green, gold and blue, on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_Mor_1 1.png",
+     "alt": "Crochet peacock feather keychain held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_Mor_1 2.png",
+     "alt": "Crochet peacock feather keychain held in a hand, view 2",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_Mor_1 3.png",
+     "alt": "Crochet peacock feather keychain held in a hand, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "bee-crochet-keychain",
+   "title": "Bee Crochet Keychain",
+   "type": "Keychains",
+   "tags": [
+    "bee",
+    "occasion-birthday"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 179,
+     "sku": "KC_BEE_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>A round little bee with white wings and a stitched smile, crocheted and stuffed by hand.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Bee Crochet Keychain, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet bee keychain with a stitched smile, on a metal ring. A cute gift for keys and bags.",
+   "photos": [
+    {
+     "src": "keychains/KC_BEE_1 1.png",
+     "alt": "Crochet bee keychain with white wings held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_BEE_1 4.png",
+     "alt": "Crochet bee keychain with white wings held in a hand, view 2",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_BEE_1 2.png",
+     "alt": "Crochet bee keychain with white wings held in a hand, view 3",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_BEE_1 3.png",
+     "alt": "Crochet bee keychain with white wings held in a hand, view 4",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "chick-crochet-keychain",
+   "title": "Chick Crochet Keychain",
+   "type": "Keychains",
+   "tags": [
+    "chick",
+    "occasion-birthday"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 179,
+     "sku": "KC_CHK_1",
+     "cost": 55
+    }
+   ],
+   "description": "<p>A yellow chick still wearing its eggshell, crocheted and stuffed by hand, with tiny wings and red feet.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Chick Crochet Keychain, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet chick keychain in an eggshell hat, on a metal ring. A cute gift for keys and bags.",
+   "photos": [
+    {
+     "src": "keychains/KC_CHK_1 1.png",
+     "alt": "Crochet chick keychain in an eggshell hat held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_CHK_1 2.png",
+     "alt": "Crochet chick keychain in an eggshell hat held in a hand, view 2",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-daisy-keychain-set",
+   "title": "Sunflower & Daisy Keychain Set",
+   "type": "Keychains",
+   "tags": [
+    "sunflower",
+    "daisy",
+    "set",
+    "occasion-thank-you",
+    "occasion-birthday"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 279,
+     "sku": "KC_SF_1_DSY_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>A sunflower and a white daisy, two hand-crocheted keychains that look good together. Keep one and give one, or keep both.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Sunflower & Daisy Crochet Keychain Set | Yarn Basket",
+   "seo_description": "A set of two handmade crochet keychains: a sunflower and a daisy, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_SF_1_DSY_1 1.png",
+     "alt": "Crochet sunflower and daisy keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_DSY_1 4.png",
+     "alt": "Crochet sunflower and daisy keychains held in a hand, view 2",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_DSY_1 3.png",
+     "alt": "Crochet sunflower and daisy keychains held in a hand, view 3",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_DSY_1 2.png",
+     "alt": "Crochet sunflower and daisy keychains held in a hand, view 4",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-evil-eye-keychain-set",
+   "title": "Sunflower & Evil Eye Keychain Set",
+   "type": "Keychains",
+   "tags": [
+    "sunflower",
+    "evil-eye",
+    "set",
+    "occasion-thank-you"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 279,
+     "sku": "KC_SF_1_Evil_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>A sunflower for brightness and an evil eye for luck. Two hand-crocheted keychains in one set.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Sunflower & Evil Eye Crochet Keychain Set | Yarn Basket",
+   "seo_description": "A set of two handmade crochet keychains: a sunflower and an evil eye, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_SF_1_Evil_1 2.png",
+     "alt": "Crochet sunflower and evil eye keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_Evil_1 1.png",
+     "alt": "Crochet sunflower and evil eye keychains held in a hand, view 2",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "bee-chick-keychain-pair",
+   "title": "Bee & Chick Keychain Pair",
+   "type": "Keychains",
+   "tags": [
+    "bee",
+    "chick",
+    "set",
+    "occasion-birthday"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 329,
+     "sku": "KC_Chick_1_Bee_1",
+     "cost": 95
+    }
+   ],
+   "description": "<p>Our two little characters together: the smiling bee and the chick in its eggshell. Both are crocheted and stuffed by hand.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Bee & Chick Crochet Keychain Pair, Handmade | Yarn Basket",
+   "seo_description": "A pair of handmade crochet keychains: a smiling bee and a chick in an eggshell, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_Chick_1_Bee_1 1.png",
+     "alt": "Crochet chick and bee keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_CHK_1 1.png",
+     "alt": "Crochet chick and bee keychains held in a hand, view 2",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_BEE_1 1.png",
+     "alt": "Crochet chick and bee keychains held in a hand, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-daisy-evil-eye-keychain-set",
+   "title": "Sunflower, Daisy & Evil Eye Keychain Set",
+   "type": "Keychains",
+   "tags": [
+    "sunflower",
+    "daisy",
+    "evil-eye",
+    "set",
+    "occasion-thank-you",
+    "occasion-birthday"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 399,
+     "sku": "KC_SF_1_DSY_1_Evil_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>Three hand-crocheted keychains in one set: a sunflower, a white daisy and an evil eye. Enough to share between friends or family.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Sunflower, Daisy & Evil Eye Keychain Set | Yarn Basket",
+   "seo_description": "A set of three handmade crochet keychains: a sunflower, a daisy and an evil eye, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_SF_1_DSY_1_Evil_1 1.png",
+     "alt": "Crochet sunflower, daisy and evil eye keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_DSY_1_Evil_1 2.png",
+     "alt": "Crochet sunflower, daisy and evil eye keychains held in a hand, view 2",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_DSY_1_Evil_1 3.png",
+     "alt": "Crochet sunflower, daisy and evil eye keychains held in a hand, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "octopus-evil-eye-keychain-set",
+   "title": "Octopus Pair & Evil Eye Keychain Set",
+   "type": "Keychains",
+   "tags": [
+    "octopus",
+    "evil-eye",
+    "set",
+    "occasion-birthday"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 399,
+     "sku": "KC_OCTPS_2_Evil_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>Two baby octopuses, one pink and one aqua, with an evil eye to watch over them. All three are crocheted by hand.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Octopus & Evil Eye Crochet Keychain Set | Yarn Basket",
+   "seo_description": "A set of three handmade crochet keychains: a pink octopus, an aqua octopus and an evil eye.",
+   "photos": [
+    {
+     "src": "keychains/KC_OCTPS_2_Evil_1 2.png",
+     "alt": "Crochet pink and aqua octopus keychains with an evil eye keychain",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_OCTPS_2_Evil_1 1.png",
+     "alt": "Crochet pink and aqua octopus keychains with an evil eye keychain, view 2",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_OCTPS_2_Evil_1 3.png",
+     "alt": "Crochet pink and aqua octopus keychains with an evil eye keychain, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-peacock-feather-keychain-set",
+   "title": "Sunflower & Peacock Feather Keychain Set",
+   "type": "Keychains",
+   "tags": [
+    "sunflower",
+    "peacock",
+    "set",
+    "occasion-for-her",
+    "occasion-thank-you"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 299,
+     "sku": "KC_SF_1_Mor_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>A golden sunflower beside a peacock feather in green and blue. Two of our most colourful hand-crocheted keychains in one set.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Sunflower & Peacock Feather Keychain Set | Yarn Basket",
+   "seo_description": "A set of two handmade crochet keychains: a sunflower and a peacock feather, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_SF_1_Mor_1 2.png",
+     "alt": "Crochet sunflower and peacock feather keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_Mor_1 1.png",
+     "alt": "Crochet sunflower and peacock feather keychains held in a hand, view 2",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_Mor_1 3.png",
+     "alt": "Crochet sunflower and peacock feather keychains held in a hand, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "lily-of-the-valley-crochet-bag-charm",
+   "title": "Lily of the Valley Crochet Bag Charm",
+   "type": "Bag charms",
+   "tags": [
+    "lily",
+    "occasion-for-her",
+    "occasion-birthday",
+    "occasion-thank-you"
+   ],
+   "option": "Colour",
+   "variants": [
+    {
+     "value": "Pink",
+     "price": 199,
+     "sku": "charm_pink_1",
+     "cost": null
+    },
+    {
+     "value": "White",
+     "price": 199,
+     "sku": "charm_white_1",
+     "cost": null
+    },
+    {
+     "value": "Pink + white pair",
+     "price": 349,
+     "sku": "lily_bag_charm_2",
+     "cost": 60
+    }
+   ],
+   "description": "<p>Two little bell flowers hanging from a green bow, crocheted by hand. Tie it to a bag handle, or wear it in your hair over a ponytail.</p><p>Choose pink, white, or the pair.</p>",
+   "size": null,
+   "seo_title": "Lily of the Valley Crochet Bag Charm | Yarn Basket",
+   "seo_description": "A handmade crochet lily of the valley charm for bags and hair, in pink or white, or as a pair.",
+   "photos": [
+    {
+     "src": "Charm/charm_pink_1 1.png",
+     "alt": "Pink lily of the valley crochet charm on a black bag",
+     "variant": "Pink"
+    },
+    {
+     "src": "Charm/charm_pink_1 2.png",
+     "alt": "Pink lily of the valley crochet charm on a black bag, view 2",
+     "variant": "Pink"
+    },
+    {
+     "src": "Charm/charm_pink_1 3.png",
+     "alt": "Pink lily of the valley crochet charm on a black bag, view 3",
+     "variant": "Pink"
+    },
+    {
+     "src": "Charm/charm_pink_1 4.png",
+     "alt": "Pink lily of the valley crochet charm on a black bag, view 4",
+     "variant": "Pink"
+    },
+    {
+     "src": "Charm/charm_white_1 2.png",
+     "alt": "White lily of the valley crochet charm on a black bag",
+     "variant": "White"
+    },
+    {
+     "src": "Charm/charm_white_1 1.png",
+     "alt": "White lily of the valley crochet charm on a black bag, view 2",
+     "variant": "White"
+    },
+    {
+     "src": "Charm/charm_white_1 3.png",
+     "alt": "White lily of the valley crochet charm on a black bag, view 3",
+     "variant": "White"
+    },
+    {
+     "src": "Charm/charm_white_1 4.png",
+     "alt": "White lily of the valley crochet charm on a black bag, view 4",
+     "variant": "White"
+    },
+    {
+     "src": "Charm/charm_pink_1_white_1 1.png",
+     "alt": "Pink and white lily of the valley crochet charms on a black bag",
+     "variant": "Pink + white pair"
+    },
+    {
+     "src": "Charm/charm_pink_1_white_1 2.png",
+     "alt": "Pink and white lily of the valley crochet charms on a black bag, view 2",
+     "variant": "Pink + white pair"
+    },
+    {
+     "src": "Charm/charm_pink_1_white_1 3.png",
+     "alt": "Pink and white lily of the valley crochet charms on a black bag, view 3",
+     "variant": "Pink + white pair"
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-crochet-flower-pot",
+   "title": "Sunflower Crochet Flower Pot",
+   "type": "Flower pots",
+   "tags": [
+    "sunflower",
+    "occasion-thank-you",
+    "occasion-birthday",
+    "home-decor"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 399,
+     "sku": "POT_SF_1",
+     "cost": 80
+    }
+   ],
+   "description": "<p>A sunflower growing in its own little pot. The flower, the leaves, the soil and the pot are all crocheted by hand.</p><p>It stands by itself on a desk, a shelf or a windowsill, and never needs water.</p>",
+   "size": null,
+   "seo_title": "Sunflower Crochet Flower Pot, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet sunflower in a crochet pot. Desk and shelf decor that never needs water.",
+   "photos": [
+    {
+     "src": "pot flower/POT_SF_1 1.png",
+     "alt": "Crochet sunflower in a crochet pot held in a hand",
+     "variant": null
+    },
+    {
+     "src": "pot flower/sf 2.png",
+     "alt": "Crochet sunflower in a crochet pot held in a hand, view 2",
+     "variant": null
+    },
+    {
+     "src": "pot flower/sf 5.png",
+     "alt": "Crochet sunflower in a crochet pot held in a hand, view 3",
+     "variant": null
+    },
+    {
+     "src": "pot flower/sf 3.png",
+     "alt": "Crochet sunflower in a crochet pot held in a hand, view 4",
+     "variant": null
+    },
+    {
+     "src": "pot flower/POT_SF_1 2.png",
+     "alt": "Crochet sunflower in a crochet pot held in a hand, view 5",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "daisy-crochet-pot",
+   "title": "Daisy Crochet Flower Pot",
+   "type": "Flower pots",
+   "tags": [
+    "daisy",
+    "occasion-thank-you",
+    "occasion-birthday",
+    "occasion-for-her",
+    "home-decor"
+   ],
+   "option": "Colour",
+   "variants": [
+    {
+     "value": "White",
+     "price": 399,
+     "sku": "POT_DAISY_01",
+     "cost": null
+    },
+    {
+     "value": "Blue",
+     "price": 399,
+     "sku": "POT_BLUE_DAISY_01",
+     "cost": null
+    },
+    {
+     "value": "Pink",
+     "price": 399,
+     "sku": "POT_DSY_Pink_1",
+     "cost": null
+    }
+   ],
+   "description": "<p>A daisy in a pot, crocheted by hand from the petals down to the soil. Choose white, blue or pink.</p><p>It stands by itself on a desk, a shelf or a windowsill, and never needs water.</p>",
+   "size": null,
+   "seo_title": "Daisy Crochet Flower Pot, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet daisy in a crochet pot, in white, blue or pink. Desk decor that never needs water.",
+   "photos": [
+    {
+     "src": "pot flower/daisy 2.png",
+     "alt": "White crochet daisy in a crochet pot",
+     "variant": "White"
+    },
+    {
+     "src": "pot flower/daisy 1.png",
+     "alt": "White crochet daisy in a crochet pot, view 2",
+     "variant": "White"
+    },
+    {
+     "src": "pot flower/daisy 4.png",
+     "alt": "White crochet daisy in a crochet pot, view 3",
+     "variant": "White"
+    },
+    {
+     "src": "pot flower/daisy 3.png",
+     "alt": "White crochet daisy in a crochet pot, view 4",
+     "variant": "White"
+    },
+    {
+     "src": "pot flower/blue daisy 4.png",
+     "alt": "Blue crochet daisy in a crochet pot",
+     "variant": "Blue"
+    },
+    {
+     "src": "pot flower/blue daisy 1.png",
+     "alt": "Blue crochet daisy in a crochet pot, view 2",
+     "variant": "Blue"
+    },
+    {
+     "src": "pot flower/blue daisy 2.png",
+     "alt": "Blue crochet daisy in a crochet pot, view 3",
+     "variant": "Blue"
+    },
+    {
+     "src": "pot flower/POT_DSY_Pink_1 1.png",
+     "alt": "Pink crochet daisy in a crochet pot",
+     "variant": "Pink"
+    },
+    {
+     "src": "pot flower/POT_DSY_Pink_1 2.png",
+     "alt": "Pink crochet daisy in a crochet pot, view 2",
+     "variant": "Pink"
+    },
+    {
+     "src": "pot flower/POT_DSY_Pink_1 3.png",
+     "alt": "Pink crochet daisy in a crochet pot, view 3",
+     "variant": "Pink"
+    }
+   ]
+  },
+  {
+   "handle": "blue-daisy-crochet-hair-set",
+   "title": "Blue Daisy Crochet Hair Set",
+   "type": "Hair accessories",
+   "tags": [
+    "daisy",
+    "set",
+    "occasion-for-her",
+    "occasion-birthday"
+   ],
+   "option": "Set",
+   "variants": [
+    {
+     "value": "Headband + clips",
+     "price": 349,
+     "sku": "HB+HC_BLUE_02",
+     "cost": null
+    },
+    {
+     "value": "Headband",
+     "price": 249,
+     "sku": "HB_BLUE",
+     "cost": null
+    },
+    {
+     "value": "Clips, pair",
+     "price": 149,
+     "sku": "HC_BLUE",
+     "cost": null
+    },
+    {
+     "value": "Headband, clips + claw clip",
+     "price": 449,
+     "sku": "HB+CLIP+CLUTCHER_BLUE",
+     "cost": null
+    }
+   ],
+   "description": "<p>A row of cream daisies with blue centres, crocheted by hand into a tie-on headband, with clips to match. The headband ties at the back, so it fits every head.</p><p>Take the headband, the pair of clips, or a set.</p>",
+   "size": null,
+   "seo_title": "Blue Daisy Crochet Hair Set, Headband & Clips | Yarn Basket",
+   "seo_description": "A handmade crochet daisy headband with matching hair clips in cream and blue. Buy the set or each piece.",
+   "photos": [
+    {
+     "src": "hair band/HB+HC_BLUE 1.png",
+     "alt": "Crochet daisy headband with a matching pair of hair clips",
+     "variant": "Headband + clips"
+    },
+    {
+     "src": "hair band/HB+HC_BLUE 2.png",
+     "alt": "Crochet daisy headband with a matching pair of hair clips, view 2",
+     "variant": "Headband + clips"
+    },
+    {
+     "src": "hair band/HB+HC_BLUE 3.png",
+     "alt": "Crochet daisy headband with a matching pair of hair clips, view 3",
+     "variant": "Headband + clips"
+    },
+    {
+     "src": "hair band/HB+HC_BLUE 4.png",
+     "alt": "Crochet daisy headband with a matching pair of hair clips, view 4",
+     "variant": "Headband + clips"
+    },
+    {
+     "src": "hair band/HB_BLUE 1.png",
+     "alt": "Cream and blue crochet daisy headband",
+     "variant": "Headband"
+    },
+    {
+     "src": "hair band/HB_BLUE 2.png",
+     "alt": "Cream and blue crochet daisy headband, view 2",
+     "variant": "Headband"
+    },
+    {
+     "src": "hair band/HC_BLUE 1.png",
+     "alt": "Pair of cream and blue crochet daisy hair clips worn in hair",
+     "variant": "Clips, pair"
+    },
+    {
+     "src": "hair band/HB+CLIP+CLUTCHER_BLUE 2.png",
+     "alt": "Crochet daisy headband with hair clips and a blue flower claw clip",
+     "variant": "Headband, clips + claw clip"
+    },
+    {
+     "src": "hair band/HB+CLIP+CLUTCHER_BLUE 1.png",
+     "alt": "Crochet daisy headband with hair clips and a blue flower claw clip, view 2",
+     "variant": "Headband, clips + claw clip"
+    }
+   ]
+  },
+  {
+   "handle": "crochet-flower-hair-clips",
+   "title": "Crochet Flower Hair Clips, Pair",
+   "type": "Hair accessories",
+   "tags": [
+    "daisy",
+    "sunflower",
+    "occasion-for-her"
+   ],
+   "option": "Design",
+   "variants": [
+    {
+     "value": "Blue",
+     "price": 129,
+     "sku": "HC_BLUE_02",
+     "cost": null
+    },
+    {
+     "value": "Pink",
+     "price": 129,
+     "sku": "HC_PINK_02",
+     "cost": null
+    },
+    {
+     "value": "White",
+     "price": 129,
+     "sku": "HC_WHITE_02",
+     "cost": null
+    },
+    {
+     "value": "Sunflower",
+     "price": 129,
+     "sku": "HC_SF_02",
+     "cost": null
+    }
+   ],
+   "description": "<p>A pair of snap clips, each topped with a hand-crocheted flower. Light enough to wear all day, for children and grown-ups.</p><p>Four designs: blue, pink, white daisy and sunflower.</p>",
+   "size": null,
+   "seo_title": "Crochet Flower Hair Clips, Handmade Pair | Yarn Basket",
+   "seo_description": "A pair of handmade crochet flower hair clips, in blue, pink, white daisy or sunflower.",
+   "photos": [
+    {
+     "src": "hair clip/ChatGPT Image Jul 5, 2026, 04_32_01 PM.png",
+     "alt": "Pairs of crochet flower hair clips in blue, pink, white and sunflower",
+     "variant": "Blue"
+    },
+    {
+     "src": "hair clip/Untitled design5.jpg",
+     "alt": "Pairs of crochet flower hair clips in blue, pink, white and sunflower, view 2",
+     "variant": "Blue"
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-curtain-tie-back",
+   "title": "Sunflower Crochet Curtain Tie-back",
+   "type": "Home decor",
+   "tags": [
+    "sunflower",
+    "occasion-thank-you",
+    "home-decor"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 199,
+     "sku": "CTie_SF",
+     "cost": null
+    }
+   ],
+   "description": "<p>A big crocheted sunflower with two hanging leaves that holds a curtain open. It wraps around the curtain and fastens behind the flower. Made by hand, one at a time.</p><p>Sold singly: add two for a pair of curtains.</p>",
+   "size": null,
+   "seo_title": "Sunflower Crochet Curtain Tie-back, Handmade | Yarn Basket",
+   "seo_description": "A handmade crochet sunflower curtain tie-back with hanging leaves. A sunny touch for any room.",
+   "photos": [
+    {
+     "src": "Curtain Tie/CTie_SF 1.png",
+     "alt": "Crochet sunflower curtain tie-back on a curtain",
+     "variant": null
+    },
+    {
+     "src": "Curtain Tie/CTie_SF 2.png",
+     "alt": "Crochet sunflower curtain tie-back on a curtain, view 2",
+     "variant": null
+    }
+   ]
+  }
+ ],
+ "collections": [
+  {
+   "handle": "bouquets",
+   "title": "Crochet Bouquets",
+   "rules": [
+    [
+     "type",
+     "Bouquets"
+    ]
+   ],
+   "cover": "Bouquet/BQ_SF_3 3.png",
+   "description": "<p>Flowers that stay. Every bouquet is crocheted by hand, stem by stem, then wrapped and tied with a ribbon, ready to give.</p>",
+   "seo": [
+    "Handmade Crochet Flower Bouquets | Yarn Basket",
+    "Crochet flower bouquets made by hand in India: sunflowers, roses, tulips and daisies that never wilt. Wrapped and ready to gift."
+   ]
+  },
+  {
+   "handle": "keychains",
+   "title": "Crochet Keychains",
+   "rules": [
+    [
+     "type",
+     "Keychains"
+    ]
+   ],
+   "cover": "keychains/KC_SF_1_DSY_1 1.png",
+   "description": "<p>Small, soft and made by hand: flowers, an evil eye, a peacock feather and a few little characters, each on a metal ring.</p>",
+   "seo": [
+    "Handmade Crochet Keychains | Yarn Basket",
+    "Crochet keychains made by hand in India: sunflower, daisy, evil eye, peacock feather, bee and chick. Singles and gift sets."
+   ]
+  },
+  {
+   "handle": "hair-accessories",
+   "title": "Crochet Hair Accessories",
+   "rules": [
+    [
+     "type",
+     "Hair accessories"
+    ]
+   ],
+   "cover": "hair band/HC_BLUE 1.png",
+   "description": "<p>Headbands and clips topped with hand-crocheted flowers, light enough to wear all day.</p>",
+   "seo": [
+    "Handmade Crochet Hair Accessories | Yarn Basket",
+    "Crochet flower headbands and hair clips, made by hand in India. Light, soft and made to be worn every day."
+   ]
+  },
+  {
+   "handle": "bag-charms",
+   "title": "Crochet Bag Charms",
+   "rules": [
+    [
+     "type",
+     "Bag charms"
+    ]
+   ],
+   "cover": "Charm/charm_pink_1 1.png",
+   "description": "<p>Hand-crocheted charms to tie on a bag handle, a zip or a ponytail.</p>",
+   "seo": [
+    "Handmade Crochet Bag Charms | Yarn Basket",
+    "Crochet bag charms made by hand in India. Lily of the valley charms for bags and hair, in pink and white."
+   ]
+  },
+  {
+   "handle": "flower-pots",
+   "title": "Crochet Flower Pots",
+   "rules": [
+    [
+     "type",
+     "Flower pots"
+    ]
+   ],
+   "cover": "pot flower/daisy 2.png",
+   "description": "<p>A flower in its own little pot, crocheted by hand from the petals to the soil. For desks, shelves and windowsills, with no watering.</p>",
+   "seo": [
+    "Handmade Crochet Flower Pots | Yarn Basket",
+    "Crochet flower pots made by hand in India: sunflowers and daisies for your desk or shelf that never need water."
+   ]
+  },
+  {
+   "handle": "home-decor",
+   "title": "Crochet Home Decor",
+   "rules": [
+    [
+     "tag",
+     "home-decor"
+    ]
+   ],
+   "cover": "Curtain Tie/CTie_SF 1.png",
+   "description": "<p>Handmade crochet pieces for the home: flower pots for desks and shelves, and sunflower tie-backs for curtains.</p>",
+   "seo": [
+    "Handmade Crochet Home Decor | Yarn Basket",
+    "Crochet home decor made by hand in India: flower pots and sunflower curtain tie-backs."
+   ]
+  },
+  {
+   "handle": "sunflowers",
+   "title": "Crochet Sunflowers",
+   "rules": [
+    [
+     "tag",
+     "sunflower"
+    ]
+   ],
+   "cover": "Bouquet/BQ_SF_3 1.png",
+   "description": "<p>Everything with a sunflower on it: bouquets, pots, keychains and more, all crocheted by hand.</p>",
+   "seo": [
+    "Handmade Crochet Sunflowers: Bouquets, Pots & Keychains | Yarn Basket",
+    "Crochet sunflower gifts made by hand in India: bouquets, flower pots, keychains and curtain tie-backs."
+   ]
+  },
+  {
+   "handle": "roses",
+   "title": "Crochet Roses",
+   "rules": [
+    [
+     "tag",
+     "rose"
+    ]
+   ],
+   "cover": "rose/3 rose bouquet 1.png",
+   "description": "<p>Hand-crocheted roses in red, pink and yellow, as single stems and full bouquets.</p>",
+   "seo": [
+    "Handmade Crochet Roses & Rose Bouquets | Yarn Basket",
+    "Crochet rose bouquets made by hand in India, in red, pink and yellow. Forever roses for anniversaries and Valentine's Day."
+   ]
+  },
+  {
+   "handle": "tulips",
+   "title": "Crochet Tulips",
+   "rules": [
+    [
+     "tag",
+     "tulip"
+    ]
+   ],
+   "cover": "Bouquet/BQ_TLP_Pink_2_Lvndr_1 2.png",
+   "description": "<p>Hand-crocheted tulips in pink, blue, lavender and white, alone or in a bouquet.</p>",
+   "seo": [
+    "Handmade Crochet Tulips & Tulip Bouquets | Yarn Basket",
+    "Crochet tulip bouquets made by hand in India, in pink, blue, lavender and white. Flowers that never wilt."
+   ]
+  },
+  {
+   "handle": "daisies",
+   "title": "Crochet Daisies",
+   "rules": [
+    [
+     "tag",
+     "daisy"
+    ]
+   ],
+   "cover": "pot flower/daisy 1.png",
+   "description": "<p>Daisies, crocheted by hand: bouquets, pots, keychains and hair pieces.</p>",
+   "seo": [
+    "Handmade Crochet Daisies: Bouquets, Pots & More | Yarn Basket",
+    "Crochet daisy gifts made by hand in India: bouquets, flower pots, keychains and hair accessories."
+   ]
+  },
+  {
+   "handle": "gift-sets",
+   "title": "Gift Sets",
+   "rules": [
+    [
+     "tag",
+     "set"
+    ]
+   ],
+   "cover": "Bouquet/BQ_SF_1_DSY_1_BEE_1 3.png",
+   "description": "<p>Pieces we have put together for you: mixed bouquets and keychain sets, ready to give.</p>",
+   "seo": [
+    "Handmade Crochet Gift Sets | Yarn Basket",
+    "Ready-made crochet gift sets: mixed flower bouquets and keychain sets, made by hand in India."
+   ]
+  },
+  {
+   "handle": "birthday-gifts",
+   "title": "Birthday Gifts",
+   "rules": [
+    [
+     "tag",
+     "occasion-birthday"
+    ]
+   ],
+   "cover": "Bouquet/BQ_SF_1_DSY_1_BEE_1 3.png",
+   "description": "<p>Handmade crochet gifts for a birthday: bright bouquets, little characters and flowers that last long after the cake.</p>",
+   "seo": [
+    "Handmade Crochet Birthday Gifts | Yarn Basket",
+    "Crochet birthday gifts made by hand in India: flower bouquets, keychains and flower pots that last for years."
+   ]
+  },
+  {
+   "handle": "anniversary-gifts",
+   "title": "Anniversary Gifts",
+   "rules": [
+    [
+     "tag",
+     "occasion-anniversary"
+    ]
+   ],
+   "cover": "rose/3 rose bouquet 4.png",
+   "description": "<p>Roses and bouquets that will still be in bloom on the next anniversary. Crocheted by hand.</p>",
+   "seo": [
+    "Handmade Crochet Anniversary Gifts | Yarn Basket",
+    "Crochet anniversary gifts made by hand in India: forever roses and flower bouquets that never wilt."
+   ]
+  },
+  {
+   "handle": "thank-you-gifts",
+   "title": "Thank You Gifts",
+   "rules": [
+    [
+     "tag",
+     "occasion-thank-you"
+    ]
+   ],
+   "cover": "Bouquet/BQ_TLP_Pink_2_DSY_1 2.png",
+   "description": "<p>Small handmade ways to say thank you: a single flower, a keychain, a pot for a desk.</p>",
+   "seo": [
+    "Handmade Crochet Thank You Gifts | Yarn Basket",
+    "Crochet thank you gifts made by hand in India: single-flower bouquets, keychains and flower pots."
+   ]
+  },
+  {
+   "handle": "gifts-for-her",
+   "title": "Gifts for Her",
+   "rules": [
+    [
+     "tag",
+     "occasion-for-her"
+    ]
+   ],
+   "cover": "Bouquet/BQ_TLP_Pink_2_Lvndr_1 2.png",
+   "description": "<p>Handmade crochet gifts for her: tulips and roses, bag charms and hair pieces.</p>",
+   "seo": [
+    "Handmade Crochet Gifts for Her | Yarn Basket",
+    "Crochet gifts for her, made by hand in India: flower bouquets, bag charms and hair accessories."
+   ]
+  },
+  {
+   "handle": "gifts-under-299",
+   "title": "Gifts under ₹299",
+   "rules": [
+    [
+     "price_lt",
+     "300"
+    ]
+   ],
+   "cover": "Bouquet/BQ_RS_Pink_1_Yellow_1_Red_1 3.png",
+   "description": "<p>Handmade crochet gifts under ₹299.</p>",
+   "seo": [
+    "Handmade Crochet Gifts under ₹299 | Yarn Basket",
+    "Crochet gifts under ₹299, made by hand in India: single-flower bouquets, keychains and more."
+   ]
+  },
+  {
+   "handle": "bestsellers",
+   "title": "Bestsellers",
+   "manual": [
+    "sunflower-crochet-bouquet",
+    "rose-trio-crochet-bouquet",
+    "sunflower-daisy-keychain-set",
+    "pink-tulips-daisy-crochet-bouquet",
+    "daisy-crochet-pot",
+    "lily-of-the-valley-crochet-bag-charm",
+    "sunflower-daisy-bee-crochet-bouquet",
+    "evil-eye-crochet-keychain"
+   ],
+   "cover": "Bouquet/BQ_SF_3 3.png",
+   "description": "<p>The pieces people come back for.</p>",
+   "seo": [
+    "Bestselling Handmade Crochet Gifts | Yarn Basket",
+    "Our most loved crochet gifts, made by hand in India: bouquets, keychains, flower pots and bag charms."
+   ]
+  }
+ ],
+ "collection_order": {
+  "bouquets": [
+   "sunflower-crochet-bouquet",
+   "rose-trio-crochet-bouquet",
+   "pink-tulips-daisy-crochet-bouquet",
+   "sunflower-daisy-bee-crochet-bouquet",
+   "single-rose-crochet-bouquet",
+   "pastel-tulip-trio-crochet-bouquet",
+   "blue-tulip-crochet-bouquet",
+   "sunflower-roses-crochet-bouquet",
+   "single-tulip-crochet-bouquet",
+   "red-rose-duo-crochet-bouquet",
+   "daisy-crochet-bouquet"
+  ],
+  "keychains": [
+   "sunflower-daisy-keychain-set",
+   "evil-eye-crochet-keychain",
+   "sunflower-daisy-evil-eye-keychain-set",
+   "peacock-feather-crochet-keychain",
+   "bee-chick-keychain-pair",
+   "sunflower-crochet-keychain",
+   "daisy-crochet-keychain",
+   "octopus-evil-eye-keychain-set",
+   "sunflower-peacock-feather-keychain-set",
+   "bee-crochet-keychain",
+   "chick-crochet-keychain",
+   "sunflower-evil-eye-keychain-set"
+  ]
+ },
+ "home": {
+  "hero": [
+   {
+    "src": "Bouquet/BQ_SF_3 3.png",
+    "product": "sunflower-crochet-bouquet",
+    "label": "Sunflower bouquet",
+    "alt": "Hand holding a crochet bouquet of three sunflowers in black and gold wrap"
+   },
+   {
+    "src": "Bouquet/BQ_RS_Pink_1_Yellow_1_Red_1 3.png",
+    "product": "rose-trio-crochet-bouquet",
+    "label": "Rose trio",
+    "alt": "Crochet bouquet of a pink, a yellow and a red rose"
+   },
+   {
+    "src": "Bouquet/BQ_TLP_Pink_2_DSY_1 2.png",
+    "product": "pink-tulips-daisy-crochet-bouquet",
+    "label": "Tulips & daisy",
+    "alt": "Crochet bouquet of two pink tulips and a daisy"
+   },
+   {
+    "src": "keychains/KC_SF_1_DSY_1_Evil_1 1.png",
+    "product": "sunflower-daisy-evil-eye-keychain-set",
+    "label": "Keychain set",
+    "alt": "Crochet sunflower, daisy and evil eye keychains in a hand"
+   },
+   {
+    "src": "pot flower/daisy 2.png",
+    "product": "daisy-crochet-pot",
+    "label": "Daisy pot",
+    "alt": "White crochet daisy in a crochet pot"
+   }
+  ],
+  "circles": [
+   {
+    "key": "bouquets",
+    "collection": "bouquets",
+    "src": "Bouquet/BQ_SF_3 1.png",
+    "box": [
+     0.2,
+     0.05,
+     0.8,
+     0.65
+    ]
+   },
+   {
+    "key": "keychains",
+    "collection": "keychains",
+    "src": "keychains/KC_SF_1_DSY_1 1.png",
+    "box": [
+     0.18,
+     0.22,
+     0.86,
+     0.9
+    ]
+   },
+   {
+    "key": "hair",
+    "collection": "hair-accessories",
+    "src": "hair band/HC_BLUE 1.png",
+    "box": [
+     0.25,
+     0.18,
+     0.95,
+     0.88
+    ]
+   },
+   {
+    "key": "charms",
+    "collection": "bag-charms",
+    "src": "Charm/charm_pink_1 1.png",
+    "box": [
+     0.2,
+     0.3,
+     0.8,
+     0.9
+    ]
+   },
+   {
+    "key": "pots",
+    "collection": "flower-pots",
+    "src": "pot flower/daisy 2.png",
+    "box": [
+     0.15,
+     0.02,
+     0.85,
+     0.72
+    ]
+   }
+  ],
+  "occasions": [
+   {
+    "key": "o1",
+    "collection": "birthday-gifts",
+    "src": "Bouquet/BQ_SF_1_DSY_1_BEE_1 3.png",
+    "alt": "Crochet bouquet of a sunflower, a daisy and a bee"
+   },
+   {
+    "key": "o2",
+    "collection": "anniversary-gifts",
+    "src": "rose/3 rose bouquet 4.png",
+    "alt": "Crochet bouquet of three red roses"
+   },
+   {
+    "key": "o3",
+    "collection": "thank-you-gifts",
+    "src": "Bouquet/BQ_TLP_Pink_2_DSY_1 2.png",
+    "alt": "Crochet bouquet of two pink tulips and a daisy"
+   },
+   {
+    "key": "o4",
+    "collection": "gifts-for-her",
+    "src": "Charm/charm_pink_1 1.png",
+    "alt": "Pink lily of the valley crochet charm on a black bag"
+   }
+  ]
+ },
+ "held_back": [
+  "Heart hair pins (packs of 3, 5, 10): every photo has a pack sticker",
+  "Sunflower and white flower headbands: stickers, or AI models",
+  "Flower claw clips (sunflower, daisy): stickers, text or AI models",
+  "Tricolour hair clips: stickers",
+  "Scrunchies: sticker, AI model",
+  "Sunflower accessory set: labels written on the photo",
+  "Octopus keychain alone, dolphin keychain: only fully AI-made photos",
+  "White and lavender hair clips: one photo only",
+  "Second wave of combos: sunflower duo + bee, sunflower duo + rose, sunflower duo + daisy, sunflower + daisy + rose, sunflower + rose + tulip, blue tulip + yellow rose + daisy; keychain pairs with blue daisy, lily charm or chick"
+ ]
+}

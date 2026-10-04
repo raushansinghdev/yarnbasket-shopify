@@ -123,12 +123,13 @@ const render = (html) => {
   if (scroller && top) scroller.scrollTop = top;
   if (focusAt) root.querySelector(focusAt)?.focus({ preventScroll: true });
   if (!pending) root.classList.remove('is-busy');
-  // Rewards: the bar moves from where it was; a step reached or lost is said.
+  // Rewards: the bar moves from where it was, or from empty for a new goal; a goal reached or lost is said.
   const now = root.querySelector('[data-rewards]');
-  if (now && now.dataset.state !== was?.dataset.state) rewardNews = now.querySelector('[data-rewards-text]').textContent;
+  const moved = now && now.dataset.state !== was?.dataset.state;
+  if (moved) rewardNews = now.querySelector('[data-rewards-text]').textContent;
   const fill = wasPct && now?.querySelector('[data-rewards-fill]');
   if (fill) {
-    fill.style.width = wasPct;
+    fill.style.width = moved ? 0 : wasPct;
     fill.offsetWidth;
     fill.style.width = '';
   }

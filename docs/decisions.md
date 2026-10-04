@@ -630,3 +630,19 @@ Raushan accepted every recommendation in search-plan §13.
 - **Differentiator:** the proposal is "made by hand" storytelling plus gifting (occasions, gift note, wrap). Needed by 12 Oct.
 - **Launch range:** 15–25 products. Needed in week 2.
 - **Shiprocket Checkout's price and the dev-store trial** (launch-checklist "Shipping, payments and checkout"). If either fails, the checkout is Shopify's with Razorpay and a partial-COD app.
+
+## 2026-10-04: real catalogue from the photo folder (docs/catalog-plan.md)
+
+- **Photo rule:** only photos where the real piece is in the shot and AI changed the setting alone. No fully AI-made images, no stickers or text on the photo, no flat Canva backgrounds. 156 of 458 pass.
+- **Range:** each design is a product, colours and sizes are options, plus the best sets; not every Meesho combo (Raushan). 29 products to start.
+- **Prices:** Claude proposes, Raushan approves; to be discussed after the upload work.
+- **Collections:** by craft (product type), by flower and by occasion (tags), under ₹999 (price), Gift sets, Bestsellers (hand-picked until there are sales). Automated collections require vendor `Yarn Basket`, which keeps test products out.
+- **Occasion cards and Bestsellers circles** use real product photos, cropped; no generated images.
+
+## 2026-10-04: pricing rule and rewards (docs/pricing-plan.md)
+
+- **Price = 3 × (cost + packaging)**, nearest ten minus one. Packaging ₹30 bouquets, ₹20 pots, ₹15 the rest. Profit target 25%, which leaves 20% of sales for ads. Raushan chose 3× over 2.6× to be safe on ad cost.
+- **Free delivery from ₹499, ₹49 below it** (was ₹999 and ₹99): India is price-sensitive; quality at affordable prices.
+- **Gift from ₹799** (was ₹1,499), **₹50 off from ₹999, ₹100 off from ₹1,299**, automatic, not stacking. Figures are provisional until real courier and ad costs are known.
+- **Cart bar shows one goal at a time**, with ticks for what's earned (Raushan). Supersedes the two-marker bar (offers-plan O10).
+- **"Best selling" sort:** Bouquets and Keychains are hand-ordered until there are sales (changes "every collection sorted by Best selling", 2026-10-02).

@@ -116,13 +116,41 @@
         "id": "gift_threshold",
         "label": "Free gift from (₹)",
         "default": 0,
-        "info": "The second step on the cart's progress bar. Must be higher than the free-shipping amount. Leave at 0 to hide it."
+        "info": "The second goal on the cart's progress bar. Must be higher than the free-shipping amount. Leave at 0 to hide it."
       },
       {
         "type": "product",
         "id": "gift_product",
         "label": "Free gift product",
         "info": "Give it its real price, track its stock and keep it out of collections. An automatic \"Buy X get Y\" discount makes it free (docs/offers-plan.md §5.4). The cart adds it once the order reaches the amount above, and the step hides itself when the gift is sold out."
+      },
+      {
+        "type": "number",
+        "id": "discount_1_from",
+        "label": "Money off, step 1: from (₹)",
+        "default": 0,
+        "info": "The next goal on the cart's progress bar after the gift, e.g. 999. Must be higher than the amounts above. It only shows the step: the saving itself is an automatic discount with the same minimum in Discounts (docs/pricing-plan.md). Leave at 0 to hide it."
+      },
+      {
+        "type": "number",
+        "id": "discount_1_amount",
+        "label": "Money off, step 1: amount (₹)",
+        "default": 0,
+        "info": "e.g. 50. Must match the automatic discount."
+      },
+      {
+        "type": "number",
+        "id": "discount_2_from",
+        "label": "Money off, step 2: from (₹)",
+        "default": 0,
+        "info": "Optional, higher than step 1, e.g. 1299. The two savings never add up: the larger one replaces the smaller."
+      },
+      {
+        "type": "number",
+        "id": "discount_2_amount",
+        "label": "Money off, step 2: amount (₹)",
+        "default": 0,
+        "info": "e.g. 100. Must match the automatic discount."
       },
       {
         "type": "number",

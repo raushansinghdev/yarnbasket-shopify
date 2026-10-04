@@ -278,7 +278,7 @@ if (want('8')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift')), () => []);
   const single = products.find((p) => p.variants.length === 1 && p.variants[0].available && !/lily/.test(p.handle));
-  const limited = products.find((p) => /lily-of-the-valley/.test(p.handle));
+  const limited = products.find((p) => p.handle === 'lily-of-the-valley-bag-charm');
   if (!single) console.log('SKIP  Cart checks                                    no products in the store (import tools/test-products.csv)');
   for (const [label, device] of single ? [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]] : []) {
     const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
@@ -406,7 +406,7 @@ if (want('8b')) {
           products: new Set([...dr.querySelectorAll('.cart-line')].map((l) => l.dataset.variant + l.dataset.properties)).size,
           state: rewards?.dataset.state || 'off',
           done: !rewards || rewards.classList.contains('is-done'),
-          top: +(rewards?.dataset.giftAt || rewards?.dataset.shipAt || 0),
+          top: +(rewards?.dataset.top || 0),
           side: dr.scrollWidth > dr.clientWidth + 1 || [...dr.querySelectorAll('.cart-drawer__foot *')].some((e) => e.getBoundingClientRect().right > box.right + 1),
         };
       });
@@ -664,7 +664,8 @@ if (want('11')) {
   record('Offers: no announcement bar on /cart', !(await page.$('.announce')), 'the rewards line says it there');
 
   const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift')), () => []);
-  const cheap = products.filter((p) => p.variants[0].available).sort((a, b) => a.variants[0].price - b.variants[0].price);
+  // Test products are outside the Shop collection, so they don't count towards the gift's "Buy X get Y" discount.
+  const cheap = products.filter((p) => p.variants[0].available && !/ Test$/.test(p.vendor)).sort((a, b) => a.variants[0].price - b.variants[0].price);
   if (!cheap.length) console.log('SKIP  Offers checks                                   no products in the store');
   else {
     await page.goto(site(`/products/${cheap[0].handle}`), { waitUntil: 'load' });
@@ -717,7 +718,7 @@ if (want('11')) {
         await page.waitForTimeout(3000);
         await settled();
         const g = await page.evaluate(() => ({ free: !!document.querySelector('.cart-line.is-gift'), state: document.querySelector('[data-rewards]')?.dataset.state }));
-        record('Offers: the free gift arrives free', g.free && g.state === 'done', `gift line free: ${g.free}, state: ${g.state}${g.free ? '' : ' (is the "Buy X get Y" discount set up?)'}`);
+        record('Offers: the free gift arrives free', g.free && /^(done|save)/.test(g.state), `gift line free: ${g.free}, state: ${g.state}${g.free ? '' : ' (is the "Buy X get Y" discount set up?)'}`);
       }
     }
     await page.request.post(site('/cart/clear.js'));

@@ -8,8 +8,51 @@
         "text": "Bouquets, keychains, clips and charms, crocheted by hand.",
         "button_label": "Shop all gifts",
         "link_label": "",
-        "scheme": "soft"
-      }
+        "scheme": "soft",
+        "image": "shopify://shop_images/home-hero-1-sunflower-bouquet.png",
+        "product": "sunflower-crochet-bouquet",
+        "label": "Sunflower bouquet"
+      },
+      "blocks": {
+        "rose": {
+          "type": "photo",
+          "settings": {
+            "image": "shopify://shop_images/home-hero-2-rose-trio.png",
+            "product": "rose-trio-crochet-bouquet",
+            "label": "Rose trio"
+          }
+        },
+        "tulips": {
+          "type": "photo",
+          "settings": {
+            "image": "shopify://shop_images/home-hero-3-tulips-daisy.png",
+            "product": "pink-tulips-daisy-crochet-bouquet",
+            "label": "Tulips & daisy"
+          }
+        },
+        "keychains": {
+          "type": "photo",
+          "settings": {
+            "image": "shopify://shop_images/home-hero-4-keychain-set.png",
+            "product": "sunflower-daisy-evil-eye-keychain-set",
+            "label": "Keychain set"
+          }
+        },
+        "pot": {
+          "type": "photo",
+          "settings": {
+            "image": "shopify://shop_images/home-hero-5-daisy-pot.png",
+            "product": "daisy-crochet-pot",
+            "label": "Daisy pot"
+          }
+        }
+      },
+      "block_order": [
+        "rose",
+        "tulips",
+        "keychains",
+        "pot"
+      ]
     },
     "shop": {
       "type": "shop-crafts",
@@ -18,37 +61,48 @@
         "heading": "Bestsellers",
         "favourites_label": "All",
         "limit": 4,
-        "scheme": "soft"
+        "scheme": "soft",
+        "collection": "bestsellers"
       },
       "blocks": {
         "bouquets": {
           "type": "craft",
           "settings": {
-            "title": "Bouquets"
+            "title": "Bouquets",
+            "collection": "bouquets",
+            "image": "shopify://shop_images/home-craft-bouquets.jpg"
           }
         },
         "keychains": {
           "type": "craft",
           "settings": {
-            "title": "Keychains"
+            "title": "Keychains",
+            "collection": "keychains",
+            "image": "shopify://shop_images/home-craft-keychains.jpg"
           }
         },
         "hair": {
           "type": "craft",
           "settings": {
-            "title": "Hair clips"
+            "title": "Hair",
+            "collection": "hair-accessories",
+            "image": "shopify://shop_images/home-craft-hair.jpg"
           }
         },
         "charms": {
           "type": "craft",
           "settings": {
-            "title": "Bag charms"
+            "title": "Bag charms",
+            "collection": "bag-charms",
+            "image": "shopify://shop_images/home-craft-charms.jpg"
           }
         },
         "pots": {
           "type": "craft",
           "settings": {
-            "title": "Flower pots"
+            "title": "Flower pots",
+            "collection": "flower-pots",
+            "image": "shopify://shop_images/home-craft-pots.jpg"
           }
         }
       },
@@ -83,32 +137,41 @@
         "o1": {
           "type": "occasion",
           "settings": {
-            "label": "Birthday"
+            "label": "Birthday",
+            "collection": "birthday-gifts",
+            "image": "shopify://shop_images/home-occasion-birthday-gifts.jpg"
           }
         },
         "o2": {
           "type": "occasion",
           "settings": {
-            "label": "Anniversary"
+            "label": "Anniversary",
+            "collection": "anniversary-gifts",
+            "image": "shopify://shop_images/home-occasion-anniversary-gifts.jpg"
           }
         },
         "o3": {
           "type": "occasion",
           "settings": {
-            "label": "Thank you"
+            "label": "Thank you",
+            "collection": "thank-you-gifts",
+            "image": "shopify://shop_images/home-occasion-thank-you-gifts.jpg"
           }
         },
         "o4": {
           "type": "occasion",
           "settings": {
-            "label": "For her"
+            "label": "For her",
+            "collection": "gifts-for-her",
+            "image": "shopify://shop_images/home-occasion-gifts-for-her.jpg"
           }
         },
         "under": {
           "type": "price",
           "settings": {
             "kicker": "Gifts under",
-            "amount": "₹999"
+            "amount": "₹299",
+            "collection": "gifts-under-299"
           }
         }
       },

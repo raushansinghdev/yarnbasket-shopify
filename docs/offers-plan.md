@@ -3,6 +3,7 @@
 Status: **approved and built 2026-10-02** (O1–O10 as recommended). Stages R1–R4 and the automated part of R5 are done. R0 (the admin) is Raushan's: see `launch-checklist.md` "Offers". Everything stays hidden until Theme settings → Cart turns it on.
 
 ### As built (where it differs from the plan below)
+- **2026-10-04, superseded in part by `docs/pricing-plan.md`:** free shipping is from ₹499 (fee ₹49), the gift from ₹799, and there are two money-off goals (₹50 from ₹999, ₹100 from ₹1,299). The rewards bar shows one goal at a time with ticks for what's earned, not two markers; "Small add-ons" shows in the drawer whenever a goal is ahead.
 - **One line, decided for good:** see `decisions.md` 2026-10-02 (offers) for why one message beats several.
   - The standing line has two parts on phones and three from 768px: free shipping, COD, ships in 1–3 days, handmade in India, in that order of priority.
   - With no offer on, it's "Handmade in India · Ships in 1–3 days".

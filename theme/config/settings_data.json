@@ -3,10 +3,14 @@
     "show_intro": true,
     "social_meesho": "https://www.meesho.com/SSCreator",
     "demo_content": true,
-    "free_shipping_threshold": 999,
-    "shipping_fee": 99,
-    "gift_threshold": 1499,
+    "free_shipping_threshold": 499,
+    "shipping_fee": 49,
+    "gift_threshold": 799,
     "gift_product": "sunflower-keychain-free-gift",
-    "shop_all_collection": "shop"
+    "shop_all_collection": "shop",
+    "discount_1_from": 999,
+    "discount_1_amount": 50,
+    "discount_2_from": 1299,
+    "discount_2_amount": 100
   }
 }

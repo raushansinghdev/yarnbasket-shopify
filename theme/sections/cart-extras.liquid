@@ -29,6 +29,16 @@
     assign gap = ship_at | minus: cart.total_price
   elsif gift_variant and gift_variant.available and gift_at > ship_at and total < gift_at
     assign gap = gift_at | minus: total
+  else
+    # The money-off steps count the items before order discounts (see the snippet).
+    assign basis = cart.items_subtotal_price | minus: cart.total_price | plus: total
+    assign off1_at = settings.discount_1_from | default: 0 | times: 100
+    assign off2_at = settings.discount_2_from | default: 0 | times: 100
+    if settings.discount_1_amount > 0 and basis < off1_at
+      assign gap = off1_at | minus: basis
+    elsif settings.discount_2_amount > 0 and basis < off2_at
+      assign gap = off2_at | minus: basis
+    endif
   endif
 -%}
 {%- liquid

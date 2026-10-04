@@ -114,3 +114,12 @@ Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with 
 - [ ] Theme settings → Cart → "Most of one piece per order" is 9 (round 4). It is a theme limit, not enforced at checkout: fine for ordinary shoppers; a checkout rule would need an app
 - [ ] Meta's Pixel Helper on a phone: ViewContent on the product page, AddToCart from the pinned Add to cart, InitiateCheckout from Buy it now
 - [ ] Open a product from a real Instagram ad link on a phone: no intro, photo first, buy button visible
+
+## Catalogue (docs/catalog-plan.md)
+
+- [ ] Costs for the pieces still on placeholder prices (docs/pricing-plan.md "Still open"), then `python3 tools/catalog-upload.py prices`
+- [ ] Redo the reward figures (gift ₹799, ₹50 off ₹999, ₹100 off ₹1,299) with the real courier rate and ad cost per order
+- [ ] Add Size text for keychains, pots, charms, hair pieces and the larger bouquets
+- [ ] Clean photos (no stickers, no text, real piece) for the held-back products, then list them
+- [ ] Replace the starting stock of 100 per variant with real counts
+- [ ] Photos are 1254 px: shoot or export new ones at 2048 px or more when possible
