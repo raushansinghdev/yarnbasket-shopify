@@ -454,7 +454,12 @@
     :root:has(.pdp__cta) { --buybar: calc(3rem + 1px + var(--space-2) + max(var(--space-2), env(safe-area-inset-bottom))); }
     body:has(.pdp__cta) { padding-bottom: var(--buybar); }
     .pdp__qty { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); width: 100%; }
-    .pdp__qty-label { display: block; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
+    .pdp__qty-label { display: block; font-size: var(--fs-small); color: var(--color-ink); }
+    /* The least-used control here, so the quietest (Raushan, round 6): 44px tall, the pale outline of an unchosen
+       pill, and one option-gap under the last option. Its buttons reach over the outline, so each is a full 44px. */
+    .pdp__buy .qty { height: 44px; border-color: var(--color-line-strong); }
+    .pdp__buy .qty__btn { height: 44px; }
+    .pdp__form { margin-top: calc(var(--space-4) - var(--space-5)); }
     .pdp__cta {
       position: fixed;
       inset: auto 0 0;

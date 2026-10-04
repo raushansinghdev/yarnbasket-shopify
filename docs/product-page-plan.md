@@ -367,6 +367,16 @@ the photo isn't needed. Phones are unchanged (round 4's pinned buttons).
 - "Buy it now" words are centred in the button (Shopify's own padding had them 4.5px low).
 - Check 20: 64 checks, all passing. product.js is 9.97 KB of its 10 KB limit: the next addition needs a trim.
 
+## Round 6 (2026-10-04, the Quantity row on phones)
+
+Raushan asked whether the Quantity row could look better. Kept: label left, stepper right, one row. Changed, under
+750px only: the stepper is 44px tall (was 48) with the pale outline of an unchosen pill (was a Cocoa outline, the
+heaviest thing in the buy box for the least-used control); the label is regular weight in the body colour; the row
+sits one option-gap (16px) under the last option (was 24). Its buttons are still 44 x 44. About 12px shorter in
+all: the stepper was already at its narrowest (44 + 28 + 44), so the gain is in weight, not size. Not chosen:
+stacking the label above the stepper like Colour and Size (about 30px taller, stepper under the left thumb).
+Desktop's one 48px row is unchanged. Check 20 is 65 checks, all passing.
+
 ## Photo guide (for Raushan)
 
 Five square photos per product, at least 1200px, in this order:

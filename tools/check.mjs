@@ -1364,7 +1364,8 @@ if (want('20')) {
         buy: (() => {
           const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills .pill'); const bar = box('.pdp__cta');
           // Phones: the two buttons are pinned to the bottom, side by side, on the page's own margins.
-          return { rowTop: Math.abs(a.top - n.top), rowH: Math.abs(a.height - n.height), left: Math.abs(a.left - pill.left), right: Math.abs(n.right - q.right), pills: Math.abs(bar.bottom - innerHeight), h: Math.min(a.height, n.height), w: Math.min(a.width, n.width) };
+          const groups = [...document.querySelectorAll('.options__group')].map((g) => g.getBoundingClientRect()); const plus = box('.pdp .qty__plus');
+          return { qtyH: q.height, qtyTap: Math.min(plus.width, plus.height), qtyGap: q.top - groups.at(-1).bottom, optGap: groups.length > 1 ? groups[1].top - groups[0].bottom : null, rowTop: Math.abs(a.top - n.top), rowH: Math.abs(a.height - n.height), left: Math.abs(a.left - pill.left), right: Math.abs(n.right - q.right), pills: Math.abs(bar.bottom - innerHeight), h: Math.min(a.height, n.height), w: Math.min(a.width, n.width) };
         })(),
         ld: [...document.querySelectorAll('script[type="application/ld+json"]')].map((el) => { try { return JSON.parse(el.textContent); } catch { return null; } }),
         shownPrice: document.querySelector('[data-price-now]').textContent.replace(/[^\d.]/g, ''),
@@ -1378,6 +1379,7 @@ if (want('20')) {
     record('Product: every text block closed', first.open === 0 && first.closed >= 2, `${first.closed} blocks, ${first.open} open`);
     const b = first.buy;
     record('Product: buy buttons pinned to the bottom, lined up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1 && b.h >= 48 && b.w >= 140, `tops ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left edge ${b.left.toFixed(1)}, right edge ${b.right.toFixed(1)}, off the bottom ${b.pills.toFixed(1)} (px off); each ${Math.round(b.w)} x ${Math.round(b.h)}px`);
+    record('Product: quantity row is quiet, 44px, one option-gap under the options', Math.abs(b.qtyH - 44) <= 1 && b.qtyTap >= 44 && (b.optGap === null || Math.abs(b.qtyGap - b.optGap) <= 1), `stepper ${Math.round(b.qtyH)}px tall, its buttons ${Math.round(b.qtyTap)}px; ${Math.round(b.qtyGap)}px under the options (options are ${b.optGap === null ? 'one row' : `${Math.round(b.optGap)}px apart`})`);
     record('Product: second photo ready, viewer not loaded', first.second === true && !first.zoomLoaded, `second photo loaded: ${first.second}; product-zoom.js fetched: ${first.zoomLoaded}`);
     const graph = first.ld.flatMap((d) => (d ? d['@graph'] || [d] : [{ '@type': 'unparsable' }]));
     const products = graph.filter((g) => g['@type'] === 'Product');

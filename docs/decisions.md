@@ -2,6 +2,12 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-04 (product page, round 6)
+
+- **Quantity on phones stays one row (label left, stepper right), made quiet:** 44px tall, the pale outline of an
+  unchosen pill, a regular-weight label, 16px under the options. Most people buy one, so it is the least prominent
+  control in the buy box. Not stacked like Colour and Size: taller, and the stepper would sit under the left thumb.
+
 ## 2026-10-04 (product page, round 5)
 
 - **Desktop buy box is one 48px row** (quantity, Add to cart, Buy it now) under the options. Raushan found two full-width 54px rows too big.
