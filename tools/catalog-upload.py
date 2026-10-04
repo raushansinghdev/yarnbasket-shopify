@@ -4,7 +4,7 @@
 Uses the Shopify CLI's stored login (`shopify store execute`), so it runs as Raushan's app token.
 Safe to rerun: a product or collection that already exists by handle is left alone unless --force.
   python3 tools/catalog-upload.py products [handle ...] [--force]
-  python3 tools/catalog-upload.py prices        sets every variant's price from the manifest (photos and stock untouched)
+  python3 tools/catalog-upload.py prices        sets every variant's price, and the free gift's, from costs.json (photos and stock untouched)
   python3 tools/catalog-upload.py collections [--force]
   python3 tools/catalog-upload.py tests         moves the test products to vendor "Yarn Basket Test"
   python3 tools/catalog-upload.py home          uploads the home page photos to Files, prints their names
@@ -13,7 +13,7 @@ Safe to rerun: a product or collection that already exists by handle is left alo
 import json, mimetypes, os, subprocess, sys, tempfile, urllib.request, uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from catalog_pricing import price_of
+from catalog_pricing import COSTS, price_of
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.normpath(os.path.join(ROOT, '..', 'catalog'))
@@ -123,6 +123,16 @@ def prices():
                 {'id': d['id'], 'variants': changes}, mutate=True)['productVariantsBulkUpdate']
         check(r['userErrors'], p['handle'])
         print('prices:', p['handle'], ', '.join(c['price'] for c in changes))
+    # The free gift is its own product and costs what the piece it copies costs (costs.json, "gift").
+    gift = COSTS['gift']
+    price = next(price_of(DATA, p, v) for p in DATA['products'] for v in p['variants'] if v['sku'] == gift['same_price_as'])
+    d = gql('query($h: String!) { productByHandle(handle: $h) { id variants(first: 5) { nodes { id price } } } }', {'h': gift['handle']})['productByHandle']
+    changes = [{'id': v['id'], 'price': str(price)} for v in d['variants']['nodes'] if float(v['price']) != price]
+    if changes:
+        r = gql('mutation($id: ID!, $variants: [ProductVariantsBulkInput!]!) { productVariantsBulkUpdate(productId: $id, variants: $variants) { userErrors { field message } } }',
+                {'id': d['id'], 'variants': changes}, mutate=True)['productVariantsBulkUpdate']
+        check(r['userErrors'], gift['handle'])
+        print('prices:', gift['handle'], price)
 
 
 def collections(force):

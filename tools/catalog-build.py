@@ -7,11 +7,11 @@ photos, 4:5 occasion cards) into ../catalog/home/, and writes ../catalog/review.
 product with its photos, copy and proposed price, for Raushan to check. The originals are not touched.
 Run: python3 tools/catalog-build.py   (needs Pillow)
 """
-import html, json, os, re, shutil, sys
+import csv, html, json, os, re, shutil, sys
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from catalog_pricing import packaging_of, price_of
+from catalog_pricing import cost_of, packaging_of, price_of
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(ROOT, 'tools/catalog/catalog.json')
@@ -105,8 +105,8 @@ def review(data, built):
             out.append(p['description'])
             pack = packaging_of(data, p)
             out.append(f"<table><tr><th>{e(p['option'] or 'Variant')}</th><th>Cost</th><th>Packaging</th><th>Price</th><th>SKU</th></tr>" + ''.join(
-                f"<tr><td>{e(v['value'] or 'One option')}</td><td>{'₹' + str(v['cost']) if v.get('cost') is not None else 'NOT KNOWN'}</td><td>₹{pack}</td>"
-                f"<td>₹{price_of(data, p, v)}{'' if v.get('cost') is not None else ' (placeholder)'}</td><td>{e(v['sku'])}</td></tr>" for v in p['variants']) + '</table>')
+                f"<tr><td>{e(v['value'] or 'One option')}</td><td>{'₹' + str(cost_of(v)) if cost_of(v) is not None else 'NOT KNOWN'}</td><td>₹{pack}</td>"
+                f"<td>₹{price_of(data, p, v)}{'' if cost_of(v) is not None else ' (placeholder)'}</td><td>{e(v['sku'])}</td></tr>" for v in p['variants']) + '</table>')
             out.append(f"<div class=meta>Size: {e(p['size'] or 'NOT KNOWN: please tell me the size')}</div></div>")
     out.append('<h2>Home page</h2><h3>Hero photos, in order</h3><div class=row>' + ''.join(
         f"<figure><img src=\"{e(built['home'][f'hero{i}'])}\" alt=\"\"><figcaption>{e(h['label'])}</figcaption></figure>"
@@ -122,6 +122,15 @@ def review(data, built):
         for c in data['collections']) + '</table>')
     out.append('<h2>Held back: no photo good enough yet</h2><ul>' + ''.join(f'<li>{e(h)}</li>' for h in data['held_back']) + '</ul>')
     open(os.path.join(OUT, 'review.html'), 'w').write('\n'.join(out))
+    # The whole price list as a sheet that opens in Excel; rewritten on every run, so edit costs.json, not this.
+    with open(os.path.join(ROOT, 'tools/catalog/prices.csv'), 'w', newline='') as f:
+        w = csv.writer(f)
+        w.writerow(['Type', 'Product', 'Variant', 'SKU', 'Parts', 'Making cost', 'Packaging', 'Price', 'Note'])
+        for p in data['products']:
+            for v in p['variants']:
+                cost = cost_of(v)
+                w.writerow([p['type'], p['title'], v['value'] or '', v['sku'], ' + '.join(f'{n} {k}' for k, n in v['parts'].items()),
+                            '' if cost is None else cost, packaging_of(data, p), price_of(data, p, v), '' if cost is not None else 'placeholder: a part has no cost yet'])
 
 
 if __name__ == '__main__':

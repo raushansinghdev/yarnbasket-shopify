@@ -1,0 +1,31 @@
+{
+ "note": "Edit the numbers here, then run: python3 tools/catalog-build.py && python3 tools/catalog-upload.py prices. price = multiplier x (sum of parts + packaging), nearest ten, minus one. Packaging is counted once per listing, by product type. A part with null has no cost yet: listings that use it keep the placeholder price typed in catalog.json. All figures in rupees.",
+ "multiplier": 3,
+ "packaging": {
+  "Bouquets": 30,
+  "Flower pots": 20,
+  "default": 15
+ },
+ "parts": {
+  "sunflower": 50,
+  "rose": 50,
+  "daisy": 50,
+  "tulip": 45,
+  "bee": 45,
+  "flower keychain": 15,
+  "evil eye keychain": 30,
+  "peacock feather keychain": 25,
+  "octopus keychain": 30,
+  "chick keychain": 55,
+  "lily charm": 20,
+  "flower pot": 70,
+  "headband": 50,
+  "claw clip": 30,
+  "hair clips, pair": null,
+  "curtain tie-back": 50
+ },
+ "gift": {
+  "handle": "sunflower-keychain-free-gift",
+  "same_price_as": "KC_SF_1"
+ }
+}

@@ -10,9 +10,23 @@ Decided with Raushan on 2026-10-04. Built the same day (see "As built").
   **₹20** flower pots, **₹15** everything else.
 - Costs include GST; GST is not a separate line (other business expenses cover it).
 - Colours of one piece share one cost.
-- The rule lives in `tools/catalog_pricing.py`; the multiplier, the packaging table and each variant's `cost` are in
-  `tools/catalog/catalog.json`. A variant with `cost: null` keeps its typed placeholder price.
-  `python3 tools/catalog-upload.py prices` writes the prices to the store.
+- The rule lives in `tools/catalog_pricing.py`. **The numbers are in `tools/catalog/costs.json`**: what one of each
+  part costs to make (one sunflower, one tulip, one flower keychain…), the packaging table and the multiplier. Each
+  variant in `tools/catalog/catalog.json` lists its `parts` (a trio of roses is `{"rose": 3}`), so a listing's cost is
+  the sum of its parts and a set never needs its own figure.
+- To change a cost: edit `costs.json`, then `python3 tools/catalog-build.py && python3 tools/catalog-upload.py prices`.
+  The build rewrites `tools/catalog/prices.csv` (every variant: parts, cost, packaging, price; opens in Excel) and the
+  upload changes only prices, the free gift's included (it copies the sunflower keychain).
+- A part with `null` has no cost yet; listings that use it keep their typed placeholder price.
+
+### Costs from Raushan, 2026-10-04 (per piece, before packaging)
+
+Sunflower, rose, daisy ₹50; tulip ₹45; bee ₹45; flower keychain ₹15; evil eye ₹30; peacock feather ₹25; octopus ₹30;
+lily charm ₹20; flower pot ₹70; headband ₹50; claw clip ₹30; curtain tie-back ₹50. Chick keychain ₹55 (from the Meesho
+cost file). These replaced the Meesho file's figures, which had single bouquets ₹10 higher. He wrote "including
+packaging of only one product"; I read that as packaging counted once per listing, since a ₹15 keychain can't contain
+₹15 of packaging and his older figures for pairs and trios are these per-flower costs with no packaging in them.
+**Not known yet: a pair of hair clips** (four hair listings wait on it).
 
 Where a rupee of the price goes at 3×:
 

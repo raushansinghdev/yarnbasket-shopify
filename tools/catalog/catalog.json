@@ -1,15 +1,7 @@
 {
  "source": "~/Desktop/SS Creation/crochet",
  "vendor": "Yarn Basket",
- "note": "Prices follow the rule in 'pricing' wherever a variant has a cost (Raushan, 2026-10-04). cost: null = cost not known yet, the typed price is a placeholder.",
- "pricing": {
-  "multiplier": 3,
-  "packaging": {
-   "Bouquets": 30,
-   "Flower pots": 20,
-   "default": 15
-  }
- },
+ "note": "Prices come from tools/catalog/costs.json: each variant lists its parts, and the rule is in tools/catalog_pricing.py (Raushan, 2026-10-04). A variant's typed price is used only while one of its parts has no cost yet.",
  "products": [
   {
    "handle": "sunflower-crochet-bouquet",
@@ -27,19 +19,25 @@
      "value": "1 sunflower",
      "price": 249,
      "sku": "BQ_SF_1",
-     "cost": 60
+     "parts": {
+      "sunflower": 1
+     }
     },
     {
      "value": "2 sunflowers",
      "price": 449,
      "sku": "BQ_SF_2",
-     "cost": 100
+     "parts": {
+      "sunflower": 2
+     }
     },
     {
      "value": "3 sunflowers",
      "price": 599,
      "sku": "BQ_SF_3",
-     "cost": null
+     "parts": {
+      "sunflower": 3
+     }
     }
    ],
    "description": "<p>A sunflower that stays in bloom. Each one is crocheted by hand, petal by petal, then wrapped in black and gold and tied with a ribbon, ready to give.</p><p>Choose one stem, a pair or a full trio. No water, no wilting.</p>",
@@ -140,19 +138,25 @@
      "value": "Red",
      "price": 249,
      "sku": "BQ_RS_Red_1",
-     "cost": 60
+     "parts": {
+      "rose": 1
+     }
     },
     {
      "value": "Pink",
      "price": 249,
      "sku": "BQ_RS_Pink_1",
-     "cost": 60
+     "parts": {
+      "rose": 1
+     }
     },
     {
      "value": "Yellow",
      "price": 249,
      "sku": "BQ_RS_Yellow_1",
-     "cost": 60
+     "parts": {
+      "rose": 1
+     }
     }
    ],
    "description": "<p>One rose, made to be kept. The petals are crocheted by hand and shaped into a full bloom, with a leaf on the stem, black and gold wrap and a ribbon.</p><p>A small gift that says a lot, in red, pink or yellow.</p>",
@@ -228,19 +232,25 @@
      "value": "Red",
      "price": 599,
      "sku": "BQ_RS_Red_3",
-     "cost": 150
+     "parts": {
+      "rose": 3
+     }
     },
     {
      "value": "Yellow",
      "price": 599,
      "sku": "BQ_RS_Yellow_3",
-     "cost": 150
+     "parts": {
+      "rose": 3
+     }
     },
     {
      "value": "Mixed",
      "price": 599,
      "sku": "BQ_RS_Mix_3",
-     "cost": 150
+     "parts": {
+      "rose": 3
+     }
     }
    ],
    "description": "<p>Three hand-crocheted roses in one bouquet, wrapped in black and gold and tied with a ribbon. Full, soft and made to last for years.</p><p>Choose classic red, sunny yellow, or one each of pink, yellow and red.</p>",
@@ -325,7 +335,9 @@
      "value": null,
      "price": 449,
      "sku": "BQ_RS_Red_2",
-     "cost": 100
+     "parts": {
+      "rose": 2
+     }
     }
    ],
    "description": "<p>Two red roses, crocheted by hand and wrapped together in black and gold. A classic for an anniversary or a date, and it will still look the same next year.</p>",
@@ -366,25 +378,33 @@
      "value": "Pink",
      "price": 249,
      "sku": "BQ_TLP_Pink_1",
-     "cost": 55
+     "parts": {
+      "tulip": 1
+     }
     },
     {
      "value": "Blue",
      "price": 249,
      "sku": "BQ_TLP_Blue_1",
-     "cost": 55
+     "parts": {
+      "tulip": 1
+     }
     },
     {
      "value": "Lavender",
      "price": 249,
      "sku": "BQ_TLP_Lvndr_1",
-     "cost": 55
+     "parts": {
+      "tulip": 1
+     }
     },
     {
      "value": "White",
      "price": 249,
      "sku": "BQ_TLP_White_1",
-     "cost": 55
+     "parts": {
+      "tulip": 1
+     }
     }
    ],
    "description": "<p>A single tulip with a long curved leaf, crocheted by hand and wrapped in black and gold with a ribbon.</p><p>Four colours: pink, blue, lavender and white. Lovely alone, and easy to pair.</p>",
@@ -464,7 +484,9 @@
      "value": null,
      "price": 249,
      "sku": "BQ_DSY_1",
-     "cost": null
+     "parts": {
+      "daisy": 1
+     }
     }
    ],
    "description": "<p>A cheerful white daisy with a yellow centre, crocheted by hand and wrapped in black and gold with a ribbon. Simple, bright and made to be kept.</p>",
@@ -505,25 +527,36 @@
      "value": "Daisy",
      "price": 599,
      "sku": "BQ_TLP_Blue_2_DSY_1",
-     "cost": null
+     "parts": {
+      "tulip": 2,
+      "daisy": 1
+     }
     },
     {
      "value": "White tulip",
      "price": 599,
      "sku": "BQ_TLP_Blue_2_White_1",
-     "cost": null
+     "parts": {
+      "tulip": 3
+     }
     },
     {
      "value": "Yellow rose",
      "price": 599,
      "sku": "BQ_TLP_Blue_2_RS_Yellow_1",
-     "cost": null
+     "parts": {
+      "tulip": 2,
+      "rose": 1
+     }
     },
     {
      "value": "Pink rose",
      "price": 599,
      "sku": "BQ_TLP_Blue_2_RS_Pink_1",
-     "cost": null
+     "parts": {
+      "tulip": 2,
+      "rose": 1
+     }
     }
    ],
    "description": "<p>Two blue tulips, one light and one deep, with a third flower of your choice: a daisy, a white tulip, a yellow rose or a pink rose. Every stem is crocheted by hand, then wrapped in black and gold.</p>",
@@ -606,7 +639,10 @@
      "value": null,
      "price": 599,
      "sku": "BQ_TLP_Pink_2_DSY_1",
-     "cost": null
+     "parts": {
+      "tulip": 2,
+      "daisy": 1
+     }
     }
    ],
    "description": "<p>Two pink tulips, one bright and one soft, with a white daisy between them. Crocheted by hand and wrapped in black and gold, it is one of our prettiest bouquets to give.</p>",
@@ -653,7 +689,9 @@
      "value": null,
      "price": 599,
      "sku": "BQ_TLP_Pink_2_Lvndr_1",
-     "cost": 135
+     "parts": {
+      "tulip": 3
+     }
     }
    ],
    "description": "<p>Three tulips in bright pink, soft pink and lavender, crocheted by hand with long green leaves and wrapped in black and gold. Soft colours, for someone you are fond of.</p>",
@@ -700,7 +738,11 @@
      "value": null,
      "price": 649,
      "sku": "BQ_SF_1_DSY_1_BEE_1",
-     "cost": null
+     "parts": {
+      "sunflower": 1,
+      "daisy": 1,
+      "bee": 1
+     }
     }
    ],
    "description": "<p>A sunflower, a daisy and a smiling little bee on its own stem. All three are crocheted by hand and wrapped in black and gold. It makes people smile, which is the point.</p>",
@@ -743,7 +785,10 @@
      "value": null,
      "price": 599,
      "sku": "BQ_SF_1_RS_Red_1_Yellow_1",
-     "cost": null
+     "parts": {
+      "sunflower": 1,
+      "rose": 2
+     }
     }
    ],
    "description": "<p>One sunflower above a red rose and a yellow rose. Three hand-crocheted flowers in warm colours, wrapped in black and gold and tied with a ribbon.</p>",
@@ -787,7 +832,9 @@
      "value": null,
      "price": 149,
      "sku": "KC_SF_1",
-     "cost": null
+     "parts": {
+      "flower keychain": 1
+     }
     }
    ],
    "description": "<p>A palm-sized sunflower, crocheted by hand with a deep brown centre and a ring of golden petals.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -821,13 +868,17 @@
      "value": "White",
      "price": 149,
      "sku": "KC_DSY_1",
-     "cost": null
+     "parts": {
+      "flower keychain": 1
+     }
     },
     {
      "value": "Blue",
      "price": 149,
      "sku": "KC_DSY_Blue_1",
-     "cost": null
+     "parts": {
+      "flower keychain": 1
+     }
     }
    ],
    "description": "<p>A soft daisy with a raised centre, crocheted by hand. Choose classic white and yellow, or blue.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -872,7 +923,9 @@
      "value": null,
      "price": 149,
      "sku": "KC_Evil_1",
-     "cost": null
+     "parts": {
+      "evil eye keychain": 1
+     }
     }
    ],
    "description": "<p>The evil eye, in rings of deep blue, white and sky blue, crocheted by hand. A small charm to carry with you or to give for good luck.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -917,7 +970,9 @@
      "value": null,
      "price": 179,
      "sku": "KC_Mor_1",
-     "cost": null
+     "parts": {
+      "peacock feather keychain": 1
+     }
     }
    ],
    "description": "<p>A peacock feather eye in green, gold and blue, crocheted by hand with a scalloped edge. Our largest keychain, and the most colourful.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -956,7 +1011,9 @@
      "value": null,
      "price": 179,
      "sku": "KC_BEE_1",
-     "cost": null
+     "parts": {
+      "bee": 1
+     }
     }
    ],
    "description": "<p>A round little bee with white wings and a stitched smile, crocheted and stuffed by hand.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -1000,7 +1057,9 @@
      "value": null,
      "price": 179,
      "sku": "KC_CHK_1",
-     "cost": 55
+     "parts": {
+      "chick keychain": 1
+     }
     }
    ],
    "description": "<p>A yellow chick still wearing its eggshell, crocheted and stuffed by hand, with tiny wings and red feet.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -1037,7 +1096,9 @@
      "value": null,
      "price": 279,
      "sku": "KC_SF_1_DSY_1",
-     "cost": null
+     "parts": {
+      "flower keychain": 2
+     }
     }
    ],
    "description": "<p>A sunflower and a white daisy, two hand-crocheted keychains that look good together. Keep one and give one, or keep both.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -1083,7 +1144,10 @@
      "value": null,
      "price": 279,
      "sku": "KC_SF_1_Evil_1",
-     "cost": null
+     "parts": {
+      "flower keychain": 1,
+      "evil eye keychain": 1
+     }
     }
    ],
    "description": "<p>A sunflower for brightness and an evil eye for luck. Two hand-crocheted keychains in one set.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -1119,7 +1183,10 @@
      "value": null,
      "price": 329,
      "sku": "KC_Chick_1_Bee_1",
-     "cost": 95
+     "parts": {
+      "bee": 1,
+      "chick keychain": 1
+     }
     }
    ],
    "description": "<p>Our two little characters together: the smiling bee and the chick in its eggshell. Both are crocheted and stuffed by hand.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -1162,7 +1229,10 @@
      "value": null,
      "price": 399,
      "sku": "KC_SF_1_DSY_1_Evil_1",
-     "cost": null
+     "parts": {
+      "flower keychain": 2,
+      "evil eye keychain": 1
+     }
     }
    ],
    "description": "<p>Three hand-crocheted keychains in one set: a sunflower, a white daisy and an evil eye. Enough to share between friends or family.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -1203,7 +1273,10 @@
      "value": null,
      "price": 399,
      "sku": "KC_OCTPS_2_Evil_1",
-     "cost": null
+     "parts": {
+      "octopus keychain": 2,
+      "evil eye keychain": 1
+     }
     }
    ],
    "description": "<p>Two baby octopuses, one pink and one aqua, with an evil eye to watch over them. All three are crocheted by hand.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -1245,7 +1318,10 @@
      "value": null,
      "price": 299,
      "sku": "KC_SF_1_Mor_1",
-     "cost": null
+     "parts": {
+      "flower keychain": 1,
+      "peacock feather keychain": 1
+     }
     }
    ],
    "description": "<p>A golden sunflower beside a peacock feather in green and blue. Two of our most colourful hand-crocheted keychains in one set.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -1286,19 +1362,25 @@
      "value": "Pink",
      "price": 199,
      "sku": "charm_pink_1",
-     "cost": null
+     "parts": {
+      "lily charm": 1
+     }
     },
     {
      "value": "White",
      "price": 199,
      "sku": "charm_white_1",
-     "cost": null
+     "parts": {
+      "lily charm": 1
+     }
     },
     {
      "value": "Pink + white pair",
      "price": 349,
      "sku": "lily_bag_charm_2",
-     "cost": 60
+     "parts": {
+      "lily charm": 2
+     }
     }
    ],
    "description": "<p>Two little bell flowers hanging from a green bow, crocheted by hand. Tie it to a bag handle, or wear it in your hair over a ponytail.</p><p>Choose pink, white, or the pair.</p>",
@@ -1379,7 +1461,9 @@
      "value": null,
      "price": 399,
      "sku": "POT_SF_1",
-     "cost": 80
+     "parts": {
+      "flower pot": 1
+     }
     }
    ],
    "description": "<p>A sunflower growing in its own little pot. The flower, the leaves, the soil and the pot are all crocheted by hand.</p><p>It stands by itself on a desk, a shelf or a windowsill, and never needs water.</p>",
@@ -1431,19 +1515,25 @@
      "value": "White",
      "price": 399,
      "sku": "POT_DAISY_01",
-     "cost": null
+     "parts": {
+      "flower pot": 1
+     }
     },
     {
      "value": "Blue",
      "price": 399,
      "sku": "POT_BLUE_DAISY_01",
-     "cost": null
+     "parts": {
+      "flower pot": 1
+     }
     },
     {
      "value": "Pink",
      "price": 399,
      "sku": "POT_DSY_Pink_1",
-     "cost": null
+     "parts": {
+      "flower pot": 1
+     }
     }
    ],
    "description": "<p>A daisy in a pot, crocheted by hand from the petals down to the soil. Choose white, blue or pink.</p><p>It stands by itself on a desk, a shelf or a windowsill, and never needs water.</p>",
@@ -1519,25 +1609,36 @@
      "value": "Headband + clips",
      "price": 349,
      "sku": "HB+HC_BLUE_02",
-     "cost": null
+     "parts": {
+      "headband": 1,
+      "hair clips, pair": 1
+     }
     },
     {
      "value": "Headband",
      "price": 249,
      "sku": "HB_BLUE",
-     "cost": null
+     "parts": {
+      "headband": 1
+     }
     },
     {
      "value": "Clips, pair",
      "price": 149,
      "sku": "HC_BLUE",
-     "cost": null
+     "parts": {
+      "hair clips, pair": 1
+     }
     },
     {
      "value": "Headband, clips + claw clip",
      "price": 449,
      "sku": "HB+CLIP+CLUTCHER_BLUE",
-     "cost": null
+     "parts": {
+      "headband": 1,
+      "hair clips, pair": 1,
+      "claw clip": 1
+     }
     }
    ],
    "description": "<p>A row of cream daisies with blue centres, crocheted by hand into a tie-on headband, with clips to match. The headband ties at the back, so it fits every head.</p><p>Take the headband, the pair of clips, or a set.</p>",
@@ -1607,25 +1708,33 @@
      "value": "Blue",
      "price": 129,
      "sku": "HC_BLUE_02",
-     "cost": null
+     "parts": {
+      "hair clips, pair": 1
+     }
     },
     {
      "value": "Pink",
      "price": 129,
      "sku": "HC_PINK_02",
-     "cost": null
+     "parts": {
+      "hair clips, pair": 1
+     }
     },
     {
      "value": "White",
      "price": 129,
      "sku": "HC_WHITE_02",
-     "cost": null
+     "parts": {
+      "hair clips, pair": 1
+     }
     },
     {
      "value": "Sunflower",
      "price": 129,
      "sku": "HC_SF_02",
-     "cost": null
+     "parts": {
+      "hair clips, pair": 1
+     }
     }
    ],
    "description": "<p>A pair of snap clips, each topped with a hand-crocheted flower. Light enough to wear all day, for children and grown-ups.</p><p>Four designs: blue, pink, white daisy and sunflower.</p>",
@@ -1660,7 +1769,9 @@
      "value": null,
      "price": 199,
      "sku": "CTie_SF",
-     "cost": null
+     "parts": {
+      "curtain tie-back": 1
+     }
     }
    ],
    "description": "<p>A big crocheted sunflower with two hanging leaves that holds a curtain open. It wraps around the curtain and fastens behind the flower. Made by hand, one at a time.</p><p>Sold singly: add two for a pair of curtains.</p>",
