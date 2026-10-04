@@ -1,0 +1,101 @@
+{%- doc -%}
+  The product's options as pills (docs/product-page-plan.md): real radio buttons in a fieldset, so arrow keys and
+  screen readers work with no script. A sold-out choice is struck through and can't be picked. A colour dot shows
+  when the option value has a swatch in the admin.
+  - One option: each pill is the variant itself (name="id"), so the form posts the right one without JavaScript.
+  - Two or more: the pills are only choices; product.js finds the variant and writes it to the form's hidden id.
+    Without JavaScript these are hidden and the form's plain select is used instead.
+
+  @param {product} product - The product
+  @param {string} form_id - Id of the product form the pills belong to
+  @param {string} id - Prefix for the inputs' ids
+
+  @example
+  {% render 'product-options', product: product, form_id: form_id, id: section.id %}
+{%- enddoc -%}
+{%- assign single = false -%}
+{%- if product.options.size == 1 -%}{%- assign single = true -%}{%- endif -%}
+<div class="options{% unless single %} options--multi{% endunless %}" data-options>
+  {%- for option in product.options_with_values -%}
+    <fieldset class="options__group">
+      <legend class="options__name">{{ option.name }}</legend>
+      <div class="options__pills">
+        {%- for value in option.values -%}
+          {%- liquid
+            assign input_id = 'Option-' | append: id | append: '-' | append: option.position | append: '-' | append: forloop.index
+            assign sold_out = false
+            if value.available == false
+              assign sold_out = true
+            endif
+          -%}
+          <span class="pill">
+            <input
+              class="pill__input visually-hidden"
+              type="radio"
+              id="{{ input_id }}"
+              form="{{ form_id }}"
+              {% if single %}
+                name="id"
+                value="{{ value.variant.id }}"
+              {% else %}
+                name="option-{{ option.position }}"
+                value="{{ value.name | escape }}"
+              {% endif %}
+              data-option="{{ option.position }}"
+              data-value="{{ value.name | escape }}"
+              {% if value.selected %}
+                checked
+              {% endif %}
+              {% if sold_out and value.selected == false %}
+                disabled
+              {% endif %}
+            >
+            <label class="pill__label{% if sold_out %} is-out{% endif %}" for="{{ input_id }}">
+              {%- if value.swatch.color -%}<i class="pill__dot" style="background: {{ value.swatch.color }}"></i>{%- endif -%}
+              {{- value.name -}}
+              {%- if sold_out -%}<span class="visually-hidden"> ({{ 'products.sold_out' | t }})</span>{%- endif -%}
+            </label>
+          </span>
+        {%- endfor -%}
+      </div>
+    </fieldset>
+  {%- endfor -%}
+</div>
+{%- unless single -%}
+  <noscript><style>.options--multi { display: none; }</style></noscript>
+{%- endunless -%}
+
+{% stylesheet %}
+  .options { display: grid; gap: var(--space-4); }
+  .options__group { min-width: 0; margin: 0; padding: 0; border: 0; }
+  .options__name { padding: 0; margin-bottom: var(--space-2); font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
+  .options__pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .pill { position: relative; display: inline-flex; }
+  .pill__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    min-width: var(--tap);
+    justify-content: center;
+    padding: 0 var(--space-4);
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--white);
+    color: var(--color-heading);
+    font-weight: 500;
+    font-size: .9375rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color var(--dur-state) ease, background-color var(--dur-state) ease, scale var(--dur-press) ease;
+  }
+  .pill__label:active { scale: .97; }
+  .pill__dot { width: 18px; height: 18px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(78 58 49 / .25); }
+  .pill__input:checked + .pill__label { border-color: var(--cocoa-deep); background: var(--blush-soft); box-shadow: inset 0 0 0 .5px var(--cocoa-deep); }
+  .pill__input:focus-visible + .pill__label { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+  .pill__label.is-out { color: var(--color-muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+  .pill__input:disabled + .pill__label { border-style: dashed; cursor: not-allowed; }
+  .pill__input:disabled + .pill__label:active { scale: none; }
+  @media (hover: hover) { .pill__input:not(:disabled):not(:checked) + .pill__label:hover { border-color: var(--cocoa); } }
+  @media (forced-colors: active) { .pill__input:checked + .pill__label { outline: 2px solid Highlight; } }
+{% endstylesheet %}

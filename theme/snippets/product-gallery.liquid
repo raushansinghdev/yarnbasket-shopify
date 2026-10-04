@@ -1,0 +1,199 @@
+{%- doc -%}
+  The product page's photos (docs/product-page-plan.md "Photos"). Square, edge to edge on phones, one photo per
+  swipe: the browser's own scroll with snap, so it follows the finger with no script in the gesture. product.js only
+  keeps the dots, counter and thumbnails in step and slides to a variant's photo.
+  - The first photo is the page's main image (eager, high priority); the second loads right behind it so the first
+    swipe never shows a blank; the rest wait until they're near.
+  - A video uploaded to the product is a slide with the browser's own controls: nothing loads until Play.
+  - The heart (the same one as on cards) and Share sit on the photo's corner. Share shows only where product.js can
+    open the phone's share sheet or copy the link.
+  - Desktop: a strip of thumbnail buttons beside the photo.
+  With one photo there are no dots, counter or thumbnails.
+
+  @param {product} product - The product
+  @param {variant} [current] - The chosen variant: its photo is shown first
+
+  @example
+  {% render 'product-gallery', product: product, current: product.selected_or_first_available_variant %}
+{%- enddoc -%}
+{%- liquid
+  assign slides = product.media | where: 'media_type', 'image'
+  assign videos = product.media | where: 'media_type', 'video'
+  assign slides = slides | concat: videos
+  assign total = slides.size
+  assign sizes = '(min-width: 990px) min(46vw, 620px), 100vw'
+  assign region = 'products.gallery' | t: title: product.title
+-%}
+<div class="gallery" data-gallery>
+  {%- if total > 0 -%}
+    <ul class="gallery__track" role="list" tabindex="0" aria-label="{{ region | escape }}" data-gallery-track>
+      {%- for media in slides -%}
+        {%- liquid
+          assign position = 'products.photo_of' | t: title: product.title, index: forloop.index, count: total
+          assign alt = media.alt | default: position
+          if media.alt == product.title and total > 1
+            assign alt = position
+          endif
+        -%}
+        <li class="gallery__slide media" data-media-id="{{ media.id }}" {% if current.featured_media.id == media.id %}data-current{% endif %}>
+          {%- if media.media_type == 'video' -%}
+            {{- media | video_tag: image_size: '1100x', controls: true, preload: 'none', playsinline: true, muted: true, class: 'gallery__video' -}}
+          {%- elsif forloop.first -%}
+            {%- render 'image', image: media.preview_image, sizes: sizes, width: 1600, loading: 'eager', priority: true, alt: alt, class: 'gallery__img' -%}
+          {%- elsif forloop.index == 2 -%}
+            {%- render 'image', image: media.preview_image, sizes: sizes, width: 1600, loading: 'eager', alt: alt, class: 'gallery__img' -%}
+          {%- else -%}
+            {%- render 'image', image: media.preview_image, sizes: sizes, width: 1600, alt: alt, class: 'gallery__img' -%}
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- else -%}
+    <div class="gallery__slide media">{{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}</div>
+  {%- endif -%}
+
+  <div class="gallery__actions">
+    {%- render 'save-button', product: product -%}
+    <button type="button" class="gallery__share" data-share data-copied="{{ 'products.link_copied' | t }}" hidden>
+      {%- render 'icon', icon: 'share' -%}
+      <span class="visually-hidden">{{ 'products.share' | t: title: product.title }}</span>
+    </button>
+  </div>
+
+  {%- if total > 1 -%}
+    <div class="gallery__meta" aria-hidden="true">
+      <span class="gallery__dots" data-gallery-dots>
+        {%- for media in slides -%}<i{% if forloop.first %} class="is-on"{% endif %}></i>{%- endfor -%}
+      </span>
+      <span class="gallery__count"><span data-gallery-count>1</span> / {{ total }}</span>
+    </div>
+
+    <ul class="gallery__thumbs" role="list" data-gallery-thumbs>
+      {%- for media in slides -%}
+        <li>
+          <button type="button" class="gallery__thumb media" data-go="{{ forloop.index0 }}" {% if forloop.first %}aria-current="true"{% endif %}>
+            {%- render 'image', image: media.preview_image, sizes: '72px', width: 216, alt: '', class: 'gallery__thumb-img' -%}
+            <span class="visually-hidden">{{ 'products.show_photo' | t: index: forloop.index, count: total }}</span>
+            {%- if media.media_type == 'video' -%}<span class="gallery__thumb-play">{%- render 'icon', icon: 'play' -%}</span>{%- endif -%}
+          </button>
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+  <p class="gallery__said" role="status" data-share-status></p>
+</div>
+
+{% stylesheet %}
+  .gallery { position: relative; }
+  .gallery__track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .gallery__track::-webkit-scrollbar { display: none; }
+  .gallery__track:focus-visible { outline-offset: -3px; }
+  /* Square, like the photos themselves, so nothing is cropped. Edge to edge on phones: no rounded corners. */
+  .gallery__slide { --ratio: 1; border-radius: 0; scroll-snap-align: center; scroll-snap-stop: always; }
+  .gallery__slide > video { background: var(--color-surface); }
+
+  /* The heart and Share: 48px to tap, a 32px white circle to look at, the same as the heart on cards. */
+  .gallery__actions { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 2; display: grid; }
+  .gallery__actions .save-btn--card { position: relative; }
+  .gallery__share {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--cocoa-deep);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .gallery__share::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / .9);
+    box-shadow: 0 2px 8px -3px rgb(78 58 49 / .35);
+    transition: scale var(--dur-press) ease;
+  }
+  .gallery__share:active::before { scale: .92; }
+  .gallery__share .icon { position: relative; width: 19px; height: 19px; stroke-width: 2; }
+  .gallery__share:focus-visible { outline-offset: -4px; }
+  /* "Link copied", where there's no share sheet: a small chip under the buttons for a moment. */
+  .gallery__said {
+    position: absolute;
+    top: calc(var(--space-2) + var(--tap) * 2);
+    right: var(--space-3);
+    z-index: 2;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--cocoa-deep);
+    color: var(--cream);
+    font-size: .8125rem;
+  }
+  .gallery__said:empty { display: none; }
+
+  /* Dots in the middle, the count at the right, both on the photo's bottom edge. */
+  .gallery__meta {
+    position: absolute;
+    inset: auto 0 var(--space-3);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding-inline: var(--space-3);
+    pointer-events: none;
+  }
+  .gallery__dots { grid-column: 2; display: flex; align-items: center; gap: 5px; padding: 6px 9px; border-radius: var(--radius-pill); background: rgb(255 255 255 / .96); }
+  .gallery__dots i { width: 6px; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--cocoa) 30%, transparent); transition: width var(--dur-panel) var(--ease-out), background-color var(--dur-panel) ease; }
+  .gallery__dots i.is-on { width: 16px; background: var(--cocoa-deep); }
+  .gallery__count {
+    grid-column: 3;
+    justify-self: end;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    background: rgb(255 255 255 / .96);
+    color: var(--cocoa-deep);
+    font-size: .8125rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .gallery__thumbs { display: none; }
+
+  @media (min-width: 990px) {
+    .gallery { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--space-4); align-items: start; }
+    .gallery__track { grid-column: 2; grid-row: 1; border-radius: var(--radius-md); }
+    .gallery > .gallery__slide { grid-column: 1 / -1; border-radius: var(--radius-md); }
+    .gallery__dots { display: none; }
+    .gallery__thumbs { grid-column: 1; grid-row: 1; display: grid; gap: var(--space-3); }
+    .gallery__thumb {
+      --ratio: 1;
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      opacity: .7;
+      transition: opacity var(--dur-state) ease, box-shadow var(--dur-state) ease;
+    }
+    .gallery__thumb[aria-current="true"] { opacity: 1; box-shadow: 0 0 0 2px var(--white), 0 0 0 3.5px var(--cocoa); }
+    .gallery__thumb-play { position: absolute; inset: 0; display: grid; place-items: center; color: var(--white); background: rgb(78 58 49 / .28); }
+    .gallery__thumb-play .icon { width: 22px; height: 22px; fill: currentColor; }
+    /* With one photo there is no strip, so the photo takes both columns. */
+    .gallery:not(:has(.gallery__thumbs)) .gallery__track { grid-column: 1 / -1; }
+  }
+  @media (min-width: 990px) and (hover: hover) { .gallery__thumb:hover { opacity: 1; } }
+  @media (prefers-reduced-motion: no-preference) {
+    html:not(.lite) .gallery__track { scroll-behavior: smooth; }
+  }
+  @media (forced-colors: active) { .gallery__dots i.is-on { background: CanvasText; } }
+{% endstylesheet %}

@@ -39,7 +39,7 @@
      The headings here vary ("Saved", "Removed from saved"), so the words keep whatever their heading needs. */
   .saved-toast {
     position: fixed;
-    inset: auto var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
+    inset: auto var(--space-3) calc(max(var(--space-3), env(safe-area-inset-bottom)) + var(--buybar, 0px));
     z-index: 30;
     display: flex;
     flex-wrap: wrap;

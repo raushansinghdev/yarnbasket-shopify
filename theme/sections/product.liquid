@@ -1,93 +1,372 @@
-{% comment %}
-  This section is used in the product template to render product page with
-  media, content, and add-to-cart form.
+{%- comment -%}
+  The product page (docs/product-page-plan.md). Most visitors land here straight from an ad, on a phone, so it is
+  built phone first: photos, then name and price, the options, one aligned buy box (quantity + Add to cart, then
+  Buy it now), the delivery terms, and every longer text closed until asked for.
+  cart.js adds without leaving the page and shows the added-to-cart pop-up; without JavaScript the form posts to
+  /cart. product.js (loaded only here) keeps price, button, photo and URL in step with the chosen variant, steps the
+  quantity, and shows the sticky buy bar on phones whenever the main button is off screen.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign current = product.selected_or_first_available_variant
+  assign form_id = 'ProductForm-' | append: section.id
 
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/product
-{% endcomment %}
+  comment
+    The free gift is not for sale: the cart takes a paid one out (docs/offers-plan.md), so its page has no buy box.
+  endcomment
+  assign is_gift = false
+  if product.tags contains 'free-gift' or product.id == settings.gift_product.id
+    assign is_gift = true
+  endif
 
-<div class="product-images">
-  {% for image in product.images %}
-    {% render 'image', class: 'product-image', image: image %}
-  {% endfor %}
-</div>
+  comment
+    Where this piece lives: the collection the shopper came through, or its first craft collection.
+  endcomment
+  assign home = collection
+  if home == blank
+    assign skip = 'frontpage,all,shop,bestsellers' | split: ','
+    for c in product.collections
+      if skip contains c.handle or c.id == settings.shop_all_collection.id
+        continue
+      endif
+      assign home = c
+      break
+    endfor
+  endif
 
-<div class="product-info">
-  <h1>{{ product.title }}</h1>
-  <p>{{ product.price | money }}</p>
-  <p>{{ product.description }}</p>
-</div>
+  assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
+  assign page_url = shop.url | append: product.url
+  assign ask_text = 'products.ask_message' | t: title: product.title, url: page_url
+  assign make_text = 'products.make_message' | t: title: product.title, url: page_url
+  if whatsapp != blank
+    assign wa = 'https://wa.me/' | append: whatsapp | append: '?text='
+    assign ask_tail = ask_text | url_encode
+    assign make_tail = make_text | url_encode
+    assign ask_url = wa | append: ask_tail
+    assign make_url = wa | append: make_tail
+  else
+    assign ask_url = pages.contact.url | default: '/pages/contact'
+    assign make_url = ask_url
+  endif
 
-<div class="product-form">
-  {%- comment -%}
-    Interim Add to cart until the full product page (build-plan Phase 4). cart.js adds without leaving the page and
-    shows the added-to-cart pop-up; without JavaScript the form posts to /cart. Errors (like the stock limit) show
-    under the button.
-  {%- endcomment -%}
-  {%- assign current_variant = product.selected_or_first_available_variant -%}
-  {% form 'product', product, class: 'product-form__form', novalidate: 'novalidate' %}
-    {%- if product.has_only_default_variant -%}
-      <input type="hidden" name="id" value="{{ current_variant.id }}">
+  assign size_text = product.metafields.custom.size.value
+  assign materials_text = product.metafields.custom.materials.value | default: s.materials
+  assign care_text = product.metafields.custom.care.value | default: s.care
+  assign ship_from = settings.free_shipping_threshold | default: 0 | times: 100
+  assign ship_fee = settings.shipping_fee | default: 0 | times: 100
+  assign rating_count = product.metafields.reviews.rating_count.value | default: 0
+-%}
+
+<div class="pdp page-grid" data-product>
+  <div class="pdp__gallery full-bleed">
+    {%- render 'product-gallery', product: product, current: current -%}
+  </div>
+
+  <div class="pdp__info">
+    <div class="pdp__head">
+      {%- if home != blank -%}
+        <nav aria-label="{{ 'products.breadcrumb' | t }}">
+          <a class="pdp__crumb" href="{{ home.url }}">{{ home.title }}</a>
+        </nav>
+      {%- endif -%}
+      <h1 class="pdp__title">{{ product.title }}</h1>
+
+      {%- if rating_count > 0 -%}
+        {%- assign rating = product.metafields.reviews.rating.value.rating | round: 1 -%}
+        <p class="pdp__rating">
+          {%- render 'icon', icon: 'star' -%}
+          <span aria-hidden="true">{{ rating }} <span class="pdp__rating-count">({{ rating_count }})</span></span>
+          <span class="visually-hidden">{{ 'products.rating' | t: rating: rating, count: rating_count }}</span>
+        </p>
+      {%- endif -%}
+
+      {%- unless is_gift -%}
+        {%- liquid
+          assign on_sale = false
+          if current.compare_at_price > current.price
+            assign on_sale = true
+          endif
+          assign badge = blank
+          if current.available == false
+            assign badge = 'products.sold_out' | t
+          elsif current.inventory_management == 'shopify' and current.inventory_policy == 'deny' and current.inventory_quantity <= 3
+            assign badge = 'products.last_few' | t
+          elsif on_sale
+            assign badge = 'products.sale' | t
+          endif
+        -%}
+        <div class="pdp__price-row">
+          <p class="pdp__price" data-price>
+            <span class="visually-hidden" data-price-sale {% unless on_sale %}hidden{% endunless %}>{{ 'products.sale_price' | t }}</span>
+            <span class="pdp__now" data-price-now>{{ current.price | money }}</span>
+            <span class="visually-hidden" data-price-regular {% unless on_sale %}hidden{% endunless %}>{{ 'products.regular_price' | t }}</span>
+            <s class="pdp__was" data-price-was {% unless on_sale %}hidden{% endunless %}>{{ current.compare_at_price | money }}</s>
+          </p>
+          <span class="pdp__badge" data-badge {% if badge == blank %}hidden{% endif %}>{{ badge }}</span>
+        </div>
+        {%- if shop.taxes_included -%}<p class="pdp__tax">{{ 'products.tax_included' | t }}</p>{%- endif -%}
+      {%- endunless -%}
+    </div>
+
+    {%- if is_gift -%}
+      <div class="pdp__gift">
+        <p>{{ 'products.gift_only' | t }}</p>
+        <a class="btn" href="{{ settings.shop_all_collection.url | default: routes.all_products_collection_url }}">{{ 'products.gift_shop' | t }}</a>
+      </div>
     {%- else -%}
-      <label class="product-form__label" for="ProductVariant-{{ section.id }}">{{ product.options | join: ' / ' }}</label>
-      <select class="product-form__field" id="ProductVariant-{{ section.id }}" name="id">
-        {%- for variant in product.variants -%}
-          <option value="{{ variant.id }}" {% if variant == current_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
-            {%- if variant.available -%}
-              {{ variant.title }} · {{ variant.price | money }}
-            {%- else -%}
-              {{ 'products.unavailable' | t: option: variant.title }}
-            {%- endif -%}
-          </option>
-        {%- endfor -%}
-      </select>
+      {%- unless product.has_only_default_variant -%}
+        {%- render 'product-options', product: product, form_id: form_id, id: section.id -%}
+      {%- endunless -%}
+
+      {% form 'product', product, id: form_id, class: 'pdp__form', novalidate: 'novalidate', data-product-form: '' %}
+        {%- if product.options.size > 1 -%}
+          <input type="hidden" name="id" value="{{ current.id }}" data-variant-id>
+          <noscript>
+            <label class="options__name" for="ProductVariant-{{ section.id }}">{{ product.options | join: ' / ' }}</label>
+            <select class="pdp__select" id="ProductVariant-{{ section.id }}" name="id">
+              {%- for variant in product.variants -%}
+                <option value="{{ variant.id }}" {% if variant == current %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
+                  {%- if variant.available -%}
+                    {{ variant.title }} · {{ variant.price | money }}
+                  {%- else -%}
+                    {{ 'products.unavailable' | t: option: variant.title }}
+                  {%- endif -%}
+                </option>
+              {%- endfor -%}
+            </select>
+          </noscript>
+        {%- elsif product.has_only_default_variant -%}
+          <input type="hidden" name="id" value="{{ current.id }}">
+        {%- endif -%}
+
+        <div class="pdp__buy">
+          {%- liquid
+            assign max = blank
+            if current.inventory_management == 'shopify' and current.inventory_policy == 'deny' and current.inventory_quantity > 0
+              assign max = current.inventory_quantity
+            endif
+            assign qty_id = 'ProductQty-' | append: section.id
+            assign safe_title = product.title | escape
+            render 'quantity', id: qty_id, name: 'quantity', value: 1, title: safe_title, max: max, floor: 1
+          -%}
+          <button
+            type="submit"
+            class="btn pdp__add"
+            aria-describedby="ProductAddError-{{ section.id }}"
+            data-add
+            {% unless current.available %}
+              disabled
+            {% endunless %}
+          >
+            {%- render 'icon', icon: 'cart' -%}
+            <span
+              data-add-label
+              data-label-add="{{ 'products.add_to_cart' | t }}"
+              data-label-out="{{ 'products.sold_out' | t }}"
+            >
+              {%- if current.available %}{{ 'products.add_to_cart' | t }}{% else %}{{ 'products.sold_out' | t }}{% endif -%}
+            </span>
+          </button>
+          <div class="pdp__now-btn">{{ form | payment_button }}</div>
+        </div>
+        <p class="pdp__error" id="ProductAddError-{{ section.id }}" role="alert" data-add-error hidden></p>
+      {% endform %}
+
+      {%- render 'offer-terms' -%}
+
+      <p class="pdp__ask">
+        <a
+          href="{% if current.available %}{{ ask_url }}{% else %}{{ make_url }}{% endif %}"
+          {% if whatsapp != blank %}
+            target="_blank" rel="noopener"
+          {% endif %}
+          data-ask
+          data-ask-url="{{ ask_url }}"
+          data-make-url="{{ make_url }}"
+          data-ask-label="{{ 'products.ask' | t }}"
+          data-make-label="{{ 'products.ask_make' | t }}"
+        >
+          {%- render 'icon', icon: 'whatsapp' -%}
+          <span data-ask-text>{%- if current.available %}{{ 'products.ask' | t }}{% else %}{{ 'products.ask_make' | t }}{% endif -%}</span>
+        </a>
+      </p>
     {%- endif -%}
 
-    <label class="product-form__label" for="ProductQty-{{ section.id }}">{{ 'products.quantity' | t }}</label>
-    <input class="product-form__field product-form__qty" id="ProductQty-{{ section.id }}" type="number" inputmode="numeric" name="quantity" min="1" value="1">
-
-    <button
-      type="submit"
-      class="btn product-form__add"
-      aria-describedby="ProductAddError-{{ section.id }}"
-      {% unless current_variant.available %}
-        disabled
-      {% endunless %}
-    >
-      {%- render 'icon', icon: 'cart' -%}
-      <span data-add-label>
-        {%- if current_variant.available %}{{ 'products.add_to_cart' | t }}{% else %}{{ 'products.sold_out' | t }}{% endif -%}
-      </span>
-    </button>
-    <p class="product-form__error" id="ProductAddError-{{ section.id }}" role="alert" data-add-error hidden></p>
-    {{ form | payment_button }}
-  {% endform %}
-  {%- render 'save-button', product: product, style: 'page' -%}
-  {%- render 'offer-terms' -%}
+    {%- comment -%} Every longer text is closed until asked for (PP8); closed text is still in the page for search engines. {%- endcomment -%}
+    <div class="pdp__details">
+      {%- if product.description != blank -%}
+        <details class="detail">
+          <summary><h2 class="detail__title">{{ 'products.description' | t }}</h2><span class="detail__toggle">{%- render 'icon', icon: 'plus' -%}</span></summary>
+          <div class="detail__body rte">{{ product.description }}</div>
+        </details>
+      {%- endif -%}
+      {%- if size_text != blank -%}
+        <details class="detail">
+          <summary><h2 class="detail__title">{{ 'products.size' | t }}</h2><span class="detail__toggle">{%- render 'icon', icon: 'plus' -%}</span></summary>
+          <div class="detail__body"><p>{{ size_text | escape | newline_to_br }}</p></div>
+        </details>
+      {%- endif -%}
+      {%- if materials_text != blank or care_text != blank -%}
+        <details class="detail">
+          <summary><h2 class="detail__title">{{ 'products.materials_care' | t }}</h2><span class="detail__toggle">{%- render 'icon', icon: 'plus' -%}</span></summary>
+          <div class="detail__body">
+            {%- if materials_text != blank -%}<p>{{ materials_text | escape | newline_to_br }}</p>{%- endif -%}
+            {%- if care_text != blank -%}<p>{{ care_text | escape | newline_to_br }}</p>{%- endif -%}
+          </div>
+        </details>
+      {%- endif -%}
+      {%- unless is_gift -%}
+        <details class="detail">
+          <summary><h2 class="detail__title">{{ 'products.delivery' | t }}</h2><span class="detail__toggle">{%- render 'icon', icon: 'plus' -%}</span></summary>
+          <div class="detail__body">
+            <p>
+              {{- 'cart.ships' | t }}.
+              {% if s.delivery != blank %}{{ s.delivery | escape }}{% endif -%}
+            </p>
+            {%- if ship_from > 0 -%}
+              <p>
+                {%- assign amount = ship_from | money_without_trailing_zeros -%}
+                {{- 'offers.faq_ship' | t: amount: amount }}
+                {% if ship_fee > 0 -%}
+                  {%- assign amount = ship_fee | money_without_trailing_zeros -%}
+                  {{- 'offers.faq_fee' | t: amount: amount -}}
+                {%- endif -%}
+                {%- if settings.cod_available %} {{ 'offers.faq_cod' | t }}{% endif -%}
+              </p>
+            {%- endif -%}
+            {%- if s.replacement != blank -%}
+              <p>
+                {{- s.replacement | escape }}
+                {% if shop.refund_policy %}<a href="{{ shop.refund_policy.url }}">{{ 'products.refund_policy' | t }}</a>{% endif -%}
+              </p>
+            {%- endif -%}
+          </div>
+        </details>
+      {%- endunless -%}
+    </div>
+  </div>
 </div>
+
+{%- unless is_gift -%}
+  {%- comment -%}
+    The sticky buy bar (phones): a second button for the same form, not a second form. product.js shows it whenever
+    the main button is off screen, including on arrival on a short screen, and hides it at the footer.
+  {%- endcomment -%}
+  <div class="buybar" data-buybar hidden>
+    <div class="buybar__text">
+      <span class="buybar__title">{{ product.title }}</span>
+      <span class="buybar__price" data-buybar-price>{{ current.price | money }}</span>
+    </div>
+    <button type="submit" form="{{ form_id }}" class="btn buybar__add" data-add {% unless current.available %}disabled{% endunless %}>
+      <span data-add-label>{%- if current.available %}{{ 'products.add_to_cart' | t }}{% else %}{{ 'products.sold_out' | t }}{% endif -%}</span>
+    </button>
+  </div>
+
+  <script type="application/json" data-variants>
+    [
+      {%- for variant in product.variants -%}
+        {%- liquid
+          assign v_badge = ''
+          if variant.available == false
+            assign v_badge = 'products.sold_out' | t
+          elsif variant.inventory_management == 'shopify' and variant.inventory_policy == 'deny' and variant.inventory_quantity <= 3
+            assign v_badge = 'products.last_few' | t
+          elsif variant.compare_at_price > variant.price
+            assign v_badge = 'products.sale' | t
+          endif
+          assign v_max = 0
+          if variant.inventory_management == 'shopify' and variant.inventory_policy == 'deny' and variant.inventory_quantity > 0
+            assign v_max = variant.inventory_quantity
+          endif
+          assign v_was = ''
+          if variant.compare_at_price > variant.price
+            assign v_was = variant.compare_at_price | money
+          endif
+        -%}
+        {
+          "id": {{ variant.id }},
+          "available": {{ variant.available }},
+          "options": {{ variant.options | json }},
+          "title": {{ variant.title | json }},
+          "price": {{ variant.price | money | json }},
+          "was": {{ v_was | json }},
+          "badge": {{ v_badge | json }},
+          "max": {{ v_max }},
+          "media": {{ variant.featured_media.id | default: 0 }}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  </script>
+  <p
+    class="visually-hidden"
+    role="status"
+    data-variant-status
+    data-chosen="{{ 'products.chosen' | t: option: '[option]', price: '[price]' }}"
+    data-chosen-out="{{ 'products.chosen_out' | t: option: '[option]' }}"
+  ></p>
+  <script src="{{ 'product.js' | asset_url }}" type="module"></script>
+{%- endunless -%}
+
 {%- comment -%} Recently viewed (docs/account-plan.md §8.5): saved.js notes this product's handle. {%- endcomment -%}
-<span hidden data-viewed="{{ product.handle }}"></span>
+{%- unless is_gift -%}<span hidden data-viewed="{{ product.handle }}"></span>{%- endunless -%}
 
 {% stylesheet %}
-  .product-form { max-width: 26rem; margin: var(--space-6) var(--gutter); }
-  .product-form__form { display: grid; gap: var(--space-2); }
-  .product-form__label { margin-top: var(--space-2); font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
-  .product-form__field {
-    min-height: var(--tap);
-    padding: 0 var(--space-4);
-    border: 1.5px solid var(--color-line-strong);
-    border-radius: var(--radius-sm);
-    background: var(--white);
-    color: var(--color-heading);
-    font: 400 1rem var(--font-sans);
+  /* Phones: one column. The photos run edge to edge; everything else sits in the page's centre column. */
+  .pdp { row-gap: var(--space-4); padding-bottom: var(--space-7); }
+  .pdp__info { display: grid; gap: var(--space-5); }
+  .pdp__head { display: grid; gap: var(--space-1); }
+  .pdp__crumb {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--color-muted);
+    font-size: var(--fs-label);
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    text-decoration: none;
   }
-  .product-form__qty { width: 6rem; font-variant-numeric: tabular-nums; }
-  .product-form__add { width: 100%; margin-top: var(--space-4); }
-  .product-form__add .icon { width: 22px; height: 22px; }
-  @media (hover: hover) { .product-form__add:hover .icon { transform: translateX(2px); } }
-  .product-form__add:disabled { --btn-bg: var(--taupe-ink); cursor: not-allowed; transform: none; box-shadow: none; }
-  .product-form__add[aria-busy="true"] { cursor: progress; }
+  @media (hover: hover) { .pdp__crumb:hover { color: var(--color-heading); text-decoration: underline; text-underline-offset: 4px; } }
+  .pdp__title { font-size: clamp(1.75rem, 1.5rem + 1.2vw, 2.5rem); line-height: 1.1; text-wrap: balance; }
+  .pdp__rating { display: flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
+  .pdp__rating .icon { width: 16px; height: 16px; fill: currentColor; }
+  .pdp__rating-count { font-weight: 400; color: var(--color-muted); }
+  .pdp__price-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-top: var(--space-2); }
+  .pdp__price { display: flex; align-items: baseline; gap: var(--space-2); font-variant-numeric: tabular-nums; }
+  .pdp__now { font-size: 1.375rem; font-weight: 500; letter-spacing: .01em; color: var(--color-heading); }
+  .pdp__was { font-size: 1rem; color: var(--color-muted); }
+  .pdp__badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: var(--blush);
+    color: var(--cocoa-deep);
+    font-size: .75rem;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    line-height: 1.3;
+  }
+  .pdp__tax { font-size: .8125rem; color: var(--color-muted); }
+  /* The price and button answer a new choice with the site's "swap": the new value fades up 4px. */
+  @media (prefers-reduced-motion: no-preference) {
+    html:not(.lite) .pdp .is-swapping { animation: pdp-swap var(--dur-state) var(--ease-out); }
+  }
+  @keyframes pdp-swap { from { opacity: 0; translate: 0 4px; } }
+
+  /* The buy box: quantity and Add to cart on one row, Buy it now under them, all 54px tall with the same edges. */
+  .pdp__form { display: grid; gap: var(--space-2); }
+  .pdp__buy { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-2); }
+  .pdp__buy .qty { height: 54px; }
+  .pdp__buy .qty__btn { height: 51px; }
+  .pdp__add { width: 100%; padding-inline: var(--space-4); }
+  .pdp__add .icon { width: 22px; height: 22px; }
+  @media (hover: hover) { .pdp__add:hover .icon { transform: translateX(2px); } }
+  .pdp__add:disabled, .buybar__add:disabled { --btn-bg: var(--taupe-ink); cursor: not-allowed; transform: none; box-shadow: none; }
+  .pdp__add[aria-busy="true"], .buybar__add[aria-busy="true"] { cursor: progress; }
+  .pdp__now-btn { grid-column: 1 / -1; }
+  .pdp__now-btn:empty { display: none; }
   /* Shopify's "Buy it now" (unbranded): our quiet outlined pill instead of its default blue block. */
-  .product-form__form .shopify-payment-button__button--unbranded {
+  .pdp__now-btn .shopify-payment-button__button--unbranded {
     min-height: 54px;
     border: 1.5px solid color-mix(in srgb, var(--cocoa) 40%, transparent);
     border-radius: var(--radius-pill);
@@ -95,14 +374,138 @@
     color: var(--cocoa-deep);
     font: 500 1rem var(--font-sans);
   }
-  .product-form__form .shopify-payment-button__button--unbranded:hover:not([disabled]) { background: var(--blush-soft); border-color: var(--cocoa); }
-  .product-form__error { padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--blush-soft); color: #9A3B2E; font-weight: 500; font-size: var(--fs-small); }
+  .pdp__now-btn .shopify-payment-button__button--unbranded:hover:not([disabled]) { background: var(--blush-soft); border-color: var(--cocoa); }
+  .pdp__error { padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--blush-soft); color: #9A3B2E; font-weight: 500; font-size: var(--fs-small); }
+  .pdp__select {
+    width: 100%;
+    min-height: var(--tap);
+    margin-bottom: var(--space-2);
+    padding: 0 var(--space-4);
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--color-heading);
+    font: 400 1rem var(--font-sans);
+  }
+
+  .pdp__ask { margin-top: calc(var(--space-2) * -1); }
+  .pdp__ask a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    color: var(--color-heading);
+    font-size: var(--fs-small);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  }
+  .pdp__ask .icon { width: 20px; height: 20px; flex: none; }
+  @media (hover: hover) { .pdp__ask a:hover { text-decoration-color: currentColor; } }
+  .pdp__gift { display: grid; gap: var(--space-4); justify-items: start; }
+
+  /* Details: hairline rows, 56px closed, opening with the site's collapse. */
+  .pdp__details { border-top: 1px solid var(--color-line-strong); }
+  .detail { border-bottom: 1px solid var(--color-line-strong); }
+  .detail summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: 56px;
+    cursor: pointer;
+    list-style: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .detail summary::-webkit-details-marker { display: none; }
+  .detail__title { font: 500 1rem/1.3 var(--font-sans); letter-spacing: 0; color: var(--color-heading); }
+  .detail__toggle { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; transition: transform var(--dur-panel) var(--ease-out), background-color var(--dur-state) ease; }
+  .detail__toggle .icon { width: 16px; height: 16px; }
+  .detail[open] .detail__toggle { transform: rotate(45deg); background: var(--color-surface); }
+  .detail__body { display: grid; gap: var(--space-3); max-width: 40rem; padding-bottom: var(--space-5); font-size: .9375rem; }
+  .detail__body a { color: inherit; text-underline-offset: 3px; }
+  .detail::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    transition: block-size var(--dur-panel) var(--ease-out), content-visibility var(--dur-panel) allow-discrete;
+  }
+  .detail[open]::details-content { block-size: auto; }
+  @media (prefers-reduced-motion: no-preference) {
+    .detail[open] .detail__body { animation: answer-in 420ms var(--ease-out) 60ms both; }
+  }
+  @media (hover: hover) { .detail summary:hover .detail__toggle { background: var(--color-surface); } }
+
+  /* The sticky buy bar. Phones only. It slides up from the bottom edge and keeps clear of the home indicator. */
+  .buybar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--gutter) max(var(--space-2), env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-line-strong);
+    background: var(--white);
+    box-shadow: 0 -10px 24px -18px rgb(78 58 49 / .5);
+    translate: 0 110%;
+    visibility: hidden;
+    transition: translate var(--dur-panel) var(--ease-out), visibility 0s var(--dur-panel);
+  }
+  .buybar[hidden] { display: none; }
+  .buybar.is-on { translate: none; visibility: visible; transition-delay: 0s; }
+  .buybar__text { display: grid; flex: 1; min-width: 0; line-height: 1.25; }
+  .buybar__title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: var(--fs-small); color: var(--color-ink); }
+  .buybar__price { font-weight: 500; color: var(--color-heading); font-variant-numeric: tabular-nums; }
+  .buybar__add { flex: none; min-height: var(--tap); }
+  @media (prefers-reduced-motion: reduce) { .buybar { transition: none; } }
+  html.lite .buybar { transition: none; }
+
+  /* Desktop: photos on the left, everything about buying on the right, staying in view while the photos scroll. */
+  @media (min-width: 990px) {
+    .pdp.page-grid {
+      grid-template-columns: minmax(var(--gutter), 1fr) calc(var(--content-width) * .56) calc(var(--content-width) * .44) minmax(var(--gutter), 1fr);
+      align-items: start;
+      padding-block: var(--space-6) var(--space-9);
+    }
+    .pdp.page-grid > .pdp__gallery { grid-column: 2; padding-right: var(--space-8); }
+    .pdp.page-grid > .pdp__info { grid-column: 3; position: sticky; top: calc(var(--header-height) + var(--space-4)); }
+    .buybar { display: none; }
+  }
 {% endstylesheet %}
 
 {% schema %}
 {
   "name": "t:general.product",
-  "settings": [],
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "These texts show on every product, under \"Materials & care\" and \"Delivery & replacement\". A product can have its own Materials or Care text in its custom fields. \"Size & what's included\" is typed on each product."
+    },
+    {
+      "type": "textarea",
+      "id": "materials",
+      "label": "Materials"
+    },
+    {
+      "type": "textarea",
+      "id": "care",
+      "label": "Care",
+      "default": "Hand wash in cool water. Press gently, don't wring. Dry flat in the shade."
+    },
+    {
+      "type": "textarea",
+      "id": "delivery",
+      "label": "Delivery",
+      "info": "Shown after \"Ships in 1–2 days\". The shipping fee and free-shipping amount are added from Theme settings → Cart.",
+      "default": "We ship within India, and send you the tracking details as soon as the courier has your parcel."
+    },
+    {
+      "type": "textarea",
+      "id": "replacement",
+      "label": "Replacement",
+      "default": "Our pieces are handmade, so we don't take returns for a change of mind. If yours arrives damaged or wrong, tell us within 48 hours of delivery with an unboxing video or clear photos, and we'll send a replacement or refund you in full."
+    }
+  ],
   "disabled_on": {
     "groups": ["header", "footer"]
   }

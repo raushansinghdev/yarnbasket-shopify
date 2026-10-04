@@ -169,7 +169,8 @@
   /* Added-to-cart pop-up. */
   .cart-toast {
     position: fixed;
-    inset: auto var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
+    /* On a product page the pop-up sits above the sticky buy bar while that shows (product.js sets --buybar). */
+    inset: auto var(--space-3) calc(max(var(--space-3), env(safe-area-inset-bottom)) + var(--buybar, 0px));
     z-index: 30;
     /* One 64px row with round ends. The words keep room for "Added to cart" on one line (7.25rem); with large text
        or a very narrow screen the buttons wrap under them instead of squeezing them. */
