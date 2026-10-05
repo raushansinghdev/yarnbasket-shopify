@@ -2,6 +2,13 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-06 (the Diwali banner is live; one campaign banner, not a swipe row)
+
+- **The hero has its first real campaign:** "Dussehra & Diwali gifts", "Free delivery over ₹499", linking to Gift sets, until 2026-11-08 (`templates/index.json`, block `festive`). The photo is ChatGPT's, composed from the real rose trio and daisy pot on the studio wall with diyas; it is in the store's Files as `home-campaign-diwali.png` and its source in `../catalog/hero-campaign/`. ChatGPT redrew the logo on the gift tag, so it is not an exact copy.
+- **One banner stays the rule** (Raushan asked for a recommendation and took it). A swipe row of banners was started and taken out: almost nobody swipes a top banner, each banner would shrink to four fifths of the screen to show the next, and it would sit right above the product row, which already swipes. Two occasions close together share one banner, or follow each other by their dates.
+- **Not used:** the "Happy Dussehra & Happy Diwali" poster. Its bouquet is not one we sell and its words are in the picture (docs/hero-campaign-plan.md: real pieces, real text).
+- **Check 10 on desktop** now knows a live banner replaces the hero: the banner is the one way in.
+
 ## 2026-10-05 (the buy bar vanished after Add to cart; a reload shut the cart drawer)
 
 - **The bar vanished while the add was on its way.** The buy box was given the class `is-pending` until Shopify answered. That name already belongs to the arrival animation (`base.css`: `.is-pending { opacity: 0 }`), so the whole pinned bar was invisible for as long as the request took (about a second here, two on Raushan's connection). The class is now `is-adding` (`assets/product-buy.js`, `snippets/buy-in-cart`). The check had measured the stepper's box, which was laid out but not painted; it now also fails if the buy box or the bar is faded.

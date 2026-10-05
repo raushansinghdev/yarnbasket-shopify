@@ -831,10 +831,19 @@ if (want('10')) {
   const d = await page.evaluate(() => {
     const cta = document.querySelector('.hero__cta');
     const all = document.querySelector('[data-shop-crafts] .shop__panel:not([hidden]) .shop__all')?.getBoundingClientRect();
-    return { pill: !!cta && getComputedStyle(cta).backgroundColor !== 'rgba(0, 0, 0, 0)', h: Math.round(cta?.getBoundingClientRect().height ?? 0), ways: document.querySelectorAll('.hero__actions a').length, shelfCentred: !!all && Math.abs(all.left + all.width / 2 - innerWidth / 2) <= 2, text: getComputedStyle(document.querySelector('.hero__text')).display !== 'none' };
+    const text = document.querySelector('.hero__text');
+    // While a campaign banner is live it replaces the whole hero on desktop: the banner is the one way in, its words on the pill.
+    const banner = document.querySelector('.hero--banner .hero__banner-link');
+    return { pill: !!cta && getComputedStyle(cta).backgroundColor !== 'rgba(0, 0, 0, 0)', h: Math.round(cta?.getBoundingClientRect().height ?? 0), ways: document.querySelectorAll('.hero__actions a').length, shelfCentred: !!all && Math.abs(all.left + all.width / 2 - innerWidth / 2) <= 2, text: !!text && getComputedStyle(text).display !== 'none',
+      banner: !!banner, bannerWays: document.querySelectorAll('.hero--banner .hero__grid a').length - document.querySelectorAll('.hero--banner .hero__visual a').length, bannerPill: !!banner?.querySelector('.hero__pill-title')?.textContent.trim(), bannerH: Math.round(banner?.getBoundingClientRect().height ?? 0) };
   });
-  record('Home, desktop: one way in, a pill button', d.pill && d.ways === 1 && d.h >= 48, `${d.ways} link(s), pill: ${d.pill}, ${d.h}px`);
-  record('Home, desktop: description shown, Bestsellers button centred', d.text && d.shelfCentred, `description: ${d.text}, button centred: ${d.shelfCentred}`);
+  if (d.banner) {
+    record('Home, desktop: one way in, the campaign banner', d.bannerWays === 1 && d.bannerPill && d.bannerH >= 48, `${d.bannerWays} link(s), words on the pill: ${d.bannerPill}, ${d.bannerH}px`);
+    record('Home, desktop: Bestsellers button centred', d.shelfCentred, `button centred: ${d.shelfCentred}`);
+  } else {
+    record('Home, desktop: one way in, a pill button', d.pill && d.ways === 1 && d.h >= 48, `${d.ways} link(s), pill: ${d.pill}, ${d.h}px`);
+    record('Home, desktop: description shown, Bestsellers button centred', d.text && d.shelfCentred, `description: ${d.text}, button centred: ${d.shelfCentred}`);
+  }
   await browser.close();
 }
 

@@ -45,9 +45,21 @@
             "product": "daisy-crochet-pot",
             "label": "Daisy pot"
           }
+        },
+        "festive": {
+          "type": "campaign",
+          "settings": {
+            "image_phone": "shopify://shop_images/home-campaign-diwali.png",
+            "label": "Dussehra & Diwali gifts",
+            "line": "Free delivery over ₹499",
+            "link": "shopify://collections/gift-sets",
+            "show_from": "",
+            "show_until": "2026-11-08"
+          }
         }
       },
       "block_order": [
+        "festive",
         "rose",
         "tulips",
         "keychains",
