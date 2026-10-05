@@ -412,13 +412,14 @@ document.addEventListener('submit', (event) => {
    Opening adds a history entry, so the phone's Back button closes it instead of leaving the page. */
 let opener = null;
 let goTo = null;
-const openDrawer = (from) => {
+// again: its history entry is already there (Forward).
+const openDrawer = (from, again) => {
   if (!drawer || drawer.open) return;
-  opener = from || document.activeElement;
+  opener = from || (again ? document.querySelector('.site-header__cart') : document.activeElement);
   hideToast();
   drawer.showModal();
   drawer.querySelector('#CartDrawerTitle')?.focus();
-  history.pushState({ cartDrawer: true }, '');
+  if (!again) history.pushState({ cartDrawer: true }, '');
   // The drawer's product rows (assets/cart-rows.js), fetched with the first opening.
   if (drawer.dataset.addons) import(drawer.dataset.addons).then((m) => m.default()).catch(() => {});
 };
@@ -446,9 +447,10 @@ addEventListener('popstate', () => {
     goTo = null;
     if (where) location.href = where;
     else checkout();
-  } else if (drawer?.open) closeDrawer(true);
+  } else if (history.state?.cartDrawer) openDrawer(0, 1);
+  else if (drawer?.open) closeDrawer(true);
 });
-// Coming back to a page whose entry was "drawer open" (bfcache): start closed.
+// A page loaded on an entry that was "drawer open" (a reload, bfcache): start closed.
 addEventListener('pageshow', (event) => {
   if (history.state?.cartDrawer) history.replaceState(null, '');
   // Restored by Back with the cart it had when it was left: fetch it as it is now.
@@ -510,15 +512,6 @@ document.addEventListener('click', (event) => {
     openDrawer(cartLink);
   }
 });
-
-// Drawer photos are lazy: start them when a pointer heads for the cart.
-const warm = (event) => {
-  if (!event.target.closest?.('.site-header__cart, [data-cart-view]')) return;
-  drawer?.querySelectorAll('img[loading="lazy"]').forEach((img) => (img.loading = 'eager'));
-};
-addEventListener('pointerover', warm, { passive: true });
-addEventListener('pointerdown', warm, { passive: true });
-addEventListener('focusin', warm);
 
 // For rewards.js, cart-rows.js, product-buy.js.
 window.ybCart = { enqueue, send, withSections, render, say, counted, box, sectionId, S, fmt, why, commit };

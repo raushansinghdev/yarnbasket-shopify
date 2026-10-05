@@ -329,6 +329,15 @@ if (want('8')) {
       await page.goto(site(`/products/${limited.handle}`), { waitUntil: 'load' });
       // No quantity field on the product page: the piece goes in, and its stepper stops at the stock and says why.
       await page.waitForTimeout(1500);
+    // Forward opens it again, as Back closed it. A reload is a fresh page: the drawer starts closed (2026-10-05).
+    await page.goForward();
+    await page.waitForTimeout(800);
+    const again = await page.evaluate(() => document.getElementById('CartDrawer').open);
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForTimeout(1200);
+    const fresh = await page.evaluate(() => !document.getElementById('CartDrawer').open && !history.state?.cartDrawer);
+    record(`Cart, ${label}: Forward reopens the drawer, a reload starts closed`, again && fresh && page.url() === url, `Forward opened: ${again}, closed after reload: ${fresh}`);
+
       await page.click('.pdp__add');
       await page.locator('.pdp__cta .qty__input').waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
       await page.fill('.pdp__cta .qty__input', '99');
@@ -1674,7 +1683,9 @@ if (want('20')) {
         off: document.querySelector('.pdp__cta .qty__plus').getAttribute('aria-disabled') === 'true',
         limit: [...document.querySelectorAll('.pdp__limit:not([hidden])')].map((l) => l.textContent.replace(/\s+/g, ' ').trim()).join(' | '),
         toast: !!document.querySelector('.cart-toast:not([hidden])'),
-        pending: document.querySelector('[data-buy]').classList.contains('is-pending'),
+        pending: document.querySelector('[data-buy]').classList.contains('is-adding'),
+        // Painted, not only laid out: a class on the buy box once faded the whole bar out while the add was on its way.
+        faded: [...document.querySelectorAll('[data-buy], .pdp__cta')].some((el) => +getComputedStyle(el).opacity < 0.99),
         tickOn: getComputedStyle(document.querySelector('.pdp__cta .incart__view .icon')).opacity,
         buzz: window.__buzz.splice(0).join(' | '),
         sideways: document.documentElement.scrollWidth > innerWidth + 1,
@@ -1695,7 +1706,7 @@ if (want('20')) {
     await page.waitForTimeout(2200);
     const r2 = await bar();
     const reason = await page.evaluate(() => document.querySelector('.cart-toast.is-error .cart-toast__title')?.textContent.trim() || '');
-    record(`Product ${w}px: the stepper shows at once, before the cart answers`, !!r1.qty && !r1.add && r1.value === '1' && r1.focus === 'plus' && !r1.line && r1.pending && r1.tickOn === '0' && r1.buzz === '10', `stepper within 200ms: ${!!r1.qty}, shows ${r1.value}, focus on ${r1.focus}, cart had answered: ${!!r1.line}; tick held back: ${r1.pending && r1.tickOn === '0'}; pulse: ${r1.buzz || 'none'}`);
+    record(`Product ${w}px: the stepper shows at once, before the cart answers`, !!r1.qty && !r1.add && r1.value === '1' && r1.focus === 'plus' && !r1.line && r1.pending && !r1.faded && r1.tickOn === '0' && r1.buzz === '10', `stepper within 200ms: ${!!r1.qty}, faded out: ${r1.faded}, shows ${r1.value}, focus on ${r1.focus}, cart had answered: ${!!r1.line}; tick held back: ${r1.pending && r1.tickOn === '0'}; pulse: ${r1.buzz || 'none'}`);
     record(`Product ${w}px: a refused add brings Add to cart back, with the reason`, !!r2.add && !r2.qty && r2.focus === 'Add to cart' && /sold out/.test(reason) && !r2.pending && r2.buzz === '30,60,30', `Add to cart: ${!!r2.add}, stepper: ${!!r2.qty}, focus on ${r2.focus}, reason: "${reason}", pulse: ${r2.buzz || 'none'}`);
     await page.click('[data-toast-close]').catch(() => {});
     await page.waitForTimeout(500);

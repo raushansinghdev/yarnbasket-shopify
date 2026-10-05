@@ -427,7 +427,7 @@ buy box of PP4.
   stepper was about 0.8 s, of which Shopify's `cart/add.js` is about 600 ms, the drawer's HTML about 100 ms and
   our scripts about 10 ms, so the wait was the connection. Taps on plus made before the answer go once it has
   landed. If Shopify refuses, Add to cart comes back with focus and the reason shows in the pop-up.
-- **The tick waits for Shopify.** Until the add is confirmed the bar has `is-pending`: View cart is paler and
+- **The tick waits for Shopify.** Until the add is confirmed the bar has `is-adding`: View cart is paler and
   its tick is held back, then fades in. A refusal never showed a tick.
 - **The add is finished even if the shopper leaves the page** (`keepalive` on every cart request in `cart.js`).
 - **A short pulse under the finger** (`theme.js`, 10 ms) for Add to cart, the stepper and Undo, on every page;

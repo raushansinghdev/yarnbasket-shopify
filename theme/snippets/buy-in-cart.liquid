@@ -3,7 +3,7 @@
   ticked "View cart", in place of Add to cart and Buy it now. The stepper changes the cart line itself
   (assets/product-buy.js); at 1 its minus is the bin, and removing brings Add to cart back. The tick is the sign
   that the piece is in the cart; the group's name says it for screen readers. Add to cart shows this at once,
-  so until Shopify has confirmed (`is-pending`) the button is paler and the tick is held back.
+  so until Shopify has confirmed (`is-adding`) the button is paler and the tick is held back.
   Rendered hidden when the piece isn't in the cart; `is-in` on the buy box or the bar shows it.
   Without JavaScript the stepper can't work, so a line says how many are in the cart and View cart goes to /cart.
 
@@ -32,8 +32,8 @@
   .incart .qty__btn { width: 100%; }
   .incart__view { gap: var(--space-2); min-height: var(--tap); padding-inline: var(--space-3); white-space: nowrap; }
   .incart__view .icon { width: 20px; height: 20px; flex: none; transition: opacity var(--dur-state) ease; }
-  .is-pending .incart__view { opacity: .75; }
-  .is-pending .incart__view .icon { opacity: 0; }
+  .is-adding .incart__view { opacity: .75; }
+  .is-adding .incart__view .icon { opacity: 0; }
   @media (prefers-reduced-motion: reduce) {
     .incart__view .icon { transition: none; }
   }

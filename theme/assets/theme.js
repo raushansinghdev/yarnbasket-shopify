@@ -484,6 +484,16 @@ if (!CSS.supports('animation-timeline: view()') && 'IntersectionObserver' in win
   document.querySelectorAll('[data-inview]').forEach((el) => io.observe(el));
 }
 
+/* ---------- The cart drawer's photos are lazy: start them when a pointer heads for the cart ----------
+   Here, not in cart.js, which is at its size budget. */
+const warm = (event) => {
+  if (!event.target.closest?.('.site-header__cart, [data-cart-view]')) return;
+  document.querySelectorAll('#CartDrawer img[loading="lazy"]').forEach((img) => (img.loading = 'eager'));
+};
+addEventListener('pointerover', warm, { passive: true });
+addEventListener('pointerdown', warm, { passive: true });
+addEventListener('focusin', warm);
+
 /* A short pulse under the finger for a tap that changes the cart: Add to cart, the stepper, Undo. Android only;
    iPhones have no vibration for web pages. The page says and shows the same without it. */
 document.addEventListener('click', (event) => {

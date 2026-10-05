@@ -2,6 +2,13 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-05 (the buy bar vanished after Add to cart; a reload shut the cart drawer)
+
+- **The bar vanished while the add was on its way.** The buy box was given the class `is-pending` until Shopify answered. That name already belongs to the arrival animation (`base.css`: `.is-pending { opacity: 0 }`), so the whole pinned bar was invisible for as long as the request took (about a second here, two on Raushan's connection). The class is now `is-adding` (`assets/product-buy.js`, `snippets/buy-in-cart`). The check had measured the stepper's box, which was laid out but not painted; it now also fails if the buy box or the bar is faded.
+- **A reload starts with the drawer closed, as before.** Raushan noticed it closing and asked for the recommended way. That is the standard one: a drawer is temporary, a reload is a fresh page, and a shopper who reloads because something looks stuck must get the page, not a panel over it with focus held inside. Opening it again on reload was built and taken back out the same day.
+- **Forward reopens the drawer.** Back closes it, so Forward opens it, without a second history entry. Before, Forward left a closed drawer on an entry marked open, and a later Back press did nothing. New check in section 8.
+- **cart.js stays under 22 KB:** the lines that start the drawer's lazy photos when a pointer heads for the cart moved to `theme.js` (22.2 of 25 KB), unchanged.
+
 ## 2026-10-05 (one cart: the drawer and `/cart` show the same thing)
 
 - **The drawer and the cart page have the same content in the same order.** The cart icon opens the drawer, so
