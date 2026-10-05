@@ -11,6 +11,7 @@ Bestsellers circles and the occasion cards at them. Prices follow docs/pricing-p
 | Source photos (never changed) | `~/Desktop/SS Creation/crochet` (same files as `../crochet`) |
 | The catalogue: products, variants, prices, copy, SEO, photo choice, collections, home picks | `tools/catalog/catalog.json` |
 | Organised copies, renamed for SEO, plus home page crops | `../catalog/` (outside git, 356 MB) |
+| The same photos on the plain studio wall (used wherever one exists) | `../catalog/studio-depth-batch/` · docs/photo-backdrop-plan.md |
 | Review sheet (open in a browser) | `../catalog/review.html` |
 | Builds the folder and the sheet from the manifest | `python3 tools/catalog-build.py` (needs Pillow) |
 | Uploads to the admin | `python3 tools/catalog-upload.py …` |
@@ -61,6 +62,9 @@ Size text is set only where a dimension image gave it (single-stem bouquets, 10 
 - Home: hero = three-sunflower bouquet, then rose trio, tulips & daisy, keychain set, daisy pot. Demo content is
   still on (sample reviews, the story clip).
 - Checked: theme check clean; `npm run check -- --only 3,10,12,15 --quick` passes (LCP missed once at 2176 ms, then 1284 and 1340).
+
+- 2026-10-05: product photos, home page photos and collection covers replaced with the studio-wall versions
+  (docs/photo-backdrop-plan.md): 138 changed, 18 kept as shot.
 
 ## Still open
 

@@ -2,6 +2,20 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-05 (product photos: one warm studio wall)
+
+- **Product photos get a plain warm studio wall with soft window light**, not the busy doorways and plants, and not
+  Rare You's bold colour backdrops (Raushan liked those first, then preferred the calm look). ChatGPT made them:
+  138 changed, 18 kept. Compared with the originals at full size, the pieces, hands and bag are unchanged.
+- **Flat-lays on cloth, the bag charm worn in hair and the curtain tie-backs stay as shot.** They are a different
+  kind of photo and already calm. Ten busy leftovers (pots on a table, two worn photos, a flat-lay with a sign,
+  the hair clips on pure white, a plant at one edge) were redone the same way in a second pass.
+- **The originals in `../catalog/` are never overwritten.** The studio versions sit in
+  `../catalog/studio-depth-batch/` and the build and upload scripts use one wherever it exists
+  (docs/photo-backdrop-plan.md).
+- **Collection covers have their own command** (`catalog-upload.py covers`): `collections --force` would also
+  reset the hand-picked order of Bouquets and Keychains.
+
 ## 2026-10-04 (product page, round 6)
 
 - **Quantity on phones stays one row (label left, stepper right), made quiet:** 44px tall, the pale outline of an

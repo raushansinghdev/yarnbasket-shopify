@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Uploads the real catalogue (tools/catalog/catalog.json + ../catalog photos) to the store's admin.
+"""Uploads the real catalogue (tools/catalog/catalog.json + ../catalog photos, the studio version where one exists) to the store's admin.
 
 Uses the Shopify CLI's stored login (`shopify store execute`), so it runs as Raushan's app token.
 Safe to rerun: a product or collection that already exists by handle is left alone unless --force.
   python3 tools/catalog-upload.py products [handle ...] [--force]
   python3 tools/catalog-upload.py prices        sets every variant's price, and the free gift's, from costs.json (photos and stock untouched)
   python3 tools/catalog-upload.py collections [--force]
+  python3 tools/catalog-upload.py covers        replaces every collection's cover photo, nothing else (needs Pillow)
   python3 tools/catalog-upload.py tests         moves the test products to vendor "Yarn Basket Test"
   python3 tools/catalog-upload.py home          uploads the home page photos to Files, prints their names
   python3 tools/catalog-upload.py publish       puts every catalogue product and collection on the Online Store
@@ -17,6 +18,8 @@ from catalog_pricing import COSTS, price_of
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.normpath(os.path.join(ROOT, '..', 'catalog'))
+# The same photos on the plain studio wall (docs/photo-backdrop-plan.md); used wherever one exists.
+STUDIO = os.path.join(OUT, 'studio-depth-batch')
 STORE = 'yarn-basket-e4peuhjj.myshopify.com'
 LOCATION = 'gid://shopify/Location/89700171913'  # the store's only location
 STOCK = 100
@@ -67,6 +70,11 @@ def stage(paths, resource='IMAGE'):
     return urls
 
 
+def photo(rel):
+    studio = os.path.join(STUDIO, rel)
+    return studio if os.path.exists(studio) else os.path.join(OUT, rel)
+
+
 def existing(kind, handle):
     d = gql('query($h: String!) { p: productByHandle(handle: $h) { id } c: collectionByHandle(handle: $h) { id } }', {'h': handle})
     node = d['p' if kind == 'product' else 'c']
@@ -82,7 +90,7 @@ def products(handles, force):
             print('exists, skipped:', p['handle'])
             continue
         photos = BUILT['products'][p['handle']]
-        urls = stage([os.path.join(OUT, f['file']) for f in photos])
+        urls = stage([photo(f['file']) for f in photos])
         files = [{'originalSource': u, 'alt': f['alt'], 'contentType': 'IMAGE'} for u, f in zip(urls, photos)]
         option = p['option'] or 'Title'
         variants = []
@@ -167,6 +175,26 @@ def collections(force):
         print('ok:', d['collection']['handle'])
 
 
+def covers():
+    """Replaces each collection's cover photo and nothing else (collections --force would also reset the order)."""
+    import io
+    from PIL import Image, ImageChops
+    for c in DATA['collections']:
+        path = os.path.join(OUT, BUILT['home']['cover-' + c['handle']])
+        node = gql('query($h: String!) { collectionByHandle(handle: $h) { id image { url } } }', {'h': c['handle']})['collectionByHandle']
+        # Shopify refuses a cover identical to the current one ("Error updating collection with this image"), so those are skipped.
+        if node['image']:
+            live = Image.open(io.BytesIO(urllib.request.urlopen(node['image']['url'], timeout=60).read())).convert('RGB')
+            mine = Image.open(path).convert('RGB')
+            if live.size == mine.size and not ImageChops.difference(live, mine).getbbox():
+                print('cover unchanged:', c['handle'])
+                continue
+        d = gql('mutation($input: CollectionInput!) { collectionUpdate(input: $input) { collection { handle } userErrors { field message } } }',
+                {'input': {'id': node['id'], 'image': {'src': stage([path])[0], 'altText': c['title']}}}, mutate=True)['collectionUpdate']
+        check(d['userErrors'], c['handle'])
+        print('cover:', d['collection']['handle'])
+
+
 def tests():
     nodes = gql('{ products(first: 50, query: "tag:test-product") { nodes { id handle } } }')['products']['nodes']
     for n in nodes:
@@ -210,6 +238,8 @@ if __name__ == '__main__':
         prices()
     elif cmd == 'collections':
         collections(force)
+    elif cmd == 'covers':
+        covers()
     elif cmd == 'tests':
         tests()
     elif cmd == 'home':

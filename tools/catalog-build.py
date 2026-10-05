@@ -3,7 +3,8 @@
 
 Copies each chosen photo (original size, never upscaled) from the source folder to
 ../catalog/<type>/<handle>/<handle>-<variant>-NN.png, cuts the home page crops (round craft
-photos, 4:5 occasion cards) into ../catalog/home/, and writes ../catalog/review.html: every
+photos, 4:5 occasion cards) into ../catalog/home/ (from the studio version in
+../catalog/studio-depth-batch/ when there is one), and writes ../catalog/review.html: every
 product with its photos, copy and proposed price, for Raushan to check. The originals are not touched.
 Run: python3 tools/catalog-build.py   (needs Pillow)
 """
@@ -16,6 +17,8 @@ from catalog_pricing import cost_of, packaging_of, price_of
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(ROOT, 'tools/catalog/catalog.json')
 OUT = os.path.normpath(os.path.join(ROOT, '..', 'catalog'))
+# The same photos on the plain studio wall (docs/photo-backdrop-plan.md); used wherever one exists.
+STUDIO = os.path.join(OUT, 'studio-depth-batch')
 
 
 def slug(text):
@@ -26,6 +29,12 @@ def main():
     data = json.load(open(MANIFEST))
     src_root = os.path.expanduser(data['source'])
     built = {'products': {}, 'home': {}}
+    studio = {}
+
+    def pick(src):
+        """The studio version of a source photo when there is one, else the source photo."""
+        return studio.get(src, os.path.join(src_root, src))
+
     for p in data['products']:
         folder = os.path.join(OUT, slug(p['type']), p['handle'])
         os.makedirs(folder, exist_ok=True)
@@ -41,16 +50,18 @@ def main():
             else:
                 Image.open(src).convert('RGB').save(dest)
             files.append({'file': os.path.relpath(dest, OUT), 'alt': ph['alt'], 'variant': ph['variant']})
+            if os.path.exists(os.path.join(STUDIO, files[-1]['file'])):
+                studio[ph['src']] = os.path.join(STUDIO, files[-1]['file'])
         built['products'][p['handle']] = files
 
     home = os.path.join(OUT, 'home')
     os.makedirs(home, exist_ok=True)
     for i, h in enumerate(data['home']['hero']):
         name = f"home-hero-{i + 1}-{slug(h['label'])}.png"
-        shutil.copyfile(os.path.join(src_root, h['src']), os.path.join(home, name))
+        shutil.copyfile(pick(h['src']), os.path.join(home, name))
         built['home'][f'hero{i}'] = 'home/' + name
     for c in data['home']['circles']:
-        im = Image.open(os.path.join(src_root, c['src'])).convert('RGB')
+        im = Image.open(pick(c['src'])).convert('RGB')
         w, h = im.size
         x0, y0, x1, y1 = c['box']
         im = im.crop((int(x0 * w), int(y0 * h), int(x1 * w), int(y1 * h)))
@@ -58,7 +69,7 @@ def main():
         im.save(os.path.join(home, name), quality=92)
         built['home'][c['key']] = 'home/' + name
     for o in data['home']['occasions']:
-        im = Image.open(os.path.join(src_root, o['src'])).convert('RGB')
+        im = Image.open(pick(o['src'])).convert('RGB')
         w, h = im.size
         cw = int(h * 4 / 5)
         left = int((w - cw) * o.get('focus', 0.5))
@@ -68,7 +79,7 @@ def main():
         built['home'][o['key']] = 'home/' + name
     for c in data['collections']:
         name = f"collection-{c['handle']}.png"
-        shutil.copyfile(os.path.join(src_root, c['cover']), os.path.join(home, name))
+        shutil.copyfile(pick(c['cover']), os.path.join(home, name))
         built['home']['cover-' + c['handle']] = 'home/' + name
     json.dump(built, open(os.path.join(OUT, 'build.json'), 'w'), indent=1)
     review(data, built)
