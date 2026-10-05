@@ -291,11 +291,13 @@ if (want('8')) {
     await page.goto(site(`/products/${single.handle}`), { waitUntil: 'load' });
     const url = page.url();
     await page.click('.pdp__add');
-    const toast = await page.waitForSelector('.cart-toast', { timeout: 8000 }).then(() => true, () => false);
+    // The product page shows the stepper and View cart in place of the button, with no pop-up (round 8).
+    await page.waitForSelector('#CartDrawer .cart-line', { state: 'attached', timeout: 8000 }).catch(() => {});
+    const swapped = await page.evaluate(() => !!document.querySelector('[data-buy].is-in') && !document.querySelector('.cart-toast'));
     const badge = await page.textContent('[data-cart-count]').catch(() => '');
-    record(`Cart, ${label}: add shows the pop-up, stays on the page`, toast && page.url() === url && badge.trim() === '1', `pop-up: ${toast}, badge: "${badge.trim()}"`);
+    record(`Cart, ${label}: add shows the stepper and no pop-up, stays on the page`, swapped && page.url() === url && badge.trim() === '1', `stepper, no pop-up: ${swapped}, badge: "${badge.trim()}"`);
 
-    await page.click('.cart-toast [data-cart-view]');
+    await page.locator('[data-in] [data-cart-view]:visible').first().click();
     await page.waitForTimeout(500);
     const opened = await page.evaluate(() => ({ open: document.getElementById('CartDrawer').open, focus: document.activeElement?.id }));
     record(`Cart, ${label}: View cart opens the drawer`, opened.open && opened.focus === 'CartDrawerTitle', `open: ${opened.open}, focus on: ${opened.focus}`);
@@ -325,12 +327,15 @@ if (want('8')) {
 
     if (limited && label === 'phone') {
       await page.goto(site(`/products/${limited.handle}`), { waitUntil: 'load' });
-      await page.fill('.pdp .qty__input', '3');
+      // No quantity field on the product page: the piece goes in, and its stepper stops at the stock and says why.
+      await page.waitForTimeout(1500);
       await page.click('.pdp__add');
-      await page.waitForSelector('.cart-toast', { timeout: 8000 }).catch(() => {});
-      await page.click('.pdp__add');
-      const msg = await page.waitForSelector('.cart-toast.is-error .cart-toast__title', { timeout: 8000 }).then((el) => el.textContent(), () => '');
-      record('Cart, phone: the stock limit says why', !!msg.trim(), msg.trim() || 'no message');
+      await page.locator('.pdp__cta .qty__input').waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
+      await page.fill('.pdp__cta .qty__input', '99');
+      await page.locator('.pdp__cta .qty__input').dispatchEvent('change');
+      await page.waitForTimeout(2500);
+      const stop = await page.evaluate(async () => ({ msg: document.querySelector('.pdp__limit:not([hidden])')?.textContent.replace(/\s+/g, ' ').trim() || '', off: document.querySelector('.pdp__cta .qty__plus').getAttribute('aria-disabled') === 'true', shown: document.querySelector('.pdp__cta .qty__input').value, held: (await (await fetch('/cart.js')).json()).items.reduce((n, i) => n + i.quantity, 0) }));
+      record('Cart, phone: the stock limit says why', !!stop.msg && stop.off && +stop.shown < 99 && stop.held >= +stop.shown, `typing 99 gives ${stop.shown}, cart holds ${stop.held}, plus off: ${stop.off}; "${stop.msg || 'no message'}"`);
     }
 
     await page.goto(site('/cart'), { waitUntil: 'load' });
@@ -377,16 +382,11 @@ if (want('8b')) {
       await page.waitForTimeout(2500);
       await settled();
       await page.click('.pdp__add');
-      await page.waitForSelector('.cart-toast', { timeout: 8000 }).catch(() => {});
+      await page.waitForSelector('#CartDrawer .cart-line', { state: 'attached', timeout: 8000 }).catch(() => {});
       await page.waitForTimeout(600);
-      const toast = await page.evaluate(() => {
-        const t = document.querySelector('.cart-toast');
-        if (!t) return null;
-        const r = t.getBoundingClientRect();
-        const head = t.querySelector('.cart-toast__head').getBoundingClientRect();
-        return { h: Math.round(r.height), oneLine: head.height < 30 && head.right <= t.querySelector('.cart-toast__text').getBoundingClientRect().right + 1, reward: !!t.querySelector('.cart-toast__reward'), inside: r.left >= 0 && r.right <= innerWidth };
-      });
-      await page.click('.cart-toast [data-cart-view]').catch(() => {});
+      // No pop-up on the product page any more (round 8): the bar itself turns into the stepper and View cart.
+      const toast = await page.evaluate(() => ({ none: !document.querySelector('.cart-toast'), bar: !!document.querySelector('[data-buy].is-in') }));
+      await page.locator('[data-in] [data-cart-view]:visible').first().click().catch(() => {});
       await page.waitForTimeout(2500);
       await settled();
       const drawer = await page.evaluate(() => {
@@ -414,7 +414,7 @@ if (want('8b')) {
     };
     const judge = (name, { toast: t, drawer: d }) => {
       const limit = d.done ? 125 : 175;
-      record(`Compact cart, ${w}px, ${name}: pop-up is one pill`, !!t && t.h <= 68 && t.oneLine && !t.reward && t.inside, t ? `${t.h}px tall, "Added to cart" on one line: ${t.oneLine}, rewards line: ${t.reward}, on screen: ${t.inside}` : 'no pop-up');
+      record(`Compact cart, ${w}px, ${name}: the bar changes, no pop-up`, t.none && t.bar, `no pop-up: ${t.none}, stepper in the bar: ${t.bar}`);
       record(`Compact cart, ${w}px, ${name}: small pinned bottom`, d.foot <= limit && d.row && d.btn[1] >= 48 && d.btn[0] >= 150 && !d.side, `${d.foot}px (limit ${limit}, rewards: ${d.state}), subtotal beside Checkout: ${d.row}, Checkout ${d.btn[0]}×${d.btn[1]}, sideways scroll: ${d.side}`);
       record(`Compact cart, ${w}px, ${name}: no "Ships in", no ₹0 notes`, !/Ships in/.test(d.text) && !/−₹0\)/.test(d.text), `"Ships in": ${/Ships in/.test(d.text)}, "(−₹0)": ${/−₹0\)/.test(d.text)}`);
       record(`Compact cart, ${w}px, ${name}: one product, one line`, d.lines === d.products, `${d.lines} line(s) for ${d.products} product(s)`);
@@ -440,14 +440,16 @@ if (want('8b')) {
     // Past the top step (free shipping, then the gift), so every reward is unlocked and the gift line is in the cart.
     if (one.drawer.top > 0) {
       const unit = cheap.variants[0].price * 100;
-      // One more of the cheap piece, and a dearer one to pass the step: the cap (9 per piece) rules out many cheap ones.
+      // A dearer piece to pass the step (the cap of 9 per piece rules out many cheap ones), then the cheap piece from
+      // its page again. The cart is emptied first: a piece that's in the cart has a stepper there, not Add to cart.
       const dear = products.filter((p) => p !== cheap).sort((a, b) => b.variants[0].price - a.variants[0].price)[0];
-      await page.request.post(site('/cart/add.js'), { data: { items: [{ id: cheap.variants[0].id, quantity: 1 }, { id: dear.variants[0].id, quantity: Math.min(9, Math.ceil(Math.max(0, one.drawer.top - unit) / (dear.variants[0].price * 100)) || 1) }] } });
+      await page.request.post(site('/cart/clear.js'));
+      await page.request.post(site('/cart/add.js'), { data: { items: [{ id: dear.variants[0].id, quantity: Math.min(9, Math.ceil(Math.max(0, one.drawer.top - unit) / (dear.variants[0].price * 100)) || 1) }] } });
       const all = await addAndOpen();
       judge('all unlocked', all);
       await details('all unlocked');
-      // The API add above and the product page's add land on two Shopify lines once the gift is in: + on the one
-      // line drawn must raise Shopify's total for that product by exactly one.
+      // Shopify may split a product over two lines once the gift is in: + on the one line drawn must raise Shopify's
+      // total for that product by exactly one.
       const owned = () => page.evaluate((id) => fetch('/cart.js').then((r) => r.json()).then((c) => c.items.filter((i) => i.variant_id === id)), cheap.variants[0].id);
       const before = await owned();
       await page.click(`#CartDrawer .cart-line[data-variant="${cheap.variants[0].id}"] .qty__plus`);
@@ -487,6 +489,161 @@ if (want('8b')) {
     }
     await page.request.post(site('/cart/clear.js'));
     record(`Compact cart, ${w}px: no script errors`, errors.length === 0, errors[0] || 'none');
+    await browser.close();
+  }
+}
+
+// 8d. One cart (docs/cart-plan.md "One cart", 2026-10-05; replaces 8c): the drawer and the cart page show the same,
+//     in the same order: the pieces, the gift note, the price details, then three swipe rows: Saved for later,
+//     Little extras ("You may also like" once every reward is earned) and Recently viewed. No piece shows twice or
+//     is already in the cart; a row with nothing to show is hidden; an Add in a row puts the piece in the cart,
+//     takes its card away and moves focus to the next one. The drawer has no form inside its form, keeps focus
+//     inside and its pinned bottom no taller; the page pins Checkout whenever the card's own is off screen.
+//     axe on both. Needs products.
+if (want('8d')) {
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift') && p.variants[0].available), () => []);
+  const singles = products.filter((p) => p.variants.length === 1).sort((x, y) => x.variants[0].price - y.variants[0].price);
+  const enough = singles.length >= 6;
+  if (!enough) console.log('SKIP  One cart checks                                too few products in the store (import tools/test-products.csv)');
+  const base = singles[0];
+  const saved = singles.slice(1, 5).map((p) => p.handle);
+  const viewed = products.filter((p) => p.handle !== base?.handle && !saved.includes(p.handle)).slice(0, 4).map((p) => p.handle);
+  const seed = ([s, v]) => {
+    try {
+      if (localStorage.getItem('yb-check-rows') === String(s.length)) return;
+      localStorage.setItem('yb-check-rows', String(s.length));
+      localStorage.setItem('yb-saved', JSON.stringify(s));
+      localStorage.setItem('yb-recent-products', JSON.stringify(v));
+    } catch {}
+  };
+  const seeded = `(${seed})(${JSON.stringify([saved, viewed])})`;
+  const ROOT = { drawer: '#CartDrawer', page: '.cart-page' };
+  const read = (page, place) => page.evaluate((root) => {
+    const cart = document.querySelector(root);
+    const name = (li) => (li.querySelector('.card__title, .extra__title')?.textContent || '').trim();
+    const rows = [...cart.querySelectorAll('.cart-row')].map((r) => ({ title: r.querySelector('h2').textContent.trim(), hidden: r.hidden, top: Math.round(r.getBoundingClientRect().top), cards: r.hidden ? [] : [...r.querySelectorAll('[data-row-list] > li')].map(name) }));
+    const shown = rows.flatMap((r) => r.cards);
+    const lines = [...cart.querySelectorAll('.cart-line')].map((l) => l.querySelector('.cart-line__title').textContent.trim());
+    const y = (sel) => Math.round(cart.querySelector(sel)?.getBoundingClientRect().top ?? -1e6);
+    const active = document.activeElement;
+    const scroller = cart.matches('dialog') ? cart : document.documentElement;
+    return {
+      rows, lines,
+      twice: shown.filter((n, i) => shown.indexOf(n) !== i).length,
+      inCart: shown.filter((n) => lines.includes(n)).length,
+      order: [y('.cart-line'), y('[data-cart-note]'), y('.cart-details'), ...rows.filter((r) => !r.hidden).map((r) => r.top)],
+      low: [...cart.querySelectorAll('.cart-row:not([hidden]) :is(.saved-item__btn, .extra__btn)')].filter((b) => b.getBoundingClientRect().height < 44).length,
+      peek: [...cart.querySelectorAll('.cart-row:not([hidden]) [data-row-list]')].every((l) => l.children.length < 3 || l.scrollWidth > l.clientWidth + 8),
+      nested: cart.querySelectorAll('form form').length,
+      foot: Math.round(cart.querySelector('.cart-drawer__foot')?.getBoundingClientRect().height || 0),
+      count: +cart.querySelector('[data-cart-root]').dataset.count,
+      top: +cart.querySelector('[data-rewards]')?.dataset.top || 0,
+      focusIn: cart.contains(active) && active !== cart,
+      focusRow: active.closest('.cart-row')?.querySelector('h2').textContent.trim() || '',
+      focus: (active.getAttribute('aria-label') || active.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40),
+      sideways: scroller.scrollWidth > scroller.clientWidth + 1,
+    };
+  }, ROOT[place]);
+  const rising = (list) => list.every((n, i) => n > -1e6 && (i === 0 || n > list[i - 1]));
+  // The cart with one small piece in it, shown in the drawer (opened from the header) or on the page.
+  const show = async (page, place, wait) => {
+    await page.goto(site(place === 'page' ? '/cart' : '/'), { waitUntil: 'load' });
+    if (place === 'drawer') {
+      await page.waitForTimeout(2000);
+      await page.click('.site-header__cart');
+    }
+    await page.waitForSelector(`${ROOT[place]} ${wait}`, { timeout: 10000 }).catch(() => {});
+    await page.waitForTimeout(1000);
+  };
+  const fresh = async (page) => {
+    await page.request.post(site('/cart/clear.js'));
+    await page.request.post(site('/cart/add.js'), { data: { items: [{ id: base.variants[0].id, quantity: 1 }] } });
+  };
+  const phone = (w, h) => ({ viewport: { width: w, height: h }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  for (const [w, h] of enough ? [[360, 640], [390, 844]] : []) {
+    const same = {};
+    for (const place of ['drawer', 'page']) {
+      const tag = `One cart, ${place} ${w}px`;
+      // Nothing saved, nothing viewed: only the suggestions.
+      {
+        const { browser, page } = await open(chromium, phone(w, h), { reducedMotion: 'reduce' });
+        await fresh(page);
+        await show(page, place, '[data-cart-extras]:not([hidden])');
+        const up = (await read(page, place)).rows.filter((r) => !r.hidden).map((r) => r.title);
+        record(`${tag}: only suggestions when nothing is saved or viewed`, up.length === 1 && up[0] === 'Little extras', `rows showing: ${up.join(', ') || 'none'}`);
+        await browser.close();
+      }
+      const { browser, page, errors } = await open(chromium, phone(w, h), { reducedMotion: 'reduce', init: seeded });
+      await fresh(page);
+      await show(page, place, '[data-cart-recent]:not([hidden])');
+      const first = await read(page, place);
+      const titles = first.rows.filter((r) => !r.hidden).map((r) => r.title);
+      same[place] = `${titles.join()} | ${first.rows.map((r) => r.cards.join()).join(' | ')}`;
+      record(`${tag}: pieces, gift note, price details, then the rows`, rising(first.order) && titles.join() === 'Saved for later,Little extras,Recently viewed', `tops ${first.order.join(' < ')}; rows: ${titles.join(', ')}`);
+      record(`${tag}: no piece twice, none from the cart`, first.twice === 0 && first.inCart === 0 && first.rows.every((r) => r.cards.length <= 6) && first.low === 0 && first.nested === 0 && first.peek && !first.sideways, `${first.rows.map((r) => `${r.title} ${r.cards.length}`).join(', ')}; twice: ${first.twice}, in the cart: ${first.inCart}, buttons under 44px: ${first.low}, form in a form: ${first.nested}, rows swipe: ${first.peek}, sideways scroll: ${first.sideways}`);
+      await page.addScriptTag({ content: axe.source });
+      const v = await page.evaluate(async (root) => (await window.axe.run(document.querySelector(root), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`), place === 'page' ? 'main' : ROOT.drawer);
+      record(`${tag}: accessibility (axe)`, v.length === 0, v.join(', ') || '0 violations');
+
+      if (place === 'page') {
+        // Checkout is in reach while the rows are being browsed.
+        const bar = () => page.evaluate(() => { const b = document.querySelector('.cart-summary__checkout').getBoundingClientRect(); return { on: b.top < innerHeight && b.bottom > 0, bar: document.querySelector('.cart-bar').classList.contains('is-shown') }; });
+        await page.evaluate(() => scrollTo(0, 0));
+        await page.waitForTimeout(500);
+        const atTop = await bar();
+        await page.evaluate(() => document.querySelector('[data-cart-recent]').scrollIntoView({ block: 'end' }));
+        await page.waitForTimeout(600);
+        const inRows = await bar();
+        record(`${tag}: pinned Checkout whenever the card's is off screen`, atTop.on !== atTop.bar && inRows.on !== inRows.bar && (inRows.bar || h > 700), `at the top: button on screen ${atTop.on}, bar ${atTop.bar}; in the rows: button on screen ${inRows.on}, bar ${inRows.bar}`);
+      }
+
+      // Add from Saved for later: the keyboard reaches the button, the piece lands in the cart, focus moves on.
+      const added = await page.evaluate((root) => document.querySelector(`${root} [data-cart-saved] [data-row-add]`).closest('li').querySelector('.card__title').textContent.trim(), ROOT[place]);
+      await page.focus(`${ROOT[place]} [data-cart-saved] [data-row-add]`);
+      await page.keyboard.press('Enter');
+      await page.waitForFunction(([root, n]) => +document.querySelector(`${root} [data-cart-root]`).dataset.count === n, [ROOT[place], first.count + 1], { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2500);
+      const after = await read(page, place);
+      const said = await page.textContent(place === 'drawer' ? '#CartDrawer [data-cart-live]' : '[data-cart-status]').catch(() => '');
+      record(`${tag}: Add in Saved puts it in the cart, focus moves on`, after.count === first.count + 1 && after.lines.includes(added) && after.twice === 0 && after.inCart === 0 && after.focusRow === 'Saved for later' && after.focusIn && (said || '').includes(added) && after.foot <= first.foot + 1, `"${added}" in the cart: ${after.lines.includes(added)}, still in a row: ${after.inCart}, focus on "${after.focus}" in "${after.focusRow}", said: ${(said || '').includes(added)}, pinned bottom ${first.foot} → ${after.foot}px`);
+
+      // Taken out again, it comes back to its row.
+      await page.evaluate(([root, name]) => [...document.querySelectorAll(`${root} .cart-line`)].find((l) => l.querySelector('.cart-line__title').textContent.trim() === name).querySelector('.qty__minus').click(), [ROOT[place], added]);
+      await page.waitForFunction(([root, n]) => +document.querySelector(`${root} [data-cart-root]`).dataset.count === n, [ROOT[place], first.count], { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2500);
+      const back = await read(page, place);
+      record(`${tag}: a piece taken out of the cart is back in its row`, back.count === first.count && back.rows[0].cards.includes(added) && back.twice === 0, `count ${back.count}, Saved for later: ${back.rows[0].cards.join(' / ')}`);
+
+      // Every reward earned: the same row is "You may also like".
+      const dear = [...products].sort((x, y) => y.variants[0].price - x.variants[0].price)[0];
+      await page.request.post(site('/cart/add.js'), { data: { items: [{ id: dear.variants[0].id, quantity: Math.ceil((first.top / 100) / +dear.variants[0].price) + 1 }] } });
+      await show(page, place, '[data-cart-extras]:not([hidden])');
+      const done = await read(page, place);
+      const also = done.rows.filter((r) => !r.hidden).map((r) => r.title);
+      record(`${tag}: "You may also like" once every reward is earned`, also.includes('You may also like') && !also.includes('Little extras') && done.twice === 0 && done.inCart === 0, `rows: ${also.join(', ')}`);
+      await page.request.post(site('/cart/clear.js'));
+      record(`${tag}: no script errors`, errors.length === 0, errors[0] || 'none');
+      await browser.close();
+    }
+    record(`One cart, ${w}px: the drawer and the page show the same rows`, same.drawer === same.page, same.drawer === same.page ? same.page.slice(0, 90) : `drawer: ${same.drawer} · page: ${same.page}`);
+  }
+  if (enough) {
+    const { browser, page } = await open(chromium, { viewport: { width: 1280, height: 800 } }, { reducedMotion: 'reduce', init: seeded });
+    await fresh(page);
+    await show(page, 'page', '[data-cart-recent]:not([hidden])');
+    const d = await read(page, 'page');
+    const wide = await page.evaluate(() => {
+      const side = document.querySelector('.cart-page__side').getBoundingClientRect();
+      const lists = [...document.querySelectorAll('.cart-row:not([hidden]) [data-row-list]')];
+      return { beside: side.left > document.querySelector('.cart-page__lines').getBoundingClientRect().right, under: lists.every((l) => l.getBoundingClientRect().top > side.bottom), oneLine: lists.every((l) => new Set([...l.children].map((c) => Math.round(c.getBoundingClientRect().top))).size === 1), scrolls: lists.some((l) => getComputedStyle(l).overflowX !== 'visible'), bar: getComputedStyle(document.querySelector('.cart-bar')).display };
+    });
+    record('One cart, page desktop: card beside the pieces, rows full width below', wide.beside && wide.under && wide.oneLine && !wide.scrolls && wide.bar === 'none' && d.twice === 0 && d.inCart === 0 && !d.sideways, `card beside: ${wide.beside}, rows under it: ${wide.under}, each on one line: ${wide.oneLine}, a row scrolls: ${wide.scrolls}, bar: ${wide.bar}`);
+    await show(page, 'drawer', '[data-cart-recent]:not([hidden])');
+    const dd = await read(page, 'drawer');
+    const narrow = await page.evaluate(() => [...document.querySelectorAll('#CartDrawer .cart-row:not([hidden]) [data-row-list]')].every((l) => getComputedStyle(l).overflowX === 'auto' && new Set([...l.children].map((c) => Math.round(c.getBoundingClientRect().top))).size === 1 && l.getBoundingClientRect().right <= innerWidth));
+    record('One cart, drawer desktop: swipe rows inside the 440px drawer', narrow && rising(dd.order) && dd.twice === 0 && dd.inCart === 0 && !dd.sideways, `rows swipe on one line: ${narrow}, tops ${dd.order.join(' < ')}, sideways scroll: ${dd.sideways}`);
+    await page.request.post(site('/cart/clear.js'));
     await browser.close();
   }
 }
@@ -624,13 +781,24 @@ if (want('10')) {
     else record(`Home, ${label}: one way in, ≥48px, the right shape`, r.ctaShown && r.ctaH >= 48 && r.shape, `${r.ctaH}px, pill or link as expected: ${r.shape}`);
     record(`Home, ${label}: every hero photo link has a name`, r.unnamed === 0, `${r.unnamed} unnamed`);
     if (r.bar) record(`Home, ${label}: trust line is plain text`, r.bar.arrows === 0 && r.bar.tab === -1, `${r.bar.arrows} arrows, tabIndex ${r.bar.tab}`);
+    // Swipe rows (docs/decisions.md, 2026-10-05): the only sign to swipe is the next item cut off by the screen edge,
+    // so on every phone width each row that overflows shows about a fifth to three quarters of that item.
     const wide = [];
-    for (const width of [320, 390, 412]) {
+    const cuts = [];
+    const shown = [];
+    for (const width of [320, 360, 390, 412, 430]) {
       await page.setViewportSize({ width, height: 800 });
       await page.waitForTimeout(300);
       if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)) wide.push(width);
+      const rows = await page.evaluate(() => [...document.querySelectorAll('#MainContent .scroller')].filter((row) => row.offsetParent && row.scrollWidth > row.clientWidth + 2).map((row) => {
+        row.scrollLeft = 0;
+        const cut = [...row.children].map((el) => el.getBoundingClientRect()).find((r) => r.left < innerWidth && r.right > innerWidth);
+        return { name: row.className.split(' ')[0], pct: cut ? Math.round(((innerWidth - cut.left) / cut.width) * 100) : 0 };
+      }));
+      rows.forEach((row) => { shown.push(row.pct); if (row.pct < 18 || row.pct > 78) cuts.push(`${row.name} ${row.pct}% at ${width}`); });
     }
-    record(`Home, ${label}: no sideways scroll, 320–412`, wide.length === 0, wide.length ? `scrolls at ${wide.join(', ')}` : 'ok');
+    record(`Home, ${label}: no sideways scroll, 320–430`, wide.length === 0, wide.length ? `scrolls at ${wide.join(', ')}` : 'ok');
+    record(`Home, ${label}: every swipe row shows part of the next item, 320–430`, shown.length > 0 && cuts.length === 0, cuts.length ? cuts.join('; ') : `${Math.min(...shown)}–${Math.max(...shown)}% of the next item across ${shown.length} row readings`);
     record(`Home, ${label}: no script errors`, errors.length === 0, errors[0] || 'none');
     await browser.close();
   }
@@ -1325,6 +1493,9 @@ if (want('20')) {
     await ctx.addInitScript(() => {
       window.__lcp = [];
       window.__cls = 0;
+      // Every vibration the page asks for (the pulse under a cart tap).
+      window.__buzz = [];
+      try { Object.defineProperty(Navigator.prototype, 'vibrate', { configurable: true, value: (p) => { window.__buzz.push(String(p)); return true; } }); } catch {}
       try {
         new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__lcp.push({ t: e.startTime, el: e.element?.className || '' }))).observe({ type: 'largest-contentful-paint', buffered: true });
         new PerformanceObserver((l) => l.getEntries().forEach((e) => { if (!e.hadRecentInput) window.__cls += e.value; })).observe({ type: 'layout-shift', buffered: true });
@@ -1334,7 +1505,7 @@ if (want('20')) {
     const errors = themeErrors(page);
     const sizes = {};
     page.on('response', async (res) => {
-      const m = res.url().match(/\/assets\/(product(?:-zoom|-rows)?|cart|theme)\.js/);
+      const m = res.url().match(/\/assets\/(product(?:-zoom|-rows|-buy)?|cart|theme)\.js/);
       if (m) try { sizes[m[1]] = (await res.body()).length / 1024; } catch {}
     });
     if (opts.throttle) await (await ctx.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: 4 });
@@ -1363,10 +1534,10 @@ if (want('20')) {
         zoomLoaded: performance.getEntriesByType('resource').some((r) => /product-zoom/.test(r.name)),
         second: document.querySelectorAll('.gallery__img')[1]?.complete,
         buy: (() => {
-          const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills .pill'); const bar = box('.pdp__cta');
-          // Phones: the two buttons are pinned to the bottom, side by side, on the page's own margins.
-          const groups = [...document.querySelectorAll('.options__group')].map((g) => g.getBoundingClientRect()); const plus = box('.pdp .qty__plus');
-          return { qtyH: q.height, qtyTap: Math.min(plus.width, plus.height), qtyGap: q.top - groups.at(-1).bottom, optGap: groups.length > 1 ? groups[1].top - groups[0].bottom : null, rowTop: Math.abs(a.top - n.top), rowH: Math.abs(a.height - n.height), left: Math.abs(a.left - pill.left), right: Math.abs(n.right - q.right), pills: Math.abs(bar.bottom - innerHeight), h: Math.min(a.height, n.height), w: Math.min(a.width, n.width) };
+          const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills .pill'); const bar = box('.pdp__cta');
+          // Phones: the two buttons are pinned to the bottom, side by side, on the page's own margins. No quantity
+          // field (round 8): the stepper only shows once the piece is in the cart, and the form leaves no gap.
+          return { field: !!document.querySelector('[data-product-form] [name="quantity"]'), stepper: document.querySelector('.pdp__cta .qty').getClientRects().length, form: Math.round(box('.pdp__form').height), rowTop: Math.abs(a.top - n.top), rowH: Math.abs(a.height - n.height), left: Math.abs(a.left - pill.left), right: Math.abs(n.right - (innerWidth - a.left)), pills: Math.abs(bar.bottom - innerHeight), h: Math.min(a.height, n.height), w: Math.min(a.width, n.width) };
         })(),
         ld: [...document.querySelectorAll('script[type="application/ld+json"]')].map((el) => { try { return JSON.parse(el.textContent); } catch { return null; } }),
         shownPrice: document.querySelector('[data-price-now]').textContent.replace(/[^\d.]/g, ''),
@@ -1380,7 +1551,7 @@ if (want('20')) {
     record('Product: every text block closed', first.open === 0 && first.closed >= 2, `${first.closed} blocks, ${first.open} open`);
     const b = first.buy;
     record('Product: buy buttons pinned to the bottom, lined up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1 && b.h >= 48 && b.w >= 140, `tops ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left edge ${b.left.toFixed(1)}, right edge ${b.right.toFixed(1)}, off the bottom ${b.pills.toFixed(1)} (px off); each ${Math.round(b.w)} x ${Math.round(b.h)}px`);
-    record('Product: quantity row is quiet, 44px, one option-gap under the options', Math.abs(b.qtyH - 44) <= 1 && b.qtyTap >= 44 && (b.optGap === null || Math.abs(b.qtyGap - b.optGap) <= 1), `stepper ${Math.round(b.qtyH)}px tall, its buttons ${Math.round(b.qtyTap)}px; ${Math.round(b.qtyGap)}px under the options (options are ${b.optGap === null ? 'one row' : `${Math.round(b.optGap)}px apart`})`);
+    record('Product: no quantity field, nothing of the buy box in the page', !b.field && b.stepper === 0 && b.form === 0, `quantity field in the form: ${b.field}; stepper showing: ${b.stepper > 0}; form ${b.form}px tall in the page`);
     record('Product: second photo ready, viewer not loaded', first.second === true && !first.zoomLoaded, `second photo loaded: ${first.second}; product-zoom.js fetched: ${first.zoomLoaded}`);
     const graph = first.ld.flatMap((d) => (d ? d['@graph'] || [d] : [{ '@type': 'unparsable' }]));
     const products = graph.filter((g) => g['@type'] === 'Product');
@@ -1400,30 +1571,15 @@ if (want('20')) {
       price: document.querySelector('[data-price-now]').textContent,
       search: location.search,
       said: document.querySelector('[data-variant-status]').textContent,
-      max: document.querySelector('.pdp .qty').dataset.max,
     }));
     record('Product: variant changes price and address', /1,999/.test(picked.price) && /utm_source=ig/.test(picked.search) && /variant=\d+/.test(picked.search) && /6 roses/.test(picked.said), `${picked.price}; ${picked.search}; said "${picked.said}"`);
 
-    // Quantity stops at 1 and at the stock limit.
-    const minus = page.locator('.pdp .qty__minus');
-    const plus = page.locator('.pdp .qty__plus');
-    // The buttons at a limit are aria-disabled, which Playwright won't click; a shopper still can, so force it.
-    await minus.click({ force: true });
-    const low = await page.locator('.pdp .qty__input').inputValue();
-    for (let i = 0; i < +picked.max + 3; i++) await plus.click({ force: true });
-    const high = await page.locator('.pdp .qty__input').inputValue();
-    await page.locator('.pdp .qty__input').fill('99');
-    await page.locator('.pdp .qty__input').dispatchEvent('change');
-    const typed = await page.locator('.pdp .qty__input').inputValue();
-    record('Product: quantity stays between 1 and the limit', low === '1' && high === picked.max && typed === picked.max && +picked.max <= 9, `low ${low}, high ${high}, typing 99 gives ${typed} (limit ${picked.max}: the lower of stock and 9)`);
-    await page.locator('.pdp .qty__input').fill('1');
-    await page.locator('.pdp .qty__input').dispatchEvent('change');
-
-    // Add to cart: the pop-up, the count.
+    // Add to cart: the count, and no pop-up (the buy box itself changes).
     await page.locator('.pdp__add').click();
-    await page.waitForSelector('.cart-toast:not([hidden])', { timeout: 8000 }).catch(() => {});
+    await page.waitForSelector('#CartDrawer .cart-line', { state: 'attached', timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(400);
     const added = await page.evaluate(() => ({ toast: !!document.querySelector('.cart-toast:not([hidden])'), count: document.querySelector('[data-cart-count]')?.textContent?.trim() }));
-    record('Product: Add to cart shows the pop-up', added.toast, `pop-up: ${added.toast}, cart count: ${added.count}`);
+    record('Product: Add to cart counts the piece, with no pop-up', !added.toast && +added.count >= 1, `pop-up: ${added.toast}, cart count: ${added.count}`);
 
     // The viewer: opens on a tap, zooms, closes with Esc and gives focus back.
     await page.keyboard.press('Escape');
@@ -1454,7 +1610,7 @@ if (want('20')) {
     const after = await page.evaluate(() => ({ open: !!document.querySelector('dialog.zoom')?.open, focus: document.activeElement?.matches('[data-zoom]') }));
     record('Product: photo viewer opens, zooms, closes', viewer.open && viewer.grew > 2 && viewer.stays && !after.open && after.focus, `opened: ${viewer.open}, zoom ${viewer.grew?.toFixed(1)}x, tap on photo keeps it open: ${viewer.stays}, tap outside closes: ${viewer.room && !after.open}, count "${viewer.count}", focus back: ${after.focus}`);
 
-    record('Product: script sizes', sizes.product < 10 && (sizes['product-zoom'] ?? 0) < 7 && (sizes['product-rows'] ?? 0) < 4 && sizes.cart < BUDGET.cartJsKB && sizes.theme < BUDGET.ownJsKB, Object.entries(sizes).map(([k, v]) => `${k}.js ${v.toFixed(1)} KB`).join(', ') + ' (budgets: product 10, zoom 7, rows 4)');
+    record('Product: script sizes', sizes.product < 10 && (sizes['product-buy'] ?? 0) < 6 && (sizes['product-zoom'] ?? 0) < 7 && (sizes['product-rows'] ?? 0) < 4 && sizes.cart < BUDGET.cartJsKB && sizes.theme < BUDGET.ownJsKB, Object.entries(sizes).map(([k, v]) => `${k}.js ${v.toFixed(1)} KB`).join(', ') + ' (budgets: product 10, buy 6, zoom 7, rows 4)');
     record('Product: no script errors', errors.length === 0, errors.join(' | ') || 'none');
 
     // Rows under the details load when reached; tap targets; axe.
@@ -1494,6 +1650,125 @@ if (want('20')) {
     record('Product 360 x 640: buy buttons on screen the whole page', [start, middle, end].every((b) => b.add && b.now) && start.adds === 1, `arrival ${start.add && start.now}, middle ${middle.add && middle.now}, end ${end.add && end.now}; Add to cart buttons on the page: ${start.adds}`);
     record('Product 360 x 640: name and price above the buttons', start.price <= start.top, `price ends ${Math.round(start.price)}px, buttons start ${Math.round(start.top)}px`);
     record('Product 360 x 640: footer and pop-ups clear the buttons', footer <= end.top + 1 && start.pad >= 60, `footer ends ${footer}px, buttons start ${Math.round(end.top)}px; page padded ${start.pad}px`);
+    await browser.close();
+  }
+
+  // No quantity field (round 8): Add to cart turns into the cart's own stepper and a ticked View cart, and the two
+  // stay in step with the cart both ways. Checked at 320, 360 and 390 wide.
+  for (const [w, h] of [[320, 640], [360, 640], [390, 844]]) {
+    const { browser, page, errors } = await visit(ROSE, { ...PHONE, viewport: { width: w, height: h } });
+    await page.context().request.post(at('cart/clear.js'));
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForTimeout(1500);
+    const bar = () => page.evaluate(() => {
+      const vis = (sel) => { const el = document.querySelector(sel); const r = el.getBoundingClientRect(); return el.getClientRects().length ? { w: Math.round(r.width), h: Math.round(r.height), top: Math.round(r.top) } : null; };
+      const a = document.activeElement;
+      return {
+        add: vis('.pdp__add'), now: vis('.pdp__now-btn'), qty: vis('.pdp__cta .qty'), minus: vis('.pdp__cta .qty__minus'), plus: vis('.pdp__cta .qty__plus'), view: vis('.pdp__cta .incart__view'),
+        value: document.querySelector('.pdp__cta .qty__input').value,
+        bin: getComputedStyle(document.querySelector('.pdp__cta .qty__minus .icon--bin')).display !== 'none',
+        tick: !!document.querySelector('.pdp__cta .incart__view .icon'),
+        line: +document.querySelector('#CartDrawer .cart-line:not(.is-gift)')?.dataset.qty || 0,
+        badge: (document.querySelector('[data-cart-count]')?.textContent || '').trim(),
+        focus: a.matches('.qty__plus') ? 'plus' : a.matches('.pdp__add') ? 'Add to cart' : a.tagName.toLowerCase(),
+        off: document.querySelector('.pdp__cta .qty__plus').getAttribute('aria-disabled') === 'true',
+        limit: [...document.querySelectorAll('.pdp__limit:not([hidden])')].map((l) => l.textContent.replace(/\s+/g, ' ').trim()).join(' | '),
+        toast: !!document.querySelector('.cart-toast:not([hidden])'),
+        pending: document.querySelector('[data-buy]').classList.contains('is-pending'),
+        tickOn: getComputedStyle(document.querySelector('.pdp__cta .incart__view .icon')).opacity,
+        buzz: window.__buzz.splice(0).join(' | '),
+        sideways: document.documentElement.scrollWidth > innerWidth + 1,
+        cls: window.__cls,
+      };
+    });
+    const settle = () => page.waitForTimeout(2500);
+    const s0 = await bar();
+    record(`Product ${w}px: not in the cart, Add to cart and Buy it now`, !!s0.add && !!s0.now && !s0.qty && !s0.view, `Add to cart: ${!!s0.add}, Buy it now: ${!!s0.now}, stepper: ${!!s0.qty}, View cart: ${!!s0.view}`);
+
+    // The stepper shows the moment Add to cart is pressed. Here Shopify answers late and says no: Add to cart comes
+    // back with focus, and the reason is shown.
+    await page.route('**/cart/add.js', (route) => setTimeout(() => route.fulfill({ status: 422, contentType: 'application/json', body: JSON.stringify({ status: 422, message: 'Cart Error', description: 'This piece just sold out.' }) }), 1200), { times: 1 });
+    await page.focus('.pdp__add');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(200);
+    const r1 = await bar();
+    await page.waitForTimeout(2200);
+    const r2 = await bar();
+    const reason = await page.evaluate(() => document.querySelector('.cart-toast.is-error .cart-toast__title')?.textContent.trim() || '');
+    record(`Product ${w}px: the stepper shows at once, before the cart answers`, !!r1.qty && !r1.add && r1.value === '1' && r1.focus === 'plus' && !r1.line && r1.pending && r1.tickOn === '0' && r1.buzz === '10', `stepper within 200ms: ${!!r1.qty}, shows ${r1.value}, focus on ${r1.focus}, cart had answered: ${!!r1.line}; tick held back: ${r1.pending && r1.tickOn === '0'}; pulse: ${r1.buzz || 'none'}`);
+    record(`Product ${w}px: a refused add brings Add to cart back, with the reason`, !!r2.add && !r2.qty && r2.focus === 'Add to cart' && /sold out/.test(reason) && !r2.pending && r2.buzz === '30,60,30', `Add to cart: ${!!r2.add}, stepper: ${!!r2.qty}, focus on ${r2.focus}, reason: "${reason}", pulse: ${r2.buzz || 'none'}`);
+    await page.click('[data-toast-close]').catch(() => {});
+    await page.waitForTimeout(500);
+
+    await page.focus('.pdp__add');
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('#CartDrawer .cart-line', { state: 'attached', timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(800);
+    const s1 = await bar();
+    const fits = s1.qty && s1.view && s1.minus && s1.plus && Math.min(s1.minus.w, s1.minus.h, s1.plus.w, s1.plus.h) >= 44 && s1.qty.h === 48 && s1.view.h === 48 && s1.qty.top === s1.view.top && Math.abs(s1.qty.w - s1.view.w) <= 2 && !s1.sideways;
+    record(`Product ${w}px: added, the bar is the stepper and a ticked View cart`, !s1.add && !s1.now && !!fits && s1.value === '1' && s1.bin && s1.tick && s1.tickOn === '1' && !s1.pending && s1.focus === 'plus' && !s1.toast, s1.qty && s1.view ? `stepper ${s1.qty.w} x ${s1.qty.h} (buttons ${s1.minus.w} x ${s1.minus.h}), View cart ${s1.view.w} x ${s1.view.h}; shows ${s1.value} with the bin: ${s1.bin}; tick: ${s1.tick}; focus on ${s1.focus}; pop-up: ${s1.toast}; sideways scroll: ${s1.sideways}` : 'the stepper or View cart is missing');
+
+    await page.locator('.pdp__cta .qty__plus').click();
+    await page.locator('.pdp__cta .qty__plus').click();
+    await settle();
+    const s2 = await bar();
+    record(`Product ${w}px: a pulse for each tap on plus`, s2.buzz === '10 | 10', `asked for: ${s2.buzz || 'none'}`);
+    record(`Product ${w}px: plus changes the cart`, s2.value === '3' && s2.line === 3 && s2.badge === '3' && !s2.bin, `bar ${s2.value}, cart line ${s2.line}, header count "${s2.badge}", minus is a minus: ${!s2.bin}`);
+
+    if (w === 360) {
+      await page.addScriptTag({ content: axe.source });
+      const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+      record('Product, in the cart: accessibility, phone (axe)', v.length === 0, v.join(', ') || '0 violations');
+
+      // The other way: a change in the drawer shows in the bar.
+      await page.locator('.pdp__cta .incart__view').click();
+      await page.waitForTimeout(700);
+      const opened = await page.evaluate(() => document.getElementById('CartDrawer').open);
+      await page.locator('#CartDrawer .cart-line .qty__minus').first().click();
+      await settle();
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(800);
+      const s3 = await bar();
+      record('Product: View cart opens the drawer, and a change there shows in the bar', opened && s3.value === '2' && s3.line === 2, `drawer opened: ${opened}; after minus in the drawer the bar shows ${s3.value}`);
+
+      // Arriving with the piece in the cart: the stepper is there at once, and nothing jumps.
+      await page.reload({ waitUntil: 'load' });
+      await page.waitForTimeout(1200);
+      const s4 = await bar();
+      record('Product: in the cart on arrival, drawn by the server', !!s4.qty && !s4.add && s4.value === '2' && s4.cls < 0.1, `stepper on arrival: ${!!s4.qty} showing ${s4.value}; CLS ${s4.cls.toFixed(3)}`);
+
+      // Another option of the same piece is not in the cart; back on the first, the stepper returns.
+      await page.locator('.pill__label', { hasText: '6 roses' }).click();
+      await page.waitForTimeout(400);
+      const other = await bar();
+      // Its own limit: typing far past it stops at the most there is, and says why.
+      const most = await page.evaluate(() => { const id = +new FormData(document.querySelector('[data-product-form]')).get('id'); return JSON.parse(document.querySelector('[data-variants]').textContent).find((x) => x.id === id).max; });
+      await page.locator('.pdp__add').click();
+      await page.locator('.pdp__cta .qty__input').waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
+      await page.locator('.pdp__cta .qty__input').fill('99');
+      await page.locator('.pdp__cta .qty__input').dispatchEvent('change');
+      await settle();
+      const top = await bar();
+      await page.locator('.pdp__cta .qty__input').fill('0');
+      await page.locator('.pdp__cta .qty__input').dispatchEvent('change');
+      await settle();
+      await page.locator('.pill__label', { hasText: '3 roses' }).click();
+      await page.waitForTimeout(400);
+      const back = await bar();
+      record('Product: the bar follows the chosen option', !!other.add && !other.qty && !!back.qty && back.value === '2', `"6 roses": Add to cart ${!!other.add}; back on "3 roses": stepper showing ${back.value}`);
+      record('Product: the stepper stops at the most there is, and says why', most > 0 && top.value === String(most) && top.off && top.limit.length > 0, `typing 99 gives ${top.value} (limit ${most}); plus off: ${top.off}; "${top.limit}"`);
+    }
+
+    // Down to one, then the bin: out of the cart, Add to cart is back and has focus.
+    while (+(await page.locator('.pdp__cta .qty__input').inputValue()) > 1) await page.locator('.pdp__cta .qty__minus').click();
+    await settle();
+    await page.focus('.pdp__cta .qty__minus');
+    await page.keyboard.press('Enter');
+    await settle();
+    const s5 = await bar();
+    const left = await page.evaluate(async () => (await (await fetch('/cart.js')).json()).item_count);
+    record(`Product ${w}px: the bin takes it out, Add to cart is back`, !!s5.add && !!s5.now && !s5.qty && left === 0 && s5.focus === 'Add to cart', `Add to cart: ${!!s5.add}; cart holds ${left}; focus on ${s5.focus}`);
+    record(`Product ${w}px, in the cart: no script errors`, errors.length === 0, errors[0] || 'none');
     await browser.close();
   }
 
@@ -1537,13 +1812,12 @@ if (want('20')) {
         id: new FormData(document.querySelector('[data-product-form]')).get('id'),
       }));
       const start = await state();
-      // No stock limit here: a number field without a maximum is wide by default and once pushed the button to its own row.
       const b = await page.evaluate(() => {
         const box = (sel) => document.querySelector(sel).getBoundingClientRect();
-        const q = box('.pdp__buy .qty'); const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills .pill');
-        return { rowTop: Math.abs(a.top - n.top), rowH: Math.abs(a.height - n.height), left: Math.abs(a.left - pill.left), right: Math.abs(n.right - q.right), pills: 0, qty: Math.round(q.width) };
+        const a = box('.pdp__add'); const n = box('.pdp__now-btn'); const pill = box('.options__pills .pill');
+        return { rowTop: Math.abs(a.top - n.top), rowH: Math.abs(a.height - n.height), left: Math.abs(a.left - pill.left), right: Math.abs(n.right - (innerWidth - a.left)), pills: 0 };
       });
-      record('Product, no stock limit: buy box lines up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1 && b.qty < 125, `row top ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left ${b.left.toFixed(1)}, right ${b.right.toFixed(1)} (px off); quantity ${b.qty}px wide`);
+      record('Product, no stock limit: buy box lines up', Math.max(b.rowTop, b.rowH, b.left, b.right, b.pills) <= 1, `row top ${b.rowTop.toFixed(1)}, heights ${b.rowH.toFixed(1)}, left ${b.left.toFixed(1)}, right ${b.right.toFixed(1)} (px off)`);
       await pick('Pink');
       await page.waitForTimeout(500);
       const pink = await state();
@@ -1583,17 +1857,26 @@ if (want('20')) {
       record('Product, colours: the viewer shows that colour only', inViewer.photos.length === 2 && inViewer.photos.every((p) => p === 'Red') && inViewer.total === '2', `viewer: ${inViewer.photos.join(', ')} of ${inViewer.total}`);
       record('Product, colours: a sold-out pair is off, then back', pink.six === true && yellow.six === false, `Pink: "6 roses" disabled ${pink.six}; Yellow: disabled ${yellow.six}`);
 
-      // No stock limit here, so the cap of 9 is the limit: plus stops there and the line about larger orders shows.
+      // No stock limit here, so the cap of 9 is the limit: in the cart, plus stops there and the line about larger
+      // orders shows. Then the piece is taken out again.
       {
-        const plus = page.locator('.pdp .qty__plus');
+        const plus = page.locator('.pdp__cta .qty__plus');
+        const field = page.locator('.pdp__cta .qty__input');
         const limit = () => page.evaluate(() => { const l = document.querySelector('[data-limit]'); return { shown: !l.hidden, text: l.textContent.replace(/\s+/g, ' ').trim(), href: l.querySelector('a').href }; });
+        await page.locator('.pdp__add').click();
+        await plus.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
         const before = await limit();
+        // At the limit plus is aria-disabled, which Playwright won't click; a shopper still can, so force it.
         for (let i = 0; i < 12; i++) await plus.click({ force: true });
-        const at9 = await page.locator('.pdp .qty__input').inputValue();
+        const at9 = await field.inputValue();
         const after = await limit();
-        await page.locator('.pdp .qty__input').fill('1');
-        await page.locator('.pdp .qty__input').dispatchEvent('change');
-        record('Product: at most 9, larger orders go to WhatsApp', at9 === '9' && !before.shown && after.shown && /wa\.me|contact/.test(after.href), `plus stops at ${at9}; line shown before: ${before.shown}, at 9: ${after.shown} ("${after.text}")`);
+        await page.waitForTimeout(2500);
+        // This piece only: the free gift may be in the cart for a moment too.
+        const held = await page.evaluate(async () => (await (await fetch('/cart.js')).json()).items.filter((i) => location.pathname.endsWith(i.handle)).reduce((n, i) => n + i.quantity, 0));
+        await field.fill('0');
+        await field.dispatchEvent('change');
+        await page.waitForTimeout(2500);
+        record('Product: at most 9, larger orders go to WhatsApp', at9 === '9' && held === 9 && !before.shown && after.shown && /wa\.me|contact/.test(after.href), `plus stops at ${at9}, cart holds ${held}; line shown before: ${before.shown}, at 9: ${after.shown} ("${after.text}")`);
         const rating = await page.evaluate(() => Math.round(document.querySelector('a.pdp__rating').getBoundingClientRect().height));
         record('Product: the rating link is 44px tall', rating >= 44, `${rating}px`);
       }
@@ -1672,20 +1955,35 @@ if (want('20')) {
   // own stepper stops there too.
   {
     const { browser, page } = await visit('products/rose-crochet-bouquet-colour-test', PHONE);
-    await page.locator('.pdp .qty__input').fill('9');
-    await page.locator('.pdp .qty__input').dispatchEvent('change');
     await page.locator('.pdp__add').click();
-    await page.waitForSelector('.cart-toast:not(.is-error)', { timeout: 8000 }).catch(() => {});
-    await page.waitForTimeout(2600);
-    await page.locator('.pdp .qty__input').fill('1');
-    await page.locator('.pdp .qty__input').dispatchEvent('change');
-    await page.locator('.pdp__add').click();
-    const said = await page.waitForSelector('.cart-toast.is-error .cart-toast__title', { timeout: 8000 }).then((el) => el.textContent(), () => '');
+    await page.locator('.pdp__cta .qty__input').waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
+    await page.locator('.pdp__cta .qty__input').fill('99');
+    await page.locator('.pdp__cta .qty__input').dispatchEvent('change');
+    // The add, the nine and the free gift are three requests, one after another.
+    await page.waitForTimeout(5000);
+    const nine = await page.evaluate(() => document.querySelector('[data-cart-status]')?.textContent || '');
+    record('Product: a typed number is said with the number and the subtotal', /quantity 9\. Subtotal .?\d/.test(nine), `said "${nine.trim()}"`);
+    // A tenth can't be asked for: plus is off, and a tap on it says why (aloud too), with no pulse.
+    await page.evaluate(() => window.__buzz.splice(0));
+    await page.locator('.pdp__cta .qty__plus').click({ force: true });
+    await page.waitForTimeout(300);
+    const quiet = await page.evaluate(() => window.__buzz.join(' | '));
+    const said = await page.evaluate(() => `${document.querySelector('.pdp__cta .qty__plus').getAttribute('aria-disabled')}: ${document.querySelector('[data-cart-status]')?.textContent || ''}`);
     const held = await page.evaluate(async () => (await (await fetch('/cart.js')).json()).items.filter((i) => /colour test/.test(i.product_title)).reduce((n, i) => n + i.quantity, 0));
     await page.goto(at('cart'), { waitUntil: 'load' });
     const line = await page.evaluate(() => { const li = document.querySelector('.cart-line:not(.is-gift)'); return { plus: li.querySelector('.qty__plus').getAttribute('aria-disabled'), note: li.querySelector('[data-line-note]').textContent.trim() }; });
-    record('Product: a tenth of one piece is refused, and says why', held === 9 && /already have 9/.test(said), `cart holds ${held}; "${said.trim()}"`);
+    record('Product: a tenth of one piece is refused, and says why', held === 9 && /^true: .*9 is the most/.test(said), `cart holds ${held}; plus off and said "${said.trim()}"`);
     record('Cart: the stepper stops at 9 and points to WhatsApp', line.plus === 'true' && /9 is the most/.test(line.note), `plus off: ${line.plus}; "${line.note}"`);
+    record('Product: no pulse for a tap on a plus that is off', quiet === '', `asked for: ${quiet || 'none'}`);
+    // Add to cart, then straight to another page: the request is finished anyway (keepalive).
+    await page.context().request.post(at('cart/clear.js'));
+    await page.goto(at('products/rose-crochet-bouquet-colour-test'), { waitUntil: 'load' });
+    await page.waitForTimeout(1500);
+    await page.locator('.pdp__add').click();
+    await page.goto(at('pages/contact'), { waitUntil: 'commit' }).catch(() => {});
+    await page.waitForTimeout(3000);
+    const left = await page.context().request.get(at('cart.js')).then((r) => r.json()).then((c) => c.items.filter((i) => /colour test/.test(i.product_title)).length).catch(() => -1);
+    record('Product: Add to cart then leaving at once still adds', left === 1, `lines of the piece in the cart: ${left}`);
     await page.context().request.post(at('cart/clear.js'));
     await browser.close();
   }
@@ -1699,6 +1997,15 @@ if (want('20')) {
       return { id: data.get('id'), action: f.getAttribute('action'), photos: document.querySelectorAll('.gallery__img').length, bar: getComputedStyle(document.querySelector('.pdp__cta')).position === 'fixed' && document.querySelector('.pdp__add').getBoundingClientRect().bottom <= innerHeight };
     });
     record('Product, no JavaScript: form posts a variant', /^\d+$/.test(r.id || '') && /\/cart\/add/.test(r.action) && r.bar === true, `id ${r.id} to ${r.action}; ${r.photos} photos; buttons still pinned: ${r.bar}`);
+    // In the cart, without JavaScript: a line says how many, and View cart is a plain link to the cart.
+    await page.context().request.post(at('cart/add.js'), { data: { items: [{ id: +r.id, quantity: 2 }] } });
+    await page.reload({ waitUntil: 'load' });
+    const n = await page.evaluate(() => {
+      const shown = (sel) => document.querySelector(sel).getClientRects().length > 0;
+      return { note: shown('.pdp__cta .incart__note') ? document.querySelector('.pdp__cta .incart__note').textContent.trim() : '', stepper: shown('.pdp__cta .qty'), add: shown('.pdp__add'), href: document.querySelector('.pdp__cta .incart__view').getAttribute('href') };
+    });
+    record('Product, no JavaScript: in the cart says how many, links to the cart', /^2 in your cart/.test(n.note) && !n.stepper && !n.add && /\/cart$/.test(n.href), `"${n.note}"; stepper shown: ${n.stepper}; Add to cart shown: ${n.add}; View cart goes to ${n.href}`);
+    await page.context().request.post(at('cart/clear.js'));
     await browser.close();
   }
 
@@ -1728,19 +2035,19 @@ if (want('20')) {
     });
     const row = await page.evaluate(() => {
       const box = (sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return { top: Math.round(r.top), h: Math.round(r.height), w: Math.round(r.width) }; };
-      return [box('.pdp__buy .qty'), box('.pdp__add'), box('.pdp__now-btn .shopify-payment-button__button--unbranded')];
+      return [box('.pdp__add'), box('.pdp__now-btn .shopify-payment-button__button--unbranded')];
     });
     const nowOff = await page.evaluate(() => { const btn = document.querySelector('.pdp__now-btn .shopify-payment-button__button--unbranded'); const range = document.createRange(); range.selectNodeContents(btn); const t = range.getBoundingClientRect(); const r = btn.getBoundingClientRect(); return Math.abs((t.top + t.bottom) / 2 - (r.top + r.bottom) / 2); });
     record('Product, desktop: "Buy it now" words in the middle of the button', nowOff <= 1, `${nowOff.toFixed(1)}px off centre`);
-    record('Product, desktop: quantity, Add to cart, Buy it now on one 48px row', row.every((b) => b.h === 48 && Math.abs(b.top - row[0].top) <= 1) && row[1].w >= 128 && row[2].w >= 128, row.map((b) => `${b.w} x ${b.h} at ${b.top}`).join(', '));
+    record('Product, desktop: Add to cart and Buy it now on one 48px row', row.every((b) => b.h === 48 && Math.abs(b.top - row[0].top) <= 1 && b.w >= 128), row.map((b) => `${b.w} x ${b.h} at ${b.top}`).join(', '));
     const bar0 = await barState();
     await page.evaluate(() => scrollTo(0, document.querySelector('.pdp__add').getBoundingClientRect().bottom + scrollY + 40));
     await page.waitForTimeout(700);
     const bar1 = await barState();
     await page.locator('.buybar__add').click();
-    await page.waitForSelector('.cart-toast:not([hidden])', { timeout: 8000 }).catch(() => {});
-    await page.waitForTimeout(400);
-    const barAdd = await page.evaluate(() => { const t = document.querySelector('.cart-toast:not([hidden])'); return { toast: !!t, bottom: t ? Math.round(t.getBoundingClientRect().bottom) : 0 }; });
+    await page.waitForTimeout(200);
+    const barAdd = await page.evaluate(() => ({ toast: !!document.querySelector('.cart-toast:not([hidden])'), swapped: !!document.querySelector('.buybar.is-in .qty')?.getClientRects().length }));
+    await page.waitForSelector('#CartDrawer .cart-line', { state: 'attached', timeout: 8000 }).catch(() => {});
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(700);
     const bar2 = await barState();
@@ -1748,7 +2055,28 @@ if (want('20')) {
     await page.waitForTimeout(700);
     const bar3 = await barState();
     record('Product, desktop: buy bar only after Add to cart is scrolled past', !bar0.shown && bar1.shown && bar1.h <= 72 && !bar2.shown && !bar3.shown, `arrival: ${bar0.shown}; scrolled past: ${bar1.shown} (${bar1.h}px tall); at the footer: ${bar2.shown}; back at the top: ${bar3.shown}`);
-    record('Product, desktop: Add to cart in the bar, pop-up clear of it', barAdd.toast && barAdd.bottom <= bar1.top, `pop-up: ${barAdd.toast}, ends ${barAdd.bottom}px, bar starts ${bar1.top}px`);
+    record('Product, desktop: Add to cart in the bar turns it into the stepper at once, no pop-up', !barAdd.toast && barAdd.swapped, `pop-up: ${barAdd.toast}, stepper in the bar within 200ms: ${barAdd.swapped}`);
+    // In the cart now: the buy box is the stepper and View cart as two halves of one 48px row, and so is the bar.
+    {
+      const boxes = (scope) => page.evaluate((sc) => {
+        const box = (sel) => { const el = document.querySelector(`${sc} ${sel}`); const r = el.getBoundingClientRect(); return el.getClientRects().length ? { top: Math.round(r.top), h: Math.round(r.height), w: Math.round(r.width) } : null; };
+        return { qty: box('.qty'), view: box('.incart__view'), add: box('[data-add]'), value: document.querySelector(`${sc} .qty__input`).value };
+      }, scope);
+      const inBox = await boxes('.pdp__buy');
+      await page.evaluate(() => scrollTo(0, document.querySelector('[data-buy]').getBoundingClientRect().bottom + scrollY + 40));
+      await page.waitForTimeout(700);
+      const inBar = await boxes('.buybar');
+      await page.locator('.buybar .qty__plus').click();
+      await page.waitForTimeout(2500);
+      const after = await page.evaluate(() => ({ bar: document.querySelector('.buybar .qty__input').value, box: document.querySelector('.pdp__buy .qty__input').value, line: document.querySelector('#CartDrawer .cart-line:not(.is-gift)')?.dataset.qty }));
+      await page.evaluate(() => scrollTo(0, 0));
+      record('Product, desktop: in the cart, stepper and View cart are two halves of one row', !!inBox.qty && !!inBox.view && !inBox.add && inBox.qty.h === 48 && inBox.view.h === 48 && inBox.qty.top === inBox.view.top && Math.abs(inBox.qty.w - inBox.view.w) <= 2, inBox.qty && inBox.view ? `stepper ${inBox.qty.w} x ${inBox.qty.h}, View cart ${inBox.view.w} x ${inBox.view.h}, Add to cart shown: ${!!inBox.add}` : 'the stepper or View cart is missing');
+      record('Product, desktop: the bar has the stepper too, and it changes the cart', !!inBar.qty && !!inBar.view && !inBar.add && inBar.value === '1' && after.bar === '2' && after.box === '2' && after.line === '2', `bar stepper: ${!!inBar.qty}, View cart: ${!!inBar.view}, Add to cart: ${!!inBar.add}; after plus: bar ${after.bar}, buy box ${after.box}, cart ${after.line}`);
+      // Out of the cart again, so the keyboard pass below meets Add to cart and Buy it now.
+      await page.locator('.pdp__buy .qty__input').fill('0');
+      await page.locator('.pdp__buy .qty__input').dispatchEvent('change');
+      await page.waitForTimeout(2500);
+    }
     await page.evaluate(() => scrollTo(0, 0));
     const circle = (sel) => page.evaluate((s) => { const el = document.querySelector(s); const r = el.getBoundingClientRect(); const i = parseFloat(getComputedStyle(el, '::before').inset) || 0; return Math.round(r.width - i * 2); }, sel);
     const sizes = [await circle('.gallery [data-save]'), await circle('[data-share]')];
@@ -1795,7 +2123,7 @@ if (want('20')) {
     }
     record('Product, desktop: look-closer button only for the keyboard', lookOff === '0' && byPhoto && back.track && back.look === '0' && lookOn === '1', `hidden to a mouse: ${lookOff === '0'}; photo click opens the viewer: ${byPhoto}; focus back on the photos: ${back.track}, button still hidden: ${back.look === '0'}; shown when tabbed to: ${lookOn === '1' ? true : lookOn}`);
     const seen = [...new Set(order)];
-    const rank = ['photos', 'option', 'qty', 'add', 'buy-now', 'ask', 'detail'].map((k) => seen.indexOf(k));
+    const rank = ['photos', 'option', 'add', 'buy-now', 'ask', 'detail'].map((k) => seen.indexOf(k));
     record('Product, keyboard: photos, options, buy, details in order', rank.every((n, i) => n > -1 && (i === 0 || n > rank[i - 1])), seen.join(' → '));
     await page.evaluate(() => scrollTo(0, 0));
     await page.addScriptTag({ content: axe.source });
@@ -1811,6 +2139,74 @@ if (want('20')) {
     await page.waitForTimeout(400);
     const big = await page.evaluate(() => ({ sideways: document.documentElement.scrollWidth > innerWidth + 1, clipped: [...document.querySelectorAll('.pdp__add, .pill__label, .detail summary')].filter((el) => el.scrollWidth > el.clientWidth + 1).length }));
     record('Product: 200% text at 320px', !big.sideways && big.clipped === 0, `sideways scroll: ${big.sideways}, clipped controls: ${big.clipped}`);
+    await browser.close();
+  }
+}
+
+// 21. Phone menu (docs/nav-plan.md, "As built", 2026-10-04): Shop is the one open photo grid with "Shop all" in its
+//     heading row; a later list of collections (Gifts) folds into a row with an arrow. Every link fits one
+//     390 x 844 screen, a 360 x 740 phone scrolls a little, and no group links to the same place twice.
+if (want('21')) {
+  const menu = (page) => page.evaluate(() => {
+    const d = document.querySelector('#MenuDrawer');
+    const panel = d.querySelector('.drawer__panel');
+    const sc = [d, panel].find((e) => e.scrollHeight > e.clientHeight + 1) || panel;
+    const groups = [...d.querySelectorAll('.drawer__nav > ul > li')].map((li) => [...li.querySelectorAll('a')].map((a) => a.getAttribute('href')));
+    const last = [...d.querySelectorAll('.drawer__secondary :is(a, button)')].filter((e) => e.offsetParent).pop();
+    const all = d.querySelector('.drawer__shop-all');
+    return {
+      height: sc.scrollHeight,
+      lastBottom: Math.round(last.getBoundingClientRect().bottom),
+      grids: d.querySelectorAll('.drawer__tiles').length,
+      tiles: d.querySelectorAll('.drawer__tiles > li').length,
+      repeats: groups.filter((g) => new Set(g).size !== g.length).length,
+      all: all ? Math.round(all.getBoundingClientRect().height) : 0,
+      folded: [...d.querySelectorAll('.drawer__group')].map((g) => g.open),
+      sideways: [...d.querySelectorAll('.drawer__nav *')].some((e) => e.getBoundingClientRect().right > panel.getBoundingClientRect().right + 1),
+    };
+  });
+  for (const [w, h] of [[390, 844], [360, 740]]) {
+    const { browser, page } = await open(chromium, { viewport: { width: w, height: h }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, { reducedMotion: 'reduce' });
+    await page.click('[data-menu-open]');
+    await page.waitForTimeout(600);
+    const m = await menu(page);
+    if (h === 844) record('Menu, 390 × 844: every link on one screen', m.lastBottom <= h, `last link ends at ${m.lastBottom}px of ${h}; content ${m.height}px`);
+    else record('Menu, 360 × 740: a short scroll at most', m.height - h <= 160, `${m.height - h}px to scroll (content ${m.height}px)`);
+    if (h === 844) {
+      record('Menu: one photo grid, the rest folded', m.grids === 1 && m.folded.length >= 1 && m.folded.every((o) => !o), `grids: ${m.grids} (${m.tiles} tiles), folded groups open: ${m.folded.join(', ') || 'none found'}`);
+      record('Menu: no link twice in a group, Shop all 44px', m.repeats === 0 && m.all >= 44, `groups with a repeat: ${m.repeats}, Shop all link: ${m.all}px tall`);
+      await page.addScriptTag({ content: axe.source });
+      const run = () => page.evaluate(async () => (await window.axe.run('#MenuDrawer', { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+      const v1 = await run();
+      // Keyboard: Enter on the folded row opens it and its links can be reached; Esc closes the menu, focus returns.
+      await page.focus('.drawer__group summary');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(500);
+      const opened = await page.evaluate(() => { const g = document.querySelector('.drawer__group'); return { open: g.open, links: [...g.querySelectorAll('.drawer__sub a')].filter((a) => a.offsetHeight >= 44).length }; });
+      const v2 = await run();
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(700);
+      const back = await page.evaluate(() => !document.querySelector('#MenuDrawer').open && document.activeElement?.matches('[data-menu-open]'));
+      record('Menu: Enter opens Gifts, Esc returns to the button', opened.open && opened.links >= 2 && back, `opened: ${opened.open}, links 44px or taller: ${opened.links}, focus back on the menu button: ${back}`);
+      record('Menu: accessibility, folded and open (axe)', v1.length === 0 && v2.length === 0, [...v1, ...v2].join(', ') || '0 violations');
+    }
+    await browser.close();
+  }
+  // Desktop: the photo panels stay on screen at the narrowest desktop layout (1100px) and the page never scrolls sideways.
+  for (const w of [1100, 1280]) {
+    const { browser, page } = await open(chromium, { viewport: { width: w, height: 800 } }, { reducedMotion: 'reduce' });
+    const d = await page.evaluate(() => ({ sideways: document.documentElement.scrollWidth - innerWidth, past: [...document.querySelectorAll('.site-header__sub')].filter((s) => s.getBoundingClientRect().right > innerWidth).length }));
+    record(`Menu, desktop ${w}px: panels stay on screen`, d.sideways <= 1 && d.past === 0, `sideways scroll: ${d.sideways}px, panels past the edge: ${d.past}`);
+    await browser.close();
+  }
+  // 200% text on a 360px phone: the grid drops a column and nothing runs off the side.
+  {
+    const { browser, page } = await open(chromium, { viewport: { width: 360, height: 740 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, { reducedMotion: 'reduce' });
+    await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
+    await page.click('[data-menu-open]');
+    await page.waitForTimeout(600);
+    const m = await menu(page);
+    record('Menu: 200% text', !m.sideways, `anything past the panel's edge: ${m.sideways}`);
     await browser.close();
   }
 }

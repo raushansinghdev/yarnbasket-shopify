@@ -21,6 +21,9 @@
   assign bar_items = ''
   assign drawer_items = ''
   assign item_count = 0
+  # Phone drawer: only the first list of crafts is an open photo grid. A later one (Gifts) folds into a row with an
+  # arrow, like Help, so the whole menu fits about one screen (docs/nav-plan.md, "As built").
+  assign grid_used = false
 
   if demo_menu
     # "Our story" lives under Help (last, after a divider), not at the top level: see docs/nav-plan.md §3.
@@ -63,8 +66,13 @@
       capture bar_item
         render 'nav-item', place: 'bar', index: forloop.index, title: d_title, url: d_urls[i], here: here, kid_titles: kt, kid_urls: ku, kid_handles: kh, tiles: tiles, all_link: all_link
       endcapture
+      assign drawer_tiles = false
+      if tiles and grid_used == false
+        assign drawer_tiles = true
+        assign grid_used = true
+      endif
       capture drawer_item
-        render 'nav-item', place: 'drawer', index: forloop.index, title: d_title, url: d_urls[i], here: here, kid_titles: kt, kid_urls: ku, kid_handles: kh, tiles: tiles, all_link: all_link
+        render 'nav-item', place: 'drawer', index: forloop.index, title: d_title, url: d_urls[i], here: here, kid_titles: kt, kid_urls: ku, kid_handles: kh, tiles: drawer_tiles, all_link: all_link
       endcapture
       assign bar_items = bar_items | append: bar_item
       assign drawer_items = drawer_items | append: drawer_item
@@ -96,8 +104,13 @@
       capture bar_item
         render 'nav-item', place: 'bar', index: forloop.index, title: link.title, url: link.url, current: link.current, here: here, kids: link.links, tiles: tiles, all_link: all_link
       endcapture
+      assign drawer_tiles = false
+      if tiles and grid_used == false
+        assign drawer_tiles = true
+        assign grid_used = true
+      endif
       capture drawer_item
-        render 'nav-item', place: 'drawer', index: forloop.index, title: link.title, url: link.url, current: link.current, here: here, kids: link.links, tiles: tiles, all_link: all_link
+        render 'nav-item', place: 'drawer', index: forloop.index, title: link.title, url: link.url, current: link.current, here: here, kids: link.links, tiles: drawer_tiles, all_link: all_link
       endcapture
       assign bar_items = bar_items | append: bar_item
       assign drawer_items = drawer_items | append: drawer_item
@@ -567,7 +580,7 @@
        lines up with its menu item instead. */
     .site-header__sub--tiles { left: calc(var(--space-4) * -1); min-width: 0; padding: var(--space-4); translate: 0 -8px; }
     .site-header__nav-item.is-open > .site-header__sub--tiles { translate: 0 4px; }
-    .site-header__tiles { display: grid; grid-auto-flow: column; grid-auto-columns: 128px; gap: var(--space-4); }
+    .site-header__tiles { display: grid; grid-template-columns: repeat(var(--cols, 5), 128px); gap: var(--space-4); }
     .site-header__sub--tiles .site-header__sub-all { margin-top: var(--space-3); }
     @media (prefers-reduced-motion: no-preference) {
       .site-header__nav-item.is-open .site-header__tiles > li {
@@ -662,6 +675,23 @@
   .drawer__logo .site-header__name { font-size: 1.375rem; }
   .drawer__shop { display: grid; gap: var(--space-3); padding-bottom: var(--space-5); margin-bottom: var(--space-2); border-bottom: 1px solid var(--color-line); }
   .drawer__shop-title { margin: 0; }
+  /* "Shop all" sits at the end of the heading row, not in the grid, so six crafts fill two rows of three. */
+  .drawer__shop-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 var(--space-3); margin-block: calc(var(--space-2) * -1); }
+  .drawer__shop-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    color: var(--color-heading);
+    font-size: var(--fs-label);
+    font-weight: 500;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .drawer__shop-all .icon { width: 18px; height: 18px; transition: translate var(--dur-state) var(--ease-out); }
+  .drawer__shop-all[aria-current] { text-decoration: underline; text-decoration-color: var(--rose); text-underline-offset: 5px; text-decoration-thickness: 2px; }
+  .drawer__shop-all:active .icon { translate: 4px 0; }
   /* Crafts 3 across as squares, "Shop all" last: the whole menu fits a phone screen with little or no scrolling. */
   .drawer__tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4) var(--space-3); }
   /* Large text: the names no longer fit three across, so two (13em is the drawer's width at about 140% text). */
@@ -670,9 +700,6 @@
   .drawer__tiles .menu-tile { gap: 6px; }
   .drawer__tiles .menu-tile__media { --ratio: 1; }
   .drawer__tiles .menu-tile__title { font-size: .875rem; line-height: 1.25; text-wrap: balance; }
-  .menu-tile--all .menu-tile__media { background: var(--blush); }
-  .menu-tile--all .menu-tile__art .icon { width: 26px; height: 26px; color: var(--cocoa-deep); transition: translate var(--dur-state) var(--ease-out); }
-  @media (hover: hover) { .menu-tile--all:hover .menu-tile__art .icon { translate: 4px 0; } }
   .drawer__close .icon { transition: transform var(--dur-panel) var(--ease-spring); }
   @media (hover: hover) { .drawer__close:hover .icon { transform: rotate(90deg); } }
   .drawer__nav > ul { display: grid; }

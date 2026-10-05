@@ -176,9 +176,9 @@
       {
         "type": "checkbox",
         "id": "cart_extras",
-        "label": "Show \"Little extras\" on the cart page",
+        "label": "Show \"Little extras\" in the cart",
         "default": true,
-        "info": "Up to 4 small products from Shopify's product recommendations."
+        "info": "A swipe row of up to 6 small products from Shopify's product recommendations, in the cart drawer and on the cart page. It is called \"You may also like\" once every reward is earned."
       }
     ]
   },

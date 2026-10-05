@@ -377,6 +377,71 @@ all: the stepper was already at its narrowest (44 + 28 + 44), so the gain is in 
 stacking the label above the stepper like Colour and Size (about 30px taller, stepper under the left thumb).
 Desktop's one 48px row is unchanged. Check 20 is 65 checks, all passing.
 
+## Round 7 (2026-10-05, are the pinned buttons a mistake?)
+
+Raushan wondered whether pinning the buttons on phones (round 4) hides the size and colour options and wastes the
+screen, and compared Amazon (buttons in the page, a bar after scrolling past) with Flipkart (always pinned).
+
+- **Pinned stays.** Amazon's page is for a researched purchase: its buttons come after protection plans, delivery
+  dates and the total. Ours is a ₹169 impulse from a Meta ad, decided on the first screen, and Flipkart and Meesho
+  have taught our shoppers this layout. Moving the buttons into the page would free about 9px of the first screen
+  (the bar's 65px goes, a Buy it now row of 56px comes in) and leave short phones with no button on arrival.
+- **Measured on arrival, with the square photo:**
+  - 360 × 640, a two-line name or two options: the buttons sit in the gap after the price, so no option shows.
+  - Colour and Size, 800px and taller: the buttons sit in the gap after Colour, so Size is hidden completely.
+  - One option, 800px and taller: the option row is fully above the buttons.
+  - Only the colour test product has two options today; every real listing has one.
+- **Tried and reverted the same day (Raushan): a shorter phone photo** (ratios 1.2 to 1.4) so an option row always
+  showed above the buttons. He did not want the photo to stop being square. The photo is as it was: square, and a
+  tenth shorter under 700px tall. The two cases above are still open.
+- Not done: price inside the button, moving the Quantity row.
+- Check 20: the quantity-limit check now scrolls the stepper clear of the pinned buttons first.
+
+## Round 8 (2026-10-05, no quantity field: Add to cart becomes the cart's stepper)
+
+Raushan's idea, the pattern Zepto, Blinkit and Swiggy use. It replaces the Quantity row of rounds 4 and 6 and the
+buy box of PP4.
+
+- **No quantity field anywhere on the page.** Add to cart adds one. Buy it now buys one; more than one goes
+  through the cart.
+- **Once the chosen option is in the cart, the buy box is `[ bin/−  2  + ] [ ✓ View cart ]`** in place of Add to
+  cart and Buy it now: in the phone's pinned bar, in the desktop buy box and in the desktop slim bar.
+  - The stepper is the cart's own (the bin at 1; removing brings Add to cart back) and changes the cart line
+    itself. A change in the drawer or on /cart shows in the bar too.
+  - The two are equal halves, 48px tall. Raushan asked for a bigger stepper since it holds three controls: at equal
+    halves each of its buttons is 51px wide at 320, 61px at 360 and 68px at 390, and View cart, the step towards
+    paying, keeps its size. 55/45 is the most that fits a 320px phone if he wants more after a real-phone look.
+  - View cart is filled and carries a tick: the sign that the piece is in the cart. No cart icon and no number on
+    it (the stepper is this piece's number; the header has the cart's). Not "Buy it now" there: Shopify's button
+    ignores the cart and checks out one unit of this piece only.
+  - The state follows the chosen option, and the server draws it on arrival, so there is no flash.
+  - Plus stops at the stock or at 9 and the line under the buy box says why (also spoken on a tap).
+  - Focus: Add to cart → plus when the stepper takes its place; the bin → Add to cart.
+  - Without JavaScript: "2 in your cart" and a plain View cart link.
+- **No added-to-cart pop-up on the product page** (changed the same evening, after Raushan's look on his phone:
+  the pop-up's View cart sat right above the bar's). The bar changing, the header count and the spoken message
+  are the confirmation. The pop-up still shows a refusal ("9 is the most per order", sold out), and it is still
+  used where a piece is added with no bar to change.
+- **The stepper shows the moment Add to cart is pressed**, before Shopify answers (`cart.adding` in
+  `product-buy.js`, called by `cart.js`). Raushan saw 4 to 5 seconds on his phone. Measured here: the tap to the
+  stepper was about 0.8 s, of which Shopify's `cart/add.js` is about 600 ms, the drawer's HTML about 100 ms and
+  our scripts about 10 ms, so the wait was the connection. Taps on plus made before the answer go once it has
+  landed. If Shopify refuses, Add to cart comes back with focus and the reason shows in the pop-up.
+- **The tick waits for Shopify.** Until the add is confirmed the bar has `is-pending`: View cart is paler and
+  its tick is held back, then fades in. A refusal never showed a tick.
+- **The add is finished even if the shopper leaves the page** (`keepalive` on every cart request in `cart.js`).
+- **A short pulse under the finger** (`theme.js`, 10 ms) for Add to cart, the stepper and Undo, on every page;
+  a double pulse when an add is refused. Android only: Safari gives web pages no vibration, and the hidden-switch
+  trick that works on some iOS versions is undocumented, so it isn't used. Nothing depends on the pulse.
+- **Spoken quantity fixed** (`cart.js`): a quantity change said "quantity 0" when Shopify re-keyed the line, and
+  the subtotal was always blank because its selector no longer existed. It now reads both from the redrawn cart.
+- How: `snippets/buy-in-cart.liquid`, `assets/product-buy.js` (5.5 KB, its own budget of 6), `commit` added to
+  what cart.js shares. product.js lost its quantity code (8.8 KB of 10). The stepper's field has no name, so it
+  never posts with the product form, and `autocomplete="off"`, so Back doesn't restore an old number into it.
+- Found on the way: the free gift arriving changes the line's key at Shopify, so taps are matched to the line when
+  they are sent, not when they are made.
+- Check 20 is 87 checks, all passing; checks 8 and 8b were adapted (a piece in the cart has no Add to cart button).
+
 ## Photo guide (for Raushan)
 
 Five square photos per product, at least 1200px, in this order:

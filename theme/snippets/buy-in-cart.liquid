@@ -1,0 +1,45 @@
+{%- doc -%}
+  The buy box once this piece is in the cart (docs/product-page-plan.md "Round 8"): the cart's own stepper and a
+  ticked "View cart", in place of Add to cart and Buy it now. The stepper changes the cart line itself
+  (assets/product-buy.js); at 1 its minus is the bin, and removing brings Add to cart back. The tick is the sign
+  that the piece is in the cart; the group's name says it for screen readers. Add to cart shows this at once,
+  so until Shopify has confirmed (`is-pending`) the button is paler and the tick is held back.
+  Rendered hidden when the piece isn't in the cart; `is-in` on the buy box or the bar shows it.
+  Without JavaScript the stepper can't work, so a line says how many are in the cart and View cart goes to /cart.
+
+  @param {string} id - Unique id for the stepper's field
+  @param {string} title - Product title, escaped, for the labels
+  @param {number} value - How many of the chosen option the cart holds (0 when none)
+  @param {number} [max] - The most the stepper may reach (the stock, or the most per order)
+
+  @example
+  {% render 'buy-in-cart', id: 'InCart-1', title: safe_title, value: in_cart, max: max %}
+{%- enddoc -%}
+<div class="incart" role="group" aria-label="{{ 'products.in_cart' | t: title: title }}" data-in>
+  {%- render 'quantity', id: id, value: value, title: title, max: max -%}
+  <span class="incart__note">{{ 'products.in_cart_count' | t: count: value }}</span>
+  <a class="btn incart__view" href="{{ routes.cart_url }}" data-cart-view>
+    {%- render 'icon', icon: 'check' -%}
+    {{- 'cart.view_cart' | t -}}
+  </a>
+</div>
+
+{% stylesheet %}
+  /* Shown by `is-in` on the buy box or the bar (sections/product.liquid). The stepper's buttons share its width,
+     so each is a wide target with the number apart in the middle. */
+  .incart { display: none; }
+  .incart .qty { display: grid; grid-template-columns: minmax(0, 1fr) minmax(2rem, auto) minmax(0, 1fr); }
+  .incart .qty__btn { width: 100%; }
+  .incart__view { gap: var(--space-2); min-height: var(--tap); padding-inline: var(--space-3); white-space: nowrap; }
+  .incart__view .icon { width: 20px; height: 20px; flex: none; transition: opacity var(--dur-state) ease; }
+  .is-pending .incart__view { opacity: .75; }
+  .is-pending .incart__view .icon { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .incart__view .icon { transition: none; }
+  }
+  .incart__note { display: none; align-self: center; font-size: var(--fs-small); color: var(--color-heading); }
+  @media (scripting: none) {
+    .incart .qty { display: none; }
+    .incart__note { display: block; }
+  }
+{% endstylesheet %}

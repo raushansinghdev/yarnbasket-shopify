@@ -2,6 +2,8 @@
   The cart page, /cart (docs/cart-plan.md §4.2, §5). Works fully without JavaScript: a plain form with a quantity
   per line, an Update button and Checkout. cart.js makes the steppers instant, adds Undo and the gift-note autosave,
   and cart-page.js shows the pinned Checkout bar on phones while the summary's own button is off screen.
+  Order: the pieces, then one card (gift note, rewards, price details, Checkout), then the swipe rows
+  (snippets/cart-rows, filled by cart-rows.js). The drawer shows the same, in the same order.
   The same snippets draw the cart drawer (sections/cart-drawer.liquid), so the two never differ.
 {%- endcomment -%}
 <div class="section cart-page scheme-soft" data-cart-page data-section-id="{{ section.id }}">
@@ -64,28 +66,13 @@
       {%- render 'cart-empty', place: 'page', level: 2 -%}
     {%- endif -%}
   </div>
-  {%- comment -%} The pinned bar and Little extras: only this page needs them, so they stay out of cart.js. {%- endcomment -%}
+  {%- comment -%} The pinned bar: only this page needs it, so it stays out of cart.js. {%- endcomment -%}
   <script src="{{ 'cart-page.js' | asset_url }}" type="module"></script>
 
-  {%- if settings.cart_extras and cart.item_count > 0 -%}
-    {%- comment -%}
-      "Little extras" (decision D7): cart-page.js fills this from sections/cart-extras.liquid, based on the first piece
-      in the cart that was chosen (the free gift sits first once it's added, and says nothing about taste).
-    {%- endcomment -%}
-    {%- liquid
-      assign extras_for = cart.items.first.product_id
-      for item in cart.items
-        if item.product_id != settings.gift_product.id
-          assign extras_for = item.product_id
-          break
-        endif
-      endfor
-    -%}
-    <div
-      class="cart-extras-slot"
-      data-cart-extras
-      data-url="{{ routes.product_recommendations_url }}?product_id={{ extras_for }}&limit=10&section_id=cart-extras"
-    ></div>
+  {%- comment -%} The swipe rows, outside the part cart.js redraws; the drawer has the same (snippets/cart-rows). {%- endcomment -%}
+  {%- if cart.item_count > 0 -%}
+    {%- render 'cart-rows', place: 'page' -%}
+    <script src="{{ 'cart-rows.js' | asset_url }}" type="module"></script>
   {%- endif -%}
 </div>
 
@@ -101,8 +88,12 @@
   .cart-page__summary .cart-note { padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-line-strong); }
   .cart-page .cart-empty { padding-block: var(--space-6) var(--space-4); }
 
+  /* Room for the pinned bar at the very end of the page (cart-page.js sets --buybar while the bar shows). */
+  body:has(.cart-bar.is-shown) { padding-bottom: var(--buybar, 0px); }
+
   /* Pinned Checkout bar (phones only). It's a shortcut to the summary's own button, so it stays out of the tab
-     order and away from screen readers; it only appears while that button is off screen. */
+     order and away from screen readers; it shows whenever that button is off screen, above or below, so Checkout
+     is in reach while the rows are being browsed. */
   .cart-bar {
     position: fixed;
     inset: auto 0 0;

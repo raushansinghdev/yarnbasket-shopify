@@ -1,0 +1,68 @@
+{%- doc -%}
+  The three swipe rows at the end of the cart, the same in the drawer and on /cart (docs/cart-plan.md, "One cart"):
+  Saved for later, Little extras ("You may also like" once every reward is earned) and Recently viewed.
+  Empty shells: assets/cart-rows.js fills them and hides a row with nothing to show. No piece shows twice, and
+  none that is already in the cart. Without JavaScript nothing shows and the cart ends after the price details.
+  The suggestions are based on the first piece in the cart that was chosen (the free gift sits first once it's
+  added, and says nothing about taste), and are switched off in Theme settings → Cart.
+
+  @param {string} place - 'drawer' or 'page' (keeps ids unique)
+
+  @example
+  {% render 'cart-rows', place: 'drawer' %}
+{%- enddoc -%}
+{%- liquid
+  assign extras_for = cart.items.first.product_id
+  for item in cart.items
+    if item.product_id != settings.gift_product.id
+      assign extras_for = item.product_id
+      break
+    endif
+  endfor
+  assign saved_title = 'cart.saved_title' | t
+  assign extras_title = 'cart.extras_title' | t
+  assign recent_title = 'products.recently_viewed' | t
+  assign saved_id = 'CartSavedTitle-' | append: place
+  assign extras_id = 'CartExtrasTitle-' | append: place
+  assign recent_id = 'CartRecentTitle-' | append: place
+-%}
+<div class="cart-rows" data-cart-rows data-products="{{ routes.root_url }}products/">
+  <section class="cart-row" aria-labelledby="{{ saved_id }}" tabindex="-1" data-cart-saved hidden>
+    {%- render 'product-row', title: saved_title, id: saved_id, shell: true -%}
+    {%- if pages['saved'].url -%}
+      <a class="cart-row__all" href="{{ pages['saved'].url }}" data-cart-saved-all hidden>{{ 'cart.saved_all' | t }}</a>
+    {%- endif -%}
+  </section>
+  {%- if settings.cart_extras -%}
+    {%- comment -%} The heading follows the section: "Little extras" or "You may also like". {%- endcomment -%}
+    <section
+      class="cart-row"
+      aria-labelledby="{{ extras_id }}"
+      tabindex="-1"
+      data-cart-extras
+      data-url="{{ routes.product_recommendations_url }}?product_id={{ extras_for }}&limit=10&section_id=cart-extras"
+      hidden
+    >
+      {%- render 'product-row', title: extras_title, id: extras_id, shell: true -%}
+    </section>
+  {%- endif -%}
+  <section class="cart-row" aria-labelledby="{{ recent_id }}" tabindex="-1" data-cart-recent hidden>
+    {%- render 'product-row', title: recent_title, id: recent_id, shell: true -%}
+  </section>
+</div>
+
+{% stylesheet %}
+  /* snippets/product-row draws each row. Buttons line up along the bottom of a row whatever the length of the
+     names. A row takes focus only when the piece that had it has left. */
+  .cart-rows:has(.cart-row:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px dashed var(--color-line-strong); }
+  .cart-row { position: relative; }
+  .cart-row:focus { outline: none; box-shadow: none; }
+  .cart-row__all { position: absolute; top: 0; right: 0; padding-block: var(--space-3); margin-block: calc(var(--space-3) * -1); font-size: var(--fs-small); font-weight: 500; line-height: 1.2; color: var(--color-heading); text-decoration: underline; text-decoration-color: var(--rose); text-underline-offset: 4px; white-space: nowrap; }
+  .cart-row__all[hidden] { display: none; }
+  .cart-row__note { margin-top: var(--space-2); font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
+  .cart-row .extra { grid-template-rows: auto auto 1fr auto; }
+  .cart-row .extra__title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400; font-size: .9375rem; }
+  .cart-row .extra .price { font-size: 1rem; font-weight: 600; color: var(--color-heading); }
+  .cart-row .extra__btn { background: transparent; }
+  .cart-row [data-row-add][aria-busy="true"] { opacity: .6; }
+{% endstylesheet %}

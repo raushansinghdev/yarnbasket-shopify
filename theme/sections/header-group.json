@@ -14,7 +14,7 @@
         "offer": {
           "type": "message",
           "settings": {
-            "text": "Free shipping over ₹999 · Partial COD available",
+            "text": "Free shipping over ₹499 · Partial COD available",
             "icon": "none",
             "link": "",
             "show_until": ""

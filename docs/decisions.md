@@ -2,6 +2,111 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-05 (one cart: the drawer and `/cart` show the same thing)
+
+- **The drawer and the cart page have the same content in the same order.** The cart icon opens the drawer, so
+  that is the cart shoppers see; `/cart` has to exist too (checkout's "back to cart", abandoned-cart emails, no
+  JavaScript). The new layout was first built on the page only and Raushan could not see it. Both now render
+  one snippet (`snippets/cart-rows`) and run one script (`assets/cart-rows.js`), and check 8d compares them, so a
+  change cannot reach one and miss the other. Do not build a cart feature in only one of the two.
+- **Order (Raushan's):** the pieces, the gift note, the price details, then Saved for later, Little extras and
+  Recently viewed as swipe rows. The amount and Checkout stay pinned. A gifting shop needs the note and the price
+  before anything that sells more.
+- **Little extras and "You may also like" are one row.** Both come from the same Shopify recommendations, so two
+  rows would repeat each other. It is "Little extras" (cheapest first, the pieces that reach the next reward ahead
+  of those) while a reward is ahead, and "You may also like" (Shopify's order) once every reward is earned. In
+  the drawer it is a swipe row now, not three stacked rows, and it no longer goes away when the rewards are earned.
+- **No piece shows twice, and none that is in the cart.** Saved and Recently viewed keep their pieces; the
+  suggestions row gives way, because the shopper's own choices are the likelier buy.
+- **Add buttons on Saved and the suggestions; Recently viewed is plain cards.**
+- **The gift note stays a closed row** (open when a note exists).
+- **On the page, Checkout stays pinned on phones** whenever the card's own Checkout is off screen.
+- **Not chosen: the cart icon opening `/cart` with no drawer.** Simpler, but every look at the cart would be a
+  page load, and requests take 4 to 5 s on Raushan's phone.
+  Details: docs/cart-plan.md, "As built".
+
+## 2026-10-05 (product page: no pop-up after adding; the stepper shows at once)
+
+- **The added-to-cart pop-up is not shown on the product page.** With the bar turning into the stepper and a ticked
+  View cart, the pop-up put a second View cart right above it and covered the price for 8 seconds (Raushan, on his
+  phone). This reverses "the pop-up stays as it is" from earlier the same day. Refusals still use the pop-up.
+- **Add to cart switches to the stepper before Shopify answers.** The request takes about 0.7 s here and 4 to 5 s
+  on Raushan's phone; our own scripts are about 10 ms of it. A refusal puts Add to cart back and says why.
+- **Still instant, not "wait for Shopify" (Raushan asked).** The request is the same either way; waiting only adds
+  4 to 5 seconds of "Adding…" on a slow phone. Instead the tick on View cart is held back until Shopify confirms,
+  and the request is finished even if the shopper leaves the page.
+- **Haptics: a 10 ms pulse on cart taps, Android only.** iPhones can't vibrate from a web page; no workaround used.
+  Details: docs/product-page-plan.md, Round 8.
+
+## 2026-10-05 (swipe rows: a clean cut-off item, no edge fade)
+
+- **The sign to swipe is the next item cut off by the screen edge.** Raushan saw the old 36px edge fade on the
+  occasion tiles as a white blur: it washed out the product photo, and the hero's photo row already had a clean cut
+  on the same page. The fade and its `.can-left` / `.can-right` script are gone from every row (craft circles,
+  occasions, reviews, product rows).
+- **The rule: on phones every swipe row shows about a fifth to three quarters of the next item.** `npm run check`
+  section 10 measures it on the home page at 320, 360, 390, 412 and 430px (it reads 21 to 71% today).
+  - Occasions (60% wide), reviews (84%) and product rows (40%) already met it.
+  - The craft circles did not: at a fixed 80px the fifth circle showed under 1px on a 390px iPhone.
+- **Craft circles sit in slots sized from the screen, so three and a half always show.** The circle stops at 80px,
+  so wider phones get more air between circles, not bigger ones: 64px at 320, 71px at 360, 79px at 390, 80px from
+  412 (72px before). Half a slot (43 to 60px) is cut at every width.
+  - A first try let the circle grow with its slot (87px on an iPhone); Raushan found it too big.
+  - 4.5 circles was dropped: at 360px the slots are 65px and "Bag charms" doesn't fit under its circle.
+  - Wider screens step to 4.5 slots (from 480px) and 5.5 (from 600px); from 750px all six fit.
+- **Swipe rows arrive from the right, once** (24px, phones and tablets), instead of rising like everything else.
+  It shows the direction with the arrival the rows already had. Off with reduced motion and in Lite mode, like every
+  arrival. Not on desktop: tiles waiting off to the side made rows that fit scrollable.
+- **Weighed and dropped:** arrows (cover the photo, a desktop habit), dots or a progress line (one more element
+  under every row, and they don't make anyone start), a repeating nudge or a "swipe" label, and showing everything
+  with no swiping (occasions as a grid is about 600px tall; six circles in a line are about 50px each).
+
+## 2026-10-05 (made-up ratings on real products, for testing)
+
+- **25 real products carry a made-up rating until launch** (Raushan asked, to test the rating by the product name).
+  Values run from 4.2 to 5.0 with 1 to 212 ratings, so one rating, a few and three-digit counts can all be seen.
+  Four real products and the free gift have none, to test the page without a rating.
+- This is a temporary exception to "only real per-product ratings show" (2026-10-04). The ratings also reach the
+  structured data, so they must be deleted before launch (launch-checklist.md).
+- The review quotes are unchanged: the three "Sample" quotes still show while Demo content is on.
+- Admin change, not in git: product metafields `reviews.rating` and `reviews.rating_count`.
+
+## 2026-10-05 (type contrast: home heading and product cards)
+
+- **On phones the hero's serif line is a fifth smaller (38px → 30px at 390px wide) and the yarn lettering keeps its
+  size.** A friend of Raushan's pointed out that the two lines looked the same size, so neither led. The yarn
+  lettering is the part no other shop has, and it is already nearly full width, so the serif line gives way.
+  - 30px is the floor: the line is the page's h1 and says what the shop sells, and "Bestsellers" below is 29px.
+  - Desktop is unchanged. This replaces the 2026-10 note that the lettering being wider than the serif lines was
+    "left alone on purpose".
+- **On compact cards the price carries the weight** (Jost 600, 16px, Cocoa Deep) **and the name is regular** (400,
+  same 16px). Both were weight 500 at 16px and 15px and read as one block. After the photo, the price is what people
+  look for, and it is one short line against the name's two. Card heights don't change.
+  - `snippets/price.liquid` is untouched, so search results and Little extras keep their price style; look at them
+    separately.
+- Waiting for Raushan's real-phone look.
+
+## 2026-10-05 (product page, round 8: no quantity field)
+
+- **The product page has no quantity field.** Add to cart adds one; once the chosen option is in the cart the buy
+  box is the cart's own stepper and a ticked, filled "View cart" (Raushan's idea, after Zepto and Blinkit). This
+  replaces the Quantity row (rounds 4 and 6) and PP4's buy box, on phones, desktop and the slim bar.
+- **"View cart", not "Buy it now", beside the stepper:** Shopify's Buy it now ignores the cart.
+- **A tick on View cart is the in-cart sign.** No cart icon, no number on the button, no stepper in the pop-up.
+- **Stepper and View cart are equal halves.** Raushan asked whether the stepper should be the bigger one; equal
+  halves already make each of its buttons 51 to 68px wide. Revisit after a real-phone look (55/45 at most).
+
+## 2026-10-05 (pinned buy buttons stay; Little extras in the cart drawer)
+
+- **Phone buy buttons stay pinned to the bottom** (Flipkart's way), not in the page with a bar after scrolling
+  (Amazon's way). Raushan raised it and chose pinned after comparing both: ours is an impulse purchase from an ad,
+  decided on the first screen. Details in product-page-plan.md "Round 7".
+- **The phone photo stays square.** A shorter photo, tried so the options always show above the pinned buttons, was
+  reverted the same day (Raushan). Options hidden behind the buttons on short phones is still open.
+- **Little extras also show in the cart drawer**, up to 3 rows while a reward is still ahead. This changes cart-plan
+  D7 ("cart page only"). Not an Amazon-style sheet on every add, and not inside the timed pop-up. Details in
+  cart-plan.md "As built".
+
 ## 2026-10-05 (product photos: one warm studio wall)
 
 - **Product photos get a plain warm studio wall with soft window light**, not the busy doorways and plants, and not
@@ -15,6 +120,28 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   (docs/photo-backdrop-plan.md).
 - **Collection covers have their own command** (`catalog-upload.py covers`): `collections --force` would also
   reset the hand-picked order of Bouquets and Keychains.
+
+## 2026-10-04 (phone menu: Shop open, Gifts folded)
+
+- **The phone menu had grown to 1.6–1.8 screens** (1388px on 390 × 844, 1336px on 360 × 740), so Bestsellers, Help,
+  Sign in and Saved items were below the first screen. The real admin menu caused it: Gifts is six collections, so
+  it became a second open photo grid, and Shop had two "Shop all" tiles (a menu link and the theme's own).
+- **Shop stays an open photo grid with no arrow; Gifts folds into one row with an arrow, closed by default**
+  (Raushan chose this over folding both, and over Gifts as pills). Shop is what the menu is for, so a control to
+  hide it adds a step and nothing else. Only the first list of collections is the grid; any later one folds.
+- **Opened, Gifts is text rows** like Help (Raushan), not photo tiles: quicker to scan and nothing to load. It opens
+  by itself on a gift collection page. The desktop Gifts panel keeps its photos.
+- **"Shop all" is a link at the end of the SHOP heading row**, not a tile, so six crafts fill two rows.
+- **A menu child that links to its parent's URL is the "all" link**, so the theme adds none of its own (phone and
+  desktop). That removes the second "Shop all", and the "Shop all" under Gifts that went to Gift sets.
+- **Desktop photo panels are two rows once there are more than five tiles** (2026-10-05). Seven Shop tiles in one
+  row made the panel 1005px wide: it ran 2px past a 1280px screen and 171px past 1100px, so every page scrolled
+  sideways (shopify-ui-49 saw it as a failing product-page check). Shop is now six tiles in 3 × 2 with "Shop all"
+  as the link under them; Gifts is 3 × 2 as well. Check 21 measures 1100px and 1280px.
+- **Result:** every link is on one 390 × 844 screen (the last ends at 815px); a 360 × 740 phone scrolls 141px.
+  `npm run check -- --only 21` guards it.
+- **Also today:** the announcement bar says ₹499 (the message is hand-typed in header-group.json, so it doesn't
+  follow the theme setting), and a long hero label puts its price under the name on phones.
 
 ## 2026-10-04 (product page, round 6)
 

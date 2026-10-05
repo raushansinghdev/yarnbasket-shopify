@@ -17,7 +17,8 @@ export const hideToast = () => {
   toastEl = null;
   clearTimeout(toastTimer);
   holds.clear();
-  if (t.contains(document.activeElement)) returnFocus?.focus({ preventScroll: true });
+  // The button that added may be gone (the product page shows the stepper in its place): then its plus takes focus.
+  if (t.contains(document.activeElement)) (returnFocus?.getClientRects().length ? returnFocus : document.querySelector('.is-in .qty__plus') || returnFocus)?.focus({ preventScroll: true });
   t.classList.add('is-leaving');
   setTimeout(() => t.remove(), 320);
 };

@@ -2,10 +2,9 @@
   Yarn Basket · product.js (docs/product-page-plan.md). Loaded only by sections/product.liquid.
   - Photos: the swipe is the browser's own; this keeps the dots, the count and the thumbnails in step with it.
   - Options: a new choice changes the price, badge, buttons, photo and the page's address, with no reload.
-  - Quantity: the stepper stops at 1 and at the stock limit (cart.js only steps cart lines).
-  - The buy bar (from 750px): on once Add to cart is scrolled past.
+  - The buy bar (from 750px): on once the buy box is scrolled past.
   - Share: the phone's share sheet, or the link copied.
-  Adding to the cart itself is cart.js. Without this file the page still shows every photo and the form still posts.
+  Adding to the cart itself is cart.js; the stepper of a piece that's in the cart is product-buy.js. Without this file the page still shows every photo and the form still posts.
 */
 
 const $ = (selector, scope = document) => scope.querySelector(selector);
@@ -86,8 +85,6 @@ const status = $('[data-variant-status]');
 const adds = $$('[data-add]');
 const labels = adds.map((button) => $('[data-add-label]', button));
 const words = labels[0]?.dataset || {};
-const qty = form && $('[data-qty]', form);
-const qtyInput = qty && $('.qty__input', qty);
 
 const swap = (el) => {
   if (!el) return;
@@ -97,24 +94,9 @@ const swap = (el) => {
 const chosen = () => inputs.reduce((list, input) => (input.checked && (list[input.dataset.option - 1] = input.dataset.value), list), []);
 const match = (options) => variants.find((v) => v.options.every((value, i) => value === options[i]));
 
-const setQty = (n) => {
-  if (!qty) return;
-  const floor = +qty.dataset.floor || 1;
-  const max = +qty.dataset.max || Infinity;
-  const value = Math.min(max, Math.max(floor, Math.round(+n) || floor));
-  qtyInput.value = value;
-  qty.dataset.value = value;
-  const toggle = (button, off) => (off ? button.setAttribute('aria-disabled', 'true') : button.removeAttribute('aria-disabled'));
-  toggle($('.qty__minus', qty), value <= floor);
-  toggle($('.qty__plus', qty), value >= max);
-  // At the most one order can hold, the line about larger orders shows.
-  const limit = $('[data-limit]');
-  if (limit) limit.hidden = value < +limit.dataset.cap;
-};
-
 const update = (variant) => {
   const ok = !!variant?.available;
-  // Sold out: no quantity and no Buy it now; the pinned bar offers to make one.
+  // Sold out: no Buy it now; the pinned bar offers to make one.
   $('[data-buy]')?.classList.toggle('is-out', !ok);
   adds.forEach((button, i) => {
     button.disabled = !ok;
@@ -147,10 +129,8 @@ const update = (variant) => {
   badge.hidden = !variant.badge;
   swap($('[data-price]'));
 
-  if (qty) {
-    variant.max ? (qty.dataset.max = qtyInput.max = variant.max) : (delete qty.dataset.max, qtyInput.removeAttribute('max'));
-    setQty(qtyInput.value);
-  }
+  // product-buy.js: is this choice in the cart?
+  document.dispatchEvent(new CustomEvent('variant:change'));
 
   // The address is this exact choice; what an ad added to it stays.
   const url = new URL(location.href);
@@ -181,20 +161,11 @@ reveal();
 
 inputs.forEach((input) => input.addEventListener('change', () => (update(match(chosen())), reveal(true))));
 
-if (qty) {
-  qty.addEventListener('click', (event) => {
-    const step = event.target.closest('[data-step]');
-    if (step && step.getAttribute('aria-disabled') !== 'true') setQty(+qtyInput.value + +step.dataset.step);
-  });
-  qtyInput.addEventListener('change', () => setQty(qtyInput.value));
-  setQty(qtyInput.value);
-}
-
 /* ---------- The buy bar (from 750px) ---------- */
 const bar = $('[data-buybar]');
-const main = $('.pdp__add');
+const main = $('[data-buy]');
 if (bar && main) {
-  // On once the button is above the screen, and never over the footer.
+  // On once the buy box is above the screen, and never over the footer.
   const footer = $('.shopify-section-group-footer-group') || $('footer');
   let past = false;
   let end = false;

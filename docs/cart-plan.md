@@ -3,6 +3,21 @@
 Status: **Stages 1–4 built and tested with real items 2026-10-02** (11 test products imported from `tools/test-products.csv`, tag `test-product`). Raushan approved the recommendations, except D2: adding shows a Flipkart-style "Added to cart · View cart" pop-up instead of opening the drawer.
 
 ### As built (where it differs from the plan below)
+- **2026-10-05, one cart: the drawer and the cart page show the same thing.** Raushan's order for a gifting shop, and his rule that the two must not differ (the cart icon opens the drawer, so that is the cart shoppers see). This replaces the 2 × 2 "Little extras" grid under the page (§4.2) and the three stacked rows in the drawer (D7 note below).
+  - Order in both: the pieces → gift note → price details → **Saved for later** → **Little extras** → **Recently viewed**. The amount and Checkout stay pinned at the bottom. On the page the gift note, rewards line, price details and Checkout are one card, and from 990px that card sits beside the pieces with the rows full width under both.
+  - Saved for later: this browser's saved pieces that can be bought now, each with Add to cart (or Choose for a piece with options), from `sections/saved-item.liquid`. "See all saved" shows when there are more than the row holds.
+  - Little extras: `sections/cart-extras.liquid`. While a reward is ahead it is "Little extras", ordered as before. Once every reward is earned the same row is "You may also like", in Shopify's own order. It is asked for again after every change to the cart.
+  - Recently viewed: the last product pages seen in this browser, plain cards from `sections/product-tile.liquid`. Hidden with fewer than 2.
+  - Rules for all three: 6 cards at most; nothing that is in the cart; no piece twice (Saved and Recently viewed keep theirs, the suggestions give way); a row with nothing to show is hidden.
+  - After an Add in a row: the button says "Added" for a moment, the card goes, the cart redraws, the status line says what was added and focus moves to the next card's button. A piece taken out of the cart comes back to its row. An error shows under the row.
+  - How it stays one cart: both sections render `snippets/cart-rows.liquid` and run `assets/cart-rows.js` (11 KB). The drawer fetches the script with its first opening (the `data-addons` attribute; `cart.js` is unchanged), the page when the rows are within 600px of the screen. `assets/cart-addons.js` is gone. Each Add is a plain button, because the drawer is one form and a form can't sit inside a form. The drawer redraws all of itself after every change, so the script keeps the filled rows and puts them back, with the scroll position and focus.
+  - In the drawer the rows stay swipe rows at every width (it is 440px on a desktop too).
+  - Page only: the pinned Checkout bar on phones shows whenever the card's own Checkout is off screen, above or below (before: only below).
+  - Check 8d (38 checks: drawer and page at 360 and 390 wide, both on a desktop, axe, and "the drawer and the page show the same rows"). It replaces 8c.
+- **2026-10-05: the product page changes cart lines too.** A piece that's in the cart shows the cart's stepper in the product page's buy box (`assets/product-buy.js`, product-page-plan.md "Round 8"). It uses cart.js's own `commit`, so the queue, the split lines and the spoken updates are the same; the bin there has no Undo row, because Add to cart comes straight back.
+- **2026-10-05, D7 changed: Little extras are in the cart drawer too.** Raushan asked about Amazon's sheet of add-ons after "Add to cart". The idea fits us (a ₹169 order pays ₹49 delivery, free from ₹499, and we have ₹49–₹199 pieces), but not as a sheet on every add: it interrupts browsing, which is why D2 is a small pop-up. Add-ons inside the 8-second pop-up were ruled out too: they would vanish before keyboard and screen-reader users reach them. It began as three stacked rows above the gift note, shown only while a reward was ahead; later the same day it became the swipe row described under "one cart" above.
+  - The "Small add-ons" link on the rewards line stays: it leads to everything sorted by price.
+  - Theme settings → Cart → "Show Little extras in the cart" switches it in both places.
 - **2026-10-03, compact cart (`cart-compact-plan.md`):** the drawer's pinned bottom is now only the amount and Checkout, 113–163px tall instead of about 285px. The amount goes to a "Price details" card at the end of the list. "Ships in 1–3 days" is gone from the cart. The pop-up is a 66px pill without the rewards line. A product that Shopify splits over two lines is drawn as one. The cart page's own script moved to `cart-page.js`. The drawings in §4.1 below show the older, taller footer.
 - **D2 changed (Raushan): adding to cart shows a pop-up and doesn't open the drawer.** Shoppers keep browsing; "View cart" in the pop-up opens the drawer.
   - What it shows: the photo, "✓ Added to cart", the name (with the option picked), View cart and ×.
@@ -147,7 +162,7 @@ Full width below 480px; 440px wide from 480px up.
 - The lines are the same as in the drawer, with 96px photos.
 - The summary block comes after the lines: gift note, subtotal, tax line, Checkout, the shipping promise, and payment icons (D8).
 - **A pinned Checkout bar.** A slim bar at the bottom shows the total and Checkout. It appears only while the summary's own Checkout button is off screen (`IntersectionObserver`), so there are never two Checkout buttons visible at once.
-- Below the summary: "Little extras" (D7).
+- Below the summary: three swipe rows (Saved for later, Little extras, Recently viewed), the same as in the drawer; see "As built", 2026-10-05.
 
 ### 4.3 The empty cart (drawer and page)
 - the basket logo mark, drawn small in line style

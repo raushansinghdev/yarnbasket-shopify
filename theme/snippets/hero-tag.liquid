@@ -2,6 +2,8 @@
   The small name-and-price label on a home hero photo (docs/home-hero-plan.md §5). The price is the product's own,
   so it can't go stale. Renders nothing without a product. It sits inside the photo's link and becomes its name,
   so the photo's alt text is left empty when this shows. Prices drop ".00" so the name has room on a phone.
+  A long name and price ("Sunflower bouquet", "From ₹169") don't fit one line on a phone's photo, so there the
+  price goes under the name instead of the name breaking in two beside it.
 
   @param {product} product - The product in the photo
   @param {string} [label] - A short name for the label. Defaults to the product's title.
@@ -18,6 +20,8 @@
     else
       assign tag_price = product.price | money_without_trailing_zeros
     endif
+    # About 22 characters fit beside each other on the 218px photo of a 360px phone.
+    assign tag_chars = tag_price | strip_html | size | plus: tag_name.size
   -%}
-  <span class="hero__tag"><span class="hero__tag-name">{{ tag_name | escape }}</span> <span class="hero__tag-price">{{ tag_price }}</span></span>
+  <span class="hero__tag{% if tag_chars > 22 %} hero__tag--stack{% endif %}"><span class="hero__tag-name">{{ tag_name | escape }}</span> <span class="hero__tag-price">{{ tag_price }}</span></span>
 {%- endif -%}

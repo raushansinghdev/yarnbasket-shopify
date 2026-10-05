@@ -68,7 +68,9 @@
     "error": "Something went wrong. Please try again.",
     "offline": "Couldn’t reach the shop. Check your connection and try again.",
     "extras_title": "Little extras",
-    "extras_text": "Add a little something to go with it.",
+    "also_title": "You may also like",
+    "saved_title": "Saved for later",
+    "saved_all": "See all saved",
     "extras_add": "Add",
     "extras_add_label": "Add {{ title }} to cart",
     "extras_choose": "Choose",
@@ -258,7 +260,9 @@
     "limit": "{{ count }} is the most per order.",
     "limit_ask": "Need more? Ask us on WhatsApp",
     "bulk_message": "Hi Yarn Basket! I’d like more than {{ count }} of “{{ title }}” ({{ url }}). Can you help?",
-    "ask_make_short": "Ask us to make one"
+    "ask_make_short": "Ask us to make one",
+    "in_cart": "In your cart: {{ title }}",
+    "in_cart_count": "{{ count }} in your cart"
   },
   "reviews": {
     "rating": "{{ rating }} out of 5 stars",

@@ -19,7 +19,7 @@ const why = (err) => (err instanceof Error ? S.offline : err?.description || err
 const fmt = (s = '', o = {}) => s.replace(/\[(\w+)\]/g, (_, k) => o[k] ?? '');
 const countLabel = (n) => (n === 1 ? S.one : S.other.replace('99', n));
 const box = () => (page || drawer)?.querySelector('[data-cart-root]');
-const total = () => box()?.querySelector('.cart-summary__row--total dd')?.textContent.trim() || '';
+const total = () => box()?.querySelector('.cart-summary__now, .cart-bar__now')?.textContent.trim() || '';
 
 /* ---------- Saying what happened ----------
    While the drawer is open everything behind it is inert, the header's status line included, so it has its own. */
@@ -51,6 +51,7 @@ const enqueue = (job, quiet) => {
 const send = (url, body) =>
   fetch(base + url, {
     method: 'POST',
+    keepalive: true,
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(body)
   }).then(async (r) => {
@@ -202,8 +203,8 @@ const commit = (key, quantity, gone) => {
     .then((cart) => {
       render(cart.sections?.[sectionId]);
       counted(cart.item_count);
-      const item = cart.items.find((i) => i.key === key);
-      if (quantity > 0) say(fmt(S.updated, { title, quantity: more ? quantity : item?.quantity ?? 0, subtotal: total() }));
+      // As the cart now shows it (the key may have changed).
+      if (quantity > 0) say(fmt(S.updated, { title, quantity: box().querySelector(`.cart-line[data-variant="${variant}"]`)?.dataset.qty || quantity, subtotal: total() }));
       return cart;
     })
     .catch((err) => failed(key, err));
@@ -347,6 +348,8 @@ document.addEventListener('submit', (event) => {
   const label = button?.querySelector('[data-add-label]');
   const original = label?.textContent;
   const error = form.querySelector('[data-add-error]');
+  // The product page shows its stepper at once (product-buy.js).
+  const own = form.matches('[data-product-form]') && window.ybCart.adding;
   // The most of one piece per order counts what the cart already holds.
   const adding = asItems(form).items[0];
   const have = +box()?.querySelector(`.cart-line[data-variant="${adding.id}"]`)?.dataset.qty || 0;
@@ -363,7 +366,7 @@ document.addEventListener('submit', (event) => {
   }
   if (error) error.hidden = true;
   returnFocus = button;
-  loadPop();
+  own ? own(1) : loadPop();
 
   enqueue(() => send('cart/add.js', withSections(asItems(form))))
     .then((res) => {
@@ -373,9 +376,10 @@ document.addEventListener('submit', (event) => {
       counted(count);
       const variant = item.product_has_only_default_variant ? '' : item.variant_title;
       say(fmt(S.added, { title: item.product_title, count: countLabel(count) }));
-      toast(variant ? `${item.product_title} · ${variant}` : item.product_title, item.image);
+      if (own) own(0);
+      else toast(variant ? `${item.product_title} · ${variant}` : item.product_title, item.image);
       if (label) {
-        label.textContent = S.addedButton;
+        label.textContent = own ? original : S.addedButton;
         setTimeout(() => (label.textContent = original), 2000);
       }
       // A "Little extras" card goes once it's in the cart.
@@ -388,6 +392,7 @@ document.addEventListener('submit', (event) => {
     })
     .catch((err) => {
       const msg = why(err);
+      own?.(-1);
       if (label) label.textContent = original;
       if (error) {
         error.textContent = msg;
@@ -414,6 +419,8 @@ const openDrawer = (from) => {
   drawer.showModal();
   drawer.querySelector('#CartDrawerTitle')?.focus();
   history.pushState({ cartDrawer: true }, '');
+  // The drawer's product rows (assets/cart-rows.js), fetched with the first opening.
+  if (drawer.dataset.addons) import(drawer.dataset.addons).then((m) => m.default()).catch(() => {});
 };
 const closeDrawer = (fromHistory) => {
   if (!drawer?.open || 'closing' in drawer.dataset) return;
@@ -513,5 +520,5 @@ addEventListener('pointerover', warm, { passive: true });
 addEventListener('pointerdown', warm, { passive: true });
 addEventListener('focusin', warm);
 
-// For rewards.js (the free gift) and cart-page.js.
-window.ybCart = { enqueue, send, withSections, render, say, counted, box, sectionId, S, fmt, why };
+// For rewards.js, cart-rows.js, product-buy.js.
+window.ybCart = { enqueue, send, withSections, render, say, counted, box, sectionId, S, fmt, why, commit };

@@ -654,7 +654,10 @@
     .hero.scheme-blush { --hero-fade: 64px; }
     .hero__grid { gap: 1.5rem; }
     .hero__copy { gap: .625rem; }
-    .hero__title { font-size: clamp(2.375rem, 1.6rem + 3vw, 3.25rem); line-height: 1.02; }
+    /* The serif line is the lead-in and the yarn lettering leads: the type is a fifth smaller, and the lettering
+       (sized in em) is scaled back up to the size it had before. */
+    .hero__title { font-size: clamp(1.875rem, 1.26rem + 2.37vw, 2.5rem); line-height: 1.02; }
+    .hero__title .yarn { font-size: 1.2667em; }
     .hero__text { font-size: 1rem; line-height: 1.5; }
     .hero__actions { margin-top: 0; }
     /* With the photo row right below, the products are the way in: no button, and the row ends in "See all". */
@@ -697,7 +700,7 @@
     .hero__media::-webkit-scrollbar { display: none; }
     .hero__slide {
       position: relative;
-      /* 68%: at 360px the photo is 218px, a name and price fit on one line, and half of the next photo shows. */
+      /* 68%: at 360px the photo is 218px, a short name and price fit on one line (a long pair stacks), and half of the next photo shows. */
       flex: 0 0 68%;
       aspect-ratio: 1;
       overflow: hidden;
@@ -735,6 +738,10 @@
   .hero__all { display: none; }
   @media (max-width: 989px) {
     .hero__frame[data-hero-slides] .hero__all { display: flex; }
+  }
+  /* A long label on a phone's photo: the price under the name, the pill no wider than the name. */
+  @media (max-width: 599px) {
+    .hero__tag--stack { flex-direction: column; align-items: flex-start; gap: 1px; border-radius: 14px; }
   }
   @media (min-width: 600px) and (max-width: 989px) {
     .hero__slide { flex-basis: 44%; }

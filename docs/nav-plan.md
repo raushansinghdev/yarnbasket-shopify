@@ -9,9 +9,15 @@ Status: **Stages 1–3 built 2026-10-02.** Raushan approved the recommendations 
 - **The tablet header** (768–1099px) shows the search field and an icon-only cart. With the word "Cart" too, the logo can't stay centred.
 - **The phone drawer scrolls on a 390 × 844 screen.** The craft tiles are 4:3 and come first, and Account / WhatsApp / Instagram sit below them. Seeing the products first mattered more than fitting everything on one screen.
 - **The phone drawer's top bar (logo and ×) is pinned (2026-10-02, Raushan).** Before, the × scrolled away, leaving only the thin dimmed strip, a swipe or Back as ways out, and none of them are obvious. A hairline and soft shadow appear under the bar once the list scrolls. The craft tiles are now 3 across as squares, with "Shop all" as the last tile (Blush, with an arrow) instead of a text link, so 5 crafts fill two rows. With Our story moved under Help (below), the whole menu fits a 390 × 844 screen exactly (844px of content, groups closed); on 360 × 740 it scrolls a little, with the × still visible.
+- **The phone drawer has one open photo grid; later lists fold (2026-10-04, Raushan).** With the real menu, Gifts (six collections) had become a second open grid and Shop had two "Shop all" tiles, so the drawer was 1388px on a 390 × 844 screen. Now:
+  - Shop is the open grid: six crafts in two rows, with "Shop all" as a link at the end of the SHOP heading row (44px tall).
+  - Gifts is a folded row with an arrow, like Help. Opened, it lists the occasions as text rows. It opens by itself on a gift collection page.
+  - A child that links to its parent's URL is the "all" link, so the theme adds none of its own (phone and desktop).
+  - Measured: every link fits one 390 × 844 screen (last link ends at 815px); 360 × 740 scrolls 141px. Check section 21.
+  - This replaces "Shop all as the last tile" above.
 - **"Track order" is in the Help dropdown**, not in the drawer's bottom row. The bottom row is Account, then WhatsApp (once the number is set), then Instagram.
 - **Demo menu:** while Demo content is on and the main menu has no dropdowns, the header shows the planned menu (Shop / Gifts / Bestsellers / Help, with Our story last under Help) with demo craft photos. Its links only go to pages that exist. Once a real menu with dropdowns is saved in the admin, the demo menu goes away.
-- **How photo tiles are chosen:** a dropdown whose children are all collection links (2 or more) shows them as photo tiles. A dropdown with any collection link gets a "Shop all" / "View all" link.
+- **How photo tiles are chosen:** a dropdown whose children are all collection links (2 or more) shows them as photo tiles. A dropdown with any collection link gets a "Shop all" / "View all" link. In the phone drawer only the first such dropdown is tiles, and the "all" link is skipped when a child already goes to the parent's URL.
 - **Tooling:** `tools/cdp.mjs` gained `--tab N` (presses the real Tab key, so focus styles show) and `--forced-colors`.
 - **Checks on 2026-10-02:**
   - axe: 0 violations at 360, 390, 768, 1100 and 1440px, on the home page and a collection page, with the drawer and dropdowns open

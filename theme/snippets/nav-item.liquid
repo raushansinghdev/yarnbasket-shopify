@@ -14,8 +14,13 @@
   @param {string} [kid_titles] - Demo menu: child titles, '|'-separated
   @param {string} [kid_urls] - Demo menu: child URLs, '|'-separated
   @param {string} [kid_handles] - Demo menu: child handles, '|'-separated
-  @param {boolean} [tiles] - Show the children as photo tiles (a list of crafts)
+  @param {boolean} [tiles] - Show the children as photo tiles (a list of crafts). In the drawer this is the one open
+    grid; the header passes false for any later list, which then folds like the other groups.
   @param {boolean} [all_link] - Add a "Shop all" / "View all" link to the parent URL
+
+  A child that already links to the parent's URL (a "Shop all" item in the admin menu) is that link, so the theme
+  doesn't add a second one. Among photo tiles it isn't a tile: it goes under them on desktop and in the heading row
+  of the drawer's grid.
 
   A child whose handle or title mentions "story" or "about" gets .is-about: it's set apart at the end of its list
   (Our story lives under Help, not in the top menu; docs/nav-plan.md §3).
@@ -40,6 +45,16 @@
   else
     assign all_label = 'general.view_all' | t
   endif
+  assign all_kid = -1
+  if k_titles != blank
+    for kid_url in k_urls
+      if kid_url == url
+        assign all_kid = forloop.index0
+        assign all_link = false
+        break
+      endif
+    endfor
+  endif
 -%}
 {%- if place == 'bar' -%}
   <li class="site-header__nav-item{% if here %} is-here{% endif %}" data-nav-item>
@@ -55,10 +70,23 @@
         {%- render 'icon', icon: 'chevron', class: 'site-header__chevron' -%}
         <span class="nav-mark" aria-hidden="true"></span>
       </button>
+      {%- liquid
+        # Photo tiles: one row up to five; more than that go in two rows, so the panel never runs off a 1100px screen.
+        # A child that is the "all" link goes under the tiles as a link, not in them.
+        assign tile_count = k_titles.size
+        if tiles and all_kid > -1
+          assign tile_count = tile_count | minus: 1
+        endif
+        assign cols = tile_count
+        if tile_count > 5
+          assign cols = tile_count | plus: 1 | divided_by: 2 | at_most: 5
+        endif
+      -%}
       <div class="site-header__sub{% if tiles %} site-header__sub--tiles{% endif %}" id="HeaderSub-{{ index }}">
-        <ul role="list" class="{% if tiles %}site-header__tiles{% else %}site-header__sub-list{% endif %}">
+        <ul role="list" class="{% if tiles %}site-header__tiles{% else %}site-header__sub-list{% endif %}"{% if tiles %} style="--cols: {{ cols }}"{% endif %}>
           {%- for kid_title in k_titles -%}
             {%- assign i = forloop.index0 -%}
+            {%- if tiles and i == all_kid -%}{%- continue -%}{%- endif -%}
             {%- liquid
               assign kid_key = k_handles[i] | append: ' ' | append: kid_title | downcase
               assign about = false
@@ -78,7 +106,12 @@
             </li>
           {%- endfor -%}
         </ul>
-        {%- if all_link -%}
+        {%- if tiles and all_kid > -1 -%}
+          <a href="{{ k_urls[all_kid] }}" class="site-header__sub-all" {% if kids[all_kid].current %}aria-current="page"{% endif %}>
+            {{- k_titles[all_kid] -}}
+            {%- render 'icon', icon: 'arrow' -%}
+          </a>
+        {%- elsif all_link -%}
           <a href="{{ url }}" class="site-header__sub-all" {% if current %}aria-current="page"{% endif %}>
             {{- all_label -}}
             {%- render 'icon', icon: 'arrow' -%}
@@ -95,23 +128,28 @@
 {%- else -%}
   <li style="--i: {{ index }}"{% if tiles %} class="drawer__shop"{% endif %}>
     {%- if tiles -%}
-      <h2 class="eyebrow drawer__shop-title" id="DrawerShop-{{ index }}">{{ title }}</h2>
+      <div class="drawer__shop-head">
+        <h2 class="eyebrow drawer__shop-title" id="DrawerShop-{{ index }}">{{ title }}</h2>
+        {%- if all_kid > -1 -%}
+          <a href="{{ k_urls[all_kid] }}" class="drawer__shop-all" {% if kids[all_kid].current %}aria-current="page"{% endif %}>
+            {{- k_titles[all_kid] -}}
+            {%- render 'icon', icon: 'arrow' -%}
+          </a>
+        {%- elsif all_link -%}
+          <a href="{{ url }}" class="drawer__shop-all" {% if current %}aria-current="page"{% endif %}>
+            {{- all_label -}}
+            {%- render 'icon', icon: 'arrow' -%}
+          </a>
+        {%- endif -%}
+      </div>
       <ul role="list" class="drawer__tiles" aria-labelledby="DrawerShop-{{ index }}">
         {%- for kid_title in k_titles -%}
           {%- assign i = forloop.index0 -%}
+          {%- if i == all_kid -%}{%- continue -%}{%- endif -%}
           <li>
             {%- render 'menu-tile', title: kid_title, url: k_urls[i], handle: k_handles[i], collection: kids[i].object, current: kids[i].current, sizes: '(min-width: 420px) 120px, 28vw' -%}
           </li>
         {%- endfor -%}
-        {%- comment -%} "Shop all" is the last tile, so five crafts fill two rows of three. {%- endcomment -%}
-        {%- if all_link -%}
-          <li>
-            <a href="{{ url }}" class="menu-tile menu-tile--all" {% if current %}aria-current="page"{% endif %}>
-              <span class="media menu-tile__media"><span class="menu-tile__art">{%- render 'icon', icon: 'arrow' -%}</span></span>
-              <span class="menu-tile__title">{{ all_label }}</span>
-            </a>
-          </li>
-        {%- endif -%}
       </ul>
     {%- elsif k_titles != blank -%}
       <details class="drawer__group" {% if here %}open{% endif %}>

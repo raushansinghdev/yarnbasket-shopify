@@ -5,7 +5,8 @@
   so cart.js only has to change data-value and the label when the number changes.
 
   @param {string} id - Unique id for the input
-  @param {string} name - The input's name (cart: updates[line key])
+  @param {string} [name] - The input's name (cart: updates[line key]). Left out on the product page, whose stepper
+    changes the cart itself and must not post with the product form
   @param {number} value - The current quantity
   @param {string} title - Product title, escaped, for the labels
   @param {number} [max] - Stock limit, when stock is tracked and overselling is off
@@ -45,8 +46,11 @@
     class="qty__input"
     type="number"
     inputmode="numeric"
+    autocomplete="off"
     id="{{ id }}"
-    name="{{ name }}"
+    {% if name != blank %}
+      name="{{ name }}"
+    {% endif %}
     value="{{ value }}"
     min="{{ lowest }}"
     {% if max != blank %}
