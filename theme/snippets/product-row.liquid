@@ -59,7 +59,7 @@
   .product-row__list { --scroller-item: 40%; --scroller-gap: var(--space-3); }
   .product-row .card__title { font-size: .9375rem; }
   @media (min-width: 768px) { .product-row__list { --scroller-item: 28%; } }
-  /* Desktop: everything fits, so it's a plain row: no scrolling, no edge fade. */
+  /* Desktop: everything fits, so it's a plain row: no scrolling. */
   @media (min-width: 990px) {
     .product-row__list {
       display: grid;
@@ -69,8 +69,6 @@
       overflow: visible;
       padding: 0;
       margin: 0;
-      -webkit-mask-image: none;
-      mask-image: none;
     }
   }
 {% endstylesheet %}

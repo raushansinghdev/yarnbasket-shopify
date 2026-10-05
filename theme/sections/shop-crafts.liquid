@@ -186,8 +186,19 @@
   .shop__head .section-head { margin-bottom: 0; }
 
   /* The craft circles: a swipe row on phones, one line beside the heading on desktop. */
-  /* A calm swipe row like every other (base.css .scroller): still under the finger, soft snap, edge fade. */
-  .shop__crafts { --scroller-item: 80px; --scroller-gap: var(--space-3); }
+  /* A calm swipe row like every other (base.css .scroller): still under the finger, soft snap. Each circle sits in a
+     slot sized from the screen so three and a half slots always show (four and a half, then five and a half, on
+     wider screens): the half one, cut by the edge, is the sign to swipe. The circle itself stops at 80px, so wider
+     screens get more air between circles, not bigger circles. */
+  .shop__crafts {
+    --craft-n: 3;
+    --craft: max(80px, calc((100vw - var(--gutter) - var(--craft-n) * var(--space-3)) / (var(--craft-n) + .5)));
+    --scroller-item: var(--craft);
+    --scroller-gap: var(--space-3);
+  }
+  @media (min-width: 480px) { .shop__crafts { --craft-n: 4; } }
+  @media (min-width: 600px) { .shop__crafts { --craft-n: 5; } }
+  @media (min-width: 750px) { .shop__crafts { --craft: 96px; } }
   .shop__craft {
     display: grid;
     justify-items: center;
@@ -206,7 +217,7 @@
     --ratio: 1;
     display: grid;
     place-items: center;
-    width: 72px;
+    width: min(var(--craft) - 16px, 80px);
     border-radius: 50%;
     background: var(--blush);
     /* The ring is decoration until the circle is chosen; the label carries the state in words. */
@@ -215,7 +226,7 @@
     transition: outline-color var(--dur-state) ease, outline-width var(--dur-state) ease, scale var(--dur-press) ease;
   }
   .shop__circle--fav { aspect-ratio: 1; }
-  .shop__circle--fav .logo-mark { width: 44px; height: 44px; }
+  .shop__circle--fav .logo-mark { width: 61%; height: auto; }
   .shop__art .icon--brand { width: 36px; height: 36px; }
   .shop__img { transition: transform 900ms var(--ease-out); }
   .shop__label {

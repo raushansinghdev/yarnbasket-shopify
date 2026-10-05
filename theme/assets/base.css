@@ -265,12 +265,9 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 
 /* Horizontal swipe rows on mobile. They stay still and calm under the finger: nothing scales, slides or pops in
    while you swipe, and the snap is soft (it settles near an item instead of jerking to one). "There's more this way"
-   is a quiet fade on whichever side has more to scroll to: theme.js sets .can-left / .can-right only while the row
-   actually overflows, so the first and last items are never dimmed once you reach them, and rows that fit never fade.
+   is the next item cut off by the screen edge, nothing else: each row sizes its items so part of one always shows.
    The row has room above and below so focus rings aren't cut off, and its own focus ring is drawn inside it. */
 .scroller {
-  --fade-l: 0px;
-  --fade-r: 0px;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: var(--scroller-item, 72%);
@@ -287,12 +284,6 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 }
 .scroller::-webkit-scrollbar { display: none; }
 .scroller > * { scroll-snap-align: start; min-width: 0; }
-.scroller.can-left { --fade-l: 36px; }
-.scroller.can-right { --fade-r: 36px; }
-.scroller:is(.can-left, .can-right) {
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
-}
 .scroller:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 5px color-mix(in srgb, var(--rose) 45%, transparent); }
 
 /* Rows of other pieces under a product (sections/product-recommendations, recently-viewed): closer together than
@@ -500,7 +491,8 @@ img.img-in { animation: img-in 250ms var(--ease-out); }
    each plays once as it comes into view, the same in every browser):
      data-arrive               the block rises in
      data-arrive="lines"       its children arrive in turn; an h2 inside rises like ink lifting off the page
-     data-arrive="stagger"     its children arrive one after another (theme.js sets --i; a swipe row arrives as a whole)
+     data-arrive="stagger"     its children arrive one after another (theme.js sets --i; a swipe row arrives as a whole,
+                               from the right)
      data-arrive="settle"      the block's photos settle from slightly smaller (photos in stagger items do this too)
    Section-specific touches (the craft ring, promise icons, footer rule) live in their own sections.
    Fill mode "backwards": the start state holds during the stagger delay, then the animation lets go, so hover
@@ -509,6 +501,12 @@ img.img-in { animation: img-in 250ms var(--ease-out); }
   .is-pending { opacity: 0; }
   [data-arrive].is-pending, [data-arrive~="stagger"] > .is-pending { transform: translateY(var(--rise)); }
   [data-arrive].is-arriving, [data-arrive~="stagger"] > .is-arriving { animation: arrive var(--dur-arrive) var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
+  /* A swipe row comes in from the side it swipes toward, once: with the cut-off item, that is the sign to swipe.
+     Not on desktop, where most rows fit and items waiting off to the side would make them scroll. */
+  @media (max-width: 989px) {
+    [data-arrive~="stagger"].scroller > .is-pending { transform: translateX(24px); }
+    [data-arrive~="stagger"].scroller > .is-arriving { animation-name: arrive-side; }
+  }
 
   [data-arrive~="lines"].is-pending { opacity: 1; transform: none; }
   [data-arrive~="lines"].is-pending > * { opacity: 0; }
@@ -530,6 +528,7 @@ img.img-in { animation: img-in 250ms var(--ease-out); }
   .review__stars.is-arriving .review__star { animation: star-in 360ms var(--ease-out) calc(80ms + var(--s, 0) * 45ms + var(--i, 0) * 50ms) backwards; }
 }
 @keyframes arrive { from { opacity: 0; transform: translateY(var(--rise)); } }
+@keyframes arrive-side { from { opacity: 0; transform: translateX(24px); } }
 /* Italic serif overhangs its box, so the mask is generous on every side except the one it rises from. */
 @keyframes arrive-ink {
   from { opacity: 0; transform: translateY(.5em); clip-path: inset(-20% -10% 100% -10%); }

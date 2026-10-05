@@ -216,12 +216,14 @@
     overflow: hidden;
     font-family: var(--font-sans);
     font-style: normal;
-    font-weight: 500;
+    font-weight: 400;
     font-size: 1rem;
     line-height: 1.35;
     letter-spacing: 0;
     text-wrap: pretty;
   }
+  /* The price is what the eye looks for after the photo, so it carries the weight and the name stays light. */
+  .card--compact .price { font-size: 1rem; font-weight: 600; color: var(--color-heading); }
   .card--compact .card__badge { top: var(--space-2); left: var(--space-2); padding: 3px 8px; font-size: .75rem; letter-spacing: .08em; }
   @media (max-width: 374px) { .card--compact .card__title { font-size: .9375rem; } }
 {% endstylesheet %}

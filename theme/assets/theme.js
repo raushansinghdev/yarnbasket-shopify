@@ -374,10 +374,9 @@ if (document.querySelector('.tip')) {
   }
 }
 
-/* ---------- Swipe rows (.scroller): calm edges, photos ready before the swipe ----------
-   CSS (base.css) keeps rows still under the finger. Here: a soft fade on whichever side has more to scroll to
-   (.can-left / .can-right, only while the row overflows), and the row's lazy photos start loading as the row
-   comes near, so none of them pops in mid-swipe. */
+/* ---------- Swipe rows (.scroller): photos ready before the swipe ----------
+   CSS (base.css) keeps rows still under the finger. Here: the row's lazy photos start loading as the row comes
+   near, so none of them pops in mid-swipe. */
 {
   const rows = new WeakSet();
   const near = 'IntersectionObserver' in window && new IntersectionObserver((entries) => {
@@ -387,17 +386,9 @@ if (document.querySelector('.tip')) {
       entry.target.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; });
     });
   }, { rootMargin: '600px 0px' });
-  const edges = (row) => {
-    const max = row.scrollWidth - row.clientWidth;
-    row.classList.toggle('can-left', max > 2 && row.scrollLeft > 2);
-    row.classList.toggle('can-right', max > 2 && row.scrollLeft < max - 2);
-  };
   const watch = (scope = document) => scope.querySelectorAll('.scroller').forEach((row) => {
     if (rows.has(row)) return;
     rows.add(row);
-    row.addEventListener('scroll', () => edges(row), { passive: true });
-    new ResizeObserver(() => edges(row)).observe(row);
-    edges(row);
     if (near) near.observe(row);
   });
   watch();
@@ -492,3 +483,9 @@ if (!CSS.supports('animation-timeline: view()') && 'IntersectionObserver' in win
   }, { rootMargin: '0px 0px -15% 0px' });
   document.querySelectorAll('[data-inview]').forEach((el) => io.observe(el));
 }
+
+/* A short pulse under the finger for a tap that changes the cart: Add to cart, the stepper, Undo. Android only;
+   iPhones have no vibration for web pages. The page says and shows the same without it. */
+document.addEventListener('click', (event) => {
+  if (event.target.closest?.('[data-step]:not([aria-disabled="true"]), [data-add], .extra__btn, [data-undo]')) navigator.vibrate?.(10);
+});

@@ -102,6 +102,7 @@ Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with 
 ## Product page (docs/product-page-plan.md)
 
 - [x] Product fields created 2026-10-04 (Settings → Custom data → Products): "Size & what's included", "Materials (only if different)", "Care (only if different)"
+- [ ] **Delete the made-up ratings on 25 real products** (added 2026-10-05 for testing, product metafields `reviews.rating` and `reviews.rating_count`). While they exist, the stars by the product name and the rating sent to Google (`aggregateRating` in the page's structured data) are invented. Four real products were left without a rating on purpose: Chick Crochet Keychain, Octopus & Evil Eye Keychain Set, Daisy Crochet Pot, Sunflower Curtain Tie-Back. Claude can remove them with one Admin API call (`metafieldsDelete`).
 - [ ] Delete the test products (tag `test-product`), including the extra photos and test Size text on "Red Rose Crochet Bouquet" and the whole "Rose Crochet Bouquet (colour test)" (computer-recoloured photos, a made-up 4.8 rating)
 - [ ] Products that come in colours: one product with a "Colour" option, a photo picked on each colour's variant, and the photos dragged into colour order (product-page-plan.md, Round 2)
 - [ ] Every product: 5 photos in the guide's order, alt text on each, and "Size & what's included" filled in
