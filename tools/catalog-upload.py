@@ -81,7 +81,23 @@ def existing(kind, handle):
     return node and node['id']
 
 
+def titles():
+    """Two products with one name read as one product at two prices (2026-10-05: a test "Daisy Crochet Flower Pot"
+    at 599 showed in the cart's Saved row beside the real one at 229). Stops on a clash inside the catalogue and
+    warns about a test product in the store that shares a real name."""
+    seen = {}
+    for p in DATA['products']:
+        seen.setdefault(p['title'].strip().lower(), []).append(p['handle'])
+    twice = {t: h for t, h in seen.items() if len(h) > 1}
+    if twice:
+        sys.exit('two catalogue products share a title: ' + '; '.join(f'{t} ({", ".join(h)})' for t, h in twice.items()))
+    for n in gql('{ products(first: 50, query: "tag:test-product") { nodes { handle title } } }')['products']['nodes']:
+        if n['title'].strip().lower() in seen:
+            print(f'WARNING: test product {n["handle"]} has the same name as {seen[n["title"].strip().lower()][0]}: "{n["title"]}". The theme hides test products from every list; delete it before launch.')
+
+
 def products(handles, force):
+    titles()
     for p in DATA['products']:
         if handles and p['handle'] not in handles:
             continue
@@ -232,6 +248,9 @@ if __name__ == '__main__':
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     force = '--force' in sys.argv
     cmd = args[0] if args else ''
+    if cmd in ('products', 'prices'):
+        import atexit
+        atexit.register(lambda: print('\nPrices or products may have changed: run `npm run check:money` (theme dev running) before anything else.'))
     if cmd == 'products':
         products(args[1:], force)
     elif cmd == 'prices':

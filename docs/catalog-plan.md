@@ -66,6 +66,12 @@ Size text is set only where a dimension image gave it (single-stem bouquets, 10 
 - 2026-10-05: product photos, home page photos and collection covers replaced with the studio-wall versions
   (docs/photo-backdrop-plan.md): 138 changed, 18 kept as shot.
 
+- 2026-10-05: 19 more products (51 photos) chosen and written up under `pending` in the manifest: 13 from the
+  SKU-named sets (sunflower duo bouquet, three mixed trio bouquets, nine keychain pairs and sets) and 6 once Raushan
+  allowed Meesho badge photos (curtain tie-back packs, evil eye pair, claw clips, flower chain headbands, tricolour
+  clips, white and lavender clips). Not uploaded; their photos are in `../catalog/to-studio/` for the studio wall
+  (docs/photo-backdrop-plan.md, "Next batch"). Flower headband and tricolour clips need a cost.
+
 ## Still open
 
 - Sizes for keychains, pots, charms, hair pieces and the larger bouquets (Raushan, later).

@@ -4,7 +4,8 @@
   Saved for later, Little extras ("You may also like" once every reward is earned) and Recently viewed.
   - Saved for later: this browser's saved pieces (saved.js) that can be bought now, from sections/saved-item
   - Little extras: sections/cart-extras through Shopify's product recommendations, asked again after every change
-  - Recently viewed: the last product pages seen in this browser, from sections/product-tile
+  - Recently viewed: the last product pages seen in this browser that can be bought now, from the same section,
+    so each has its button too (Add, or Choose for a piece with options)
   6 cards a row at most, nothing that is in the cart, no piece twice (the shopper's own rows keep theirs and the
   suggestions give way), and a row with nothing to show is hidden.
   The drawer fetches this file with its first opening (cart.js calls the default export on every opening); the
@@ -18,11 +19,11 @@ const inDrawer = !!scope?.matches('dialog');
 const MAX = 6;
 const parse = (html) => new DOMParser().parseFromString(html, 'text/html');
 const handleIn = (href) => (href || '').match(/\/products\/([^/?#]+)/)?.[1] || '';
-// A card's product, whichever section drew it (saved-item, product-tile or cart-extras).
-const handleOf = (card) => card.dataset.handle || card.dataset.tile || handleIn(card.querySelector('a')?.getAttribute('href'));
+// A card's product, whichever section drew it (saved-item or cart-extras).
+const handleOf = (card) => card.dataset.handle || handleIn(card.querySelector('a')?.getAttribute('href'));
 const inCart = () => new Set([...scope.querySelectorAll('.cart-line .cart-line__title')].map((a) => handleIn(a.getAttribute('href'))));
 const listOf = (row) => row.querySelector('[data-row-list]');
-// A card's button, or its link when it has none (Recently viewed).
+// A card's button (its link, should it ever have none).
 const action = (li) => li?.querySelector('.saved-item__btn, .extra__btn') || li?.querySelector('.card__link');
 
 /* ---------- The rows' own element ----------
@@ -71,12 +72,12 @@ const card = (handle, section, pick) => {
   }
   return cards.get(key);
 };
-// Saved pieces that can be bought now: Add to cart, or Choose for a piece with options.
-const savedCard = (handle) => card(handle, 'saved-item', (doc) => {
+// Pieces that can be bought now: Add to cart, or Choose for a piece with options. Saved for later and Recently
+// viewed share the card, so a piece in both lists is fetched once (tidy() then shows it in one row only).
+const buyCard = (handle) => card(handle, 'saved-item', (doc) => {
   const li = doc.querySelector('.saved-item[data-handle]:not([data-handle=""])');
   return li?.querySelector('.saved-item__form, .saved-item__btn[href*="/products/"]') ? li : null;
 });
-const recentCard = (handle) => card(handle, 'product-tile', (doc) => doc.querySelector('[data-tile]'));
 
 /* ---------- Filling the rows ---------- */
 // A card that was just added stays for a moment, saying "Added".
@@ -128,8 +129,9 @@ const draw = () => {
   const viewed = recentRow && window.ybSaved ? window.ybSaved.viewed() : [];
   // A few more than a row holds, for the ones that turn out to be sold out.
   const jobs = [
-    Promise.all(saved.filter(free).slice(0, MAX + 2).map(savedCard)),
-    Promise.all(viewed.filter(free).slice(0, MAX + 2).map(recentCard)),
+    Promise.all(saved.filter(free).slice(0, MAX + 2).map(buyCard)),
+    // A saved piece stays in its own row: the two rows share one card, and a card can sit in one place only.
+    Promise.all(viewed.filter((handle) => free(handle) && !saved.includes(handle)).slice(0, MAX + 2).map(buyCard)),
     extrasRow
       ? fetch(extrasRow.dataset.url).then((r) => (r.ok ? r.text() : '')).then((html) => parse(html).querySelector('.extras')).catch(() => null)
       : null,

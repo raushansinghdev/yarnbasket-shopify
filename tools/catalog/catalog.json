@@ -2216,15 +2216,876 @@
    }
   ]
  },
+ "pending_note": "Products chosen and written up but not uploaded yet: their photos are waiting for the studio wall (docs/photo-backdrop-plan.md). catalog-build.py copies their photos and lists them in the review sheet; catalog-upload.py and the money check read only \"products\". Move an entry to \"products\" when its photos are back. \"badge\": true marks a product whose photos carry a Meesho pack badge; ChatGPT removes it with the background (Raushan, 2026-10-05), and the build puts those photos in to-studio/remove-badge/.",
+ "pending": [
+  {
+   "handle": "sunflower-duo-crochet-bouquet",
+   "title": "Sunflower Duo Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "sunflower",
+    "daisy",
+    "rose",
+    "bee",
+    "set",
+    "occasion-birthday",
+    "occasion-thank-you",
+    "occasion-for-her"
+   ],
+   "option": "With",
+   "variants": [
+    {
+     "value": "Daisy",
+     "price": 499,
+     "sku": "BQ_SF_2_DSY_1",
+     "parts": {
+      "sunflower": 2,
+      "daisy": 1
+     }
+    },
+    {
+     "value": "Red rose",
+     "price": 499,
+     "sku": "BQ_SF_2_RS_Red_1",
+     "parts": {
+      "sunflower": 2,
+      "rose": 1
+     }
+    },
+    {
+     "value": "Bee",
+     "price": 479,
+     "sku": "BQ_SF_2_BEE_1",
+     "parts": {
+      "sunflower": 2,
+      "bee": 1
+     }
+    }
+   ],
+   "description": "<p>Two sunflowers side by side, with a third piece of your choice in front: a white daisy, a red rose or a smiling little bee. Each one is crocheted by hand, then wrapped in black and gold and tied with a ribbon.</p>",
+   "size": null,
+   "seo_title": "Sunflower Duo Crochet Bouquet, Handmade | Yarn Basket",
+   "seo_description": "Two handmade crochet sunflowers with a daisy, a red rose or a smiling bee, in black and gold wrap. A bouquet that never wilts.",
+   "photos": [
+    {
+     "src": "Bouquet/SF_2_Daisy_1 1.png",
+     "alt": "Crochet bouquet of two sunflowers and a daisy",
+     "variant": "Daisy"
+    },
+    {
+     "src": "Bouquet/SF_2_Daisy_1 2.png",
+     "alt": "Crochet bouquet of two sunflowers and a daisy, view 2",
+     "variant": "Daisy"
+    },
+    {
+     "src": "Bouquet/SF_2_Daisy_1 3.png",
+     "alt": "Crochet bouquet of two sunflowers and a daisy, view 3",
+     "variant": "Daisy"
+    },
+    {
+     "src": "Bouquet/SF_2_Daisy_1 4.png",
+     "alt": "Crochet bouquet of two sunflowers and a daisy, view 4",
+     "variant": "Daisy"
+    },
+    {
+     "src": "Bouquet/BQ_SF_2_Rose_1 1.png",
+     "alt": "Crochet bouquet of two sunflowers and a red rose",
+     "variant": "Red rose"
+    },
+    {
+     "src": "Bouquet/BQ_SF_2_Rose_1 2.png",
+     "alt": "Crochet bouquet of two sunflowers and a red rose, view 2",
+     "variant": "Red rose"
+    },
+    {
+     "src": "Bouquet/BQ_SF_2_Rose_1 3.png",
+     "alt": "Crochet bouquet of two sunflowers and a red rose, view 3",
+     "variant": "Red rose"
+    },
+    {
+     "src": "Bouquet/BQ_SF_2_Bee_1 1.png",
+     "alt": "Crochet bouquet of two sunflowers and a smiling bee",
+     "variant": "Bee"
+    },
+    {
+     "src": "Bouquet/BQ_SF_2_Bee_1 2.png",
+     "alt": "Crochet bouquet of two sunflowers and a smiling bee, view 2",
+     "variant": "Bee"
+    },
+    {
+     "src": "Bouquet/BQ_SF_2_Bee_1 3.png",
+     "alt": "Crochet bouquet of two sunflowers and a smiling bee, view 3",
+     "variant": "Bee"
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-daisy-rose-crochet-bouquet",
+   "title": "Sunflower, Daisy & Rose Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "sunflower",
+    "daisy",
+    "rose",
+    "set",
+    "occasion-birthday",
+    "occasion-anniversary",
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 499,
+     "sku": "BQ_SF_1_DSY_1_RS_Red_1",
+     "parts": {
+      "sunflower": 1,
+      "daisy": 1,
+      "rose": 1
+     }
+    }
+   ],
+   "description": "<p>A sunflower, a white daisy and a red rose, one of each. Three hand-crocheted flowers wrapped in black and gold and tied with a ribbon.</p>",
+   "size": null,
+   "seo_title": "Sunflower, Daisy & Rose Crochet Bouquet | Yarn Basket",
+   "seo_description": "A handmade crochet sunflower, daisy and red rose in black and gold wrap. Three flowers in one bouquet that lasts for years.",
+   "photos": [
+    {
+     "src": "Bouquet/SF_1_Daisy_1_Rose_1 2.png",
+     "alt": "Crochet bouquet of a sunflower, a daisy and a red rose",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/SF_1_Daisy_1_Rose_1 1.png",
+     "alt": "Crochet bouquet of a sunflower, a daisy and a red rose, view 2",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-rose-tulip-crochet-bouquet",
+   "title": "Sunflower, Rose & Tulip Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "sunflower",
+    "rose",
+    "tulip",
+    "set",
+    "occasion-birthday",
+    "occasion-anniversary",
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 479,
+     "sku": "BQ_SF_1_Rose_1_TLP_1",
+     "parts": {
+      "sunflower": 1,
+      "rose": 1,
+      "tulip": 1
+     }
+    }
+   ],
+   "description": "<p>A sunflower above a red rose and a pink tulip. Three hand-crocheted flowers in bright colours, wrapped in black and gold and tied with a ribbon.</p>",
+   "size": null,
+   "seo_title": "Sunflower, Rose & Tulip Crochet Bouquet | Yarn Basket",
+   "seo_description": "A handmade crochet sunflower, red rose and pink tulip in black and gold wrap. A bright bouquet that never wilts.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_SF_1_Rose_1_TLP_1 1.png",
+     "alt": "Crochet bouquet of a sunflower, a red rose and a pink tulip",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_SF_1_Rose_1_TLP_1 2.png",
+     "alt": "Crochet bouquet of a sunflower, a red rose and a pink tulip, view 2",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "tulip-rose-daisy-crochet-bouquet",
+   "title": "Blue Tulip, Yellow Rose & Daisy Crochet Bouquet",
+   "type": "Bouquets",
+   "tags": [
+    "tulip",
+    "rose",
+    "daisy",
+    "set",
+    "occasion-birthday",
+    "occasion-thank-you",
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 479,
+     "sku": "BQ_TLP_Blue_1_RS_Yellow_1_DSY_1",
+     "parts": {
+      "tulip": 1,
+      "rose": 1,
+      "daisy": 1
+     }
+    }
+   ],
+   "description": "<p>A blue tulip, a yellow rose and a white daisy. Three hand-crocheted flowers in soft colours, wrapped in black and gold and tied with a ribbon.</p>",
+   "size": null,
+   "seo_title": "Blue Tulip, Yellow Rose & Daisy Crochet Bouquet | Yarn Basket",
+   "seo_description": "A handmade crochet blue tulip, yellow rose and white daisy in black and gold wrap. A soft pastel bouquet that lasts for years.",
+   "photos": [
+    {
+     "src": "Bouquet/BQ_TLP_Blue_1_RS_Yellow_1_DSY_1 2.png",
+     "alt": "Crochet bouquet of a blue tulip, a yellow rose and a daisy",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_1_RS_Yellow_1_DSY_1 1.png",
+     "alt": "Crochet bouquet of a blue tulip, a yellow rose and a daisy, view 2",
+     "variant": null
+    },
+    {
+     "src": "Bouquet/BQ_TLP_Blue_1_RS_Yellow_1_DSY_1 3.png",
+     "alt": "Crochet bouquet of a blue tulip, a yellow rose and a daisy, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "daisy-keychain-pair",
+   "title": "White & Blue Daisy Keychain Pair",
+   "type": "Keychains",
+   "tags": [
+    "daisy",
+    "set",
+    "occasion-thank-you",
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 179,
+     "sku": "KC_DSY_1_DSY_Blue_1",
+     "parts": {
+      "flower keychain": 2
+     }
+    }
+   ],
+   "description": "<p>Our daisy keychain in both colours: one white, one blue. Two hand-crocheted keychains to keep together or share.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "White & Blue Daisy Crochet Keychain Pair | Yarn Basket",
+   "seo_description": "A pair of handmade crochet daisy keychains, one white and one blue, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_DSY_1_DSY_Blue_1 1.png",
+     "alt": "White and blue crochet daisy keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_DSY_1_DSY_Blue_1 2.png",
+     "alt": "White and blue crochet daisy keychains held in a hand, view 2",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "daisy-evil-eye-keychain-set",
+   "title": "Daisy & Evil Eye Keychain Set",
+   "type": "Keychains",
+   "tags": [
+    "daisy",
+    "evil-eye",
+    "set",
+    "occasion-thank-you"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 199,
+     "sku": "KC_DSY_1_Evil_1",
+     "parts": {
+      "flower keychain": 1,
+      "evil eye keychain": 1
+     }
+    }
+   ],
+   "description": "<p>A white daisy and an evil eye for luck. Two hand-crocheted keychains in one set.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Daisy & Evil Eye Crochet Keychain Set | Yarn Basket",
+   "seo_description": "A set of two handmade crochet keychains: a white daisy and an evil eye, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_DSY_1_Evil_1 1.png",
+     "alt": "Crochet daisy and evil eye keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_DSY_1_Evil_1 2.png",
+     "alt": "Crochet daisy and evil eye keychains held in a hand, view 2",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "daisy-peacock-feather-keychain-set",
+   "title": "Daisy & Peacock Feather Keychain Set",
+   "type": "Keychains",
+   "tags": [
+    "daisy",
+    "peacock",
+    "set",
+    "occasion-for-her",
+    "occasion-thank-you"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 199,
+     "sku": "KC_DSY_1_Mor_1",
+     "parts": {
+      "flower keychain": 1,
+      "peacock feather keychain": 1
+     }
+    }
+   ],
+   "description": "<p>A white daisy beside a peacock feather in green and blue. Two hand-crocheted keychains in one set.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Daisy & Peacock Feather Keychain Set | Yarn Basket",
+   "seo_description": "A set of two handmade crochet keychains: a white daisy and a peacock feather, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_DSY_1_Mor_1 1.png",
+     "alt": "Crochet daisy and peacock feather keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_DSY_1_Mor_1 2.png",
+     "alt": "Crochet daisy and peacock feather keychains held in a hand, view 2",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "chick-flower-keychain-pair",
+   "title": "Chick & Flower Keychain Pair",
+   "type": "Keychains",
+   "tags": [
+    "chick",
+    "daisy",
+    "sunflower",
+    "set",
+    "occasion-birthday"
+   ],
+   "option": "With",
+   "variants": [
+    {
+     "value": "Daisy",
+     "price": 259,
+     "sku": "KC_Chick_1_DSY_1",
+     "parts": {
+      "chick keychain": 1,
+      "flower keychain": 1
+     }
+    },
+    {
+     "value": "Sunflower",
+     "price": 259,
+     "sku": "KC_SF_1_Chick_1",
+     "parts": {
+      "chick keychain": 1,
+      "flower keychain": 1
+     }
+    }
+   ],
+   "description": "<p>The chick in its eggshell with a flower for company: a white daisy or a sunflower. Both keychains are crocheted by hand, and the chick is stuffed by hand too.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Chick & Flower Crochet Keychain Pair | Yarn Basket",
+   "seo_description": "A pair of handmade crochet keychains: a chick in an eggshell with a daisy or a sunflower, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_Chick_1_DSY_1 1.png",
+     "alt": "Crochet chick and daisy keychains held in a hand",
+     "variant": "Daisy"
+    },
+    {
+     "src": "keychains/KC_Chick_1_DSY_1 2.png",
+     "alt": "Crochet chick and daisy keychains held in a hand, view 2",
+     "variant": "Daisy"
+    },
+    {
+     "src": "keychains/KC_SF_1_Chick_1 1.png",
+     "alt": "Crochet chick and sunflower keychains held in a hand",
+     "variant": "Sunflower"
+    },
+    {
+     "src": "keychains/KC_SF_1_Chick_1 2.png",
+     "alt": "Crochet chick and sunflower keychains held in a hand, view 2",
+     "variant": "Sunflower"
+    }
+   ]
+  },
+  {
+   "handle": "octopus-blue-daisy-keychain-pair",
+   "title": "Pink Octopus & Blue Daisy Keychain Pair",
+   "type": "Keychains",
+   "tags": [
+    "octopus",
+    "daisy",
+    "set",
+    "occasion-birthday",
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 199,
+     "sku": "KC_OCTPS_Pink_1_DSY_Blue_1",
+     "parts": {
+      "octopus keychain": 1,
+      "flower keychain": 1
+     }
+    }
+   ],
+   "description": "<p>A pink baby octopus and a blue daisy. Two hand-crocheted keychains in one set.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Pink Octopus & Blue Daisy Keychain Pair | Yarn Basket",
+   "seo_description": "A pair of handmade crochet keychains: a pink baby octopus and a blue daisy, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_OCTPS_Pink_1_DSY_Blue_1 1.png",
+     "alt": "Crochet pink octopus and blue daisy keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_OCTPS_Pink_1_DSY_Blue_1 2.png",
+     "alt": "Crochet pink octopus and blue daisy keychains held in a hand, view 2",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-keychain-lily-charm-set",
+   "title": "Sunflower Keychain & Lily Charm Set",
+   "type": "Keychains",
+   "tags": [
+    "sunflower",
+    "lily",
+    "set",
+    "occasion-for-her",
+    "occasion-birthday"
+   ],
+   "option": "Charm",
+   "variants": [
+    {
+     "value": "White",
+     "price": 179,
+     "sku": "KC_SF_1_Charm_White_1",
+     "parts": {
+      "flower keychain": 1,
+      "lily charm": 1
+     }
+    },
+    {
+     "value": "Pink + white pair",
+     "price": 269,
+     "sku": "KC_SF_1_Charm_Pink_1_White_1",
+     "parts": {
+      "flower keychain": 1,
+      "lily charm": 2
+     }
+    }
+   ],
+   "description": "<p>A sunflower keychain with a lily of the valley charm: two little bell flowers hanging from a green bow. Choose the white charm, or the pink and white pair. All of it is crocheted by hand.</p><p>The keychain comes on a metal ring and chain. Tie the charm to a bag handle.</p>",
+   "size": null,
+   "seo_title": "Sunflower Keychain & Lily Charm Set | Yarn Basket",
+   "seo_description": "A handmade crochet sunflower keychain with a lily of the valley bag charm, in white or as a pink and white pair.",
+   "photos": [
+    {
+     "src": "keychains/KC_SF_1_Charm_White_1 1.png",
+     "alt": "Crochet sunflower keychain and white lily of the valley charm held in a hand",
+     "variant": "White"
+    },
+    {
+     "src": "keychains/KC_SF_1_Charm_White_1 2.png",
+     "alt": "Crochet sunflower keychain and white lily of the valley charm held in a hand, view 2",
+     "variant": "White"
+    },
+    {
+     "src": "keychains/KC_SF_1_Charm_Pink_1_White_1 1.png",
+     "alt": "Crochet sunflower keychain with pink and white lily of the valley charms held in a hand",
+     "variant": "Pink + white pair"
+    },
+    {
+     "src": "keychains/KC_SF_1_Charm_Pink_1_White_1 2.png",
+     "alt": "Crochet sunflower keychain with pink and white lily of the valley charms held in a hand, view 2",
+     "variant": "Pink + white pair"
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-two-daisies-keychain-set",
+   "title": "Sunflower & Two Daisies Keychain Set",
+   "type": "Keychains",
+   "tags": [
+    "sunflower",
+    "daisy",
+    "set",
+    "occasion-thank-you",
+    "occasion-birthday"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 269,
+     "sku": "KC_SF_1_DSY_1_DSY_Blue_1",
+     "parts": {
+      "flower keychain": 3
+     }
+    }
+   ],
+   "description": "<p>All three of our flower keychains in one set: a sunflower, a white daisy and a blue daisy. Enough to share between friends or family.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Sunflower & Two Daisies Crochet Keychain Set | Yarn Basket",
+   "seo_description": "A set of three handmade crochet flower keychains: a sunflower, a white daisy and a blue daisy, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_SF_1_DSY_1_DSY_Blue_1 1.png",
+     "alt": "Crochet sunflower, white daisy and blue daisy keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_DSY_1_DSY_Blue_1 3.png",
+     "alt": "Crochet sunflower, white daisy and blue daisy keychains held in a hand, view 2",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_DSY_1_DSY_Blue_1 2.png",
+     "alt": "Crochet sunflower, white daisy and blue daisy keychains held in a hand, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-blue-daisy-evil-eye-keychain-set",
+   "title": "Sunflower, Blue Daisy & Evil Eye Keychain Set",
+   "type": "Keychains",
+   "tags": [
+    "sunflower",
+    "daisy",
+    "evil-eye",
+    "set",
+    "occasion-thank-you",
+    "occasion-birthday"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 289,
+     "sku": "KC_SF_1_DSY_Blue_1_Evil_1",
+     "parts": {
+      "flower keychain": 2,
+      "evil eye keychain": 1
+     }
+    }
+   ],
+   "description": "<p>Three hand-crocheted keychains in one set: a sunflower, a blue daisy and an evil eye. Enough to share between friends or family.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Sunflower, Blue Daisy & Evil Eye Keychain Set | Yarn Basket",
+   "seo_description": "A set of three handmade crochet keychains: a sunflower, a blue daisy and an evil eye, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_SF_1_DSY_Blue_1_Evil_1 1.png",
+     "alt": "Crochet sunflower, blue daisy and evil eye keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_DSY_Blue_1_Evil_1 2.png",
+     "alt": "Crochet sunflower, blue daisy and evil eye keychains held in a hand, view 2",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-evil-eye-octopus-keychain-set",
+   "title": "Sunflower, Evil Eye & Octopus Keychain Set",
+   "type": "Keychains",
+   "tags": [
+    "sunflower",
+    "evil-eye",
+    "octopus",
+    "set",
+    "occasion-birthday"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 299,
+     "sku": "KC_SF_1_Evil_1_Octps_Pink_1",
+     "parts": {
+      "flower keychain": 1,
+      "evil eye keychain": 1,
+      "octopus keychain": 1
+     }
+    }
+   ],
+   "description": "<p>A sunflower, an evil eye and a pink baby octopus. Three hand-crocheted keychains in one set.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Sunflower, Evil Eye & Octopus Keychain Set | Yarn Basket",
+   "seo_description": "A set of three handmade crochet keychains: a sunflower, an evil eye and a pink octopus, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_SF_1_Evil_1_Octps_Pink_1 1.png",
+     "alt": "Crochet sunflower, evil eye and pink octopus keychains held in a hand",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_Evil_1_Octps_Pink_1 3.png",
+     "alt": "Crochet sunflower, evil eye and pink octopus keychains held in a hand, view 2",
+     "variant": null
+    },
+    {
+     "src": "keychains/KC_SF_1_Evil_1_Octps_Pink_1 2.png",
+     "alt": "Crochet sunflower, evil eye and pink octopus keychains held in a hand, view 3",
+     "variant": null
+    }
+   ]
+  },
+  {
+   "handle": "sunflower-curtain-tie-back-set",
+   "title": "Sunflower Curtain Tie-Back Set",
+   "type": "Home decor",
+   "tags": [
+    "sunflower",
+    "home-decor",
+    "set"
+   ],
+   "option": "Pack",
+   "variants": [
+    {
+     "value": "Pack of 2",
+     "price": 299,
+     "sku": "CTie_SF_2",
+     "parts": {
+      "curtain tie-back": 2
+     }
+    },
+    {
+     "value": "Pack of 4",
+     "price": 599,
+     "sku": "CTie_SF_4",
+     "parts": {
+      "curtain tie-back": 4
+     }
+    }
+   ],
+   "description": "<p>Our sunflower curtain tie-back in sets, for a pair of curtains or a whole room. Each one is a hand-crocheted sunflower with two leaves hanging below it.</p><p>Choose a pack of two or a pack of four.</p>",
+   "size": null,
+   "seo_title": "Sunflower Curtain Tie-Back Set, Handmade | Yarn Basket",
+   "seo_description": "Handmade crochet sunflower curtain tie-backs in a pack of two or four. A bright touch for any window.",
+   "photos": [
+    {
+     "src": "Curtain Tie/CTie_SF_2 1.png",
+     "alt": "Two crochet sunflower tie-backs on dark curtains",
+     "variant": "Pack of 2"
+    },
+    {
+     "src": "Curtain Tie/CTie_SF_2 2.png",
+     "alt": "Two crochet sunflower tie-backs on printed curtains",
+     "variant": "Pack of 2"
+    },
+    {
+     "src": "Curtain Tie/CTie_SF_4 2.png",
+     "alt": "Four crochet sunflower tie-backs on dark curtains",
+     "variant": "Pack of 4"
+    },
+    {
+     "src": "Curtain Tie/CTie_SF_4 1.png",
+     "alt": "Four crochet sunflower tie-backs on printed curtains",
+     "variant": "Pack of 4"
+    }
+   ],
+   "badge": true
+  },
+  {
+   "handle": "evil-eye-keychain-pair",
+   "title": "Evil Eye Keychain Pair",
+   "type": "Keychains",
+   "tags": [
+    "evil-eye",
+    "set",
+    "occasion-thank-you"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 209,
+     "sku": "KC_Evil_2",
+     "parts": {
+      "evil eye keychain": 2
+     }
+    }
+   ],
+   "description": "<p>Two evil eye keychains, each crocheted by hand in its own shades of blue. One to keep and one to give.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "size": null,
+   "seo_title": "Evil Eye Crochet Keychain Pair, Handmade | Yarn Basket",
+   "seo_description": "A pair of handmade crochet evil eye keychains in shades of blue, each on a metal ring.",
+   "photos": [
+    {
+     "src": "keychains/KC_Evil_2 1.png",
+     "alt": "Two crochet evil eye keychains held in a hand",
+     "variant": null
+    }
+   ],
+   "badge": true
+  },
+  {
+   "handle": "flower-crochet-claw-clips",
+   "title": "Flower Crochet Claw Clips, Pair",
+   "type": "Hair accessories",
+   "tags": [
+    "occasion-for-her",
+    "set"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 179,
+     "sku": "CLAW_ORANGE_WHITE_2",
+     "parts": {
+      "claw clip": 2
+     }
+    }
+   ],
+   "description": "<p>Two claw clips, each topped with a puffy hand-crocheted flower: one orange, one white. Soft to look at and firm in the hair.</p>",
+   "size": null,
+   "seo_title": "Flower Crochet Claw Clips, Pair | Yarn Basket",
+   "seo_description": "A pair of claw clips with handmade crochet flowers, one orange and one white. Light and made to be worn every day.",
+   "photos": [
+    {
+     "src": "clutcher/ChatGPT Image Jul 25, 2026, 10_26_43 PM.png",
+     "alt": "Orange and white crochet flower claw clips",
+     "variant": null
+    }
+   ],
+   "badge": true
+  },
+  {
+   "handle": "flower-chain-crochet-headbands",
+   "title": "Flower Chain Crochet Headbands, Pair",
+   "type": "Hair accessories",
+   "tags": [
+    "sunflower",
+    "daisy",
+    "occasion-for-her",
+    "set"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 299,
+     "sku": "HB_SF_WHITE_2",
+     "parts": {
+      "flower headband": 2
+     }
+    }
+   ],
+   "description": "<p>Two tie-on headbands, each a chain of small hand-crocheted flowers: one in sunflower yellow, one in white. The cords tie at the back, so they fit any head.</p>",
+   "size": null,
+   "seo_title": "Flower Chain Crochet Headbands, Pair | Yarn Basket",
+   "seo_description": "A pair of handmade crochet flower headbands, one sunflower yellow and one white, with cords that tie at the back.",
+   "photos": [
+    {
+     "src": "hair band/ChatGPT Image Jul 17, 2026, 12_42_07 PM.png",
+     "alt": "Sunflower yellow and white crochet flower headbands",
+     "variant": null
+    }
+   ],
+   "badge": true
+  },
+  {
+   "handle": "tricolour-crochet-hair-clips",
+   "title": "Tricolour Crochet Hair Clips, Pair",
+   "type": "Hair accessories",
+   "tags": [
+    "set"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 99,
+     "sku": "HC_TRICOLOUR_2",
+     "parts": {
+      "tricolour hair clips, pair": 1
+     }
+    }
+   ],
+   "description": "<p>Saffron, white and green: three hand-crocheted flowers on each snap clip. A pair for Independence Day, Republic Day and school functions.</p>",
+   "size": null,
+   "seo_title": "Tricolour Crochet Hair Clips, Pair | Yarn Basket",
+   "seo_description": "A pair of handmade crochet hair clips in saffron, white and green. Made for Independence Day and Republic Day.",
+   "photos": [
+    {
+     "src": "hair clip/tricolour/ChatGPT Image Jul 25, 2026, 12_40_08 AM.png",
+     "alt": "Crochet hair clips in saffron, white and green",
+     "variant": null
+    }
+   ],
+   "badge": true
+  },
+  {
+   "handle": "white-lavender-crochet-hair-clips",
+   "title": "White & Lavender Flower Hair Clips, Pair",
+   "type": "Hair accessories",
+   "tags": [
+    "occasion-for-her"
+   ],
+   "option": null,
+   "variants": [
+    {
+     "value": null,
+     "price": 49,
+     "sku": "HC_White_Lvndr_2",
+     "parts": {
+      "hair clips, pair": 1
+     }
+    }
+   ],
+   "description": "<p>Two white flowers with lavender centres, crocheted by hand and set on snap clips. Soft colours that go with everything.</p>",
+   "size": null,
+   "seo_title": "White & Lavender Crochet Flower Hair Clips | Yarn Basket",
+   "seo_description": "A pair of handmade crochet flower hair clips in white with lavender centres. Light, soft and made for every day.",
+   "photos": [
+    {
+     "src": "hair clip/HC_White_Lvndr_2 2.png",
+     "alt": "White and lavender crochet flower hair clips worn in dark hair",
+     "variant": null
+    },
+    {
+     "src": "hair clip/HC_White_Lvndr_2",
+     "alt": "White and lavender crochet flower hair clips worn in dark hair, view 2",
+     "variant": null
+    }
+   ]
+  }
+ ],
  "held_back": [
-  "Heart hair pins (packs of 3, 5, 10): every photo has a pack sticker",
-  "Sunflower and white flower headbands: stickers, or AI models",
-  "Flower claw clips (sunflower, daisy): stickers, text or AI models",
-  "Tricolour hair clips: stickers",
-  "Scrunchies: sticker, AI model",
+  "Heart hair pins (packs of 3, 5, 10): the hearts look AI-drawn (every pair identical); no raw photo to compare",
+  "Sunflower and daisy claw clips on brown claws, headbands with brown centres, star and leaf hair clips, scrunchies: the piece itself looks redrawn by AI, or is worn by an AI model",
+  "Chick, bee, octopus and dolphin keychains held by a knitted sleeve: fully AI-made (the bee is a flat disc; the real one is a ball)",
   "Sunflower accessory set: labels written on the photo",
-  "Octopus keychain alone, dolphin keychain: only fully AI-made photos",
-  "White and lavender hair clips: one photo only",
-  "Second wave of combos: sunflower duo + bee, sunflower duo + rose, sunflower duo + daisy, sunflower + daisy + rose, sunflower + rose + tulip, blue tulip + yellow rose + daisy; keychain pairs with blue daisy, lily charm or chick"
+  "Four-design hair clips, sunflower + tulip pair: only flat cut-outs and raw phone photos"
  ]
 }

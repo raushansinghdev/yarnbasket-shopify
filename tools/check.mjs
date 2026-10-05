@@ -2,10 +2,14 @@
 // Usage: npm run check            (full run against the local `shopify theme dev` server)
 //        npm run check:quick      (Chrome only)
 //        npm run check -- --only 4,5,18   (only those sections; add --quick for Chrome only)
+//        npm run check:money      (prices and what is on sale, no browser: tools/money-check.mjs; part of the full run,
+//                                  --only money runs it here, and git runs it before every push that touches the theme)
 //        node tools/check.mjs --url https://yarnbasket-in.myshopify.com/?preview_theme_id=…
 // Budgets come from docs/motion-plan.md, section 6. Exits non-zero if any check fails.
 import { chromium, webkit, firefox, devices } from 'playwright';
 import axe from 'axe-core';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const args = process.argv.slice(2);
 const URL = args.includes('--url') ? args[args.indexOf('--url') + 1] : 'http://127.0.0.1:9292/';
@@ -325,10 +329,6 @@ if (want('8')) {
     const closed = await page.evaluate(() => !document.getElementById('CartDrawer').open);
     record(`Cart, ${label}: Back closes the drawer, page stays`, closed && page.url() === url, `closed: ${closed}, same page: ${page.url() === url}`);
 
-    if (limited && label === 'phone') {
-      await page.goto(site(`/products/${limited.handle}`), { waitUntil: 'load' });
-      // No quantity field on the product page: the piece goes in, and its stepper stops at the stock and says why.
-      await page.waitForTimeout(1500);
     // Forward opens it again, as Back closed it. A reload is a fresh page: the drawer starts closed (2026-10-05).
     await page.goForward();
     await page.waitForTimeout(800);
@@ -338,6 +338,10 @@ if (want('8')) {
     const fresh = await page.evaluate(() => !document.getElementById('CartDrawer').open && !history.state?.cartDrawer);
     record(`Cart, ${label}: Forward reopens the drawer, a reload starts closed`, again && fresh && page.url() === url, `Forward opened: ${again}, closed after reload: ${fresh}`);
 
+    if (limited && label === 'phone') {
+      await page.goto(site(`/products/${limited.handle}`), { waitUntil: 'load' });
+      // No quantity field on the product page: the piece goes in, and its stepper stops at the stock and says why.
+      await page.waitForTimeout(1500);
       await page.click('.pdp__add');
       await page.locator('.pdp__cta .qty__input').waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
       await page.fill('.pdp__cta .qty__input', '99');
@@ -511,7 +515,12 @@ if (want('8b')) {
 //     axe on both. Needs products.
 if (want('8d')) {
   const site = (path) => new globalThis.URL(path, URL).href;
-  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift') && p.variants[0].available), () => []);
+  const tagged = (p, tag) => [].concat(p.tags).join(',').includes(tag);
+  const everything = await fetch(site('/products.json?limit=250')).then((r) => r.json()).then((d) => d.products.filter((p) => p.variants[0].available), () => []);
+  const products = everything.filter((p) => !tagged(p, 'free-gift') && !tagged(p, 'test-product'));
+  // A test product this browser saved and viewed before the real catalogue: it must never show in a row (2026-10-05,
+  // a ₹599 test "Daisy Crochet Flower Pot" sat in Saved for later beside the real one at ₹229).
+  const test = everything.find((p) => tagged(p, 'test-product'))?.handle;
   const singles = products.filter((p) => p.variants.length === 1).sort((x, y) => x.variants[0].price - y.variants[0].price);
   const enough = singles.length >= 6;
   if (!enough) console.log('SKIP  One cart checks                                too few products in the store (import tools/test-products.csv)');
@@ -526,19 +535,24 @@ if (want('8d')) {
       localStorage.setItem('yb-recent-products', JSON.stringify(v));
     } catch {}
   };
-  const seeded = `(${seed})(${JSON.stringify([saved, viewed])})`;
+  const seeded = `(${seed})(${JSON.stringify([test ? [test, ...saved] : saved, test ? [test, ...viewed] : viewed])})`;
   const ROOT = { drawer: '#CartDrawer', page: '.cart-page' };
   const read = (page, place) => page.evaluate((root) => {
     const cart = document.querySelector(root);
     const name = (li) => (li.querySelector('.card__title, .extra__title')?.textContent || '').trim();
     const rows = [...cart.querySelectorAll('.cart-row')].map((r) => ({ title: r.querySelector('h2').textContent.trim(), hidden: r.hidden, top: Math.round(r.getBoundingClientRect().top), cards: r.hidden ? [] : [...r.querySelectorAll('[data-row-list] > li')].map(name) }));
     const shown = rows.flatMap((r) => r.cards);
+    const up = [...cart.querySelectorAll('.cart-row:not([hidden]) [data-row-list] > li')];
+    const white = getComputedStyle(cart.querySelector('.cart-line .qty') || cart).backgroundColor;
     const lines = [...cart.querySelectorAll('.cart-line')].map((l) => l.querySelector('.cart-line__title').textContent.trim());
     const y = (sel) => Math.round(cart.querySelector(sel)?.getBoundingClientRect().top ?? -1e6);
     const active = document.activeElement;
     const scroller = cart.matches('dialog') ? cart : document.documentElement;
     return {
       rows, lines,
+      handles: up.map((li) => li.dataset.handle || (li.querySelector('a')?.getAttribute('href') || '').match(/\/products\/([^/?#]+)/)?.[1] || ''),
+      bare: up.filter((li) => !li.querySelector('.saved-item__btn, .extra__btn')).length,
+      offWhite: up.flatMap((li) => [...li.querySelectorAll('.saved-item__btn, .extra__btn')]).filter((b) => getComputedStyle(b).backgroundColor !== white).length,
       twice: shown.filter((n, i) => shown.indexOf(n) !== i).length,
       inCart: shown.filter((n) => lines.includes(n)).length,
       order: [y('.cart-line'), y('[data-cart-note]'), y('.cart-details'), ...rows.filter((r) => !r.hidden).map((r) => r.top)],
@@ -591,6 +605,8 @@ if (want('8d')) {
       same[place] = `${titles.join()} | ${first.rows.map((r) => r.cards.join()).join(' | ')}`;
       record(`${tag}: pieces, gift note, price details, then the rows`, rising(first.order) && titles.join() === 'Saved for later,Little extras,Recently viewed', `tops ${first.order.join(' < ')}; rows: ${titles.join(', ')}`);
       record(`${tag}: no piece twice, none from the cart`, first.twice === 0 && first.inCart === 0 && first.rows.every((r) => r.cards.length <= 6) && first.low === 0 && first.nested === 0 && first.peek && !first.sideways, `${first.rows.map((r) => `${r.title} ${r.cards.length}`).join(', ')}; twice: ${first.twice}, in the cart: ${first.inCart}, buttons under 44px: ${first.low}, form in a form: ${first.nested}, rows swipe: ${first.peek}, sideways scroll: ${first.sideways}`);
+      record(`${tag}: every card has a button, white like the stepper`, first.bare === 0 && first.offWhite === 0 && first.handles.length > 0, `cards: ${first.handles.length}, without a button: ${first.bare}, buttons not white: ${first.offWhite}`);
+      record(`${tag}: a saved or viewed test product never shows`, !!test && !first.handles.includes(test), test ? `${test} in the rows: ${first.handles.includes(test)}` : 'the store has no test product to try this with');
       await page.addScriptTag({ content: axe.source });
       const v = await page.evaluate(async (root) => (await window.axe.run(document.querySelector(root), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`), place === 'page' ? 'main' : ROOT.drawer);
       record(`${tag}: accessibility (axe)`, v.length === 0, v.join(', ') || '0 violations');
@@ -2220,6 +2236,13 @@ if (want('21')) {
     record('Menu: 200% text', !m.sideways, `anything past the panel's edge: ${m.sideways}`);
     await browser.close();
   }
+}
+
+// Money (tools/money-check.mjs, docs/decisions.md 2026-10-05): every price shown is the store's and follows the price
+// rule, nothing that isn't for sale is listed, and the cart charges what the page said. Its own lines print above ours.
+if (want('money')) {
+  const run = spawnSync(process.execPath, [fileURLToPath(new globalThis.URL('./money-check.mjs', import.meta.url)), '--url', URL], { stdio: 'inherit' });
+  record('Money check (prices, what is on sale, the cart)', run.status === 0, run.status === 0 ? 'see its lines above' : 'failed: see its lines above, or run npm run check:money');
 }
 
 const failed = results.filter((r) => !r.ok);

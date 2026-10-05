@@ -1,0 +1,25 @@
+#!/bin/sh
+# Yarn Basket: no push that touches the theme or the catalogue leaves without the money check
+# (tools/money-check.mjs, docs/decisions.md 2026-10-05). Enable once per clone: git config core.hooksPath .githooks
+# In an emergency: git push --no-verify (and run npm run check:money straight after).
+zero=0000000000000000000000000000000000000000
+touched=no
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue
+  if [ "$remote_sha" = "$zero" ]; then
+    touched=yes
+  elif git diff --name-only "$remote_sha" "$local_sha" 2>/dev/null | grep -qE '^(theme/|tools/catalog|tools/money-check\.mjs)'; then
+    touched=yes
+  fi
+done
+[ "$touched" = no ] && exit 0
+cd "$(git rev-parse --show-toplevel)" || exit 1
+echo "Money check before the push (about a minute)..."
+node tools/money-check.mjs
+status=$?
+if [ $status -eq 2 ]; then
+  echo "Push stopped: the money check needs the local theme. Run: cd theme && shopify theme dev --store yarnbasket-in.myshopify.com"
+elif [ $status -ne 0 ]; then
+  echo "Push stopped: the money check failed. Fix the FAIL lines above, then push again."
+fi
+exit $status

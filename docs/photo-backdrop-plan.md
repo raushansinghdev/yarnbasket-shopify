@@ -43,6 +43,28 @@ python3 tools/catalog-upload.py home && python3 tools/catalog-upload.py covers  
 `products --force` resends the product from the manifest (copy, prices from costs.json, 100 stock),
 so check the store still matches the manifest first if anything may have been edited by hand.
 
+## Next batch: 19 more products (2026-10-05, waiting for ChatGPT)
+
+The second wave of sets, 41 photos, all SKU-named and held in a hand: 4 bouquets (sunflower duo with a
+daisy, rose or bee; three mixed trios) and 9 keychain pairs and sets. They sit under `pending` in
+`tools/catalog/catalog.json`, which the upload script and the money check don't read, so nothing is in the store yet.
+
+Raushan then allowed photos with a Meesho pack badge, as long as the piece is real and the photo is clear (not a
+raw phone shot on a bedsheet): ChatGPT removes the badge with the background. That added 6 products, 10 photos:
+curtain tie-back packs of 2 and 4, an evil eye pair, flower claw clips, flower chain headbands, tricolour clips
+(badge photos, in `to-studio/remove-badge/`) and the white and lavender clips. How "real" was judged: against his
+raw phone photos where one exists, and by whether the same piece shows in two differently styled versions (then
+the neater one is the redraw). The manifest's `held_back` says why each of the rest stays out. The headbands and
+tricolour clips have no cost yet (placeholder prices).
+
+1. `python3 tools/catalog-build.py` copies their photos into `../catalog/<type>/<handle>/` and, flat, into
+   `../catalog/to-studio/`. That folder is the one to hand to ChatGPT.
+2. Save the results under the same file names in `../catalog/studio-depth-batch/` (loose is fine) and run the
+   build again: it files each one in its product folder and drops it from `to-studio/`.
+3. Check them against the originals, move the entries from `pending` to `products`, add the handles to
+   `collection_order`, then `python3 tools/catalog-upload.py products && python3 tools/catalog-upload.py publish`
+   and `npm run check:money`.
+
 ## Kept as shot (18)
 
 - 14 flat-lays on cloth: six bouquets lying down and the hair set.

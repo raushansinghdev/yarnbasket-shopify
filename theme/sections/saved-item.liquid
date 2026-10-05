@@ -4,11 +4,19 @@
   always shows today's price and stock.
   Under the card: Add to cart (one-option products, via cart.js and its pop-up), Choose options, or for sold-out
   pieces "Ask us to make one".
+  The cart's Saved for later and Recently viewed rows use it too (assets/cart-rows.js).
+  The free gift and test products (tag "test-product") give nothing back, so a piece saved or seen before it was
+  taken off sale drops out of every list: the Saved page reads the empty answer as "no longer available".
 {%- endcomment -%}
 {%- liquid
   assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
   assign variant = product.selected_or_first_available_variant
+  assign skip = false
+  if product.tags contains 'free-gift' or product.tags contains 'test-product' or product.id == settings.gift_product.id
+    assign skip = true
+  endif
 -%}
+{%- unless skip -%}
 <li class="saved-item" data-handle="{{ product.handle }}">
   {%- render 'product-card', product: product, sizes: '(min-width: 1280px) 15vw, (min-width: 990px) 20vw, (min-width: 768px) 28vw, 45vw', compact: true -%}
   <div class="saved-item__actions">
@@ -35,6 +43,7 @@
     {%- endif -%}
   </div>
 </li>
+{%- endunless -%}
 
 {% stylesheet %}
   .saved-item { display: grid; grid-template-rows: 1fr auto; gap: var(--space-3); min-width: 0; }

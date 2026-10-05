@@ -84,7 +84,7 @@
           {%- else -%}
             {%- for product in r.products -%}
               {%- comment -%} The free gift isn't something to shop (snippets/gift-skip). {%- endcomment -%}
-              {%- if product.tags contains 'free-gift' or product.id == settings.gift_product.id -%}{%- continue -%}{%- endif -%}
+              {%- if product.tags contains 'free-gift' or product.tags contains 'test-product' or product.id == settings.gift_product.id -%}{%- continue -%}{%- endif -%}
               {%- render 'search-result', product: product, terms: terms -%}
             {%- endfor -%}
           {%- endif -%}

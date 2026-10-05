@@ -23,6 +23,15 @@
   if product.tags contains 'free-gift' or product.id == settings.gift_product.id
     assign is_gift = true
   endif
+  comment
+    A test product (tag "test-product") can't be bought on the published theme either. On a development theme it
+    keeps its buy box, because tools/check.mjs tests the product page on them.
+  endcomment
+  assign is_test = false
+  if product.tags contains 'test-product' and theme.role == 'main'
+    assign is_gift = true
+    assign is_test = true
+  endif
 
   comment
     Where this piece lives: the collection the shopper came through, or its first craft collection.
@@ -129,7 +138,7 @@
 
     {%- if is_gift -%}
       <div class="pdp__gift">
-        <p>{{ 'products.gift_only' | t }}</p>
+        <p>{%- if is_test -%}{{ 'products.not_for_sale' | t }}{%- else -%}{{ 'products.gift_only' | t }}{%- endif -%}</p>
         <a class="btn" href="{{ settings.shop_all_collection.url | default: routes.all_products_collection_url }}">{{ 'products.gift_shop' | t }}</a>
       </div>
     {%- else -%}

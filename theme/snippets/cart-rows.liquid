@@ -1,6 +1,7 @@
 {%- doc -%}
   The three swipe rows at the end of the cart, the same in the drawer and on /cart (docs/cart-plan.md, "One cart"):
   Saved for later, Little extras ("You may also like" once every reward is earned) and Recently viewed.
+  Every card has a button (Add, or Choose for a piece with options), white like the quantity stepper above.
   Empty shells: assets/cart-rows.js fills them and hides a row with nothing to show. No piece shows twice, and
   none that is already in the cart. Without JavaScript nothing shows and the cart ends after the price details.
   The suggestions are based on the first piece in the cart that was chosen (the free gift sits first once it's
@@ -63,6 +64,8 @@
   .cart-row .extra { grid-template-rows: auto auto 1fr auto; }
   .cart-row .extra__title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400; font-size: .9375rem; }
   .cart-row .extra .price { font-size: 1rem; font-weight: 600; color: var(--color-heading); }
-  .cart-row .extra__btn { background: transparent; }
+  /* One button look in the cart: white with the stepper's border (snippets/quantity). */
+  .cart-row .extra__btn, .cart-row .saved-item__btn { --btn-line: color-mix(in srgb, var(--cocoa) 55%, transparent); border-color: color-mix(in srgb, var(--cocoa) 55%, transparent); background: var(--white); color: var(--color-heading); font-weight: 500; }
+  @media (hover: hover) { .cart-row .extra__btn:hover, .cart-row .saved-item__btn:hover { --btn-line: var(--cocoa); border-color: var(--cocoa); background: var(--blush-soft); } }
   .cart-row [data-row-add][aria-busy="true"] { opacity: .6; }
 {% endstylesheet %}

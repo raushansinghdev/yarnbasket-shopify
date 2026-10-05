@@ -19,6 +19,7 @@ A custom Online Store 2.0 Liquid theme built from Shopify's [Skeleton theme](htt
 - [docs/decisions.md](docs/decisions.md): the decision log
 - [theme/](theme/): the Shopify theme (`cd theme && shopify theme dev --store yarnbasket-in.myshopify.com`)
 - [brand/](brand/): logos, banner, logo animation, social and sticker art, and drawing source from the Yarn Basket brand kit
+- [tools/money-check.mjs](tools/money-check.mjs): `npm run check:money`, with `shopify theme dev` running. Fails if any price shown differs from the store's or from the price rule, if a test product or the free gift is listed anywhere, or if the cart charges something else. Git runs it before a push that touches the theme (once per clone: `git config core.hooksPath .githooks`)
 - [tools/cdp.mjs](tools/cdp.mjs): headless Chrome screenshots and in-page checks for the local preview
 
 When the Shopify store goes live, point the domain's DNS at Shopify, then delete `coming-soon/` and the deploy workflow.

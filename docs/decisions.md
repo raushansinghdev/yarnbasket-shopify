@@ -9,6 +9,61 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **Forward reopens the drawer.** Back closes it, so Forward opens it, without a second history entry. Before, Forward left a closed drawer on an entry marked open, and a later Back press did nothing. New check in section 8.
 - **cart.js stays under 22 KB:** the lines that start the drawer's lazy photos when a pointer heads for the cart moved to `theme.js` (22.2 of 25 KB), unchanged.
 
+## 2026-10-05 (the money check: a wrong price is never acceptable)
+
+- **Raushan's rule:** a wrong price, or anything else that could cost the business money or trust, must not
+  reach a shopper, and must not depend on someone noticing it on a phone.
+- **`npm run check:money`** (`tools/money-check.mjs`, no browser, about a minute, needs `shopify theme dev`).
+  It fails unless all of this holds:
+  1. the store's price of every variant equals the price rule's (`tools/catalog/costs.json`), with no
+     compare-at price the catalogue doesn't declare, and every product for sale is in the catalogue;
+  2. every product page shows the store's price for each variant, and sends Google the same;
+  3. every product card on every page it can reach shows the store's price ("From" and the lowest when prices
+     differ). It follows links two steps from the home page, reads every collection, searches every product's
+     name, and asks for the cards the Saved page, the swipe rows and the cart's suggestions ask for. A new
+     section that lists products is covered without adding it to the check;
+  4. none of those pages links to a product tagged `test-product` or `free-gift`, and those products give no card;
+  5. the cart charges the store's price for every variant and the total is their sum; the money-off steps and
+     free delivery start exactly where Theme settings say (one piece under and one over each);
+  6. no two products for sale share a name, and every variant has its own SKU.
+- **When it runs:** before every `git push` that touches `theme/` or `tools/catalog/` (`.githooks/pre-push`; a
+  failure stops the push; once per clone `git config core.hooksPath .githooks`); as part of the full
+  `npm run check`; after `catalog-upload.py products` or `prices` (the script says so); and against the live
+  theme before the password comes off (docs/launch-checklist.md).
+- **Proved on the day:** with the collection page's skip and the "From" price broken on purpose it failed and
+  named both. First run: 52 variants, 1,686 cards on 248 pages, 10/10.
+- **Two more holes it found, closed:** `/collections/all` and the default "Home page" collection listed test
+  products (the collection page now skips them and the free gift); and a test product's page could still be
+  bought from. On the published theme (`theme.role == 'main'`) it now has no buy box; on a development theme it
+  keeps one, because `tools/check.mjs` tests the product page on test products.
+- **Admin change (store, not in git):** the test product `daisy-crochet-flower-pot` is renamed "Daisy Crochet
+  Flower Pot (test)", with Raushan's go-ahead, so no test product shares a real one's name. Handle, price, tag and
+  photos unchanged; `tools/test-products.csv` carries the new name.
+- **What it cannot see:** Shopify's checkout page (shipping and tax are worked out there; the delivery rate
+  is read from the cart instead), and a price typed by hand in the admin until the next run, which then fails
+  and names the product. A test product can still be put in a cart by someone who writes the request by hand;
+  deleting the test products before launch ends that.
+
+## 2026-10-05 (a test product in the cart's Saved row; buttons in the rows)
+
+- **What Raushan saw:** "Daisy Crochet Flower Pot" in Saved for later at the wrong price. The price was not
+  miscalculated. The store has two products with that name: the real one (`daisy-crochet-pot`, ₹229) and a test
+  product from 2026-10-02 (`daisy-crochet-flower-pot`, ₹599). His browser had saved the test one before the real
+  catalogue went up. The vendor "Yarn Basket Test" kept test products out of collections only.
+- **Test products never show in a list.** Tag `test-product` is skipped wherever the free gift is: the Saved
+  page and the cart's rows (`sections/saved-item`), Recently viewed (`sections/product-tile`), the cart's
+  suggestions (`sections/cart-extras`), search and its suggestions, and everything that uses `snippets/gift-skip`.
+  A test product's own page still opens (six checks in `tools/check.mjs` use them) and is `noindex`. A new list
+  of products must skip the tag too. They are deleted before launch (docs/launch-checklist.md).
+- **Guards:** check 8d saves and views a test product and fails if a cart row shows it. `catalog-upload.py
+  products` stops when two catalogue products share a title and warns when a test product shares a real one's.
+- **Recently viewed in the cart has buttons** (Add, or Choose for a piece with options), replacing "plain cards"
+  in the entry below. A piece the shopper already opened is the likeliest to be added, and the rows beside it had
+  buttons. Sold-out pieces are left out of the row, as in Saved for later.
+- **Buttons in the cart's rows are white with the stepper's border** (Raushan's suggestion). One button look in
+  the cart; on Blush the see-through outline read as a label.
+  Details: docs/cart-plan.md, "As built".
+
 ## 2026-10-05 (one cart: the drawer and `/cart` show the same thing)
 
 - **The drawer and the cart page have the same content in the same order.** The cart icon opens the drawer, so

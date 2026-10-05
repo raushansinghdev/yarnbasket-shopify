@@ -6,6 +6,11 @@ Copies each chosen photo (original size, never upscaled) from the source folder 
 photos, 4:5 occasion cards) into ../catalog/home/ (from the studio version in
 ../catalog/studio-depth-batch/ when there is one), and writes ../catalog/review.html: every
 product with its photos, copy and proposed price, for Raushan to check. The originals are not touched.
+Products under "pending" in the manifest (written up, not uploaded) get their photos too, and every pending
+photo with no studio version yet is also copied flat into ../catalog/to-studio/, the folder to hand to ChatGPT.
+"pending_photos" are extra photos waiting to join a product already in the store: copied and numbered after the
+product's own, sent to to-studio/ the same way, but left out of build.json's product list so an upload ignores them.
+A photo marked "as_shot" is used as it is and never goes to to-studio/.
 Run: python3 tools/catalog-build.py   (needs Pillow)
 """
 import csv, html, json, os, re, shutil, sys
@@ -19,6 +24,8 @@ MANIFEST = os.path.join(ROOT, 'tools/catalog/catalog.json')
 OUT = os.path.normpath(os.path.join(ROOT, '..', 'catalog'))
 # The same photos on the plain studio wall (docs/photo-backdrop-plan.md); used wherever one exists.
 STUDIO = os.path.join(OUT, 'studio-depth-batch')
+# Photos of pending products still waiting for their studio version; emptied and refilled on every run.
+TO_STUDIO = os.path.join(OUT, 'to-studio')
 
 
 def slug(text):
@@ -28,18 +35,22 @@ def slug(text):
 def main():
     data = json.load(open(MANIFEST))
     src_root = os.path.expanduser(data['source'])
-    built = {'products': {}, 'home': {}}
+    built = {'products': {}, 'extra': {}, 'home': {}}
     studio = {}
 
     def pick(src):
         """The studio version of a source photo when there is one, else the source photo."""
         return studio.get(src, os.path.join(src_root, src))
 
-    for p in data['products']:
+    pending = data.get('pending', [])
+    extras = data.get('pending_photos', [])
+    waiting = []
+    for p in data['products'] + pending:
         folder = os.path.join(OUT, slug(p['type']), p['handle'])
         os.makedirs(folder, exist_ok=True)
         counts, files = {}, []
-        for ph in p['photos']:
+        for ph in p['photos'] + [x for x in extras if x['product'] == p['handle']]:
+            extra = 'product' in ph
             v = slug(ph['variant'])
             counts[v] = counts.get(v, 0) + 1
             name = '-'.join(x for x in [p['handle'], v, f"{counts[v]:02d}"] if x) + '.png'
@@ -49,10 +60,23 @@ def main():
                 shutil.copyfile(src, dest)
             else:
                 Image.open(src).convert('RGB').save(dest)
-            files.append({'file': os.path.relpath(dest, OUT), 'alt': ph['alt'], 'variant': ph['variant']})
-            if os.path.exists(os.path.join(STUDIO, files[-1]['file'])):
-                studio[ph['src']] = os.path.join(STUDIO, files[-1]['file'])
+            rel = os.path.relpath(dest, OUT)
+            (built['extra'].setdefault(p['handle'], []) if extra else files).append({'file': rel, 'alt': ph['alt'], 'variant': ph['variant']})
+            # A studio version saved loose in the studio folder under the same name is filed where it belongs.
+            loose = os.path.join(STUDIO, name)
+            if os.path.exists(loose):
+                os.makedirs(os.path.dirname(os.path.join(STUDIO, rel)), exist_ok=True)
+                shutil.move(loose, os.path.join(STUDIO, rel))
+            if os.path.exists(os.path.join(STUDIO, rel)):
+                studio[ph['src']] = os.path.join(STUDIO, rel)
+            elif (p in pending or extra) and not ph.get('as_shot'):
+                waiting.append((dest, 'remove-badge' if p.get('badge') or ph.get('badge') else ''))
         built['products'][p['handle']] = files
+    shutil.rmtree(TO_STUDIO, ignore_errors=True)
+    if waiting:
+        os.makedirs(os.path.join(TO_STUDIO, 'remove-badge'))
+        for dest, sub in waiting:
+            shutil.copyfile(dest, os.path.join(TO_STUDIO, sub, os.path.basename(dest)))
 
     home = os.path.join(OUT, 'home')
     os.makedirs(home, exist_ok=True)
@@ -83,8 +107,11 @@ def main():
         built['home']['cover-' + c['handle']] = 'home/' + name
     json.dump(built, open(os.path.join(OUT, 'build.json'), 'w'), indent=1)
     review(data, built)
-    n = sum(len(v) for v in built['products'].values())
-    print(f"{len(built['products'])} products, {n} photos, {len(built['home'])} home files -> {OUT}")
+    n = sum(len(built['products'][p['handle']]) for p in data['products'])
+    print(f"{len(data['products'])} products, {n} photos, {len(built['home'])} home files -> {OUT}")
+    if pending:
+        print(f"{len(pending)} pending products, {sum(len(built['products'][p['handle']]) for p in pending)} photos, "
+              f"{len(extras)} extra photos for live products, {len(waiting)} waiting for the studio wall -> {TO_STUDIO}")
 
 
 def review(data, built):
@@ -106,19 +133,26 @@ def review(data, built):
     for p in data['products']:
         if p['type'] not in types:
             types.append(p['type'])
+    def card(p):
+        out.append(f"<div class=p><h3>{e(p['title'])}</h3><div class=meta>/{e(p['handle'])} · tags: {e(', '.join(p['tags']))}</div>")
+        out.append('<div class=row>' + ''.join(
+            f"<figure><img loading=lazy src=\"{e(f['file'])}\" alt=\"\"><figcaption>{e(f['variant'] or '')}</figcaption></figure>"
+            for f in built['products'][p['handle']] + built['extra'].get(p['handle'], [])) + '</div>')
+        out.append(p['description'])
+        pack = packaging_of(data, p)
+        out.append(f"<table><tr><th>{e(p['option'] or 'Variant')}</th><th>Cost</th><th>Packaging</th><th>Price</th><th>SKU</th></tr>" + ''.join(
+            f"<tr><td>{e(v['value'] or 'One option')}</td><td>{'₹' + str(cost_of(v)) if cost_of(v) is not None else 'NOT KNOWN'}</td><td>₹{pack}</td>"
+            f"<td>₹{price_of(data, p, v)}{'' if cost_of(v) is not None else ' (placeholder)'}</td><td>{e(v['sku'])}</td></tr>" for v in p['variants']) + '</table>')
+        out.append(f"<div class=meta>Size: {e(p['size'] or 'NOT KNOWN: please tell me the size')}</div></div>")
+
     for t in types:
         out.append(f'<h2>{e(t)}</h2>')
         for p in (x for x in data['products'] if x['type'] == t):
-            out.append(f"<div class=p><h3>{e(p['title'])}</h3><div class=meta>/{e(p['handle'])} · tags: {e(', '.join(p['tags']))}</div>")
-            out.append('<div class=row>' + ''.join(
-                f"<figure><img loading=lazy src=\"{e(f['file'])}\" alt=\"\"><figcaption>{e(f['variant'] or '')}</figcaption></figure>"
-                for f in built['products'][p['handle']]) + '</div>')
-            out.append(p['description'])
-            pack = packaging_of(data, p)
-            out.append(f"<table><tr><th>{e(p['option'] or 'Variant')}</th><th>Cost</th><th>Packaging</th><th>Price</th><th>SKU</th></tr>" + ''.join(
-                f"<tr><td>{e(v['value'] or 'One option')}</td><td>{'₹' + str(cost_of(v)) if cost_of(v) is not None else 'NOT KNOWN'}</td><td>₹{pack}</td>"
-                f"<td>₹{price_of(data, p, v)}{'' if cost_of(v) is not None else ' (placeholder)'}</td><td>{e(v['sku'])}</td></tr>" for v in p['variants']) + '</table>')
-            out.append(f"<div class=meta>Size: {e(p['size'] or 'NOT KNOWN: please tell me the size')}</div></div>")
+            card(p)
+    if data.get('pending'):
+        out.append(f"<h2>Not uploaded yet: waiting for the studio wall ({len(data['pending'])})</h2>")
+        for p in data['pending']:
+            card(p)
     out.append('<h2>Home page</h2><h3>Hero photos, in order</h3><div class=row>' + ''.join(
         f"<figure><img src=\"{e(built['home'][f'hero{i}'])}\" alt=\"\"><figcaption>{e(h['label'])}</figcaption></figure>"
         for i, h in enumerate(data['home']['hero'])) + '</div>')

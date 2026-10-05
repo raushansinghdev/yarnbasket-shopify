@@ -245,6 +245,7 @@
     "ask_message": "Hi Yarn Basket! I’m looking at “{{ title }}” ({{ url }}). Could you make it in a different colour or size?",
     "make_message": "Hi Yarn Basket! “{{ title }}” ({{ url }}) is sold out. Could you make one for me?",
     "gift_only": "This little piece is our free gift: it’s added to your cart by itself when your order qualifies, so it isn’t sold on its own.",
+    "not_for_sale": "This piece isn’t for sale.",
     "gift_shop": "Shop all crochet",
     "chosen": "{{ option }}, {{ price }}",
     "chosen_out": "{{ option }}, sold out",

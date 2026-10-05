@@ -1,11 +1,11 @@
 {%- comment -%}
   One small product card for a row. Never placed on a page: product-rows.js asks for it with the Section Rendering
   API on the product's own URL (/products/<handle>?section_id=product-tile), so the card shows today's price and
-  stock. The free gift and sold-out pieces give nothing back.
+  stock. The free gift, test products and sold-out pieces give nothing back.
 {%- endcomment -%}
 {%- liquid
   assign skip = false
-  if product.available == false or product.tags contains 'free-gift' or product.id == settings.gift_product.id
+  if product.available == false or product.tags contains 'free-gift' or product.tags contains 'test-product' or product.id == settings.gift_product.id
     assign skip = true
   endif
 -%}

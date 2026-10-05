@@ -43,6 +43,8 @@
     class: class
   -}}
 {%- endcapture -%}
+{%- comment -%} Shopify leaves the attribute out when the alt is empty and the image has none of its own; a decorative image needs alt="". {%- endcomment -%}
+{%- unless img contains ' alt=' -%}{%- assign img = img | replace: '<img ', '<img alt="" ' -%}{%- endunless -%}
 {%- if url -%}
   <a href="{{ url }}" class="image-link">{{ img }}</a>
 {%- else -%}
