@@ -4,6 +4,7 @@
 Uses the Shopify CLI's stored login (`shopify store execute`), so it runs as Raushan's app token.
 Safe to rerun: a product or collection that already exists by handle is left alone unless --force.
   python3 tools/catalog-upload.py products [handle ...] [--force]
+  python3 tools/catalog-upload.py names handle [handle ...]   sends only the name and SEO title (photos, stock, prices and the URL untouched)
   python3 tools/catalog-upload.py prices        sets every variant's price, and the free gift's, from costs.json (photos and stock untouched)
   python3 tools/catalog-upload.py collections [--force]
   python3 tools/catalog-upload.py covers        replaces every collection's cover photo, nothing else (needs Pillow)
@@ -224,6 +225,22 @@ def tests():
         print('test vendor:', n['handle'])
 
 
+def names(handles):
+    """A rename only. `products --force` would resend photos and stock, and productSet drops metafields it isn't given."""
+    titles()
+    if not handles:
+        sys.exit('names: give the handles to rename')
+    by_handle = {p['handle']: p for p in DATA['products']}
+    for h in handles:
+        p, pid = by_handle.get(h), existing('product', h)
+        if not p or not pid:
+            sys.exit(f'names: {h} is not in ' + ('the store' if p else 'the catalogue'))
+        d = gql('mutation($input: ProductInput!) { productUpdate(input: $input) { product { handle title } userErrors { field message } } }',
+                {'input': {'id': pid, 'title': p['title'], 'seo': {'title': p['seo_title']}}}, mutate=True)['productUpdate']
+        check(d['userErrors'], h)
+        print('name:', d['product']['handle'], '->', d['product']['title'])
+
+
 def home():
     keys = [k for k in BUILT['home'] if not k.startswith('cover-')]
     alts = {f'hero{i}': h['alt'] for i, h in enumerate(DATA['home']['hero'])}
@@ -263,6 +280,8 @@ if __name__ == '__main__':
         collections(force)
     elif cmd == 'covers':
         covers()
+    elif cmd == 'names':
+        names(args[1:])
     elif cmd == 'tests':
         tests()
     elif cmd == 'home':

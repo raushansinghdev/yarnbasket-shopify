@@ -13,7 +13,7 @@ Bouquets,Single Tulip Crochet Bouquet,Pink,BQ_TLP_Pink_1,1 tulip,50,0,149,
 Bouquets,Single Tulip Crochet Bouquet,Blue,BQ_TLP_Blue_1,1 tulip,50,0,149,
 Bouquets,Single Tulip Crochet Bouquet,Lavender,BQ_TLP_Lvndr_1,1 tulip,50,0,149,
 Bouquets,Single Tulip Crochet Bouquet,White,BQ_TLP_White_1,1 tulip,50,0,149,
-Bouquets,Daisy Crochet Bouquet,,BQ_DSY_1,1 daisy,55,0,169,
+Bouquets,Single Daisy Crochet Bouquet,,BQ_DSY_1,1 daisy,55,0,169,
 Bouquets,Blue Tulip Crochet Bouquet,Daisy,BQ_TLP_Blue_2_DSY_1,2 tulip + 1 daisy,155,0,469,
 Bouquets,Blue Tulip Crochet Bouquet,White tulip,BQ_TLP_Blue_2_White_1,3 tulip,150,0,449,
 Bouquets,Blue Tulip Crochet Bouquet,Yellow rose,BQ_TLP_Blue_2_RS_Yellow_1,2 tulip + 1 rose,155,0,469,
@@ -23,12 +23,12 @@ Bouquets,Pastel Tulip Trio Crochet Bouquet,,BQ_TLP_Pink_2_Lvndr_1,3 tulip,150,0,
 Bouquets,"Sunflower, Daisy & Bee Crochet Bouquet",,BQ_SF_1_DSY_1_BEE_1,1 sunflower + 1 daisy + 1 bee,160,0,479,
 Bouquets,Sunflower & Roses Crochet Bouquet,,BQ_SF_1_RS_Red_1_Yellow_1,1 sunflower + 2 rose,165,0,499,
 Keychains,Sunflower Crochet Keychain,,KC_SF_1,1 flower keychain,30,0,89,
-Keychains,Daisy Crochet Keychain,White,KC_DSY_1,1 flower keychain,30,0,89,
-Keychains,Daisy Crochet Keychain,Blue,KC_DSY_Blue_1,1 flower keychain,30,0,89,
+Keychains,Daisy Flower Crochet Keychain,White,KC_DSY_1,1 flower keychain,30,0,89,
+Keychains,Daisy Flower Crochet Keychain,Blue,KC_DSY_Blue_1,1 flower keychain,30,0,89,
 Keychains,Evil Eye Crochet Keychain,,KC_Evil_1,1 evil eye keychain,35,0,109,
 Keychains,Peacock Feather Crochet Keychain,,KC_Mor_1,1 peacock feather keychain,35,0,109,
-Keychains,Bee Crochet Keychain,,KC_BEE_1,1 bee,50,0,149,
-Keychains,Chick Crochet Keychain,,KC_CHK_1,1 chick keychain,55,0,169,
+Keychains,Bumble Bee Crochet Keychain,,KC_BEE_1,1 bee,50,0,149,
+Keychains,Baby Chick Crochet Keychain,,KC_CHK_1,1 chick keychain,55,0,169,
 Keychains,Sunflower & Daisy Keychain Set,,KC_SF_1_DSY_1,2 flower keychain,60,0,179,
 Keychains,Sunflower & Evil Eye Keychain Set,,KC_SF_1_Evil_1,1 flower keychain + 1 evil eye keychain,65,0,199,
 Keychains,Bee & Chick Keychain Pair,,KC_Chick_1_Bee_1,1 bee + 1 chick keychain,105,0,319,
@@ -70,18 +70,18 @@ Keychains,"Sunflower, Blue Daisy & Evil Eye Keychain Set",,KC_SF_1_DSY_Blue_1_Ev
 Keychains,"Sunflower, Evil Eye & Octopus Keychain Set",,KC_SF_1_Evil_1_Octps_Pink_1,1 flower keychain + 1 evil eye keychain + 1 octopus keychain,100,0,299,
 Home decor,Sunflower Curtain Tie-Back Set,Pack of 2,CTie_SF_2,2 curtain tie-back,100,0,299,
 Home decor,Sunflower Curtain Tie-Back Set,Pack of 4,CTie_SF_4,4 curtain tie-back,200,0,599,
-Keychains,Evil Eye Keychain Pair,,KC_Evil_2,2 evil eye keychain,70,0,209,
+Keychains,Evil Eye Crochet Keychain Pair,,KC_Evil_2,2 evil eye keychain,70,0,209,
 Hair accessories,"Flower Crochet Claw Clips, Pair",,CLAW_ORANGE_WHITE_2,2 claw clip,60,0,179,
 Hair accessories,"Flower Chain Crochet Headbands, Pair",,HB_SF_WHITE_2,2 flower headband,,0,299,placeholder: a part has no cost yet
 Hair accessories,"Tricolour Crochet Hair Clips, Pair",,HC_TRICOLOUR_2,"1 tricolour hair clips, pair",,0,99,placeholder: a part has no cost yet
 Hair accessories,"White & Lavender Flower Hair Clips, Pair",,HC_White_Lvndr_2,"1 hair clips, pair",15,0,49,
-Hair accessories,Heart Crochet Hair Pins,3 pairs,HairPin_Mix_03,"3 heart hair pins, pair",,0,99,placeholder: a part has no cost yet
-Hair accessories,Heart Crochet Hair Pins,5 pairs,HairPin_Mix_05,"5 heart hair pins, pair",,0,149,placeholder: a part has no cost yet
-Hair accessories,Heart Crochet Hair Pins,10 pairs,HairPin_Mix_10,"10 heart hair pins, pair",,0,279,placeholder: a part has no cost yet
+Hair accessories,Little Heart Crochet Hair Pins,3 pairs,HairPin_Mix_03,"3 heart hair pins, pair",,0,99,placeholder: a part has no cost yet
+Hair accessories,Little Heart Crochet Hair Pins,5 pairs,HairPin_Mix_05,"5 heart hair pins, pair",,0,149,placeholder: a part has no cost yet
+Hair accessories,Little Heart Crochet Hair Pins,10 pairs,HairPin_Mix_10,"10 heart hair pins, pair",,0,279,placeholder: a part has no cost yet
 Hair accessories,"Sunflower Crochet Claw Clips, Pair",,CLAW_SF_2,2 claw clip,60,0,179,
 Hair accessories,"Cream Crochet Scrunchies, Pair",,SCRUNCHY_CREAM_2,2 scrunchie,,0,149,placeholder: a part has no cost yet
 Hair accessories,Sunflower Accessory Set,,SF_SET_4,"1 flower headband + 1 flower keychain + 1 hair clips, pair + 1 hair tie",,0,399,placeholder: a part has no cost yet
-Keychains,Bee Keychain Pair,,KC_BEE_2,2 bee,100,0,299,
-Keychains,Chick Keychain Pair,,KC_CHK_2,2 chick keychain,110,0,329,
-Keychains,Octopus Keychain Pair,Pink + pink,KC_OCTPS_Pink_2,2 octopus keychain,70,0,209,
-Keychains,Octopus Keychain Pair,Pink + blue,KC_OCTPS_Pink_1_Blue_1,2 octopus keychain,70,0,209,
+Keychains,Bee Crochet Keychain Pair,,KC_BEE_2,2 bee,100,0,299,
+Keychains,Chick Crochet Keychain Pair,,KC_CHK_2,2 chick keychain,110,0,329,
+Keychains,Octopus Crochet Keychain Pair,Pink + pink,KC_OCTPS_Pink_2,2 octopus keychain,70,0,209,
+Keychains,Octopus Crochet Keychain Pair,Pink + blue,KC_OCTPS_Pink_1_Blue_1,2 octopus keychain,70,0,209,
