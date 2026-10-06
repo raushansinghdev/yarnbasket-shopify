@@ -5,7 +5,7 @@
   - Saved for later: this browser's saved pieces (saved.js) that can be bought now, from sections/saved-item
   - Little extras: sections/cart-extras through Shopify's product recommendations, asked again after every change
   - Recently viewed: the last product pages seen in this browser that can be bought now, from the same section,
-    so each has its button too (Add, or Choose for a piece with options)
+    so each has its button too. All three rows say Add, or Choose for a piece with options
   6 cards a row at most, nothing that is in the cart, no piece twice (the shopper's own rows keep theirs and the
   suggestions give way), and a row with nothing to show is hidden.
   The drawer fetches this file with its first opening (cart.js calls the default export on every opening); the
@@ -48,8 +48,18 @@ const adopt = () => {
 };
 
 /* ---------- Cards ---------- */
+// One wording in the cart: the Saved page's card says "Add to cart" and "Choose options"; here it gets the face
+// Little extras has, "+ Add" or "Choose" (snippets/cart-rows). The hidden ": name" stays for screen readers.
+const face = (li) => {
+  const button = li?.querySelector('.saved-item__btn');
+  const name = button?.querySelector('.visually-hidden');
+  const add = rows?.querySelector('[data-row-face]');
+  if (!name || !add || !rows.dataset.choose) return;
+  button.replaceChildren(button.matches('a') ? rows.dataset.choose : add.content.cloneNode(true), name);
+};
 // A one-tap Add is a plain button: the drawer is one form already, and a form can't sit inside a form.
 const ready = (li) => {
+  face(li);
   const form = li?.querySelector('.saved-item__form, .extra__form');
   const button = form?.querySelector('button');
   if (button) {
@@ -72,7 +82,7 @@ const card = (handle, section, pick) => {
   }
   return cards.get(key);
 };
-// Pieces that can be bought now: Add to cart, or Choose for a piece with options. Saved for later and Recently
+// Pieces that can be bought now: Add, or Choose for a piece with options. Saved for later and Recently
 // viewed share the card, so a piece in both lists is fetched once (tidy() then shows it in one row only).
 const buyCard = (handle) => card(handle, 'saved-item', (doc) => {
   const li = doc.querySelector('.saved-item[data-handle]:not([data-handle=""])');
@@ -169,8 +179,6 @@ scope?.addEventListener('click', (event) => {
   const original = label?.textContent;
   row.querySelector('.cart-row__note')?.remove();
   button.setAttribute('aria-busy', 'true');
-  // theme.js gives the Little extras button its short pulse; the Saved one gets the same here.
-  if (!button.matches('.extra__btn')) navigator.vibrate?.(10);
   enqueue(() => send('cart/add.js', withSections({ items: [{ id: +button.dataset.rowAdd, quantity: 1 }] })))
     .then((res) => {
       // The card says "Added" for a moment, then goes; focus moves to the next card.
@@ -194,6 +202,7 @@ scope?.addEventListener('click', (event) => {
       note.textContent = why(err);
       row.append(note);
       button.removeAttribute('aria-busy');
+      navigator.vibrate?.([30, 60, 30]);
       say(note.textContent);
     });
 });

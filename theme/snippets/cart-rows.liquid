@@ -1,7 +1,9 @@
 {%- doc -%}
   The three swipe rows at the end of the cart, the same in the drawer and on /cart (docs/cart-plan.md, "One cart"):
   Saved for later, Little extras ("You may also like" once every reward is earned) and Recently viewed.
-  Every card has a button (Add, or Choose for a piece with options), white like the quantity stepper above.
+  Every card has a button (Add, or Choose for a piece with options), white like the quantity stepper above. The
+  wording is one too: the Saved page's card says "Add to cart" and "Choose options", and cart-rows.js gives it
+  the face below.
   Empty shells: assets/cart-rows.js fills them and hides a row with nothing to show. No piece shows twice, and
   none that is already in the cart. Without JavaScript nothing shows and the cart ends after the price details.
   The suggestions are based on the first piece in the cart that was chosen (the free gift sits first once it's
@@ -27,7 +29,8 @@
   assign extras_id = 'CartExtrasTitle-' | append: place
   assign recent_id = 'CartRecentTitle-' | append: place
 -%}
-<div class="cart-rows" data-cart-rows data-products="{{ routes.root_url }}products/">
+<div class="cart-rows" data-cart-rows data-products="{{ routes.root_url }}products/" data-choose="{{ 'cart.extras_choose' | t | escape }}">
+  <template data-row-face>{%- render 'icon', icon: 'plus' -%}<span data-add-label>{{ 'cart.extras_add' | t }}</span></template>
   <section class="cart-row" aria-labelledby="{{ saved_id }}" tabindex="-1" data-cart-saved hidden>
     {%- render 'product-row', title: saved_title, id: saved_id, shell: true -%}
     {%- if pages['saved'].url -%}
@@ -67,5 +70,8 @@
   /* One button look in the cart: white with the stepper's border (snippets/quantity). */
   .cart-row .extra__btn, .cart-row .saved-item__btn { --btn-line: color-mix(in srgb, var(--cocoa) 55%, transparent); border-color: color-mix(in srgb, var(--cocoa) 55%, transparent); background: var(--white); color: var(--color-heading); font-weight: 500; }
   @media (hover: hover) { .cart-row .extra__btn:hover, .cart-row .saved-item__btn:hover { --btn-line: var(--cocoa); border-color: var(--cocoa); background: var(--blush-soft); } }
+  /* The Saved page's card, with the Little extras face (sections/cart-extras: .extra__btn). */
+  .cart-row .saved-item__btn { gap: var(--space-1); letter-spacing: 0; white-space: nowrap; }
+  .cart-row .saved-item__btn .icon { width: 18px; height: 18px; color: currentColor; }
   .cart-row [data-row-add][aria-busy="true"] { opacity: .6; }
 {% endstylesheet %}

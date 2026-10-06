@@ -1,0 +1,26 @@
+Generation mode: built-in image_gen with local product and logo references.
+Final framing revision:
+Edit image1 by correcting framing ONLY. Current bouquet nearly fills frame; the required product-label area is obstructed. Keep this SAME photographed three-sunflower bouquet, every flower, stitch, leaf, glossy black-and-gold wrapping, sheer pale-gold ribbon and small round gift tag unchanged. Reference2 is the original Cocoa logo for the tag; use that same icon without redesign.
+ZOOM THE CAMERA OUT by 25%, making the ENTIRE bouquet including tag 25% smaller relative to this square canvas. Place entire bouquet horizontally centered, with its highest gold wrapper tip at y=12% and its lowest gold base edge at y=74%, and side extremes around x=23% and x=77%. It remains fully upright. Do not move only the flowers; scale the whole bouquet equally.
+The entire BOTTOM FIFTH from y=80% to100% must be clear plain softly blurred Oat studio surface, without product, tag, ribbon, shadow detail or any other object. Keep extra gap between base y=74% and blank-bottom start y=80%.
+Retain warm beige-peach wall, soft window-light shadows and shallow depth of field. No props whatsoever, no hand, words, watermark or border. No crop, no product redesign, no new flowers. One product only.
+Output square1:1 PNG, maximum native resolution supported, at least1536x1536 if supported, preferably2048x2048.
+
+Export: theme/assets/yarn-basket-sunflower-square-hero-2048.png
+Native: theme/assets/yarn-basket-sunflower-square-hero-native.png
+Large export resampled with sips; tag logo remains an AI reproduction rather than a pixel-exact copy.
+
+References:
+/Users/raushan2410/Desktop/Yarn Basket/catalog/home/home-hero-1-sunflower-bouquet.png
+/Users/raushan2410/Desktop/Yarn Basket/shopify ui/brand/logo/icon-one-colour.png
+
+Use case: compositing.
+Edit reference image 1 into a square Yarn Basket storefront product hero photograph. Reference 1 is the REAL bouquet to preserve faithfully, not an inspiration to redesign. Reference 2 is the unchanged original Cocoa bouquet-basket logo.
+OUTPUT: PNG, square exact 1:1, high resolution at maximum native size available, target 2048x2048, minimum requested 1536x1536.
+ONLY ONE YARN BASKET PIECE: use this exact three-sunflower crochet bouquet from reference 1, upright and centered at x=50%, full bouquet entirely visible with clear space all around. Preserve exactly the same three flower heads, orange-yellow crochet petals, dark cocoa spiral flower centers, yarn texture and stitch pattern, bright real green crocheted stems and leaves, glossy black wrapper with broad metallic gold edging in its identical fanned construction, narrow wrapped base and translucent pale-gold ribbon. Copy the original flowers, wrapper and leaves faithfully; do not add or remove a flower, change flower petal shapes or recolour the product.
+REMOVE the hand, wrist, bracelet and arm completely, reconstruct only the small product area they occlude. Have the bouquet supported upright naturally at its narrow base on a plain Oat #F5EFE6 studio surface. No visible stand, no vase or added prop.
+FRAMING: entire bouquet and small attached tag fit between y=12% and y=76%, occupying approximately x=23% to x=77%, with generous empty space to both sides and above. Do NOT enlarge to fill the frame. The BOTTOM FIFTH, y=80% to100%, must be calm blank softly blurred surface for later product name and price overlay. No bouquet, wrapping, ribbon, tag or pronounced shadow enters bottom fifth. No text is actually rendered.
+BACKDROP: retain the same plain warm beige-peach studio wall and gentle soft window-light shadows from reference 1, shallow depth of field, realistic warm daylight, clean product photography. Props/surface palette Soft blush #FBF1EE, Blush #F2D4CC, Oat #F5EFE6, Cocoa #6B4F43, optional subtle Rose #E3A69C and Sage #A9B8A0 only as backdrop hues. Preserve actual product colours rather than desaturating them.
+BRANDING: exactly ONE small round kraft-paper gift tag, with cream face, hangs from the existing pale gold ribbon by fine cord, facing camera. It carries only the complete EXACT original reference-2 Cocoa #6B4F43 bouquet basket icon. Transfer that same source icon as printed artwork, preserving all original path geometry, flower petal count, yarn ball, crochet hook, leaf and basket. No redrawing, added line, redesign, text, recolouring, stretch, logo shadow or outline. The circular tag stays circular, small and front-facing, with natural photographic illumination.
+NO OTHER OBJECTS: no diyas, petals, fairy lights, yarn balls, cloth decorations, extra flowers, background props, borders or other logos.
+Avoid illustrations, stylized render, invented products, text, names, prices, greetings, watermarks, hands or people. Photorealistic studio product photo only.

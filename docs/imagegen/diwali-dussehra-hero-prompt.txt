@@ -1,0 +1,17 @@
+Generation mode: built-in image_gen
+
+Use case: ads-marketing.
+Asset type: finished homepage seasonal hero image for Yarn Basket, a handmade crochet gift shop. Generate a brand-new image, not a screenshot or device mockup.
+Primary request: one premium combined Happy Dussehra and Happy Diwali festival greeting banner that replaces the homepage heading and product imagery.
+Format: landscape 3:2, high resolution, ideally 2400 by 1600.
+Scene/backdrop: seamless pale warm blush and cream background, softly lit plaster surface, quiet elegant Indian festive atmosphere.
+Brand palette: pale blush #F2D4CC, cream #FBF6EF, cocoa #6B4F43 for text, sage #A9B8A0 foliage, small saffron and muted gold accents.
+Subject: on the right, an exquisite realistic handmade crochet sunflower and dusty pink rose bouquet with visible yarn stitches, deep chocolate sunflower centers, sage crochet leaves, elegantly wrapped in black paper with thin gold edging, resembling a boutique crochet gift. Near its base, two small realistic terracotta diyas with tiny warm glowing flames, small crochet marigold accents and a soft blush yarn ball. Tiny subtle golden bow-and-arrow motif tucked tastefully near the flowers to evoke Dussehra. A few restrained marigold garland details in corners, never crowded.
+Composition: refined editorial product photography plus crisp designed typography. Left 55% is calm negative space containing very large highly legible dark cocoa type. Right 40% is the crochet bouquet and festive details. Main text and subjects sit within the CENTRAL HORIZONTAL HALF of the canvas, allowing generous quiet space above and below for wide desktop cropping. Keep every important element 8% away from outer edges. Text must be readable when image is displayed at phone width. No thin tiny lettering.
+Text, EXACTLY, on three lines, with no other text:
+"Happy Dussehra"
+"&"
+"Happy Diwali"
+Typography: elegant Cormorant Garamond-style italic serif matching a refined handmade shop, medium weight and excellent contrast, with a small graceful ampersand. Dussehra spelled D-U-S-S-E-H-R-A, Diwali D-I-W-A-L-I. Both greeting lines equally prominent. Do not add brand text because Yarn Basket is already in the app header.
+Style: tactile authentic yarn craftsmanship, beautiful warm product photography, tasteful boutique festival campaign, airy composition, soft sunlit shadows, restrained warm gold glow. Finished flat artwork edge to edge.
+Avoid: website UI, buttons, sale offers, percentages, dates, extra copy, watermark, fake logo, excessive glitter, loud red background, clutter, deity portraits, people, weapons beyond the single subtle decorative bow-and-arrow motif, plasticky flowers, text overlapping products.

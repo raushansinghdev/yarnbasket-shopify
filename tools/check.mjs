@@ -552,6 +552,8 @@ if (want('8d')) {
       rows, lines,
       handles: up.map((li) => li.dataset.handle || (li.querySelector('a')?.getAttribute('href') || '').match(/\/products\/([^/?#]+)/)?.[1] || ''),
       bare: up.filter((li) => !li.querySelector('.saved-item__btn, .extra__btn')).length,
+      // What the buttons say, without the hidden name: one-tap buttons, then links to a piece with options.
+      words: ['button', 'a'].map((el) => [...new Set(up.flatMap((li) => [...li.querySelectorAll(`${el}:is(.saved-item__btn, .extra__btn)`)]).map((b) => { const c = b.cloneNode(true); c.querySelectorAll('.visually-hidden').forEach((s) => s.remove()); return c.textContent.trim(); }))]),
       offWhite: up.flatMap((li) => [...li.querySelectorAll('.saved-item__btn, .extra__btn')]).filter((b) => getComputedStyle(b).backgroundColor !== white).length,
       twice: shown.filter((n, i) => shown.indexOf(n) !== i).length,
       inCart: shown.filter((n) => lines.includes(n)).length,
@@ -606,6 +608,7 @@ if (want('8d')) {
       record(`${tag}: pieces, gift note, price details, then the rows`, rising(first.order) && titles.join() === 'Saved for later,Little extras,Recently viewed', `tops ${first.order.join(' < ')}; rows: ${titles.join(', ')}`);
       record(`${tag}: no piece twice, none from the cart`, first.twice === 0 && first.inCart === 0 && first.rows.every((r) => r.cards.length <= 6) && first.low === 0 && first.nested === 0 && first.peek && !first.sideways, `${first.rows.map((r) => `${r.title} ${r.cards.length}`).join(', ')}; twice: ${first.twice}, in the cart: ${first.inCart}, buttons under 44px: ${first.low}, form in a form: ${first.nested}, rows swipe: ${first.peek}, sideways scroll: ${first.sideways}`);
       record(`${tag}: every card has a button, white like the stepper`, first.bare === 0 && first.offWhite === 0 && first.handles.length > 0, `cards: ${first.handles.length}, without a button: ${first.bare}, buttons not white: ${first.offWhite}`);
+      record(`${tag}: one wording on the buttons`, first.words.every((w) => w.length <= 1) && first.words[0].length === 1, `one tap: ${first.words[0].join(' / ') || 'none'}; with options: ${first.words[1].join(' / ') || 'none'}`);
       record(`${tag}: a saved or viewed test product never shows`, !!test && !first.handles.includes(test), test ? `${test} in the rows: ${first.handles.includes(test)}` : 'the store has no test product to try this with');
       await page.addScriptTag({ content: axe.source });
       const v = await page.evaluate(async (root) => (await window.axe.run(document.querySelector(root), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`), place === 'page' ? 'main' : ROOT.drawer);
@@ -732,11 +735,15 @@ if (want('9')) {
       const v1 = await axeOn();
       record(`Saved page, ${label}: draws the list (axe)`, drawn === handles.length && v1.length === 0, `${drawn}/${handles.length} cards; ${v1.join(', ') || '0 violations'}`);
 
+      // Every vibration the page asks for from here on: the heart and Undo each get the short pulse (theme.js).
+      await page.evaluate(() => { window.__buzz = []; Object.defineProperty(Navigator.prototype, 'vibrate', { configurable: true, value: (p) => { window.__buzz.push(String(p)); return true; } }); });
       await page.locator('[data-saved-grid] [data-save]').first().click();
       await page.waitForTimeout(400);
       const after = await page.locator('[data-saved-grid] .saved-item').count();
       await page.click('.saved-toast [data-toast-action]');
       await page.waitForTimeout(300);
+      const pulses = await page.evaluate(() => window.__buzz.join(' | '));
+      record(`Saved page, ${label}: a pulse for the heart and for Undo`, pulses === '10 | 10', `asked for: ${pulses || 'none'}`);
       const restored = await page.evaluate(() => JSON.parse(localStorage.getItem('yb-saved') || '[]').length);
       record(`Saved page, ${label}: Remove, then Undo`, after === handles.length - 1 && restored === handles.length, `after remove: ${after}, after Undo: ${restored} saved`);
 
@@ -1828,7 +1835,22 @@ if (want('20')) {
     await browser.close();
   }
 
-  // Colours (docs/product-page-plan.md round 2): one product with a Colour option, here with Size too.
+  // Size pills have photos too when each size has its own (docs/decisions.md, 2026-10-06); sizes that share one
+  // photo stay text.
+  {
+    const { browser, page } = await visit('products/sunflower-crochet-bouquet', PHONE);
+    const pills = await page.evaluate(() => {
+      const labels = [...document.querySelectorAll('.options__group .pill__label')];
+      const src = labels.map((l) => l.querySelector('img.pill__photo')?.currentSrc.split('?')[0] || '');
+      return { n: labels.length, withPhoto: src.filter(Boolean).length, different: new Set(src).size, heights: labels.map((l) => Math.round(l.getBoundingClientRect().height)), sideways: document.documentElement.scrollWidth > innerWidth + 1 };
+    });
+    await page.goto(at('products/heart-crochet-hair-pins'), { waitUntil: 'load' });
+    const plain = await page.evaluate(() => ({ n: document.querySelectorAll('.options__group .pill__label').length, photos: document.querySelectorAll('.options__group .pill__photo').length }));
+    record('Product: each size shows its own photo on its pill', pills.n > 1 && pills.withPhoto === pills.n && pills.different === pills.n && pills.heights.every((h) => h === 48) && !pills.sideways, `${pills.withPhoto}/${pills.n} pills with a photo, ${pills.different} different; heights ${pills.heights.join(', ')}px; sideways scroll: ${pills.sideways}`);
+    record('Product: choices that share one photo stay text', plain.n > 1 && plain.photos === 0, `${plain.n} pills, ${plain.photos} photos`);
+    await browser.close();
+  }
+
   {
     const { browser, page, errors } = await visit('products/rose-crochet-bouquet-colour-test', PHONE);
     if (!(await page.locator('.options').count())) record('Product, colours: the colour test product', false, 'products/rose-crochet-bouquet-colour-test is missing');

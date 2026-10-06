@@ -81,7 +81,6 @@ if (cart && form && holders.length) {
     adding = state > 0;
     // Until Shopify has answered, View cart has no tick (snippets/buy-in-cart).
     holders.forEach((h) => h.classList.toggle('is-adding', adding));
-    if (state < 0) navigator.vibrate?.([30, 60, 30]);
     if (adding) {
       waiting = { id: chosen(), n: 1 };
       return paint(1);

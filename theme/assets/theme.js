@@ -494,8 +494,16 @@ addEventListener('pointerover', warm, { passive: true });
 addEventListener('pointerdown', warm, { passive: true });
 addEventListener('focusin', warm);
 
-/* A short pulse under the finger for a tap that changes the cart: Add to cart, the stepper, Undo. Android only;
-   iPhones have no vibration for web pages. The page says and shows the same without it. */
+/* A short pulse under the finger for a tap that commits or changes what the shopper holds: the cart (Add to cart,
+   the stepper, Undo, the gift, Buy again), the saved list (the heart, its Undo, Save all), and Buy it now and
+   Checkout. Moving around the shop is silent. A refusal is a double pulse, sent where it happens (cart.js,
+   cart-rows.js). Android only; iPhones have no vibration for web pages. The page says and shows the same without it. */
+const PULSE = [
+  '[data-step]:not([aria-disabled="true"])', '[data-add]', 'button.extra__btn', 'button.saved-item__btn', '[data-undo]',
+  '[data-gift-remove]', '[data-gift-add]', '[data-buy-again] [type="submit"]',
+  '[data-save]', '[data-toast-action]', '[data-saved-save-all]',
+  '.pdp__now-btn', '[name="checkout"]',
+].join();
 document.addEventListener('click', (event) => {
-  if (event.target.closest?.('[data-step]:not([aria-disabled="true"]), [data-add], .extra__btn, [data-undo]')) navigator.vibrate?.(10);
+  if (event.target.closest?.(PULSE)) navigator.vibrate?.(10);
 });

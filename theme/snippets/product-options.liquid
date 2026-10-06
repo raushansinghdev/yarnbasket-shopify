@@ -3,9 +3,12 @@
   screen readers work with no script. A sold-out choice is struck through and can't be picked. The chosen value
   is written beside the option's name ("Colour: Red"). On phones each option is one row that swipes sideways
   (product.js keeps the chosen pill in view); from 750px the pills wrap.
-  Colours (an option named Colour or Color) show a round swatch cut from that colour's own photo, which works for
-  "Mixed" and two-tone yarn where a flat dot can't. Without a photo: the swatch colour set in the admin, then no
-  swatch. One product with a Colour option, not one listing per colour (docs/decisions.md, 2026-10-04).
+  A choice shows a round swatch cut from its own photo whenever the choices of that option have different photos:
+  colours (which works for "Mixed" and two-tone yarn where a flat dot can't) and also sizes such as "1 sunflower",
+  "2 sunflowers" (docs/decisions.md, 2026-10-06). The same photo on every pill says nothing, so then the pills stay
+  text. With two or more options only Colour (or Color) has photos: another option's photo would show whichever
+  colour is chosen. A colour without a photo: the swatch image or colour set in the admin, then no swatch.
+  One product with a Colour option, not one listing per colour (docs/decisions.md, 2026-10-04).
   - One option: each pill is the variant itself (name="id"), so the form posts the right one without JavaScript.
   - Two or more: the pills are only choices; product.js finds the variant and writes it to the form's hidden id.
     Without JavaScript these are hidden and the form's plain select is used instead.
@@ -26,6 +29,14 @@
       assign is_colour = false
       if option_key == 'colour' or option_key == 'color'
         assign is_colour = true
+      endif
+      # Photos on the pills: only when at least two choices have different ones.
+      assign has_photos = false
+      if single or is_colour
+        assign photo_ids = option.values | map: 'variant' | map: 'featured_media' | compact | map: 'id' | uniq
+        if photo_ids.size > 1
+          assign has_photos = true
+        endif
       endif
     -%}
     <fieldset class="options__group">
@@ -65,17 +76,20 @@
             >
             {%- liquid
               assign swatch_photo = blank
-              if is_colour and value.variant.featured_media
+              if has_photos and value.variant.featured_media
                 assign swatch_photo = value.variant.featured_media.preview_image
               elsif is_colour and value.swatch.image
                 assign swatch_photo = value.swatch.image
               endif
             -%}
-            <label class="pill__label{% if sold_out %} is-out{% endif %}{% if swatch_photo != blank %} pill__label--photo{% endif %}" for="{{ input_id }}">
+            <label class="pill__label{% if sold_out %} is-out{% endif %}{% if swatch_photo != blank or has_photos %} pill__label--photo{% endif %}" for="{{ input_id }}">
               {%- if swatch_photo != blank -%}
                 <img class="pill__photo" src="{{ swatch_photo | image_url: width: 120, height: 120, crop: 'center' }}" alt="" width="40" height="40" loading="lazy">
               {%- elsif value.swatch.color -%}
                 <i class="pill__dot" style="background: {{ value.swatch.color }}"></i>
+              {%- elsif has_photos -%}
+                {%- comment -%} No photo of its own among choices that have one: the same round space, so the names line up. {%- endcomment -%}
+                <i class="pill__photo"></i>
               {%- endif -%}
               {{- value.name -}}
               {%- if sold_out -%}<span class="visually-hidden"> ({{ 'products.sold_out' | t }})</span>{%- endif -%}
@@ -133,7 +147,7 @@
   }
   .pill__label:active { scale: .97; }
   .pill__dot { width: 18px; height: 18px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(78 58 49 / .25); }
-  /* A colour's own photo, round, filling the pill's height: 40px inside the 48px pill. */
+  /* A choice's own photo, round, filling the pill's height: 40px inside the 48px pill. */
   .pill__label--photo { padding-left: 3px; }
   .pill__photo { width: 40px; height: 40px; flex: none; border-radius: 50%; object-fit: cover; background: var(--color-surface); }
   .pill__input:disabled + .pill__label .pill__photo { opacity: .55; }

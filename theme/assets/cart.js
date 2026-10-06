@@ -16,6 +16,8 @@ const S = JSON.parse(document.getElementById('CartStrings')?.textContent || '{}'
 for (const k in S) S[k] = new DOMParser().parseFromString(S[k], 'text/html').body.textContent;
 // What went wrong, in the shop's words: Shopify's own reason, or ours when the request never arrived.
 const why = (err) => (err instanceof Error ? S.offline : err?.description || err?.message) || S.error;
+// A refusal is a double pulse (theme.js has the single one).
+const no = () => navigator.vibrate?.([30, 60, 30]);
 const fmt = (s = '', o = {}) => s.replace(/\[(\w+)\]/g, (_, k) => o[k] ?? '');
 const countLabel = (n) => (n === 1 ? S.one : S.other.replace('99', n));
 const box = () => (page || drawer)?.querySelector('[data-cart-root]');
@@ -161,6 +163,7 @@ const lineNote = (li, msg, error) => {
 const limitNote = (li) => ('capped' in li.dataset ? S.cap : S.max);
 const failed = (key, err) => {
   const msg = why(err);
+  no();
   const tell = () => {
     lineNote(lineOf(key), msg, true);
     say(msg);
@@ -357,7 +360,7 @@ document.addEventListener('submit', (event) => {
     const msg = have ? fmt(S.capHave, { have }) : S.cap;
     toast(msg, null, true);
     say(msg);
-    return;
+    return no();
   }
   button?.setAttribute('aria-busy', 'true');
   if (label) {
@@ -392,6 +395,7 @@ document.addEventListener('submit', (event) => {
     })
     .catch((err) => {
       const msg = why(err);
+      no();
       own?.(-1);
       if (label) label.textContent = original;
       if (error) {

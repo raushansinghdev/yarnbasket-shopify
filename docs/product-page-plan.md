@@ -6,7 +6,7 @@ Status: **built 2026-10-04** (stages P-0 to P-5), on test products. Check §20: 
 
 - **Viewer:** a tap on the empty space around the photo closes it (the photo itself never does). On desktop it has previous / next arrows and the ← → keys; a "2 / 5" count top left; the zoom hint fades after the first zoom and reads "Double-click to zoom" with a mouse.
 - **Save, Share and "look closer" on the photo are bigger:** a 40px circle on phones (was 32), a 44px circle in a 52px button on desktop, with a hover. The heart on product cards is unchanged. The unused worded Save style is gone from `save-button.liquid`.
-- **Colours are one product with a Colour option** (decisions.md). An option named Colour or Color shows a round swatch cut from that colour's own photo; the label names the choice ("Colour: Red", also "Size: 3 roses"); choosing slides to that colour's photo and changes price, stock and link; the sticky bar names the choice ("Yellow · 3 roses").
+- **Colours are one product with a Colour option** (decisions.md). An option named Colour or Color shows a round swatch cut from that colour's own photo; the label names the choice ("Colour: Red", also "Size: 3 roses"); choosing slides to that colour's photo and changes price, stock and link; the sticky bar names the choice ("Yellow · 3 roses"). Since 2026-10-06 any option does this when its choices have different photos (decisions.md, 2026-10-04 entry, "Changed 2026-10-06").
   - **Only the chosen colour's photos are in the gallery** (Raushan: with Red chosen, the yellow and pink photos must not show). Shopify has no photo-per-colour grouping of its own, so the rule is by order: the photo picked on a colour's variant starts that colour's group, and the photos after it, up to the next colour's photo, belong to it. The swipe row, dots, count, thumbnails and the viewer all show that group only. A photo before the first group, or with `#all` in its alt text, shows for every colour (a size chart, the packaging); `#all` is never read out or shown.
   - To set one up: Products → the product → Variants → add the option "Colour" with its values; open each colour's variant and pick its main photo; then drag the product's photos into colour order (all the red ones, then all the yellow ones, each colour starting with the photo picked on its variant).
   - Not grouped: a product where fewer than two variants have a photo. Then every photo shows, as before.
@@ -433,6 +433,8 @@ buy box of PP4.
 - **A short pulse under the finger** (`theme.js`, 10 ms) for Add to cart, the stepper and Undo, on every page;
   a double pulse when an add is refused. Android only: Safari gives web pages no vibration, and the hidden-switch
   trick that works on some iOS versions is undocumented, so it isn't used. Nothing depends on the pulse.
+  Widened on 2026-10-06 to Buy it now, Save, Checkout and every refusal: docs/decisions.md, "Haptics, widened".
+  The double pulse moved from `product-buy.js` to `cart.js`, which sends it on every page.
 - **Spoken quantity fixed** (`cart.js`): a quantity change said "quantity 0" when Shopify re-keyed the line, and
   the subtotal was always blank because its selector no longer existed. It now reads both from the redrawn cart.
 - How: `snippets/buy-in-cart.liquid`, `assets/product-buy.js` (5.5 KB, its own budget of 6), `commit` added to

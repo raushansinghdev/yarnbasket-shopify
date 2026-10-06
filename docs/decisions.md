@@ -2,6 +2,14 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-06 (one wording on the buttons in the cart's rows)
+
+- **What Raushan saw:** "+ Add" in Little extras and "Add to cart" in Recently viewed, in the same drawer. It was a leftover: Saved for later and Recently viewed reuse the Saved page's card (`sections/saved-item`), and its wording came along.
+- **All three rows say "+ Add", and "Choose" for a piece with options.** The shopper is already in the cart, so "to cart" adds nothing, and the short label fits a 143px card on one line. `assets/cart-rows.js` gives the Saved page's card the face from `snippets/cart-rows` (the locale keys Little extras uses), so there is one place to change the wording.
+- **The Saved page keeps "Add to cart" and "Choose options".** There the shopper is not in the cart. `sections/saved-item` is unchanged.
+- **No heart on Little extras.** Hearts stay on Saved for later and Recently viewed, the shopper's own lists. On a suggestion the heart competes with Add, and a saved piece would jump to the Saved row.
+- **Guard:** check 8d fails if the rows' one-tap buttons, or their links, show more than one wording (drawer and page, 360 and 390px).
+
 ## 2026-10-06 (the Diwali banner is live; one campaign banner, not a swipe row)
 
 - **The hero has its first real campaign:** "Dussehra & Diwali gifts", "Free delivery over ₹499", linking to Gift sets, until 2026-11-08 (`templates/index.json`, block `festive`). The photo is ChatGPT's, composed from the real rose trio and daisy pot on the studio wall with diyas; it is in the store's Files as `home-campaign-diwali.png` and its source in `../catalog/hero-campaign/`. ChatGPT redrew the logo on the gift tag, so it is not an exact copy.
@@ -106,6 +114,18 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
   and the request is finished even if the shopper leaves the page.
 - **Haptics: a 10 ms pulse on cart taps, Android only.** iPhones can't vibrate from a web page; no workaround used.
   Details: docs/product-page-plan.md, Round 8.
+- **Haptics, widened (2026-10-06).** Raushan felt the pulse on Add to cart and the stepper but not on Buy it now
+  or Save; that was a gap in the first wording ("cart taps"), not a choice. The rule now: a pulse answers a tap
+  that commits or changes what the shopper holds, a double pulse says no, and moving around the shop is silent.
+  - Short pulse (one list in `theme.js`): Add to cart everywhere (the Saved page's too), the stepper, Undo, the
+    free gift's Remove and Add it back, Buy again, the Save heart on and off, the Saved page's Undo and Save all,
+    Buy it now, Checkout. The Little extras "Choose" link only navigates, so it lost its pulse.
+  - Double pulse (`cart.js`, `cart-rows.js`): every refused add on every page, the most-per-order refusal, and a
+    refused quantity change. Before, only a refused add on the product page had it.
+  - Silent on purpose: menu, drawer and search opening or closing, accordions, links and cards, the gallery and
+    zoom, swipe rows, share, filters and sort, typing, and plus at its maximum.
+  - Left out for now: variant pills (a selection, not a commitment) and a reward being earned (it arrives after
+    Shopify answers, detached from the finger).
 
 ## 2026-10-05 (swipe rows: a clean cut-off item, no edge fade)
 
@@ -245,6 +265,12 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **Colours are one product with a Colour option, never one listing per colour.** One page collects the reviews, sales and ad learning; each colour keeps its own photo, price, stock and `?variant=` link, so an ad for yellow lands on yellow; Meta's catalog reads the colours as one item group. A separate listing only for a genuinely different design that people search for by another name.
 - **The gallery shows only the chosen colour's photos** (Raushan). Grouping is by photo order: a colour's variant photo starts its group; `#all` in a photo's alt text shows it for every colour. How to set it up is in product-page-plan.md, Round 2.
 - **Colour pills show a round swatch cut from that colour's own photo,** because "Mixed" and two-tone yarn can't be a flat dot. Other options stay text.
+  - **Changed 2026-10-06 (Raushan: keep the pills consistent, photo then name).** The rule is no longer the
+    option's name. A pill shows its own photo whenever at least two choices of that option have different photos,
+    so Size ("1 sunflower", "2 sunflowers"), Pack, Set and With get them too. Choices that share one photo, or
+    have none, stay text: the same circle on every pill says nothing. With two or more options only Colour has
+    photos, since another option's photo would show whichever colour is chosen. A choice without a photo among
+    ones that have it keeps an empty circle so the names line up. `snippets/product-options.liquid`.
 - **"You may also like" comes before the reviews** (Raushan): the reviews row is about the shop, not this piece, so other pieces are the more useful thing to see first.
 - **Ratings sit by the name and link down to the reviews** (Raushan, like Amazon and Flipkart). Only real per-product ratings show there; the hand-picked quotes never get stars beside the price.
 - **The viewer closes on a tap outside the photo** (Raushan), and has arrows on desktop.
