@@ -1,0 +1,263 @@
+/*
+ * Test page for the hero on a normal day: /?view=hero-test. The home page's hero without a campaign
+ * (docs/home-hero-v2-plan.md). tools/check.mjs sections 10 and 14 use it. The real home page is index.json.
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "heading": "Handmade crochet gifts, *stitched with love*",
+        "text": "Bouquets, keychains, clips and charms, crocheted by hand.",
+        "button_label": "Shop all gifts",
+        "scheme": "soft",
+        "image": "shopify://shop_images/yarn-basket-sunflower-square-hero-2048.png",
+        "product": "sunflower-crochet-bouquet",
+        "label": "Sunflower bouquet",
+        "align": "centre",
+        "focus_y": 40
+      },
+      "blocks": {},
+      "block_order": []
+    },
+    "shop": {
+      "type": "shop-crafts",
+      "settings": {
+        "eyebrow": "",
+        "heading": "Bestsellers",
+        "favourites_label": "All",
+        "limit": 4,
+        "scheme": "soft",
+        "collection": "bestsellers"
+      },
+      "blocks": {
+        "bouquets": {
+          "type": "craft",
+          "settings": {
+            "title": "Bouquets",
+            "collection": "bouquets",
+            "image": "shopify://shop_images/home-craft-bouquets.jpg"
+          }
+        },
+        "keychains": {
+          "type": "craft",
+          "settings": {
+            "title": "Keychains",
+            "collection": "keychains",
+            "image": "shopify://shop_images/home-craft-keychains.jpg"
+          }
+        },
+        "hair": {
+          "type": "craft",
+          "settings": {
+            "title": "Hair",
+            "collection": "hair-accessories",
+            "image": "shopify://shop_images/home-craft-hair.jpg"
+          }
+        },
+        "charms": {
+          "type": "craft",
+          "settings": {
+            "title": "Bag charms",
+            "collection": "bag-charms",
+            "image": "shopify://shop_images/home-craft-charms.jpg"
+          }
+        },
+        "pots": {
+          "type": "craft",
+          "settings": {
+            "title": "Flower pots",
+            "collection": "flower-pots",
+            "image": "shopify://shop_images/home-craft-pots.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "bouquets",
+        "keychains",
+        "hair",
+        "charms",
+        "pots"
+      ]
+    },
+    "story": {
+      "type": "story",
+      "settings": {
+        "eyebrow": "How it's made",
+        "heading": "One stitch at a time",
+        "text": "<p>Every piece is crocheted by hand with soft yarn, one stitch at a time. No machines, no shortcuts, so no two pieces are ever quite the same.</p>",
+        "link_label": "Our story",
+        "scheme": "soft"
+      }
+    },
+    "occasions": {
+      "type": "occasions",
+      "settings": {
+        "eyebrow": "Gifting",
+        "heading": "A gift for every occasion",
+        "text": "Thoughtful handmade gifts that last, for the people you never forget.",
+        "scheme": "white",
+        "link_label": "All gifts"
+      },
+      "blocks": {
+        "o1": {
+          "type": "occasion",
+          "settings": {
+            "label": "Birthday",
+            "collection": "birthday-gifts",
+            "image": "shopify://shop_images/home-occasion-birthday-gifts.jpg"
+          }
+        },
+        "o2": {
+          "type": "occasion",
+          "settings": {
+            "label": "Anniversary",
+            "collection": "anniversary-gifts",
+            "image": "shopify://shop_images/home-occasion-anniversary-gifts.jpg"
+          }
+        },
+        "o3": {
+          "type": "occasion",
+          "settings": {
+            "label": "Thank you",
+            "collection": "thank-you-gifts",
+            "image": "shopify://shop_images/home-occasion-thank-you-gifts.jpg"
+          }
+        },
+        "o4": {
+          "type": "occasion",
+          "settings": {
+            "label": "For her",
+            "collection": "gifts-for-her",
+            "image": "shopify://shop_images/home-occasion-gifts-for-her.jpg"
+          }
+        },
+        "under": {
+          "type": "price",
+          "settings": {
+            "kicker": "Gifts under",
+            "amount": "₹299",
+            "collection": "gifts-under-299"
+          }
+        }
+      },
+      "block_order": [
+        "o1",
+        "o2",
+        "o3",
+        "o4",
+        "under"
+      ]
+    },
+    "reviews": {
+      "type": "reviews",
+      "settings": {
+        "eyebrow": "Customer love",
+        "heading": "Your words make our day",
+        "scheme": "soft"
+      }
+    },
+    "promise": {
+      "type": "promise",
+      "settings": {
+        "label": "Our promise",
+        "scheme": "soft"
+      },
+      "blocks": {
+        "p1": {
+          "type": "item",
+          "settings": {
+            "icon": "makers",
+            "title": "Handmade in India",
+            "text": "Every piece made by hand, never by machine."
+          }
+        },
+        "p2": {
+          "type": "item",
+          "settings": {
+            "icon": "bouquets",
+            "title": "Made to last",
+            "text": "No wilting, no fading. Made to be kept for years."
+          }
+        },
+        "p3": {
+          "type": "item",
+          "settings": {
+            "icon": "how-to-order",
+            "title": "Packed with love",
+            "text": "Wrapped with care so it arrives just right."
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3"
+      ]
+    },
+    "faq": {
+      "type": "faq",
+      "settings": {
+        "eyebrow": "Good to know",
+        "heading": "Questions, answered",
+        "link_label": "",
+        "scheme": "soft"
+      },
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "Is everything really handmade?",
+            "answer": "<p>Yes. Every bouquet, keychain, hair clip and bag charm is crocheted by hand in India, one stitch at a time.</p>"
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "Will the colours fade?",
+            "answer": "<p>Crochet never wilts and needs no water. Keep your pieces out of strong direct sunlight and their colours stay bright for years.</p>"
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "How do I care for my crochet?",
+            "answer": "<p>Hand wash in cool water. Press gently, don't wring. Dry flat in the shade.</p>"
+          }
+        },
+        "offers": {
+          "type": "offers",
+          "settings": {
+            "question": "Do you offer free shipping or cash on delivery?",
+            "extra": ""
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "offers"
+      ]
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "eyebrow": "Stay in the loop",
+        "heading": "New drops, first",
+        "text": "New designs and restocks, straight to your inbox. No spam, ever.",
+        "scheme": "blush"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "shop",
+    "occasions",
+    "story",
+    "reviews",
+    "promise",
+    "faq",
+    "newsletter"
+  ]
+}

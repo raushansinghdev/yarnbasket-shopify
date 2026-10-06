@@ -1,5 +1,7 @@
 # Home page first screen: plan (v2)
 
+> **Superseded 2026-10-06 for the hero itself** by docs/home-hero-v2-plan.md: the hero is now one full-width photo that dissolves into the page, with a heading, one line and one button. The photo row, the cross-fade and the banner pill described here are gone. Other parts of this plan still stand.
+
 Status: **built 2026-10-02** (see "As built" below). Raushan approved v2 with the recommended options. The trust bar was then made quieter, after a review relayed by the account session (§4 as built).
 
 **Brief, 2026-10-02:**

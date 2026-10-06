@@ -1,6 +1,6 @@
 /*
- * Test page for the hero campaign banner (docs/hero-campaign-plan.md): /?view=campaign-test.
- * A dated Campaign block with no photos, so with Demo content on it shows the demo banner
+ * Test page for a hero campaign (docs/home-hero-v2-plan.md): /?view=campaign-test.
+ * A dated Campaign block with no photos, so with Demo content on it shows the demo photo
  * (assets/demo-campaign-*.webp). tools/check.mjs section 12 uses it. The real home page is index.json.
  */
 {
@@ -8,11 +8,9 @@
     "hero": {
       "type": "hero",
       "settings": {
-        "eyebrow": "",
         "heading": "Handmade crochet gifts, *stitched with love*",
         "text": "Bouquets, keychains, clips and charms, crocheted by hand.",
         "button_label": "Shop all gifts",
-        "link_label": "",
         "scheme": "soft"
       },
       "blocks": {
@@ -22,7 +20,7 @@
             "label": "Diwali gifts, made by hand",
             "line": "Order by 2 Nov for Diwali delivery",
             "link": "shopify://collections/all",
-            "button_label": "",
+            "button_label": "Shop Diwali gifts",
             "show_from": "",
             "show_until": "2099-12-31"
           }

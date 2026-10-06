@@ -3,67 +3,34 @@
     "hero": {
       "type": "hero",
       "settings": {
-        "eyebrow": "",
         "heading": "Handmade crochet gifts, *stitched with love*",
         "text": "Bouquets, keychains, clips and charms, crocheted by hand.",
         "button_label": "Shop all gifts",
-        "link_label": "",
         "scheme": "soft",
-        "image": "shopify://shop_images/home-hero-1-sunflower-bouquet.png",
+        "image": "shopify://shop_images/yarn-basket-sunflower-square-hero-2048.png",
         "product": "sunflower-crochet-bouquet",
-        "label": "Sunflower bouquet"
+        "label": "Sunflower bouquet",
+        "align": "centre",
+        "focus_y": 40
       },
       "blocks": {
-        "rose": {
-          "type": "photo",
-          "settings": {
-            "image": "shopify://shop_images/home-hero-2-rose-trio.png",
-            "product": "rose-trio-crochet-bouquet",
-            "label": "Rose trio"
-          }
-        },
-        "tulips": {
-          "type": "photo",
-          "settings": {
-            "image": "shopify://shop_images/home-hero-3-tulips-daisy.png",
-            "product": "pink-tulips-daisy-crochet-bouquet",
-            "label": "Tulips & daisy"
-          }
-        },
-        "keychains": {
-          "type": "photo",
-          "settings": {
-            "image": "shopify://shop_images/home-hero-4-keychain-set.png",
-            "product": "sunflower-daisy-evil-eye-keychain-set",
-            "label": "Keychain set"
-          }
-        },
-        "pot": {
-          "type": "photo",
-          "settings": {
-            "image": "shopify://shop_images/home-hero-5-daisy-pot.png",
-            "product": "daisy-crochet-pot",
-            "label": "Daisy pot"
-          }
-        },
         "festive": {
           "type": "campaign",
           "settings": {
             "image_phone": "shopify://shop_images/home-campaign-diwali.png",
             "label": "Dussehra & Diwali gifts",
-            "line": "Free delivery over ₹499",
+            "line": "Handmade crochet flowers that never wilt",
             "link": "shopify://collections/gift-sets",
             "show_from": "",
-            "show_until": "2026-11-08"
+            "show_until": "2026-11-08",
+            "button_label": "Shop festive gifts",
+            "product": "rose-trio-crochet-bouquet",
+            "product_label": "Rose trio"
           }
         }
       },
       "block_order": [
-        "festive",
-        "rose",
-        "tulips",
-        "keychains",
-        "pot"
+        "festive"
       ]
     },
     "shop": {

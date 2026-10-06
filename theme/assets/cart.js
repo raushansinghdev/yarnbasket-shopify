@@ -148,9 +148,8 @@ const showQty = (li, n) => {
   const plus = qty.querySelector('.qty__plus');
   qty.querySelector('input').value = n;
   qty.dataset.value = n;
-  minus.setAttribute('aria-label', n <= 1 ? minus.dataset.labelRemove : minus.dataset.labelDecrease);
-  if (n >= (+qty.dataset.max || Infinity)) plus.setAttribute('aria-disabled', 'true');
-  else plus.removeAttribute('aria-disabled');
+  // Minus stops at 1, plus at the limit.
+  [[minus, n <= 1], [plus, n >= (+qty.dataset.max || Infinity)]].forEach(([b, off]) => (off ? b.setAttribute('aria-disabled', 'true') : b.removeAttribute('aria-disabled')));
 };
 const lineNote = (li, msg, error) => {
   const note = li?.querySelector('[data-line-note]');
@@ -239,6 +238,8 @@ const remove = (li) => {
   commit(key, 0, li.dataset.more).then((cart) => cart && say(fmt(S.removedStatus, { title })));
 };
 const restore = (row) => {
+  // One Undo adds the line once, however many taps.
+  if (row.hasAttribute('aria-busy')) return;
   const d = row.dataset;
   const item = { id: +d.variant, quantity: +d.qty || 1 };
   const props = JSON.parse(d.properties || 'null');
@@ -491,7 +492,7 @@ document.addEventListener('click', (event) => {
   if (step) {
     const li = step.closest('.cart-line');
     const key = li.dataset.key;
-    if (step.getAttribute('aria-disabled') === 'true') return lineNote(li, limitNote(li));
+    if (step.getAttribute('aria-disabled') === 'true') return step.dataset.step > 0 && lineNote(li, limitNote(li));
     const n = Math.max(0, (+li.querySelector('.qty__input').value || 0) + +step.dataset.step);
     if (n === 0) return remove(li);
     showQty(li, n);

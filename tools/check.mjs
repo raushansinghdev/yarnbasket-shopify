@@ -38,7 +38,7 @@ const open = async (engine, device, opts = {}) => {
   if (opts.init) await ctx.addInitScript(opts.init);
   const page = await ctx.newPage();
   const errors = themeErrors(page);
-  await page.goto(URL, { waitUntil: 'load' });
+  await page.goto(opts.path ? new globalThis.URL(opts.path, URL).href : URL, { waitUntil: 'load' });
   await page.waitForTimeout(2000);
   return { browser, ctx, page, errors };
 };
@@ -173,10 +173,10 @@ if (want('6')) {
   });
   const r = await page.evaluate(() => ({
     lite: document.documentElement.classList.contains('lite'),
-    flower: getComputedStyle(document.querySelector('.hero__flower')).animationName,
+    arrival: getComputedStyle(document.querySelector('.hero__img')).animationName,
     intro: !!document.getElementById('yb-splash'),
   }));
-  record('Lite mode (data saver)', r.lite && r.flower === 'none' && !r.intro, `lite=${r.lite}, flower animation=${r.flower}, intro shown=${r.intro}`);
+  record('Lite mode (data saver)', r.lite && r.arrival === 'none' && !r.intro, `lite=${r.lite}, hero arrival animation=${r.arrival}, intro shown=${r.intro}`);
   await browser.close();
 }
 
@@ -315,14 +315,32 @@ if (want('8')) {
     await page.waitForFunction(() => document.querySelector('#CartDrawer .cart-line')?.dataset.qty === '1', null, { timeout: 8000 }).catch(() => {});
     record(`Cart, ${label}: + and − update, focus stays put`, two.qty === '2' && two.focus, `after +: ${two.qty}, focus kept on +: ${two.focus}`);
 
-    await page.click('#CartDrawer .qty__minus');
+    // At 1 the minus stops (greyed out, no stock note): the bin beside the stepper is the way out.
+    await page.click('#CartDrawer .qty__minus', { force: true });
+    await page.waitForTimeout(700);
+    const stop = await page.evaluate(() => { const li = document.querySelector('#CartDrawer .cart-line'); return { off: li?.querySelector('.qty__minus').getAttribute('aria-disabled') === 'true', qty: li?.dataset.qty, note: li?.querySelector('[data-line-note]').hidden, minus: getComputedStyle(li.querySelector('.qty__minus .icon--bin')).display === 'none' }; });
+    record(`Cart, ${label}: minus stops at 1`, stop.off && stop.qty === '1' && stop.note && stop.minus, `greyed out: ${stop.off}, quantity after a tap: ${stop.qty}, no note: ${stop.note}, still a minus: ${stop.minus}`);
+
+    // The bin takes the whole piece in one tap, whatever its quantity, and Undo brings all of it back. Three of a
+    // piece can earn the free gift, which comes and goes on its own: wait for the cart to rest, and count the piece.
+    const rest = async () => { await page.waitForTimeout(1500); await page.waitForFunction(() => !document.querySelector('#CartDrawer [data-cart-root].is-busy'), null, { timeout: 10000 }).catch(() => {}); await page.waitForTimeout(1500); };
+    const piece = () => page.evaluate(() => +(document.querySelector('#CartDrawer .cart-line:not(.is-gift)')?.dataset.qty || 0));
+    await page.click('#CartDrawer .cart-line:not(.is-gift) .qty__plus');
+    await page.click('#CartDrawer .cart-line:not(.is-gift) .qty__plus');
+    await rest();
+    const three = await piece();
+    await page.click('#CartDrawer .cart-line__remove');
     const undoFocused = await page.evaluate(() => document.activeElement?.matches('.cart-undo__btn'));
-    await page.waitForFunction(() => document.querySelector('#CartDrawer [data-cart-root]')?.dataset.count === '0', null, { timeout: 8000 }).catch(() => {});
-    const empty = await count();
+    await rest();
+    const empty = await piece();
     await page.click('#CartDrawer .cart-undo__btn');
-    await page.waitForFunction(() => document.querySelector('#CartDrawer [data-cart-root]')?.dataset.count === '1', null, { timeout: 8000 }).catch(() => {});
-    const back = await count();
-    record(`Cart, ${label}: bin removes, Undo brings it back`, undoFocused && empty === 0 && back === 1, `focus on Undo: ${undoFocused}, after remove: ${empty}, after Undo: ${back}`);
+    await rest();
+    const back = await piece();
+    record(`Cart, ${label}: bin removes all of a piece, Undo brings it back`, undoFocused && three === 3 && empty === 0 && back === 3, `focus on Undo: ${undoFocused}, before: ${three}, after the bin: ${empty}, after Undo: ${back}`);
+    // Back to one, for the checks below.
+    await page.click('#CartDrawer .cart-line:not(.is-gift) .qty__minus');
+    await page.click('#CartDrawer .cart-line:not(.is-gift) .qty__minus');
+    await rest();
 
     await page.goBack();
     await page.waitForTimeout(600);
@@ -415,6 +433,13 @@ if (want('8b')) {
           btn: [Math.round(btn.width), Math.round(btn.height)],
           full: [...dr.querySelectorAll('.cart-line')].map((l) => l.getBoundingClientRect()).filter((r) => r.top >= body.top - 1 && r.bottom <= body.bottom + 1).length,
           text: dr.textContent,
+          // Lines with nothing extra to say (no note, the name's block at its reserved two lines) are one height,
+          // and the bin shares the stepper's row.
+          // A long name never makes a line taller: it is cut with "…" inside the two reserved lines (2026-10-06).
+          // Only a discount line or a second line of options may add to the block.
+          tallNames: [...dr.querySelectorAll('.cart-line')].filter((l) => { const info = l.querySelector('.cart-line__info'); return !info.querySelector('.cart-line__deal') && info.querySelectorAll('.cart-line__meta').length <= 1 && info.getBoundingClientRect().height > parseFloat(getComputedStyle(info).minHeight) + 1; }).length,
+          heights: [...new Set([...dr.querySelectorAll('.cart-line')].filter((l) => l.querySelector('[data-line-note]').hidden && l.querySelector('.cart-line__info').getBoundingClientRect().height <= parseFloat(getComputedStyle(l.querySelector('.cart-line__info')).minHeight) + 1).map((l) => Math.round(l.querySelector('.cart-line__body').getBoundingClientRect().height)))],
+          binRow: [...dr.querySelectorAll('.cart-line__remove')].every((b) => { const q = b.parentElement.querySelector('.qty').getBoundingClientRect(); const r = b.getBoundingClientRect(); return Math.abs(r.top - q.top) < 2 && r.left >= q.right && r.width >= 44 && r.height >= 44; }),
           lines: dr.querySelectorAll('.cart-line').length,
           products: new Set([...dr.querySelectorAll('.cart-line')].map((l) => l.dataset.variant + l.dataset.properties)).size,
           state: rewards?.dataset.state || 'off',
@@ -430,6 +455,7 @@ if (want('8b')) {
       record(`Compact cart, ${w}px, ${name}: the bar changes, no pop-up`, t.none && t.bar, `no pop-up: ${t.none}, stepper in the bar: ${t.bar}`);
       record(`Compact cart, ${w}px, ${name}: small pinned bottom`, d.foot <= limit && d.row && d.btn[1] >= 48 && d.btn[0] >= 150 && !d.side, `${d.foot}px (limit ${limit}, rewards: ${d.state}), subtotal beside Checkout: ${d.row}, Checkout ${d.btn[0]}×${d.btn[1]}, sideways scroll: ${d.side}`);
       record(`Compact cart, ${w}px, ${name}: no "Ships in", no ₹0 notes`, !/Ships in/.test(d.text) && !/−₹0\)/.test(d.text), `"Ships in": ${/Ships in/.test(d.text)}, "(−₹0)": ${/−₹0\)/.test(d.text)}`);
+      record(`Compact cart, ${w}px, ${name}: lines are one height, bin beside the stepper`, d.heights.length <= 1 && d.binRow && d.tallNames === 0, `line heights: ${d.heights.join(', ') || 'none'}px, bin in the stepper's row: ${d.binRow}, lines made taller by a name: ${d.tallNames}`);
       record(`Compact cart, ${w}px, ${name}: one product, one line`, d.lines === d.products, `${d.lines} line(s) for ${d.products} product(s)`);
     };
     // The amount beside Checkout: a tap brings the price details into view and moves focus to their heading.
@@ -552,13 +578,27 @@ if (want('8d')) {
       rows, lines,
       handles: up.map((li) => li.dataset.handle || (li.querySelector('a')?.getAttribute('href') || '').match(/\/products\/([^/?#]+)/)?.[1] || ''),
       bare: up.filter((li) => !li.querySelector('.saved-item__btn, .extra__btn')).length,
-      // What the buttons say, without the hidden name: one-tap buttons, then links to a piece with options.
-      words: ['button', 'a'].map((el) => [...new Set(up.flatMap((li) => [...li.querySelectorAll(`${el}:is(.saved-item__btn, .extra__btn)`)]).map((b) => { const c = b.cloneNode(true); c.querySelectorAll('.visually-hidden').forEach((s) => s.remove()); return c.textContent.trim(); }))]),
-      offWhite: up.flatMap((li) => [...li.querySelectorAll('.saved-item__btn, .extra__btn')]).filter((b) => getComputedStyle(b).backgroundColor !== white).length,
+      // What the buttons are called (the "+" has no visible word), by their first word: one-tap buttons, then links
+      // to a piece with options.
+      words: ['button', 'a'].map((el) => [...new Set(up.flatMap((li) => [...li.querySelectorAll(`${el}:is(.saved-item__btn, .extra__btn)`)]).map((b) => (b.getAttribute('aria-label') || b.textContent).trim().split(/[\s:]/)[0]))]),
+      // The white is drawn 36px inside the 48px tap area (snippets/cart-rows: .row-add::before).
+      offWhite: up.flatMap((li) => [...li.querySelectorAll('.saved-item__btn, .extra__btn')]).filter((b) => getComputedStyle(b, '::before').backgroundColor !== white).length,
+      // On the photo's corner: inside the photo (2px of the tap area may hang over its edge), clear of the heart.
+      offPhoto: up.filter((li) => {
+        const b = li.querySelector('.saved-item__btn, .extra__btn')?.getBoundingClientRect();
+        const ph = li.querySelector('.card__media, .extra__media')?.getBoundingClientRect();
+        return !b || !ph || b.left < ph.left - 1 || b.top < ph.top - 1 || b.right > ph.right + 3 || b.bottom > ph.bottom + 3;
+      }).length,
+      onHeart: up.filter((li) => {
+        const b = li.querySelector('.saved-item__btn, .extra__btn')?.getBoundingClientRect();
+        const heart = li.querySelector('.save-btn:not([hidden])')?.getBoundingClientRect();
+        return b && heart && heart.width > 0 && b.top < heart.bottom && b.left < heart.right && b.right > heart.left;
+      }).length,
+      wrapped: [...cart.querySelectorAll('.cart-row:not([hidden]) a:is(.saved-item__btn, .extra__btn)')].filter((b) => b.getClientRects().length > 1 || b.scrollWidth > b.clientWidth + 1).length,
       twice: shown.filter((n, i) => shown.indexOf(n) !== i).length,
       inCart: shown.filter((n) => lines.includes(n)).length,
       order: [y('.cart-line'), y('[data-cart-note]'), y('.cart-details'), ...rows.filter((r) => !r.hidden).map((r) => r.top)],
-      low: [...cart.querySelectorAll('.cart-row:not([hidden]) :is(.saved-item__btn, .extra__btn)')].filter((b) => b.getBoundingClientRect().height < 44).length,
+      low: [...cart.querySelectorAll('.cart-row:not([hidden]) :is(.saved-item__btn, .extra__btn)')].filter((b) => { const r = b.getBoundingClientRect(); return r.height < 48 || r.width < 48; }).length,
       peek: [...cart.querySelectorAll('.cart-row:not([hidden]) [data-row-list]')].every((l) => l.children.length < 3 || l.scrollWidth > l.clientWidth + 8),
       nested: cart.querySelectorAll('form form').length,
       foot: Math.round(cart.querySelector('.cart-drawer__foot')?.getBoundingClientRect().height || 0),
@@ -606,9 +646,10 @@ if (want('8d')) {
       const titles = first.rows.filter((r) => !r.hidden).map((r) => r.title);
       same[place] = `${titles.join()} | ${first.rows.map((r) => r.cards.join()).join(' | ')}`;
       record(`${tag}: pieces, gift note, price details, then the rows`, rising(first.order) && titles.join() === 'Saved for later,Little extras,Recently viewed', `tops ${first.order.join(' < ')}; rows: ${titles.join(', ')}`);
-      record(`${tag}: no piece twice, none from the cart`, first.twice === 0 && first.inCart === 0 && first.rows.every((r) => r.cards.length <= 6) && first.low === 0 && first.nested === 0 && first.peek && !first.sideways, `${first.rows.map((r) => `${r.title} ${r.cards.length}`).join(', ')}; twice: ${first.twice}, in the cart: ${first.inCart}, buttons under 44px: ${first.low}, form in a form: ${first.nested}, rows swipe: ${first.peek}, sideways scroll: ${first.sideways}`);
+      record(`${tag}: no piece twice, none from the cart`, first.twice === 0 && first.inCart === 0 && first.rows.every((r) => r.cards.length <= 6) && first.low === 0 && first.nested === 0 && first.peek && !first.sideways, `${first.rows.map((r) => `${r.title} ${r.cards.length}`).join(', ')}; twice: ${first.twice}, in the cart: ${first.inCart}, buttons under 48px: ${first.low}, form in a form: ${first.nested}, rows swipe: ${first.peek}, sideways scroll: ${first.sideways}`);
       record(`${tag}: every card has a button, white like the stepper`, first.bare === 0 && first.offWhite === 0 && first.handles.length > 0, `cards: ${first.handles.length}, without a button: ${first.bare}, buttons not white: ${first.offWhite}`);
-      record(`${tag}: one wording on the buttons`, first.words.every((w) => w.length <= 1) && first.words[0].length === 1, `one tap: ${first.words[0].join(' / ') || 'none'}; with options: ${first.words[1].join(' / ') || 'none'}`);
+      record(`${tag}: one wording on the buttons`, first.words.every((w) => w.length <= 1) && first.words[0][0] === 'Add' && (first.words[1][0] || 'Choose') === 'Choose', `one tap: ${first.words[0].join(' / ') || 'none'}; with options: ${first.words[1].join(' / ') || 'none'}`);
+      record(`${tag}: the button sits on the photo's corner`, first.offPhoto === 0 && first.onHeart === 0 && first.wrapped === 0, `off the photo: ${first.offPhoto}, on the heart: ${first.onHeart}, "Choose" cut or wrapped: ${first.wrapped}`);
       record(`${tag}: a saved or viewed test product never shows`, !!test && !first.handles.includes(test), test ? `${test} in the rows: ${first.handles.includes(test)}` : 'the store has no test product to try this with');
       await page.addScriptTag({ content: axe.source });
       const v = await page.evaluate(async (root) => (await window.axe.run(document.querySelector(root), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`), place === 'page' ? 'main' : ROOT.drawer);
@@ -637,7 +678,7 @@ if (want('8d')) {
       record(`${tag}: Add in Saved puts it in the cart, focus moves on`, after.count === first.count + 1 && after.lines.includes(added) && after.twice === 0 && after.inCart === 0 && after.focusRow === 'Saved for later' && after.focusIn && (said || '').includes(added) && after.foot <= first.foot + 1, `"${added}" in the cart: ${after.lines.includes(added)}, still in a row: ${after.inCart}, focus on "${after.focus}" in "${after.focusRow}", said: ${(said || '').includes(added)}, pinned bottom ${first.foot} → ${after.foot}px`);
 
       // Taken out again, it comes back to its row.
-      await page.evaluate(([root, name]) => [...document.querySelectorAll(`${root} .cart-line`)].find((l) => l.querySelector('.cart-line__title').textContent.trim() === name).querySelector('.qty__minus').click(), [ROOT[place], added]);
+      await page.evaluate(([root, name]) => [...document.querySelectorAll(`${root} .cart-line`)].find((l) => l.querySelector('.cart-line__title').textContent.trim() === name).querySelector('.cart-line__remove').click(), [ROOT[place], added]);
       await page.waitForFunction(([root, n]) => +document.querySelector(`${root} [data-cart-root]`).dataset.count === n, [ROOT[place], first.count], { timeout: 10000 }).catch(() => {});
       await page.waitForTimeout(2500);
       const back = await read(page, place);
@@ -671,6 +712,16 @@ if (want('8d')) {
     const dd = await read(page, 'drawer');
     const narrow = await page.evaluate(() => [...document.querySelectorAll('#CartDrawer .cart-row:not([hidden]) [data-row-list]')].every((l) => getComputedStyle(l).overflowX === 'auto' && new Set([...l.children].map((c) => Math.round(c.getBoundingClientRect().top))).size === 1 && l.getBoundingClientRect().right <= innerWidth));
     record('One cart, drawer desktop: swipe rows inside the 440px drawer', narrow && rising(dd.order) && dd.twice === 0 && dd.inCart === 0 && !dd.sideways, `rows swipe on one line: ${narrow}, tops ${dd.order.join(' < ')}, sideways scroll: ${dd.sideways}`);
+    await page.request.post(site('/cart/clear.js'));
+    await browser.close();
+  }
+  // The narrowest phone: the photo is about 110px wide, and "Choose" and the heart still fit on it.
+  if (enough) {
+    const { browser, page } = await open(chromium, phone(320, 640), { reducedMotion: 'reduce', init: seeded });
+    await fresh(page);
+    await show(page, 'drawer', '[data-cart-recent]:not([hidden])');
+    const s = await read(page, 'drawer');
+    record('One cart, drawer 320px: the button fits on the photo', s.bare === 0 && s.offPhoto === 0 && s.onHeart === 0 && s.wrapped === 0 && s.low === 0 && !s.sideways, `cards: ${s.handles.length}, off the photo: ${s.offPhoto}, on the heart: ${s.onHeart}, "Choose" cut or wrapped: ${s.wrapped}, under 48px: ${s.low}`);
     await page.request.post(site('/cart/clear.js'));
     await browser.close();
   }
@@ -772,46 +823,38 @@ if (want('9')) {
   }
 }
 
-// 10. Home first screen (docs/home-hero-plan.md): on a small Android phone (360 × 780) the craft circles start on the
-//     first screen; the next hero photo peeks in and has loaded; one way in (decisions.md 2026-10-03, hero button): on
-//     phones with a photo row the photos are the way in, no button, and the row ends in a "See all" card ≥48px (with a
-//     single photo, the button: a text link on a Blush hero); on desktop a solid pill button; every photo link has a
-//     name; the trust line is plain text, not a tab stop; no sideways scroll from 320 to 412 wide. A calmer first
-//     screen (docs/home-calm-plan.md): on phones with a photo row the hero description is hidden, and Bestsellers ends
-//     in one solid button, centred, phone and desktop.
+// 10. Home first screen (docs/home-hero-v2-plan.md): the hero is one photo the full width of the screen with the
+//     heading, one line and one solid button (≥48px) over its dissolving edge. On a small Android phone (360 × 780)
+//     the button and the craft circles are on the first screen; the photo's tap link is hidden from keyboards and
+//     screen readers (the button is the one way in) and the price label is a link with a name; the trust line is
+//     plain text, not a tab stop; no sideways scroll from 320 to 430 wide; Bestsellers ends in one solid button,
+//     centred, phone and desktop. On desktop the hero is a band no taller than 560px with Bestsellers below it.
 if (want('10')) {
   const phone = { viewport: { width: 360, height: 780 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
   for (const [label, engine] of QUICK ? [['Chrome', chromium]] : [['Chrome', chromium], ['Safari', webkit]]) {
     const { browser, page, errors } = await open(engine, phone, { reducedMotion: 'reduce' });
     const r = await page.evaluate(() => {
-      const slides = [...document.querySelectorAll('.hero__slide')];
-      const second = slides[1]?.getBoundingClientRect();
-      const img2 = slides[1]?.querySelector('img');
       const cta = document.querySelector('.hero__cta');
       const bar = document.querySelector('.announce');
+      const photo = document.querySelector('.hero__photo');
+      const box = photo?.getBoundingClientRect();
       return {
         crafts: Math.round(document.querySelector('.shop__crafts')?.getBoundingClientRect().top ?? 9999),
-        peeks: !!second && second.left < innerWidth && second.right > innerWidth,
-        loaded: !!img2 && img2.complete && img2.naturalWidth > 0,
-        row: !!document.querySelector('[data-hero-slides]'),
-        textHidden: !document.querySelector('.hero__text') || document.querySelector('.hero__text').getClientRects().length === 0,
+        photo: box ? { left: Math.round(box.left), w: Math.round(box.width), vw: innerWidth, hidden: photo.tabIndex === -1 && photo.getAttribute('aria-hidden') === 'true' } : null,
         shelf: (() => { const a = document.querySelector('[data-shop-crafts] .shop__panel:not([hidden]) .shop__all'); if (!a) return null; const r = a.getBoundingClientRect(); return { centred: Math.abs(r.left + r.width / 2 - innerWidth / 2) <= 2, solid: getComputedStyle(a).backgroundColor !== 'rgba(0, 0, 0, 0)' && !getComputedStyle(a).backgroundColor.includes('/ 0.'), h: Math.round(r.height) }; })(),
-        ctaShown: !!cta && cta.getClientRects().length > 0,
-        all: (() => { const a = document.querySelector('.hero__all'); return a && a.getClientRects().length ? { h: Math.round(a.getBoundingClientRect().height), name: a.textContent.trim(), last: a === a.parentElement.lastElementChild } : null; })(),
+        ways: document.querySelectorAll('.hero__copy a').length,
+        ctaSolid: !!cta && getComputedStyle(cta).backgroundColor !== 'rgba(0, 0, 0, 0)',
         ctaH: Math.round(cta?.getBoundingClientRect().height ?? 0),
-        // Without a row: a solid pill, or a text link on a Blush hero.
-        shape: cta ? ((getComputedStyle(cta).backgroundColor === 'rgba(0, 0, 0, 0)') === !!cta.closest('.hero.scheme-blush')) : false,
-        unnamed: [...document.querySelectorAll('.hero__link')].filter((a) => !a.textContent.trim() && !a.querySelector('img[alt]:not([alt=""])')).length,
+        ctaBottom: Math.round(cta?.getBoundingClientRect().bottom ?? 9999),
+        unnamed: [...document.querySelectorAll('.hero a:not([aria-hidden="true"])')].filter((a) => !a.textContent.trim()).length,
         bar: bar ? { arrows: bar.querySelectorAll('.announce__btn').length, tab: bar.querySelector('[data-announce-track]').tabIndex } : null,
       };
     });
     record(`Home, ${label} 360 × 780: craft circles on the first screen`, r.crafts < 780, `circles start at ${r.crafts}px`);
-    record(`Home, ${label}: next hero photo peeks in, loaded`, r.peeks && r.loaded, `peeks: ${r.peeks}, loaded: ${r.loaded}`);
-    if (r.row) record(`Home, ${label}: calm first screen, no description on phones`, r.textHidden, `description hidden: ${r.textHidden}`);
+    record(`Home, ${label}: hero photo runs edge to edge`, !!r.photo && r.photo.left === 0 && r.photo.w === r.photo.vw && r.photo.hidden, r.photo ? `left ${r.photo.left}px, ${r.photo.w} of ${r.photo.vw}px, tap link hidden from keyboards: ${r.photo.hidden}` : 'no photo');
     record(`Home, ${label}: Bestsellers ends in one solid, centred button`, !!r.shelf && r.shelf.centred && r.shelf.solid && r.shelf.h >= 48, r.shelf ? `centred: ${r.shelf.centred}, solid: ${r.shelf.solid}, ${r.shelf.h}px` : 'missing');
-    if (r.row) record(`Home, ${label}: way in is the photo row, ending in "See all"`, !r.ctaShown && !!r.all && r.all.h >= 48 && r.all.last && !!r.all.name, `button shown: ${r.ctaShown}, end card: ${r.all ? `"${r.all.name}", ${r.all.h}px, last: ${r.all.last}` : 'missing'}`);
-    else record(`Home, ${label}: one way in, ≥48px, the right shape`, r.ctaShown && r.ctaH >= 48 && r.shape, `${r.ctaH}px, pill or link as expected: ${r.shape}`);
-    record(`Home, ${label}: every hero photo link has a name`, r.unnamed === 0, `${r.unnamed} unnamed`);
+    record(`Home, ${label}: one way in, a solid button ≥48px on the first screen`, r.ways === 1 && r.ctaSolid && r.ctaH >= 48 && r.ctaBottom <= 780, `${r.ways} link(s), solid: ${r.ctaSolid}, ${r.ctaH}px, ends at ${r.ctaBottom}px`);
+    record(`Home, ${label}: every hero link has a name`, r.unnamed === 0, `${r.unnamed} unnamed`);
     if (r.bar) record(`Home, ${label}: trust line is plain text`, r.bar.arrows === 0 && r.bar.tab === -1, `${r.bar.arrows} arrows, tabIndex ${r.bar.tab}`);
     // Swipe rows (docs/decisions.md, 2026-10-05): the only sign to swipe is the next item cut off by the screen edge,
     // so on every phone width each row that overflows shows about a fifth to three quarters of that item.
@@ -838,19 +881,11 @@ if (want('10')) {
   const d = await page.evaluate(() => {
     const cta = document.querySelector('.hero__cta');
     const all = document.querySelector('[data-shop-crafts] .shop__panel:not([hidden]) .shop__all')?.getBoundingClientRect();
-    const text = document.querySelector('.hero__text');
-    // While a campaign banner is live it replaces the whole hero on desktop: the banner is the one way in, its words on the pill.
-    const banner = document.querySelector('.hero--banner .hero__banner-link');
-    return { pill: !!cta && getComputedStyle(cta).backgroundColor !== 'rgba(0, 0, 0, 0)', h: Math.round(cta?.getBoundingClientRect().height ?? 0), ways: document.querySelectorAll('.hero__actions a').length, shelfCentred: !!all && Math.abs(all.left + all.width / 2 - innerWidth / 2) <= 2, text: !!text && getComputedStyle(text).display !== 'none',
-      banner: !!banner, bannerWays: document.querySelectorAll('.hero--banner .hero__grid a').length - document.querySelectorAll('.hero--banner .hero__visual a').length, bannerPill: !!banner?.querySelector('.hero__pill-title')?.textContent.trim(), bannerH: Math.round(banner?.getBoundingClientRect().height ?? 0) };
+    return { pill: !!cta && getComputedStyle(cta).backgroundColor !== 'rgba(0, 0, 0, 0)', h: Math.round(cta?.getBoundingClientRect().height ?? 0), ways: document.querySelectorAll('.hero__copy a').length, shelfCentred: !!all && Math.abs(all.left + all.width / 2 - innerWidth / 2) <= 2,
+      band: Math.round(document.querySelector('.hero__stage')?.getBoundingClientRect().height ?? 9999), shopTop: Math.round(document.querySelector('[data-shop-crafts] .section-head')?.getBoundingClientRect().top ?? 9999), vh: innerHeight };
   });
-  if (d.banner) {
-    record('Home, desktop: one way in, the campaign banner', d.bannerWays === 1 && d.bannerPill && d.bannerH >= 48, `${d.bannerWays} link(s), words on the pill: ${d.bannerPill}, ${d.bannerH}px`);
-    record('Home, desktop: Bestsellers button centred', d.shelfCentred, `button centred: ${d.shelfCentred}`);
-  } else {
-    record('Home, desktop: one way in, a pill button', d.pill && d.ways === 1 && d.h >= 48, `${d.ways} link(s), pill: ${d.pill}, ${d.h}px`);
-    record('Home, desktop: description shown, Bestsellers button centred', d.text && d.shelfCentred, `description: ${d.text}, button centred: ${d.shelfCentred}`);
-  }
+  record('Home, desktop: one way in, a pill button', d.pill && d.ways === 1 && d.h >= 48, `${d.ways} link(s), pill: ${d.pill}, ${d.h}px`);
+  record('Home, desktop: hero band ≤560px, Bestsellers on the first screen, its button centred', d.band <= 560 && d.shopTop < d.vh && d.shelfCentred, `band ${d.band}px, Bestsellers at ${d.shopTop}px of ${d.vh}, button centred: ${d.shelfCentred}`);
   await browser.close();
 }
 
@@ -936,17 +971,16 @@ if (want('11')) {
   await browser.close();
 }
 
-// 12. Home media (docs/home-media-plan.md): hero photos are square on phones and desktop. The "Made by hand" video
+// 12. Home media (docs/home-media-plan.md): the "Made by hand" video
 //     downloads nothing until the section is near, plays muted while it's in view, pauses on the button and when
 //     scrolled away, and never starts by itself with reduced motion or data saver (nothing is even fetched).
-//     Campaign cards are tested by hand: they need a dated block and Files images (home-media-plan "As built").
+//     Then the hero itself (docs/home-hero-v2-plan.md), in a campaign and on a normal day, on its two test pages.
 if (want('12')) {
   const phone = { viewport: { width: 360, height: 780 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
   const media = async (device, opts = {}) => {
     const { browser, page, errors } = await open(chromium, device, { reducedMotion: opts.reduce ? 'reduce' : 'no-preference', init: opts.init });
     const mp4 = [];
     page.on('request', (r) => { if (/\.mp4|\.m3u8/.test(r.url())) mp4.push(r.url()); });
-    const hero = await page.evaluate(() => { const r = document.querySelector('.hero__slide')?.getBoundingClientRect(); return r ? Math.abs(r.width - r.height) <= 1 : null; });
     const early = mp4.length;
     const has = await page.evaluate(() => !!document.querySelector('[data-story-video]'));
     let v = null;
@@ -974,12 +1008,9 @@ if (want('12')) {
       }
     }
     await browser.close();
-    return { hero, early, has, v, fetched: mp4.length, errors };
+    return { early, has, v, fetched: mp4.length, errors };
   };
   const p = await media(phone, { toggle: true, axe: true });
-  record('Media, phone 360: hero photos are square', p.hero === true, `square: ${p.hero}`);
-  const d = await media(devices['Desktop Chrome']);
-  record('Media, desktop: hero frame is square', d.hero === true, `square: ${d.hero}`);
   if (!p.has) console.log('SKIP  Media video checks                                no video in "Made by hand" (and Demo content is off)');
   else {
     record('Media, phone: no video download on first screen', p.early === 0, `${p.early} video request(s) before scrolling`);
@@ -991,49 +1022,87 @@ if (want('12')) {
     record('Media, data saver: video never starts or downloads', !s.v.inView.playing && s.fetched === 0, `playing: ${s.v.inView.playing}, video requests: ${s.fetched}`);
   }
 
-  // Campaign banner (docs/hero-campaign-plan.md), on the test page /?view=campaign-test (a live dummy campaign, shown
-  // with Demo content on): on the shortest phone the product row still fits the first screen, the banner is the LCP
-  // image, the heading stays in the page; on desktop it replaces the hero, the hidden product photos aren't fetched,
-  // and Bestsellers comes up onto the first screen.
-  const banner = async (device) => {
+  // The hero (docs/home-hero-v2-plan.md) on its test pages: /?view=campaign-test (a live dummy campaign, shown with
+  // Demo content on) and /?view=hero-test (a normal day). On the shortest phone the button is on the first screen;
+  // the photo runs edge to edge and is the LCP image; in a campaign the page's own heading stays, unseen, and the
+  // campaign's words show; the words keep 4.5:1 against the darkest spot of the photo behind them (measured from the
+  // pixels, with the words hidden: axe can't judge text over a photo); on desktop the band is ≤560px with Bestsellers
+  // on the first screen. And a campaign past its "Show until" day gives the normal hero back.
+  const lumOf = (r, g, b) => { const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+  const hero = async (path, device) => {
     const browser = await chromium.launch();
-    const ctx = await browser.newContext(device);
+    const ctx = await browser.newContext({ ...device, reducedMotion: 'reduce' });
     await ctx.addInitScript(skipIntro);
     await ctx.addInitScript(() => { window.__lcp = ''; new PerformanceObserver((l) => l.getEntries().forEach((e) => { window.__lcp = e.element?.className || ''; })).observe({ type: 'largest-contentful-paint', buffered: true }); });
     const page = await ctx.newPage();
     const errors = themeErrors(page);
-    await page.goto(new globalThis.URL('/?view=campaign-test', URL).href, { waitUntil: 'load' });
+    await page.goto(new globalThis.URL(path, URL).href, { waitUntil: 'load' });
     await page.waitForTimeout(2000);
     const r = await page.evaluate(() => {
-      const box = document.querySelector('.hero__banner')?.getBoundingClientRect();
-      const slide = document.querySelector('.hero__slide');
+      const box = document.querySelector('.hero__photo')?.getBoundingClientRect();
+      const ink = getComputedStyle(document.querySelector('.hero__title') || document.body).color.match(/[\d.]+/g).slice(0, 3).map(Number);
       return box && {
-        h: Math.round(box.height),
-        rowBottom: slide && getComputedStyle(document.querySelector('.hero__visual')).display !== 'none' ? Math.round(slide.getBoundingClientRect().bottom) : null,
+        w: Math.round(box.width), h: Math.round(box.height), left: Math.round(box.left), vw: innerWidth,
+        band: Math.round(document.querySelector('.hero__stage').getBoundingClientRect().height),
+        ctaBottom: Math.round(document.querySelector('.hero__cta')?.getBoundingClientRect().bottom ?? 9999),
         shopTop: Math.round(document.querySelector('[data-shop-crafts] .section-head')?.getBoundingClientRect().top ?? 9999),
-        h1: document.querySelectorAll('h1').length === 1 && document.querySelector('h1').classList.contains('visually-hidden'),
-        pill: document.querySelector('.hero__pill-title')?.textContent.trim(),
-        lcp: window.__lcp,
-        photos: [...document.querySelectorAll('.hero__visual img')].filter((img) => img.complete && img.naturalWidth > 0).length,
+        h1: document.querySelectorAll('h1').length, h1Hidden: !!document.querySelector('h1.visually-hidden'),
+        words: document.querySelector('.hero__title')?.textContent.replace(/\s+/g, ' ').trim(),
+        lcp: window.__lcp, ink,
+        // The centred label (a normal day with a centred photo): the lead, the yarn lettering and the button share
+        // the screen's centre line, a square photo is shown whole, and the description waits for desktop.
+        label: (() => {
+          if (!document.querySelector('.hero--centred')) return null;
+          const mid = (q) => { const e = document.querySelector(q); if (!e || !e.getClientRects().length) return null; const b = e.getBoundingClientRect(); return Math.round(b.left + b.width / 2 - innerWidth / 2); };
+          const img = document.querySelector('.hero__img');
+          const text = document.querySelector('.hero__text');
+          return { off: [mid('.hero__lead'), mid('.hero .yarn'), mid('.hero__cta')], whole: !!img.naturalWidth && Math.abs(img.naturalWidth / img.naturalHeight - box.width / box.height) < 0.02, text: !!text && !!text.textContent.trim(), textShown: !!text && text.getClientRects().length > 0, yarnTop: Math.round(document.querySelector('.hero .yarn')?.getBoundingClientRect().top ?? 0), photoBottom: Math.round(box.bottom) };
+        })(),
       };
     });
     let v = [];
+    let contrast = null;
     if (r) {
       await page.addScriptTag({ content: axe.source });
       v = await page.evaluate(async () => (await window.axe.run(document.querySelector('.hero'), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+      const boxes = [];
+      for (const q of ['.hero__title', '.hero__text']) { const b = await page.locator(q).first().boundingBox().catch(() => null); if (b) boxes.push(b); }
+      await page.addStyleTag({ content: '.hero__copy, .hero__copy * { opacity: 0 !important; }' });
+      await page.waitForTimeout(200);
+      let darkest = 1;
+      for (const clip of boxes) {
+        const png = (await page.screenshot({ clip })).toString('base64');
+        const px = await page.evaluate(async (b64) => { const i = new Image(); i.src = 'data:image/png;base64,' + b64; await i.decode(); const c = document.createElement('canvas'); c.width = i.width; c.height = i.height; const x = c.getContext('2d'); x.drawImage(i, 0, 0); const d = x.getImageData(0, 0, c.width, c.height).data; let m = [255, 255, 255], sum = 766; for (let p = 0; p < d.length; p += 4) { const s = d[p] * 0.21 + d[p + 1] * 0.72 + d[p + 2] * 0.07; if (s < sum) { sum = s; m = [d[p], d[p + 1], d[p + 2]]; } } return m; }, png);
+        darkest = Math.min(darkest, lumOf(...px));
+      }
+      contrast = +((darkest + 0.05) / (lumOf(...r.ink) + 0.05)).toFixed(1);
     }
     await browser.close();
-    return { r, v, errors };
+    return { r, v, errors, contrast };
   };
   const se = { viewport: { width: 375, height: 548 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
-  const bp = await banner(se);
-  if (!bp.r) console.log('SKIP  Campaign banner checks                              no banner on /?view=campaign-test (Demo content is off)');
-  else {
-    record('Campaign, iPhone SE: banner, product row on screen', bp.r.rowBottom !== null && bp.r.rowBottom <= 548 && bp.r.h1 && !!bp.r.pill, `banner ${bp.r.h}px, row ends at ${bp.r.rowBottom}px (screen 548), hidden h1: ${bp.r.h1}, pill: "${bp.r.pill}"`);
-    record('Campaign, phone: banner is the LCP image (axe)', /hero__banner-img/.test(bp.r.lcp) && bp.v.length === 0 && bp.errors.length === 0, `LCP on "${bp.r.lcp}", ${bp.v.join(', ') || '0 violations'}${bp.errors.length ? `, errors: ${bp.errors[0]}` : ''}`);
-    const bd = await banner({ viewport: { width: 1280, height: 800 } });
-    record('Campaign, desktop 1280: banner replaces the hero', bd.r.rowBottom === null && bd.r.h <= 460 && bd.r.shopTop < 700 && bd.r.photos === 0 && bd.v.length === 0, `banner ${bd.r.h}px, Bestsellers at ${bd.r.shopTop}px, hidden product photos loaded: ${bd.r.photos}, ${bd.v.join(', ') || '0 violations'}`);
+  const small = { viewport: { width: 360, height: 660 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+  for (const [name, path] of [['Campaign', '/?view=campaign-test'], ['Normal day', '/?view=hero-ended-test']]) {
+    const campaign = name === 'Campaign';
+    const bp = await hero(path, se);
+    if (!bp.r) { console.log(`SKIP  Hero checks, ${name.padEnd(38)} no hero on ${path}`); continue; }
+    record(`Hero, ${name}, iPhone SE: edge to edge, button on the first screen`, bp.r.left === 0 && bp.r.w === bp.r.vw && bp.r.ctaBottom <= 548, `photo ${bp.r.w} × ${bp.r.h} of ${bp.r.vw}px wide, button ends at ${bp.r.ctaBottom}px (screen 548)`);
+    record(`Hero, ${name}, phone: one h1, the right words`, bp.r.h1 === 1 && bp.r.h1Hidden === campaign && !!bp.r.words, `${bp.r.h1} h1, hidden: ${bp.r.h1Hidden}, shown: "${bp.r.words}"`);
+    record(`Hero, ${name}, phone: photo is the LCP image (axe)`, /hero__img/.test(bp.r.lcp) && bp.v.length === 0 && bp.errors.length === 0, `LCP on "${bp.r.lcp}", ${bp.v.join(', ') || '0 violations'}${bp.errors.length ? `, errors: ${bp.errors[0]}` : ''}`);
+    const bs = await hero(path, small);
+    if (bs.r.label) {
+      const l = bs.r.label;
+      record(`Hero, ${name}, 360 × 660: centred label, square photo whole, no description`, l.off.every((o) => o !== null && Math.abs(o) <= 2) && l.whole && l.text && !l.textShown, `lead, yarn, button off centre by ${l.off.join(', ')}px; photo whole: ${l.whole}; description in the page: ${l.text}, shown: ${l.textShown}`);
+    }
+    record(`Hero, ${name}, 360 × 660: words ≥4.5:1 on the photo, Bestsellers heading on the first screen`, bs.contrast >= 4.5 && bp.contrast >= 4.5 && bs.r.shopTop < 660, `darkest spot behind the words ${bs.contrast}:1 (iPhone SE ${bp.contrast}:1), Bestsellers at ${bs.r.shopTop}px`);
+    const bd = await hero(path, { viewport: { width: 1280, height: 800 } });
+    record(`Hero, ${name}, desktop 1280: band ≤560px, Bestsellers on the first screen`, bd.r.band <= 560 && bd.r.shopTop < 800 && bd.contrast >= 4.5 && bd.v.length === 0, `band ${bd.r.band}px, Bestsellers at ${bd.r.shopTop}px, words ${bd.contrast}:1, ${bd.v.join(', ') || '0 violations'}`);
   }
+  // The day a campaign ends (/?view=hero-ended-test, "Show until" long past): the normal hero is back by itself.
+  const ended = await open(chromium, small, { reducedMotion: 'reduce', path: '/?view=hero-ended-test' });
+  const e = await ended.page.evaluate(() => ({ h1: document.querySelector('h1')?.textContent.replace(/\s+/g, ' ').trim(), shown: !document.querySelector('h1.visually-hidden'), campaign: !!document.querySelector('.hero__title--plain'), cta: document.querySelector('.hero__cta')?.textContent.trim() }));
+  record('Hero, campaign ended: the normal heading and button are back', e.shown && /stitched with love$/.test(e.h1 || '') && !e.campaign && !!e.cta && !/Diwali/.test(e.cta) && ended.errors.length === 0, `h1 "${e.h1}" shown: ${e.shown}, campaign words: ${e.campaign}, button "${e.cta}"`);
+  await ended.browser.close();
 }
 
 // 13. Account page (docs/account-hub-plan.md): axe on the signed-out page and on the signed-in demo (made-up orders;
@@ -1151,7 +1220,8 @@ if (want('13')) {
 //     The clip beside it waits for the words. With reduced motion it's simply there. The headings read as plain words.
 if (want('14')) {
   const home = await fetch(URL).then((r) => r.text()).catch(() => '');
-  const hasHero = /class="hero[\s\S]*?class="yarn"/.test(home);
+  const heroPath = '/?view=hero-test';
+  const hasHero = /class="[^"]*hero[\s\S]*?class="yarn"/.test(await fetch(new globalThis.URL(heroPath, URL)).then((r) => r.text()).catch(() => ''));
   const hasStory = home.includes('yarn yarn--play');
   const phone = devices['Pixel 7'];
   const state = (page, sel) => page.evaluate((sel) => {
@@ -1180,7 +1250,7 @@ if (want('14')) {
 
   if (!hasHero) console.log('SKIP  Yarn lettering, hero                              the hero heading isn\'t "*stitched with love*"');
   else {
-    const { browser, page } = await open(chromium, phone, { reducedMotion: 'no-preference' });
+    const { browser, page } = await open(chromium, phone, { reducedMotion: 'no-preference', path: heroPath });
     const s = await state(page, '.hero .yarn, h1 .yarn');
     record('Yarn lettering: hero is still and whole at once', s.shown && s.knot === 1 && !s.writing && !s.written && s.moving === 0 && !(await page.$('h1 .yarn__hook, h1 .yarn__ball')), `strand shown: ${s.shown}, knots: ${s.knot}, still moving: ${s.moving}`);
     record('Yarn lettering: the hero heading reads as words', s.heading.endsWith('stitched with love'), `"${s.heading}"`);
@@ -1478,29 +1548,32 @@ if (want('18')) {
   if (d && d.texts) record('Promise, desktop: one row with the sentences', d.rows === 1 && d.shown === d.texts, `${d.rows} row(s), ${d.shown} of ${d.texts} sentence(s) shown`);
 }
 
-// 19. Compact footer (docs/footer-compact-plan.md): on a 360px phone the footer is at most 400px tall with no short
-//     rule (the row of stitches is the one divider); every link is at least 32px tall; the corner flowers keep 17px
-//     from every word and the basket; no sideways scroll down to 320. A desktop keeps the rule, at most 460px tall.
+// 19. The footer (docs/footer-plan.md): on a 360px phone the Shop and Help lists sit side by side, every list, the
+//     signature and the last lines share one left edge, it is at most 540px tall and every link is at least 32px
+//     tall; no sideways scroll and no link cut off down to 320. A desktop has the signature and the list headings
+//     on one line, at most 440px tall. Payment icons and Help lines beyond seven add their own height to the limits.
 if (want('19')) {
   const measure = async (engine, viewport, phone = true) => {
     const { browser, page } = await open(engine, { viewport, deviceScaleFactor: 2, isMobile: phone, hasTouch: phone }, { reducedMotion: 'reduce' });
     const r = await page.evaluate(() => {
       const f = document.querySelector('.footer');
       if (!f) return null;
-      // The words themselves, not the links' 40px tap boxes.
-      const words = [...f.querySelectorAll('a, p')].flatMap((el) => { const range = document.createRange(); range.selectNodeContents(el); return [...range.getClientRects()]; });
-      words.push(f.querySelector('.footer__mark').getBoundingClientRect());
-      const gaps = [...f.querySelectorAll('.footer__flower')].filter((el) => el.getClientRects().length).map((el) => {
-        const a = el.getBoundingClientRect();
-        return Math.round(Math.min(...words.map((t) => Math.hypot(Math.max(t.left - a.right, a.left - t.right, 0), Math.max(t.top - a.bottom, a.top - t.bottom, 0)))));
-      });
+      const box = (s) => f.querySelector(s)?.getBoundingClientRect();
+      const lists = [...f.querySelectorAll('.footer__list')].map((el) => el.getBoundingClientRect());
+      const heads = [...f.querySelectorAll('.footer__list h2')].map((el) => Math.round(el.getBoundingClientRect().top));
+      const help = f.querySelectorAll('.footer__list--help li').length, shop = f.querySelectorAll('.footer__list--shop li').length;
       return {
         height: Math.round(f.getBoundingClientRect().height),
-        rule: f.querySelector('.footer__rule').getClientRects().length > 0,
         link: Math.min(...[...f.querySelectorAll('a')].map((a) => Math.round(a.getBoundingClientRect().height))),
-        clear: gaps.length ? Math.min(...gaps) : null,
-        // Each wrapped row of help links, a social row and a payment row add height when they are set up.
-        extra: Math.round((f.querySelector('.footer__menus')?.getBoundingClientRect().height ?? 0) - 60) + ['.footer__social', '.footer__payments'].reduce((n, s) => n + (f.querySelector(s) ? Math.round(f.querySelector(s).getBoundingClientRect().height) + 20 : 0), 0),
+        // Shop and Help start on the same line, in two columns.
+        sideBySide: lists.length < 2 || (Math.abs(lists[0].top - lists[1].top) < 2 && lists[1].left > lists[0].right - 1),
+        // The first list, the name's row and the last lines start at the same left edge.
+        edges: [lists[0]?.left, box('.footer__sign')?.left, box('.footer__base')?.left].filter((n) => n !== undefined).map(Math.round),
+        // Desktop: the list headings on one line, beside the signature.
+        headsLevel: heads.length > 0 && Math.max(...heads) - Math.min(...heads) < 2,
+        signBeside: lists.length > 0 && box('.footer__sign').right <= lists[0].left && box('.footer__sign').top < lists[0].bottom,
+        cut: [...f.querySelectorAll('a, h2, p')].filter((el) => el.scrollWidth > el.clientWidth + 1).length,
+        extra: Math.round(f.querySelector('.footer__payments')?.getBoundingClientRect().height ?? 0) + 36 * Math.max(0, help - 7, shop - 7),
         sideways: document.documentElement.scrollWidth > innerWidth + 1,
       };
     });
@@ -1510,15 +1583,16 @@ if (want('19')) {
   for (const [label, engine] of QUICK ? [['Chrome', chromium]] : [['Chrome', chromium], ['Safari', webkit]]) {
     const p = await measure(engine, { width: 360, height: 800 });
     if (!p) { record(`Footer, ${label}`, false, 'no footer on the home page'); continue; }
-    record(`Footer, ${label} 360: compact, one divider`, p.height <= 400 + Math.max(0, p.extra) && !p.rule, `${p.height}px (limit ${400 + Math.max(0, p.extra)}), short rule shown: ${p.rule}`);
+    record(`Footer, ${label} 360: at most 540px`, p.height <= 540 + p.extra, `${p.height}px (limit ${540 + p.extra})`);
+    record(`Footer, ${label} 360: lists side by side, one left edge`, p.sideBySide && new Set(p.edges).size === 1, `side by side: ${p.sideBySide}, left edges ${p.edges.join(', ')}px`);
     record(`Footer, ${label} 360: links at least 32px tall`, p.link >= 32, `smallest ${p.link}px`);
     for (const width of [320, 360, 390]) {
       const s = width === 360 ? p : await measure(engine, { width, height: 800 });
-      record(`Footer, ${label} ${width}: flowers clear of words`, (s.clear === null || s.clear >= 17) && !s.sideways, `nearest ${s.clear}px, sideways scroll: ${s.sideways}`);
+      record(`Footer, ${label} ${width}: nothing cut off`, s.cut === 0 && !s.sideways, `${s.cut} cut off, sideways scroll: ${s.sideways}`);
     }
   }
   const d = await measure(chromium, { width: 1280, height: 800 }, false);
-  if (d) record('Footer, desktop 1280: trimmed, rule kept', d.height <= 460 + Math.max(0, d.extra) && d.rule, `${d.height}px (limit ${460 + Math.max(0, d.extra)}), short rule shown: ${d.rule}`);
+  if (d) record('Footer, desktop 1280: one row, at most 440px', d.height <= 440 + d.extra && d.headsLevel && d.signBeside, `${d.height}px (limit ${440 + d.extra}), headings level: ${d.headsLevel}, signature beside the lists: ${d.signBeside}`);
 }
 
 // 20. The product page (docs/product-page-plan.md): a landing page for ad traffic, so it is measured on a short phone
@@ -2265,6 +2339,79 @@ if (want('21')) {
     await page.waitForTimeout(600);
     const m = await menu(page);
     record('Menu: 200% text', !m.sideways, `anything past the panel's edge: ${m.sideways}`);
+    await browser.close();
+  }
+}
+
+// 22. Level cards (docs/decisions.md, 2026-10-06): in every product list, cards that share a row (or a swipe row) are
+//     one height and their prices sit on one line, whether a name takes one line or two. No name takes more than
+//     two lines, a row of short names carries no empty line, phone grids have 24px between rows, and in the cart
+//     every row's prices are the same distance (30 to 40px) from the next row's heading.
+if (want('22')) {
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const tagged = (p, tag) => [].concat(p.tags).join(',').includes(tag);
+  const products = await fetch(site('/products.json?limit=250')).then((r) => r.json()).then((d) => d.products.filter((p) => p.variants[0].available && !tagged(p, 'free-gift') && !tagged(p, 'test-product')), () => []);
+  const byLength = [...products].sort((x, y) => x.title.length - y.title.length);
+  const collection = await fetch(site('/collections.json')).then((r) => r.json()).then((d) => d.collections.sort((x, y) => y.products_count - x.products_count)[0]?.handle, () => null);
+  const enough = byLength.length >= 8 && collection;
+  if (!enough) console.log('SKIP  Level cards                                    too few products in the store (import tools/test-products.csv)');
+  // Short and long names side by side, so a mixed row is certain.
+  const mixed = enough ? [byLength[0], byLength.at(-1), byLength[1], byLength.at(-2), byLength[2]].map((p) => p.handle) : [];
+  const viewed = enough ? [byLength[5], byLength.at(-4), byLength[6], byLength.at(-5)].map((p) => p.handle) : [];
+  const seeded = `(${(s, v) => { try { if (!localStorage.getItem('yb-check-level')) { localStorage.setItem('yb-check-level', '1'); localStorage.setItem('yb-saved', JSON.stringify(s)); localStorage.setItem('yb-recent-products', JSON.stringify(v)); } } catch {} }})(${JSON.stringify(mixed)}, ${JSON.stringify(viewed)})`;
+  const measure = (root) => {
+    const R = (e) => e.getBoundingClientRect();
+    const scope = document.querySelector(root) || document;
+    const lists = [...scope.querySelectorAll('ul')].filter((u) => u.querySelector(':scope > li :is(.card--compact, .extra__title)') && R(u).width > 0 && R(u).height > 0);
+    const out = { rows: 0, cards: 0, unevenHeight: 0, unevenPrice: 0, over2: 0, holes: 0, gaps: [], sideways: document.documentElement.scrollWidth > innerWidth + 1 };
+    for (const u of lists) {
+      const lis = [...u.children].filter((l) => l.querySelector('.price') && R(l).width > 0);
+      const byTop = new Map();
+      lis.forEach((l) => { const t = Math.round(R(l).top); byTop.set(t, [...(byTop.get(t) || []), l]); });
+      if (byTop.size > 1) out.gaps.push(getComputedStyle(u).rowGap);
+      for (const group of byTop.values()) {
+        const name = (l) => l.querySelector('.card__title, .extra__title');
+        const lines = group.map((l) => Math.round(R(name(l)).height / parseFloat(getComputedStyle(name(l)).lineHeight)));
+        const heights = group.map((l) => R(l).height);
+        const prices = group.map((l) => R(l.querySelector('.price')).top);
+        out.rows++;
+        out.cards += group.length;
+        if (Math.max(...heights) - Math.min(...heights) > 1) out.unevenHeight++;
+        if (Math.max(...prices) - Math.min(...prices) > 1) out.unevenPrice++;
+        out.over2 += lines.filter((n) => n > 2).length;
+        if (Math.max(...lines) === 1 && group.some((l) => R(l.querySelector('.price')).top - R(name(l)).bottom > 10)) out.holes++;
+      }
+    }
+    out.gaps = [...new Set(out.gaps)];
+    return out;
+  };
+  const phone = (w) => ({ viewport: { width: w, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const places = enough ? [['home', '/'], ['collection', `/collections/${collection}`], ['search results', '/search?q=crochet'], ['Saved page', '/pages/saved'], ['product page rows', `/products/${byLength.at(-3).handle}`]] : [];
+  for (const w of enough ? [360, 390] : []) {
+    for (const [name, path] of places) {
+      const { browser, page } = await open(chromium, phone(w), { reducedMotion: 'reduce', path, init: seeded });
+      await scrollWholePage(page);
+      const m = await page.evaluate(measure, 'main');
+      const grid = name === 'product page rows' || m.gaps.every((g) => g === '24px');
+      record(`Level cards, ${name} ${w}px`, m.rows > 0 && m.unevenHeight === 0 && m.unevenPrice === 0 && m.over2 === 0 && m.holes === 0 && grid && !m.sideways, `${m.cards} cards in ${m.rows} rows; uneven height: ${m.unevenHeight}, prices off the line: ${m.unevenPrice}, names over two lines: ${m.over2}, empty lines under short names: ${m.holes}, row gap: ${m.gaps.join(', ') || 'one row'}`);
+      await browser.close();
+    }
+    // The cart's three rows, with short and long names saved and viewed.
+    const { browser, page } = await open(chromium, phone(w), { reducedMotion: 'reduce', init: seeded });
+    await page.request.post(site('/cart/clear.js'));
+    await page.request.post(site('/cart/add.js'), { data: { items: [{ id: byLength[3].variants[0].id, quantity: 1 }] } });
+    await page.goto(site('/'), { waitUntil: 'load' });
+    await page.waitForTimeout(2000);
+    await page.click('.site-header__cart');
+    await page.waitForSelector('#CartDrawer [data-cart-recent]:not([hidden])', { timeout: 10000 }).catch(() => {});
+    await page.waitForTimeout(1500);
+    const m = await page.evaluate(measure, '#CartDrawer');
+    const under = await page.evaluate(() => {
+      const rows = [...document.querySelectorAll('#CartDrawer .cart-row:not([hidden])')];
+      return rows.slice(0, -1).map((r, i) => Math.round(rows[i + 1].querySelector('h2').getBoundingClientRect().top - Math.max(...[...r.querySelectorAll('.price')].map((p) => p.getBoundingClientRect().bottom))));
+    });
+    record(`Level cards, cart rows ${w}px`, m.rows === 3 && m.unevenHeight === 0 && m.unevenPrice === 0 && m.over2 === 0 && under.length > 0 && under.every((g) => g >= 30 && g <= 40) && Math.max(...under) - Math.min(...under) <= 2, `${m.cards} cards in ${m.rows} rows; uneven height: ${m.unevenHeight}, prices off the line: ${m.unevenPrice}, price to the next heading: ${under.join(', ') || 'none'}px`);
+    await page.request.post(site('/cart/clear.js'));
     await browser.close();
   }
 }

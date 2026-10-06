@@ -32,7 +32,7 @@ const inject = () => {
   document.querySelectorAll('.price__compare').forEach((el) => (el.textContent = '₹1,49,999.00'));
   document.querySelectorAll('.card__badge').forEach((el) => (el.textContent = 'Only a few left'));
   document.querySelectorAll('[data-cart-count]').forEach((el) => { el.hidden = false; el.textContent = '99+'; });
-  document.querySelectorAll('.site-header__nav-link, .shop__label, .footer__crafts a').forEach((el) => {
+  document.querySelectorAll('.site-header__nav-link, .shop__label, .footer__list a').forEach((el) => {
     const t = [...el.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
     if (t) t.textContent = t.textContent.trim() + ' and more gifts';
   });

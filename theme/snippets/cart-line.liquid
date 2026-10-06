@@ -1,7 +1,11 @@
 {%- doc -%}
   One line in the cart, shared by the drawer and the cart page (docs/cart-plan.md §4).
-  Photo · name · options · price · quantity stepper. The photo repeats the name link, so it's hidden from screen
-  readers and skipped by Tab; the name is the one link. cart.js keeps the photo element when it refreshes a line
+  Photo · name · options · price · quantity stepper · bin. The photo repeats the name link, so it's hidden from screen
+  readers and skipped by Tab; the name is the one link. The bin removes the piece whatever its quantity (one tap,
+  not one per piece), so the stepper's minus stops at 1. It is a step of −9999: cart.js treats any step that
+  reaches 0 as a remove, with its Undo row. Every line is the same height: the name's block keeps room for two
+  lines (a longer name is cut with "…"; one line of name when its options sit under it), and "₹149 each" sits
+  under the line's price, so a line only grows for a stock note, a discount line or a sale price with "each". cart.js keeps the photo element when it refreshes a line
   (only [data-line-body] is swapped), so photos never flash.
   The free gift (docs/offers-plan.md §5.4) gets a "Free gift" badge, "Free" with its worth struck through, and a
   remove button instead of the stepper, but only while it really is free. If its discount is missing it's an ordinary
@@ -165,10 +169,6 @@
           {%- endif -%}
         {%- endfor -%}
       {%- endunless -%}
-      {%- if qty > 1 -%}
-        {%- assign each = line_price | divided_by: qty | money -%}
-        <p class="cart-line__meta">{{ 'cart.each' | t: price: each }}</p>
-      {%- endif -%}
     </div>
     <p class="cart-line__price">
       {%- if is_gift -%}
@@ -182,7 +182,11 @@
         <span class="visually-hidden">{{ 'products.regular_price' | t }}</span>
         <s>{{ was | money }}</s>
       {%- else -%}
-        {{ line_price | money }}
+        <span>{{ line_price | money }}</span>
+      {%- endif -%}
+      {%- if qty > 1 and is_gift == false -%}
+        {%- assign each = line_price | divided_by: qty | money -%}
+        <span class="cart-line__each">{{ 'cart.each' | t: price: each }}</span>
       {%- endif -%}
     </p>
     <div class="cart-line__qty">
@@ -201,11 +205,14 @@
         endif
         assign qty_name = 'updates[' | append: item.key | append: ']'
         assign qty_id = 'CartQty-' | append: uid
-        render 'quantity', id: qty_id, name: qty_name, value: qty, title: title, max: max, describedby: note_id
+        render 'quantity', id: qty_id, name: qty_name, value: qty, title: title, max: max, describedby: note_id, apart: true
       -%}
       {%- for key in more_keys -%}
         <input type="hidden" name="updates[{{ key }}]" value="0">
       {%- endfor -%}
+      <button type="button" class="cart-line__remove" data-step="-9999" aria-label="{{ 'cart.remove' | t: title: title }}">
+        {%- render 'icon', icon: 'bin' -%}
+      </button>
       {%- endif -%}
     </div>
     <p class="cart-line__note" id="CartLineNote-{{ uid }}" data-line-note {% if note == blank %}hidden{% endif %}>
@@ -216,9 +223,10 @@
 {%- endunless -%}
 
 {% stylesheet %}
-  /* Phone: photo on the left; name and price share the first row; the stepper sits under them (cart-plan §4.1). */
+  /* Phone: photo on the left; name and price share the first row; the stepper and the bin sit under them
+     (cart-plan §4.1). The photo is as tall as two lines of name plus the stepper, so every line ends level. */
   .cart-line {
-    --photo: 88px;
+    --photo: 100px;
     display: grid;
     grid-template-columns: var(--photo) minmax(0, 1fr);
     gap: var(--space-3);
@@ -235,9 +243,10 @@
     column-gap: var(--space-3);
     min-width: 0;
   }
-  .cart-line__info { grid-area: info; display: grid; gap: 2px; align-content: start; }
+  .cart-line__info { grid-area: info; display: grid; gap: 2px; align-content: start; min-height: 2.7rem; }
   .cart-line__title {
     display: -webkit-box;
+    /* Room is kept for two lines, and a longer name ends in "…" (the link still reads the whole name aloud). */
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -251,12 +260,15 @@
     text-decoration: none;
     overflow-wrap: anywhere;
   }
+  /* With its options or the gift's badge the name gets one line, so the block is still two lines tall. */
+  .cart-line__info:has(.cart-line__meta, .cart-line__badge) .cart-line__title { -webkit-line-clamp: 1; }
   @media (hover: hover) { .cart-line__title:hover { text-decoration: underline; text-decoration-color: var(--rose); text-underline-offset: 3px; } }
   .cart-line__meta { font-size: var(--fs-small); line-height: 1.4; color: var(--color-muted); }
   .cart-line__price {
     grid-area: price;
     display: grid;
     justify-items: end;
+    align-content: start;
     font-weight: 500;
     font-size: 1rem;
     line-height: 1.35;
@@ -265,12 +277,37 @@
     white-space: nowrap;
     transition: opacity var(--dur-state) ease;
   }
-  .cart-line__price s { font-weight: 400; font-size: var(--fs-small); color: var(--color-muted); }
-  .cart-line__qty { grid-area: qty; margin-top: var(--space-3); }
+  .cart-line__price :is(s, .cart-line__each) { font-weight: 400; font-size: var(--fs-small); color: var(--color-muted); }
+  /* The bin sits at the far end, away from plus. */
+  .cart-line__qty { grid-area: qty; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-1); margin-top: var(--space-2); }
+  /* A set width for the number: as a flex item the stepper would otherwise take the whole row. */
+  .cart-line .qty { flex: none; grid-template-columns: var(--tap) 2.75rem var(--tap); }
+  .cart-line__remove {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: var(--tap);
+    height: var(--tap);
+    /* The glyph, not its tap area, lines up with the price above. */
+    margin-inline-end: -10px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--color-heading);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur-state) ease, scale var(--dur-press) ease;
+  }
+  .cart-line__remove .icon { width: 20px; height: 20px; }
+  .cart-line__remove:active { scale: .9; }
+  @media (hover: hover) { .cart-line__remove:hover { background: var(--color-surface); } }
+  /* Without JavaScript the bin can't do anything: 0 in the number and Update removes. */
+  @media (scripting: none) { .cart-line__remove { display: none; } }
   .cart-line__note { grid-area: note; margin-top: var(--space-2); font-size: var(--fs-small); color: var(--color-heading); }
   .cart-line__note.is-error { color: #9A3B2E; font-weight: 500; }
   /* The free gift: a small badge over its name, and a plain remove button where the stepper would be. */
-  .cart-line__badge { display: inline-flex; align-items: center; gap: 4px; justify-self: start; margin-bottom: 2px; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--blush); color: var(--cocoa-deep); font-size: .75rem; font-weight: 500; }
+  .cart-line__badge { display: inline-flex; align-items: center; gap: 4px; justify-self: start; padding: 2px 8px; line-height: 1.2; border-radius: var(--radius-pill); background: var(--blush); color: var(--cocoa-deep); font-size: .75rem; font-weight: 500; }
   .cart-line__badge .icon { width: 14px; height: 14px; }
   .cart-line__gift-remove {
     display: inline-flex;
@@ -329,10 +366,15 @@
   @keyframes cart-fade { from { opacity: 0; } }
   @media (forced-colors: active) { .cart-line { border-bottom: 1px solid CanvasText; } .cart-undo { border-color: CanvasText; } }
 
+  .cart-lines { container-type: inline-size; }
+  /* The narrowest phones (320px): a smaller photo and number, so the stepper and the bin still share a row. */
+  @container (max-width: 310px) {
+    .cart-line { --photo: 88px; }
+    .cart-line .qty { grid-template-columns: var(--tap) 2.25rem var(--tap); }
+  }
   /* Last, so it wins over the rules above. Large text (the line is under 15em wide, about 150% on a phone): the price moves under the name and the photo
      shrinks, so nothing is pushed past the edge. */
-  .cart-lines { container-type: inline-size; }
-  @container (max-width: 15em) {
+    @container (max-width: 15em) {
     .cart-line { --photo: 64px; }
     .cart-line__body { grid-template-columns: minmax(0, 1fr); grid-template-areas: "info" "price" "qty" "note"; }
     .cart-line__price { justify-items: start; }

@@ -18,7 +18,7 @@
   @param {boolean} [skip_bestseller] - Don't show the Bestseller badge (in a list that is already the bestsellers)
   @param {boolean} [compact] - The easy-read card for lists (search results, collections, suggestion rows, and the home
     page's Bestsellers since 2026-10-03; docs/search-results-plan.md §5): a square photo and the name in plain
-    Jost 16px, 2 lines at most. Without it: the editorial card (Cormorant italic name), still used by Featured products.
+    Jost 16px, 2 lines at most, level with the other cards in its row. Without it: the editorial card (Cormorant italic name), still used by Featured products.
 {%- enddoc -%}
 {%- liquid
   assign img_sizes = sizes | default: '(min-width: 990px) 25vw, 50vw'
@@ -222,6 +222,14 @@
     letter-spacing: 0;
     text-wrap: pretty;
   }
+  /* Level rows (docs/decisions.md, 2026-10-06): cards that share a row, or a swipe row, are one height, and the
+     price sits on the bottom line, so prices line up whether a name takes one line or two. A row is only as tall
+     as its longest name needs. Without :has() cards simply keep their own height. */
+  li:has(> .card--compact) { display: grid; }
+  .card--compact { display: grid; }
+  .card--compact .card__link { grid-template-rows: auto 1fr; }
+  .card--compact .card__info { grid-template-rows: 1fr auto; }
+  .card--compact .card__title { align-self: start; }
   /* The price is what the eye looks for after the photo, so it carries the weight and the name stays light. */
   .card--compact .price { font-size: 1rem; font-weight: 600; color: var(--color-heading); }
   .card--compact .card__badge { top: var(--space-2); left: var(--space-2); padding: 3px 8px; font-size: .75rem; letter-spacing: .08em; }

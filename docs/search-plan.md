@@ -402,7 +402,7 @@ Good search depends on product data more than on code. This is the setup checkli
    - gift, present, tohfa
    - crochet, knitted, woollen, handmade
 3. **Product data conventions** (written down so every new product follows them):
-   - **Title:** what it is first, in shoppers' words: "Red Rose Crochet Bouquet", "Bee Crochet Keychain".
+   - **Title:** what it is first, in shoppers' words: "Red Rose Crochet Bouquet", "Bumble Bee Crochet Keychain".
    - **Product type:** exactly one craft: Bouquet, Keychain, Hair clip, Bag charm (also used for the craft chips).
    - **Tags:** occasion (birthday, anniversary, valentines, mothers-day, rakhi), flower or motif (rose, sunflower, tulip, bee), colour, and `bestseller` / `new` (already used by the card badges).
    - **Variant names:** plain colours ("Red", "Pink"), not codes.

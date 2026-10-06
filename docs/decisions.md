@@ -2,6 +2,71 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-06 (a new footer: links first, signature last; docs/footer-plan.md)
+
+- **The footer is rebuilt from scratch** (Raushan asked for a professional, aligned, modern footer with everything a shop footer needs). It replaces the centred banner footer of 2026-10-01 and its trim of 2026-10-04.
+  - Three short lists on one grid, left-aligned: **Shop**, **Help**, **Say hello**. Then one row of stitches, the signature (basket, name, tagline) and the last lines (copyright, policies, payment icons, Back to top).
+  - Desktop: the signature on the left five of twelve columns, the lists on the rest, 424px tall at 1280 (was 441).
+- **Phones show the lists open, not folded (Raushan's choice, Claude's recommendation).** 526px at 360 wide against 369px before, for 11 links instead of 7. Folded lists (about 380px) put the help links a tap away; the footer is the last thing on a page, so its height pushes nothing down.
+- **Shop follows the main menu's first dropdown**, so the two can't drift apart. **Help is the store's `footer` menu.**
+- **Say hello shows only the channels filled in** under Theme settings → Social (WhatsApp, Instagram, and a new "Contact email"). None are filled in yet, so the column is absent today; Help's "Contact us" covers it.
+- **The corner flowers left the footer** (they stay in the hero), with the crafts line, the short rule and the "Search" link. The WCAG 2.2.2 exception of 2026-10-01 no longer applies to the footer.
+- **Tried and dropped: the tagline drawn in yarn.** At footer size the strand is about 1px and reads as a scribble; the tagline is spaced capitals, as on the logo.
+- **Admin change (Claude, Admin API, 2026-10-06):** the `footer` menu, "Footer menu" with one item (Search), is now "Help": Track order, Contact us, Your account, Saved items. Read back from the store.
+- **Check 19** is rewritten for the new footer (limits in footer-plan.md).
+
+## 2026-10-06 (nine short product names get one more word)
+
+- **What Raushan saw:** in the cart's swipe rows a one-line name ("Daisy Crochet Bouquet") leaves a blank line above the price next to a two-line name. He asked whether every product could be named to take two lines on a phone.
+- **Nine names were short enough to sit on one line there (22 characters or fewer). Each got one real word, nothing else:** the four pairs gained the "Crochet" every other name has (Bee, Chick, Octopus and Evil Eye Crochet Keychain Pair); the rest are Single Daisy Crochet Bouquet, Daisy Flower Crochet Keychain, Bumble Bee Crochet Keychain, Baby Chick Crochet Keychain and Little Heart Crochet Hair Pins.
+- **Names are never padded to a word count.** The name is also the Google title, the search result, the cart line and the order email, and a longer name is cut sooner in the two-column grid. No colour word where a piece comes in several colours (the daisy keychain, the hair pins).
+- **A new product's name should be over 22 characters** for the same reason, with words that describe it.
+- **The cards did not change.** Wrapping depends on the card's width, so on a wide phone or a desktop a name can still take one line; the reserved second line and the level prices (entry below) stay.
+- **Handles and URLs are the same.** Only the name and SEO title went to the store: `python3 tools/catalog-upload.py names <handles>` (not `products --force`, which resends photos and stock).
+
+## 2026-10-06 (level cards in every product list, and tighter gaps on phones)
+
+- **What Raushan saw:** cards of different heights and prices on different lines, next to Blinkit and Swiggy's fixed-size cards with long names cut and tight gaps. He asked for the best option for us, not a copy, proved with images first.
+- **Cards that share a row are one height, and their prices sit on one line.** This goes for every grid (home, collections, search results, Saved) and every swipe row (the product page's rows, the cart's rows). A row is only as tall as its longest name needs.
+- **Not one fixed height for the whole site.** Blinkit and Swiggy can fix it because each card is a white box. Ours has no box, so a row of short names would show an empty line between name and price, and the price would sit as near the next photo as its own name (`docs/mockups/cards-level-options-1.png`, options B to D).
+- **Not one line with "…" either:** it cuts the words that tell pieces apart ("Cream Crochet…", "Sunflower Crochet Cl…"). Names keep two lines, then "…".
+- **Phone grids have 24px between rows** (32 before). Name to photo is 8px, so a price still belongs to the card above it. 16px was too close without boxes; 28 and 32 were looser with no gain (`docs/mockups/cards-level-options-2.png`). Columns stay 12px; tablet and desktop are unchanged.
+- **The cart's rows are 24px apart** (32 before), and a stray 12px under Saved for later and Recently viewed cards is gone (left from the wide button). A row's prices are now 34px from the next heading everywhere; they were 42 to 74px.
+- **Measured before building** by injecting the rules into the real pages: 5 pages, 5 widths, Chrome, Firefox and Safari's engine. Uneven rows went from as many as 10 of 12 (collection at 768px) to none. Built result: `docs/mockups/cards-level-grid-before-after.png`, `cards-level-cart-before-after.png`.
+- **One thing still differs on purpose:** at 200% text "From ₹99" can wrap to two lines; the prices' bottom lines stay level.
+- **How:** five rules on the compact card (`snippets/product-card`: the card fills its row, the price takes the bottom line), the same for Little extras' own card (`snippets/cart-rows`), and one gap value in four grids.
+- **Guard (check 22):** on the home page, a collection, search results, the Saved page, a product page's rows and the cart's rows at 360 and 390px: one height and one price line per row, no name over two lines, no empty line under a row of short names, 24px rows, 30 to 40px under the cart's rows.
+
+## 2026-10-06 (cart lines: a long name is cut with "…", never a taller line)
+
+- **What Raushan asked:** every line in the cart stays the height it has now; a name that is too long ends in "…".
+- **The name gets two lines at most** (three before). With its options under it ("Pink"), or the free gift's badge over it, it gets one line, so the name's block is two lines tall either way. The link still holds the whole name, so screen readers read all of it, and a tap opens the product.
+- **A line still grows for money and stock, never for a name:** a stock note, a discount line, a second line of options, or a sale price together with "each".
+- **Measured** with the two longest names in the store ("Blue Tulip, Yellow Rose & Daisy Crochet Bouquet", "Lily of the Valley Crochet Bag Charm" with a colour): every line is 132px at 390 wide and 131px at 320.
+- **Guard (check 8b):** no line's name block is taller than its two reserved lines unless it has a discount line or a second line of options (`snippets/cart-line`).
+
+## 2026-10-06 (a small "+" on the photo replaces the wide button in the cart's rows)
+
+- **What Raushan saw:** the full-width "+ Add" and "Choose" buttons under every card in the cart's swipe rows were too big, with Blinkit and Instamart as examples of a small one. Each button and its gap took 56px a row, about 170px over the three rows, and two or three wide pills a screen competed with Checkout.
+- **One-tap pieces get a "+" in a 36px white circle on the photo's bottom-right corner,** with a 48px tap area (Instamart's shape). The heart keeps the top-right corner. After a tap the "+" is a tick on Cocoa for a moment, then the card goes as before.
+- **Pieces with options get a small "Choose" pill on the same corner,** which opens the product page as before. A bare "+" that leaves the cart instead of adding would mislead.
+- **Dropped: Blinkit's layout** (price on the left, Add on the right). Its cards are about 170px wide in a two-up grid; ours are 143px in a swipe row, and "From ₹99" with a button beside it needs about 155px.
+- **Dropped for now: a picker inside the cart** for pieces with options (what Instamart does). It is the better experience and a much bigger build.
+- **Only the cart's three rows change,** in the drawer and on /cart. The Saved page keeps "Add to cart", "Choose options" and "Ask us to make one" under its cards: they are wider there, and the shopper is not in the cart.
+- **How:** `snippets/cart-rows` has the look (`.row-corner` covers the square photo, `.row-add` is the button); `sections/cart-extras` puts its button there, and `assets/cart-rows.js` moves the Saved page's button onto the photo. Screen readers still hear "Add …" and "Choose: …".
+- **Guards (check 8d):** the buttons are named Add or Choose in all three rows, are at least 48 × 48px, sit inside the photo and clear of the heart, and "Choose" is on one line, at 320, 360 and 390px.
+
+## 2026-10-06 (cart lines: a bin on every line, and one height)
+
+- **What Raushan saw:** a piece at quantity 4 took four taps on minus to remove, because the bin only showed at 1. And lines were 88 to 125px tall depending on the name and the "each" line, so the steppers never lined up.
+- **A bin on every line, at the far end of the stepper's row. This replaces D3 (2026-10-02, "minus turns into a bin").** One tap removes the piece whatever its quantity, and the Undo row brings the whole quantity back. It sits away from plus so it isn't hit by mistake.
+- **Minus stops at 1 in the cart** (greyed out, still focusable). Two bins on one line would be noise. Typing 0 still removes. The product page's stepper is unchanged: its minus is still the bin at 1, because there Add to cart comes straight back.
+- **No select / unselect checkboxes.** Shopify's checkout takes the whole cart, so "check out the ticked ones" would mean removing the others and putting them back, around the free gift and the ₹499 / ₹799 / ₹999 goals, where a wrong total is not allowed. Our carts hold 2 to 5 pieces, and Saved for later already means "not now".
+- **Every line has the same skeleton, so the same height.** The name's block keeps room for two lines (one-line name, two-line name, and one-line name plus its colour all match). "₹149 each" moved under the line's price. The photo is 100px (was 88 in the drawer, 96 on the page), as tall as two lines of name plus the stepper; 88px on 320px phones so the stepper and bin share a row. Names are not cut to one line: that would hide which piece it is. (Later the same day Raushan chose to cut long names with "…" so every line is one height: see the entry above.)
+- **A line still grows when it has more to say:** a stock note, a discount line, or a sale price together with "each".
+- **How:** the bin is a step of −9999 (`snippets/cart-line`), so `cart.js`'s stepper handler already removes with Undo and `theme.js` already pulses; `cart.js` changed by two lines and stays under 22 KB. `snippets/quantity` takes `apart: true` for "the line has its own bin".
+- **Guards:** check 8 (minus stops at 1; the bin at quantity 3 removes all, Undo restores 3) and 8b (lines are one height and the bin is in the stepper's row, at 320, 360 and 390px).
+
 ## 2026-10-06 (one wording on the buttons in the cart's rows)
 
 - **What Raushan saw:** "+ Add" in Little extras and "Add to cart" in Recently viewed, in the same drawer. It was a leftover: Saved for later and Recently viewed reuse the Saved page's card (`sections/saved-item`), and its wording came along.
@@ -882,3 +947,14 @@ Raushan accepted every recommendation in search-plan §13.
 - **Gift from ₹799** (was ₹1,499), **₹50 off from ₹999, ₹100 off from ₹1,299**, automatic, not stacking. Figures are provisional until real courier and ad costs are known.
 - **Cart bar shows one goal at a time**, with ticks for what's earned (Raushan). Supersedes the two-marker bar (offers-plan O10).
 - **"Best selling" sort:** Bouquets and Keychains are hand-ordered until there are sales (changes "every collection sorted by Best selling", 2026-10-02).
+
+## 2026-10-06: a new home hero (docs/home-hero-v2-plan.md)
+- **The hero is one photo the full width of the screen, with no frame and no corners, dissolving into the page, with the heading, one line and one solid button over the dissolve.** Raushan's designer friend said the inset, rounded festival banner and the rounded product photos under it didn't look right, and asked for the banner edge to edge. Raushan asked for a from-scratch rethink, saw three versions side by side (A new hero, B new hero with a product row, C the old hero edge to edge) and chose A.
+- **One layout for every day and every screen.** A campaign swaps only the photo, the words, the link and the dates. Desktop is the same idea sideways. The phone photo row, the desktop cross-fade with its controls, the banner pill and the flower doodles are gone.
+- **Accepted trade-off:** a row of products with prices no longer sits on the phone's first screen. In its place: the button, an optional price label on the photo (the product's own price), and the Bestsellers heading with the craft circles.
+- **Rounded corners stay on things you tap** (product cards, 18px); wide moments run edge to edge.
+- Words over the photo are checked from the pixels (≥4.5:1 against the darkest spot behind them), since axe can't judge text over a photo.
+- **The announcement bar stays; the hero's campaign line changed instead.** Raushan asked whether to remove the bar, since the hero also said "Free delivery over ₹499". Kept, because the bar is on every page (most visitors land on a product page, not home), it is the only place that says COD without scrolling, and the hero's line goes back to the normal one when the campaign ends. The hero line is now "Handmade crochet flowers that never wilt"; in the last week before Diwali a true order-by date would serve better. The existing "Hide on the home page" option would not hide the bar: it falls back to the store-terms line.
+- **On a normal day the phone hero is a centred "label", like the logo** (Raushan asked for a better idea for the words under the photo): the heading's lead-in in small spaced capitals, the yarn lettering as the one loud thing, a centred button, no description on phones. A centred photo gets centred words; the festival hero keeps its left-aligned words.
+- **Normal-day hero photo: the standing sunflower bouquet**, an AI edit of the real photo (hand removed, tag added), uploaded to Shopify Files 2026-10-06. Raushan chose it; a square photo is shown whole on phones.
+

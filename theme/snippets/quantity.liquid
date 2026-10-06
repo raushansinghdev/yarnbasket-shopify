@@ -11,8 +11,9 @@
   @param {string} title - Product title, escaped, for the labels
   @param {number} [max] - Stock limit, when stock is tracked and overselling is off
   @param {string} [describedby] - Id of a note about this line (stock limit, sold out)
-  @param {number} [floor] - The lowest number allowed (the product page passes 1): the minus button stops there
-    instead of turning into the bin, and product.js steps it (cart.js only steps cart lines)
+  @param {number} [floor] - The lowest number allowed: the minus button stops there instead of turning into the bin
+  @param {boolean} [apart] - The line has a bin of its own (snippets/cart-line): the minus button stops at 1 instead
+    of turning into the bin, and 0 can still be typed to remove
 
   @example
   {% render 'quantity', id: 'CartQty-1', name: 'updates[]', value: item.quantity, title: title %}
@@ -25,17 +26,21 @@
   assign label_remove = 'cart.remove' | t: title: title
   assign label_decrease = 'cart.decrease' | t: title: title
   assign lowest = floor | default: 0
+  assign stop = floor
+  if apart
+    assign stop = 1
+  endif
 -%}
-<div class="qty{% if floor %} qty--floor{% endif %}" data-qty data-value="{{ value }}" {% if max != blank %}data-max="{{ max }}"{% endif %} {% if floor %}data-floor="{{ floor }}"{% endif %}>
+<div class="qty{% if stop %} qty--floor{% endif %}" data-qty data-value="{{ value }}" {% if max != blank %}data-max="{{ max }}"{% endif %} {% if floor %}data-floor="{{ floor }}"{% endif %}>
   <button
     type="button"
     class="qty__btn qty__minus"
     data-step="-1"
     data-label-remove="{{ label_remove }}"
     data-label-decrease="{{ label_decrease }}"
-    aria-label="{% if value <= 1 and floor == blank %}{{ label_remove }}{% else %}{{ label_decrease }}{% endif %}"
+    aria-label="{% if value <= 1 and stop == blank %}{{ label_remove }}{% else %}{{ label_decrease }}{% endif %}"
     aria-controls="{{ id }}"
-    {% if floor and value <= floor %}
+    {% if stop and value <= stop %}
       aria-disabled="true"
     {% endif %}
   >
@@ -109,7 +114,7 @@
   .qty__btn:focus-visible { outline-offset: -2px; }
   .qty__minus .icon--bin, .qty[data-value="1"] .qty__minus .icon--minus, .qty[data-value="0"] .qty__minus .icon--minus { display: none; }
   .qty[data-value="1"] .qty__minus .icon--bin, .qty[data-value="0"] .qty__minus .icon--bin { display: block; }
-  /* With a floor (the product page) there's nothing to remove: the minus stays a minus and stops at the floor. */
+  /* With a floor, or a bin of its own beside it (the cart), the minus stays a minus and stops there. */
   .qty.qty--floor[data-value] .qty__minus .icon--bin { display: none; }
   .qty.qty--floor[data-value] .qty__minus .icon--minus { display: block; }
   .qty__input {

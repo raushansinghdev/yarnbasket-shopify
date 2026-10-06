@@ -3,3 +3,4 @@ node_modules/
 .shopify/
 .env
 .stress-shots/
+__pycache__/

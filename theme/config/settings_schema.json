@@ -55,6 +55,12 @@
         "id": "social_whatsapp",
         "label": "WhatsApp number",
         "info": "With country code, like +91 98765 43210."
+      },
+      {
+        "type": "text",
+        "id": "social_email",
+        "label": "Contact email",
+        "info": "Shown as an email button in the footer."
       }
     ]
   },

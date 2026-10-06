@@ -1,9 +1,10 @@
 {%- doc -%}
   The three swipe rows at the end of the cart, the same in the drawer and on /cart (docs/cart-plan.md, "One cart"):
   Saved for later, Little extras ("You may also like" once every reward is earned) and Recently viewed.
-  Every card has a button (Add, or Choose for a piece with options), white like the quantity stepper above. The
-  wording is one too: the Saved page's card says "Add to cart" and "Choose options", and cart-rows.js gives it
-  the face below.
+  Every card has a small button on its photo's bottom-right corner (docs/decisions.md, 2026-10-06): a "+" in a
+  white circle that adds in one tap, or a "Choose" pill that opens the page of a piece with options. The heart
+  keeps the top-right corner. The Saved page's card has "Add to cart" and "Choose options" under it; here
+  cart-rows.js gives it the face below and moves it onto the photo.
   Empty shells: assets/cart-rows.js fills them and hides a row with nothing to show. No piece shows twice, and
   none that is already in the cart. Without JavaScript nothing shows and the cart ends after the price details.
   The suggestions are based on the first piece in the cart that was chosen (the free gift sits first once it's
@@ -30,7 +31,7 @@
   assign recent_id = 'CartRecentTitle-' | append: place
 -%}
 <div class="cart-rows" data-cart-rows data-products="{{ routes.root_url }}products/" data-choose="{{ 'cart.extras_choose' | t | escape }}">
-  <template data-row-face>{%- render 'icon', icon: 'plus' -%}<span data-add-label>{{ 'cart.extras_add' | t }}</span></template>
+  <template data-row-face>{%- render 'icon', icon: 'plus' -%}{%- render 'icon', icon: 'check', class: 'row-add__done' -%}<span class="visually-hidden">{{ 'cart.extras_add' | t }}</span></template>
   <section class="cart-row" aria-labelledby="{{ saved_id }}" tabindex="-1" data-cart-saved hidden>
     {%- render 'product-row', title: saved_title, id: saved_id, shell: true -%}
     {%- if pages['saved'].url -%}
@@ -56,22 +57,67 @@
 </div>
 
 {% stylesheet %}
-  /* snippets/product-row draws each row. Buttons line up along the bottom of a row whatever the length of the
-     names. A row takes focus only when the piece that had it has left. */
-  .cart-rows:has(.cart-row:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px dashed var(--color-line-strong); }
+  /* snippets/product-row draws each row. A row takes focus only when the piece that had it has left. */
+  .cart-rows:has(.cart-row:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px dashed var(--color-line-strong); }
   .cart-row { position: relative; }
   .cart-row:focus { outline: none; box-shadow: none; }
   .cart-row__all { position: absolute; top: 0; right: 0; padding-block: var(--space-3); margin-block: calc(var(--space-3) * -1); font-size: var(--fs-small); font-weight: 500; line-height: 1.2; color: var(--color-heading); text-decoration: underline; text-decoration-color: var(--rose); text-underline-offset: 4px; white-space: nowrap; }
   .cart-row__all[hidden] { display: none; }
   .cart-row__note { margin-top: var(--space-2); font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); }
-  .cart-row .extra { grid-template-rows: auto auto 1fr auto; }
-  .cart-row .extra__title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400; font-size: .9375rem; }
+  /* Level rows, like every product list (snippets/product-card): one height, prices on the bottom line. The
+     Saved page's card has lost its button row here, so its second row and the gap above it go too. */
+  .cart-row .extra { grid-template-rows: auto 1fr auto; }
+  .cart-row .saved-item { grid-template-rows: 1fr; gap: 0; }
+  .cart-row .extra__title { align-self: start; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400; font-size: .9375rem; }
   .cart-row .extra .price { font-size: 1rem; font-weight: 600; color: var(--color-heading); }
-  /* One button look in the cart: white with the stepper's border (snippets/quantity). */
-  .cart-row .extra__btn, .cart-row .saved-item__btn { --btn-line: color-mix(in srgb, var(--cocoa) 55%, transparent); border-color: color-mix(in srgb, var(--cocoa) 55%, transparent); background: var(--white); color: var(--color-heading); font-weight: 500; }
-  @media (hover: hover) { .cart-row .extra__btn:hover, .cart-row .saved-item__btn:hover { --btn-line: var(--cocoa); border-color: var(--cocoa); background: var(--blush-soft); } }
-  /* The Saved page's card, with the Little extras face (sections/cart-extras: .extra__btn). */
-  .cart-row .saved-item__btn { gap: var(--space-1); letter-spacing: 0; white-space: nowrap; }
-  .cart-row .saved-item__btn .icon { width: 18px; height: 18px; color: currentColor; }
-  .cart-row [data-row-add][aria-busy="true"] { opacity: .6; }
+  /* The button sits on the photo's bottom-right corner. The box covers the square photo whatever the card's
+     width, and lets taps through to the photo everywhere but the button. */
+  .row-corner { position: absolute; inset: 0 0 auto; z-index: 2; aspect-ratio: 1; pointer-events: none; }
+  /* 48px to tap, 36px drawn (like the heart: snippets/save-button): white with the stepper's border. */
+  .cart-row .row-add {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    width: auto;
+    min-width: var(--tap);
+    height: var(--tap);
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-heading);
+    font: 500 .8125rem/1 var(--font-sans);
+    letter-spacing: 0;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cart-row a.row-add { padding-inline: 18px; }
+  .cart-row .row-add::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    z-index: -1;
+    border: 1.5px solid color-mix(in srgb, var(--cocoa) 55%, transparent);
+    border-radius: var(--radius-pill);
+    background: var(--white);
+    box-shadow: 0 2px 8px -3px rgb(78 58 49 / .35);
+    transition: background-color var(--dur-state) ease, border-color var(--dur-state) ease, scale var(--dur-press) ease;
+  }
+  .cart-row .row-add:active::before { scale: .92; }
+  .cart-row .row-add:focus-visible { outline-offset: -4px; }
+  .cart-row .row-add .icon { width: 18px; height: 18px; color: currentColor; }
+  @media (hover: hover) { .cart-row .row-add:hover::before { border-color: var(--cocoa); background: var(--blush-soft); } }
+  /* Added: a tick on Cocoa for a moment, then the card goes. */
+  .row-add__done, .row-add[data-added] .icon:not(.row-add__done) { display: none; }
+  .row-add[data-added] .row-add__done { display: block; }
+  .cart-row .row-add[data-added] { color: var(--cream); }
+  .cart-row .row-add[data-added]::before { border-color: var(--cocoa-deep); background: var(--cocoa-deep); }
+  .cart-row [data-row-add][aria-busy="true"]:not([data-added]) { opacity: .6; }
+  @media (forced-colors: active) { .cart-row .row-add::before { border-color: CanvasText; background: Canvas; } }
 {% endstylesheet %}

@@ -1,5 +1,7 @@
 # Home media plan: square hero photos, campaign banners, and "Made by hand" video
 
+> **Superseded 2026-10-06 for the hero itself** by docs/home-hero-v2-plan.md: the hero is now one full-width photo that dissolves into the page, with a heading, one line and one button. The photo row, the cross-fade and the banner pill described here are gone. Other parts of this plan still stand.
+
 Status: **built 2026-10-02** (stages A–E). Raushan reviewed the plan, changed M4 and M6 (below), and said go. The test video is the brand kit's logo animation, as demo content.
 
 ### As built (where it differs from the plan below)

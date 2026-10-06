@@ -1,6 +1,6 @@
 # Compact footer
 
-**Status: built 2026-10-04.** Decision recorded in `decisions.md`. Guarded by `npm run check -- --only 19`.
+**Status: replaced 2026-10-06 by `footer-plan.md`** (a new footer with Shop, Help and contact lists). Kept for the history. Was built 2026-10-04. Decision recorded in `decisions.md`. Guarded by `npm run check -- --only 19`.
 
 ## Why
 

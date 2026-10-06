@@ -1,5 +1,7 @@
 # Hero campaign plan: festival and offer banners on the home page
 
+> **Superseded 2026-10-06 for the hero itself** by docs/home-hero-v2-plan.md: the hero is now one full-width photo that dissolves into the page, with a heading, one line and one button. The photo row, the cross-fade and the banner pill described here are gone. Other parts of this plan still stand.
+
 Status: **built with dummy content (2026-10-03)**, decisions as revisited in §8. Real photos and dates come later.
 
 ### As built

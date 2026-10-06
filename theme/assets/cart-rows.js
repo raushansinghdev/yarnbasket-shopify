@@ -5,7 +5,7 @@
   - Saved for later: this browser's saved pieces (saved.js) that can be bought now, from sections/saved-item
   - Little extras: sections/cart-extras through Shopify's product recommendations, asked again after every change
   - Recently viewed: the last product pages seen in this browser that can be bought now, from the same section,
-    so each has its button too. All three rows say Add, or Choose for a piece with options
+    so each has its button too. On every card's photo: "+" to add, or Choose for a piece with options
   6 cards a row at most, nothing that is in the cart, no piece twice (the shopper's own rows keep theirs and the
   suggestions give way), and a row with nothing to show is hidden.
   The drawer fetches this file with its first opening (cart.js calls the default export on every opening); the
@@ -48,8 +48,8 @@ const adopt = () => {
 };
 
 /* ---------- Cards ---------- */
-// One wording in the cart: the Saved page's card says "Add to cart" and "Choose options"; here it gets the face
-// Little extras has, "+ Add" or "Choose" (snippets/cart-rows). The hidden ": name" stays for screen readers.
+// One button in the cart: the Saved page's card says "Add to cart" and "Choose options"; here it gets the face
+// Little extras has, "+" or "Choose" (snippets/cart-rows). The hidden "Add" and ": name" are for screen readers.
 const face = (li) => {
   const button = li?.querySelector('.saved-item__btn');
   const name = button?.querySelector('.visually-hidden');
@@ -66,6 +66,18 @@ const ready = (li) => {
     button.type = 'button';
     button.dataset.rowAdd = form.elements.id.value;
     form.replaceWith(button);
+  }
+  // The Saved page's card has its button under it; here it sits on the photo's corner, beside the heart.
+  const under = li?.querySelector('.saved-item__actions');
+  const own = under?.querySelector('.saved-item__btn');
+  if (own) {
+    const corner = document.createElement('div');
+    corner.className = 'row-corner';
+    own.classList.remove('btn', 'btn--ghost');
+    own.classList.add('row-add');
+    corner.append(own);
+    li.querySelector('.card').append(corner);
+    under.remove();
   }
   return li;
 };
@@ -90,7 +102,7 @@ const buyCard = (handle) => card(handle, 'saved-item', (doc) => {
 });
 
 /* ---------- Filling the rows ---------- */
-// A card that was just added stays for a moment, saying "Added".
+// A card that was just added stays for a moment, showing its tick.
 const leaving = new Set();
 // The row's cards become these, unless they already are. Focus stays on the same piece, or moves to its
 // neighbour, or to the row itself.
@@ -147,7 +159,7 @@ const draw = () => {
       : null,
   ];
   Promise.all(jobs).then(([savedCards, recentCards, extras]) => {
-    // A newer change has asked again, or a card is still saying "Added" (it asks again when it goes).
+    // A newer change has asked again, or a card is still showing its tick (it asks again when it goes).
     if (asked !== turn || leaving.size) return;
     if (savedRow) {
       const shown = savedCards.filter(Boolean).slice(0, MAX);
@@ -175,15 +187,13 @@ scope?.addEventListener('click', (event) => {
   const li = button.closest('li');
   const row = li.closest('.cart-row');
   const title = (li.querySelector('.card__title, .extra__title')?.textContent || '').trim();
-  const label = button.querySelector('[data-add-label], span[aria-hidden]');
-  const original = label?.textContent;
   row.querySelector('.cart-row__note')?.remove();
   button.setAttribute('aria-busy', 'true');
   enqueue(() => send('cart/add.js', withSections({ items: [{ id: +button.dataset.rowAdd, quantity: 1 }] })))
     .then((res) => {
-      // The card says "Added" for a moment, then goes; focus moves to the next card.
+      // The card's "+" is a tick for a moment, then the card goes; focus moves to the next card.
       leaving.add(li);
-      if (label) label.textContent = S.addedButton;
+      button.dataset.added = '';
       render(res.sections?.[sectionId]);
       const count = +box()?.dataset.count;
       counted(count);
@@ -191,7 +201,7 @@ scope?.addEventListener('click', (event) => {
       setTimeout(() => {
         leaving.delete(li);
         button.removeAttribute('aria-busy');
-        if (label) label.textContent = original;
+        delete button.dataset.added;
         tidy();
         draw();
       }, 900);
