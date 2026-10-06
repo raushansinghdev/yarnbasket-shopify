@@ -1,6 +1,6 @@
 # Real catalogue: photos → listings, collections, home page
 
-Status (2026-10-04): **uploaded.** 29 products (52 variants, 156 photos, 100 stock each), 17 collections,
+Status (2026-10-06): **uploaded.** 55 products (86 variants, 255 photos, 100 stock each; 29 from 2026-10-04, 26 added 2026-10-06), 17 collections,
 the main menu and the home page photos are in the store; `templates/index.json` points the hero, the
 Bestsellers circles and the occasion cards at them. Prices follow docs/pricing-plan.md where the cost is known; the rest are placeholders.
 
@@ -72,7 +72,20 @@ Size text is set only where a dimension image gave it (single-stem bouquets, 10 
   clips, white and lavender clips). Not uploaded; their photos are in `../catalog/to-studio/` for the studio wall
   (docs/photo-backdrop-plan.md, "Next batch"). Flower headband and tricolour clips need a cost.
 
+- 2026-10-06: Raushan reviewed the unused photos himself (`../catalog/left-out/`) and kept 56. That added 7 more
+  pending products (26 in all) and 32 extra photos for live products (`pending_photos`). 93 photos are in
+  `../catalog/to-studio/`, 16 of them in `remove-badge/`.
+
+- 2026-10-06: the second batch is live. 55 products, 86 variants, 255 photos (248 on the studio wall or kept as
+  shot by ChatGPT, 7 text or collage photos used as they are). Money check passes.
+  Later the same day Raushan had the two old-design sunflower pot photos removed and left the text photos to
+  Claude: the five "One Charm, Endless Uses" grids and the "Handmade with care" graphic came off (Meesho-style
+  graphics on a store meant to look premium); the scrunchie collage stays, as the only photo of it worn. 247 photos.
+
 ## Still open
+- Costs for heart hair pins, scrunchies, hair tie, flower headband and tricolour clips (`null` in costs.json): heart
+  pins, scrunchies, sunflower accessory set, flower chain headbands and tricolour clips are on placeholder prices.
+- Sizes and real stock for the 26 new products (100 each for now).
 
 - Sizes for keychains, pots, charms, hair pieces and the larger bouquets (Raushan, later).
 - Real stock counts in place of 100.

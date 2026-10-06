@@ -129,6 +129,10 @@ def products(handles, force):
                'variants': variants, 'files': files, 'metafields': metafields}
         if pid:
             inp['id'] = pid
+            # productSet deletes every metafield it isn't given (2026-10-06: a resend wiped the test ratings), so
+            # whatever the product carries beyond ours is sent back as it is.
+            kept = gql('query($id: ID!) { product(id: $id) { metafields(first: 50) { nodes { namespace key type value } } } }', {'id': pid})['product']['metafields']['nodes']
+            inp['metafields'] = metafields + [m for m in kept if m['namespace'] != 'global' and (m['namespace'], m['key']) != ('custom', 'size')]
         d = gql('mutation($input: ProductSetInput!) { productSet(synchronous: true, input: $input) { product { id handle variants(first: 20) { nodes { title price } } media(first: 30) { nodes { id } } } userErrors { field message code } } }',
                 {'input': inp}, mutate=True)['productSet']
         check(d['userErrors'], p['handle'])

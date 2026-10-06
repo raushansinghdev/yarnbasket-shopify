@@ -51,3 +51,37 @@ Hair accessories,"Crochet Flower Hair Clips, Pair",Pink,HC_PINK_02,"1 hair clips
 Hair accessories,"Crochet Flower Hair Clips, Pair",White,HC_WHITE_02,"1 hair clips, pair",15,0,49,
 Hair accessories,"Crochet Flower Hair Clips, Pair",Sunflower,HC_SF_02,"1 hair clips, pair",15,0,49,
 Home decor,Sunflower Crochet Curtain Tie-back,,CTie_SF,1 curtain tie-back,50,0,149,
+Bouquets,Sunflower Duo Crochet Bouquet,Daisy,BQ_SF_2_DSY_1,2 sunflower + 1 daisy,165,0,499,
+Bouquets,Sunflower Duo Crochet Bouquet,Red rose,BQ_SF_2_RS_Red_1,2 sunflower + 1 rose,165,0,499,
+Bouquets,Sunflower Duo Crochet Bouquet,Bee,BQ_SF_2_BEE_1,2 sunflower + 1 bee,160,0,479,
+Bouquets,"Sunflower, Daisy & Rose Crochet Bouquet",,BQ_SF_1_DSY_1_RS_Red_1,1 sunflower + 1 daisy + 1 rose,165,0,499,
+Bouquets,"Sunflower, Rose & Tulip Crochet Bouquet",,BQ_SF_1_Rose_1_TLP_1,1 sunflower + 1 rose + 1 tulip,160,0,479,
+Bouquets,"Blue Tulip, Yellow Rose & Daisy Crochet Bouquet",,BQ_TLP_Blue_1_RS_Yellow_1_DSY_1,1 tulip + 1 rose + 1 daisy,160,0,479,
+Keychains,White & Blue Daisy Keychain Pair,,KC_DSY_1_DSY_Blue_1,2 flower keychain,60,0,179,
+Keychains,Daisy & Evil Eye Keychain Set,,KC_DSY_1_Evil_1,1 flower keychain + 1 evil eye keychain,65,0,199,
+Keychains,Daisy & Peacock Feather Keychain Set,,KC_DSY_1_Mor_1,1 flower keychain + 1 peacock feather keychain,65,0,199,
+Keychains,Chick & Flower Keychain Pair,Daisy,KC_Chick_1_DSY_1,1 chick keychain + 1 flower keychain,85,0,259,
+Keychains,Chick & Flower Keychain Pair,Sunflower,KC_SF_1_Chick_1,1 chick keychain + 1 flower keychain,85,0,259,
+Keychains,Pink Octopus & Blue Daisy Keychain Pair,,KC_OCTPS_Pink_1_DSY_Blue_1,1 octopus keychain + 1 flower keychain,65,0,199,
+Keychains,Sunflower Keychain & Lily Charm Set,White,KC_SF_1_Charm_White_1,1 flower keychain + 1 lily charm,60,0,179,
+Keychains,Sunflower Keychain & Lily Charm Set,Pink + white pair,KC_SF_1_Charm_Pink_1_White_1,1 flower keychain + 2 lily charm,90,0,269,
+Keychains,Sunflower & Two Daisies Keychain Set,,KC_SF_1_DSY_1_DSY_Blue_1,3 flower keychain,90,0,269,
+Keychains,"Sunflower, Blue Daisy & Evil Eye Keychain Set",,KC_SF_1_DSY_Blue_1_Evil_1,2 flower keychain + 1 evil eye keychain,95,0,289,
+Keychains,"Sunflower, Evil Eye & Octopus Keychain Set",,KC_SF_1_Evil_1_Octps_Pink_1,1 flower keychain + 1 evil eye keychain + 1 octopus keychain,100,0,299,
+Home decor,Sunflower Curtain Tie-Back Set,Pack of 2,CTie_SF_2,2 curtain tie-back,100,0,299,
+Home decor,Sunflower Curtain Tie-Back Set,Pack of 4,CTie_SF_4,4 curtain tie-back,200,0,599,
+Keychains,Evil Eye Keychain Pair,,KC_Evil_2,2 evil eye keychain,70,0,209,
+Hair accessories,"Flower Crochet Claw Clips, Pair",,CLAW_ORANGE_WHITE_2,2 claw clip,60,0,179,
+Hair accessories,"Flower Chain Crochet Headbands, Pair",,HB_SF_WHITE_2,2 flower headband,,0,299,placeholder: a part has no cost yet
+Hair accessories,"Tricolour Crochet Hair Clips, Pair",,HC_TRICOLOUR_2,"1 tricolour hair clips, pair",,0,99,placeholder: a part has no cost yet
+Hair accessories,"White & Lavender Flower Hair Clips, Pair",,HC_White_Lvndr_2,"1 hair clips, pair",15,0,49,
+Hair accessories,Heart Crochet Hair Pins,3 pairs,HairPin_Mix_03,"3 heart hair pins, pair",,0,99,placeholder: a part has no cost yet
+Hair accessories,Heart Crochet Hair Pins,5 pairs,HairPin_Mix_05,"5 heart hair pins, pair",,0,149,placeholder: a part has no cost yet
+Hair accessories,Heart Crochet Hair Pins,10 pairs,HairPin_Mix_10,"10 heart hair pins, pair",,0,279,placeholder: a part has no cost yet
+Hair accessories,"Sunflower Crochet Claw Clips, Pair",,CLAW_SF_2,2 claw clip,60,0,179,
+Hair accessories,"Cream Crochet Scrunchies, Pair",,SCRUNCHY_CREAM_2,2 scrunchie,,0,149,placeholder: a part has no cost yet
+Hair accessories,Sunflower Accessory Set,,SF_SET_4,"1 flower headband + 1 flower keychain + 1 hair clips, pair + 1 hair tie",,0,399,placeholder: a part has no cost yet
+Keychains,Bee Keychain Pair,,KC_BEE_2,2 bee,100,0,299,
+Keychains,Chick Keychain Pair,,KC_CHK_2,2 chick keychain,110,0,329,
+Keychains,Octopus Keychain Pair,Pink + pink,KC_OCTPS_Pink_2,2 octopus keychain,70,0,209,
+Keychains,Octopus Keychain Pair,Pink + blue,KC_OCTPS_Pink_1_Blue_1,2 octopus keychain,70,0,209,

@@ -43,7 +43,16 @@ python3 tools/catalog-upload.py home && python3 tools/catalog-upload.py covers  
 `products --force` resends the product from the manifest (copy, prices from costs.json, 100 stock),
 so check the store still matches the manifest first if anything may have been edited by hand.
 
-## Next batch: 19 more products (2026-10-05, waiting for ChatGPT)
+## Second batch: 26 more products and 31 extra photos (live 2026-10-06)
+
+Done: ChatGPT's results came back in `../catalog/studio-depth-batch-2/` (93 photos), all checked against the
+originals on before/after sheets (pieces unchanged, every badge and label gone) and filed into
+`../catalog/studio-depth-batch/`. One repeat was dropped (the same chick shot twice). The 26 products are uploaded
+and published, the 13 existing products were resent with their extra photos (only their photos changed: prices,
+stock and the test ratings read back the same), and `npm run check:money` passes for 55 products, 86 variants.
+`catalog-upload.py products --force` now sends a product's other metafields back, because productSet deletes any
+it isn't given: the first resend wiped the bee keychain's test ratings, which were put back from the snapshot.
+What follows is how the batch was prepared; `pending` and `pending_photos` are empty again and the same steps work for a next one.
 
 The second wave of sets, 41 photos, all SKU-named and held in a hand: 4 bouquets (sunflower duo with a
 daisy, rose or bee; three mixed trios) and 9 keychain pairs and sets. They sit under `pending` in
@@ -57,11 +66,20 @@ raw phone photos where one exists, and by whether the same piece shows in two di
 the neater one is the redraw). The manifest's `held_back` says why each of the rest stays out. The headbands and
 tricolour clips have no cost yet (placeholder prices).
 
+Raushan's own review (2026-10-06): every photo still unused was copied to `../catalog/left-out/`, he deleted the
+ones he didn't want and 56 stayed. His verdict on what is real replaces Claude's (he kept the chick, bee and octopus
+keychains held by a sleeve, the heart pins, the sunflower claw clips and the scrunchies). 49 of them are in: 7 new
+products (heart hair pins, sunflower claw clips, scrunchies, sunflower accessory set, bee pair, chick pair, octopus
+pair), one more headband photo, and 32 extra photos for products already live (`pending_photos` in the manifest).
+7 are repeats of a photo that is in. 7 photos with text all over or collages are marked `as_shot`: used as they
+are, not sent to ChatGPT. Heart pins, scrunchies and the hair tie have no cost yet.
+
 1. `python3 tools/catalog-build.py` copies their photos into `../catalog/<type>/<handle>/` and, flat, into
    `../catalog/to-studio/`. That folder is the one to hand to ChatGPT.
 2. Save the results under the same file names in `../catalog/studio-depth-batch/` (loose is fine) and run the
    build again: it files each one in its product folder and drops it from `to-studio/`.
-3. Check them against the originals, move the entries from `pending` to `products`, add the handles to
+3. Check them against the originals, move the entries from `pending` to `products` and each `pending_photos`
+   entry into its product's `photos` (then `products <handle> --force` for those), add the handles to
    `collection_order`, then `python3 tools/catalog-upload.py products && python3 tools/catalog-upload.py publish`
    and `npm run check:money`.
 
