@@ -215,7 +215,9 @@
       "other": "Cart, {{ count }} items"
     },
     "whatsapp": "Chat on WhatsApp",
-    "whatsapp_message": "Hi Yarn Basket! I have a question."
+    "whatsapp_message": "Hi Yarn Basket! I have a question.",
+    "menu_whatsapp": "Custom & bulk orders",
+    "menu_whatsapp_message": "Hi Yarn Basket! I'd like to ask about a custom or bulk order."
   },
   "products": {
     "sold_out": "Sold out",

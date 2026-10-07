@@ -266,30 +266,17 @@
           </a>
         </li>
       {%- endif -%}
-      {%- assign i = i | plus: 1 -%}
-      <li style="--i: {{ i }}">
-        <a href="{{ routes.search_url }}" data-search-fallback>{%- render 'icon', icon: 'search' -%}{{ 'header.search' | t }}</a>
-        <button type="button" {% unless request.page_type == 'search' %}aria-haspopup="dialog" aria-controls="SearchPanel" aria-expanded="false"{% endunless %} data-search-open hidden>
-          {%- render 'icon', icon: 'search' -%}{{ 'header.search' | t }}
-        </button>
-      </li>
+      {%- comment -%}
+        One way to reach us, named for what people write in about: custom and bulk orders are common for handmade
+        (Raushan, 2026-10-07). Search is the header's icon and Instagram is in the footer, so neither is repeated here.
+      {%- endcomment -%}
       {%- if whatsapp != blank -%}
         {%- assign i = i | plus: 1 -%}
         <li style="--i: {{ i }}">
-          <a href="https://wa.me/{{ whatsapp }}?text={{ 'header.whatsapp_message' | t | url_encode }}" rel="noopener" target="_blank">
+          <a href="https://wa.me/{{ whatsapp }}?text={{ 'header.menu_whatsapp_message' | t | url_encode }}" rel="noopener" target="_blank">
             {%- render 'icon', icon: 'whatsapp' -%}
-            {{ 'header.whatsapp' | t }}
-            <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
-          </a>
-        </li>
-      {%- endif -%}
-      {%- if settings.social_instagram != blank -%}
-        {%- assign i = i | plus: 1 -%}
-        <li style="--i: {{ i }}">
-          <a href="{{ settings.social_instagram }}" rel="noopener" target="_blank">
-            {%- render 'icon', icon: 'instagram' -%}
-            Instagram
-            <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
+            {{ 'header.menu_whatsapp' | t }}
+            <span class="visually-hidden">({{ 'header.whatsapp' | t }}, {{ 'accessibility.new_window' | t }})</span>
           </a>
         </li>
       {%- endif -%}

@@ -2,6 +2,12 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-07 (phone menu: one way to reach us, "Custom & bulk orders")
+
+- **The menu's lower list is the account row, Saved items and "Custom & bulk orders"** (Raushan). Custom and bulk orders are common for handmade work and the shop must not lose them, so the one contact row is named for that instead of "Chat on WhatsApp". It opens WhatsApp with "Hi Yarn Basket! I'd like to ask about a custom or bulk order."; screen readers also hear "Chat on WhatsApp, opens in a new window".
+- **Search and Instagram are gone from the menu.** Search is the icon in the header on every page; Instagram is in the footer's "Say hello".
+- With Help, WhatsApp and Instagram added the day before, the menu had outgrown one screen (last link at 919px of 844 on a 390 × 844 phone; 245px to scroll at 360 × 740, limit 160). Now 815px and 141px, and check 21 passes again.
+
 ## 2026-10-07 (three failing checks and two jitters fixed)
 
 The full check before the push of 2026-10-06 failed three checks, and Raushan then saw two jitters on his phone that no check caught. Each cause was measured frame by frame before the fix.
