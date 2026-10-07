@@ -490,7 +490,7 @@ img.img-in { animation: img-in 250ms var(--ease-out); }
    Any section opts in with an attribute; theme.js does the rest (only things still below the screen at load wait,
    each plays once as it comes into view, the same in every browser):
      data-arrive               the block rises in
-     data-arrive="lines"       its children arrive in turn; an h2 inside rises like ink lifting off the page
+     data-arrive="lines"       its children arrive in turn; an h2 inside rises a little further and slower
      data-arrive="stagger"     its children arrive one after another (theme.js sets --i; a swipe row arrives as a whole,
                                from the right)
      data-arrive="settle"      the block's photos settle from slightly smaller (photos in stagger items do this too)
@@ -506,6 +506,8 @@ img.img-in { animation: img-in 250ms var(--ease-out); }
   @media (max-width: 989px) {
     [data-arrive~="stagger"].scroller > .is-pending { transform: translateX(24px); }
     [data-arrive~="stagger"].scroller > .is-arriving { animation-name: arrive-side; }
+    [data-arrive~="stagger"].scroller:has(> .is-pending, > .is-arriving) { scroll-snap-type: none; }
+    [data-arrive~="stagger"].scroller:has(> .is-arriving) { animation: snap-back 700ms step-end forwards; }
   }
 
   [data-arrive~="lines"].is-pending { opacity: 1; transform: none; }
@@ -529,11 +531,12 @@ img.img-in { animation: img-in 250ms var(--ease-out); }
 }
 @keyframes arrive { from { opacity: 0; transform: translateY(var(--rise)); } }
 @keyframes arrive-side { from { opacity: 0; transform: translateX(24px); } }
-/* Italic serif overhangs its box, so the mask is generous on every side except the one it rises from. */
-@keyframes arrive-ink {
-  from { opacity: 0; transform: translateY(.5em); clip-path: inset(-20% -10% 100% -10%); }
-  to { opacity: 1; transform: none; clip-path: inset(-20% -10% -30% -10%); }
-}
+/* Opacity and transform only: an animated clip-path is repainted on every frame and cost a frame per heading. */
+@keyframes arrive-ink { from { opacity: 0; transform: translateY(.5em); } }
+/* An item waiting off to the side moves the point its row snaps to, so the row would re-snap on every frame of
+   the slide and the items would shake sideways: no snapping until the row has arrived. Snapping is off in the
+   row's own style and the animation hands it back at the end, so there is no frame in between where it is on. */
+@keyframes snap-back { to { scroll-snap-type: x proximity; } }
 @keyframes settle { from { opacity: 0; scale: .94; } }
 @keyframes stitch-in { from { stroke-dasharray: 0 13; } }
 

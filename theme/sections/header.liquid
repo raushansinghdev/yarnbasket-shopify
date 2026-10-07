@@ -723,7 +723,10 @@
   .drawer__link[aria-current] { text-decoration: underline; text-decoration-color: var(--rose); text-underline-offset: 6px; text-decoration-thickness: 2px; }
   .drawer__chevron { width: 24px; height: 24px; transition: transform var(--dur-panel) var(--ease-out); }
   .drawer__group[open] .drawer__chevron { transform: rotate(180deg); }
+  /* flow-root keeps the list's bottom margin inside the folding box; without it the margin escapes when the
+     height stops animating and everything below drops 12px in one frame. */
   .drawer__group::details-content {
+    display: flow-root;
     block-size: 0;
     overflow: clip;
     transition: block-size var(--dur-panel) var(--ease-out), content-visibility var(--dur-panel) allow-discrete;

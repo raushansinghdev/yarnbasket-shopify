@@ -100,6 +100,33 @@ for (const [label, device] of want('1b') ? [['desktop', devices['Desktop Chrome'
   await browser.close();
 }
 
+// 1c. Swipe rows arrive without shaking (docs/decisions.md, 2026-10-07): on a phone and a tablet the items slide in
+//     from the side once. The row never scrolls by itself while they do, and no item changes direction.
+for (const [label, device] of want('1c') ? [['phone', devices['Pixel 7']], ['tablet', { viewport: { width: 820, height: 1100 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }]] : []) {
+  const { browser, page } = await open(chromium, device);
+  await page.evaluate(() => {
+    window.__rows = [...document.querySelectorAll('[data-arrive~="stagger"].scroller')].map((row) => ({ row, name: row.className.split(' ')[0], left: [row.scrollLeft], x: [[], []] }));
+    const tick = () => {
+      for (const r of window.__rows) {
+        if (r.left.at(-1) !== r.row.scrollLeft) r.left.push(r.row.scrollLeft);
+        r.x.forEach((seen, i) => { const el = r.row.children[i]; if (!el) return; const x = Math.round(el.getBoundingClientRect().left * 10) / 10; if (seen.at(-1) !== x) seen.push(x); });
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  const steps = Math.ceil(await page.evaluate(() => document.documentElement.scrollHeight) / 30);
+  for (let i = 0; i < steps; i++) { await page.mouse.wheel(0, 30); await page.waitForTimeout(16); }
+  await page.waitForTimeout(1200);
+  const rows = await page.evaluate(() => {
+    const turns = (a) => a.filter((v, i) => i > 1 && (v - a[i - 1]) * (a[i - 1] - a[i - 2]) < 0).length;
+    return window.__rows.map((r) => ({ name: r.name, scrolled: r.left.length > 1 || r.left[0] !== 0, turns: Math.max(...r.x.map(turns)), snap: getComputedStyle(r.row).scrollSnapType }));
+  });
+  const bad = rows.filter((r) => r.scrolled || r.turns > 0 || r.snap === 'none');
+  record(`Swipe rows arrive without shaking, ${label}`, rows.length > 0 && bad.length === 0, bad.map((r) => `${r.name}: scrolled by itself ${r.scrolled}, direction changes ${r.turns}, snapping after ${r.snap}`).join('; ') || `${rows.length} rows still`);
+  await browser.close();
+}
+
 // 2. Smoothness: slow frames during a cold scroll, CPU slowed 4x (Chrome only: it exposes CPU throttling)
 for (const [label, device] of want('2') ? [['desktop', devices['Desktop Chrome']], ['phone', devices['Pixel 7']]] : []) {
   const { browser, ctx, page } = await open(chromium, device);
@@ -2322,6 +2349,35 @@ if (want('21')) {
       record('Menu: Enter opens Gifts, Esc returns to the button', opened.open && opened.links >= 2 && back, `opened: ${opened.open}, links 44px or taller: ${opened.links}, focus back on the menu button: ${back}`);
       record('Menu: accessibility, folded and open (axe)', v1.length === 0 && v2.length === 0, [...v1, ...v2].join(', ') || '0 violations');
     }
+    await browser.close();
+  }
+  // A folding list opens and closes in one smooth move (2026-10-07): what is below it moves only as much as the
+  // list's own height changes, frame by frame. A margin escaping the folding box shows up as a step here.
+  {
+    const { browser, page } = await open(chromium, { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await page.click('[data-menu-open]');
+    await page.waitForTimeout(1200);
+    const steps = await page.evaluate(async () => {
+      const below = document.querySelector('#MenuDrawer .drawer__secondary');
+      const out = [];
+      for (const g of document.querySelectorAll('#MenuDrawer .drawer__group')) {
+        for (let k = 0; k < 2; k++) {
+          g.querySelector('summary').scrollIntoView({ block: 'center' });
+          await new Promise((r) => setTimeout(r, 200));
+          const rows = [];
+          let on = true;
+          const tick = () => { const top = g.getBoundingClientRect().top; rows.push([g.getBoundingClientRect().height, below.getBoundingClientRect().top - top]); if (on) requestAnimationFrame(tick); };
+          requestAnimationFrame(tick);
+          g.querySelector('summary').click();
+          await new Promise((r) => setTimeout(r, 900));
+          on = false;
+          const step = Math.max(...rows.map((r, i) => (i ? Math.abs(Math.abs(r[1] - rows[i - 1][1]) - Math.abs(r[0] - rows[i - 1][0])) : 0)));
+          out.push({ name: g.querySelector('summary').textContent.trim(), open: g.open, moved: Math.abs(rows.at(-1)[0] - rows[0][0]) > 20, step: Math.round(step * 10) / 10 });
+        }
+      }
+      return out;
+    });
+    record('Menu: folding lists open and close without a jump', steps.length > 0 && steps.every((s) => s.moved && s.step <= 1), steps.map((s) => `${s.name} ${s.open ? 'opening' : 'closing'}: ${s.step}px step`).join(', ') || 'no folding list found');
     await browser.close();
   }
   // Desktop: the photo panels stay on screen at the narrowest desktop layout (1100px) and the page never scrolls sideways.

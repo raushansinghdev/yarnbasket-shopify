@@ -2,6 +2,16 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-07 (three failing checks and two jitters fixed)
+
+The full check before the push of 2026-10-06 failed three checks, and Raushan then saw two jitters on his phone that no check caught. Each cause was measured frame by frame before the fix.
+
+- **The cart's "everything unlocked" line is shorter: "Free shipping, gift and ₹100 off unlocked"** (was "Free shipping, free gift and …"). At 14px the old line was 276px and a 320px phone has 262px for it, so it took a second line and the drawer's pinned bottom grew from 121px to 140px (limit 125). The new line is 249px. The limit in the check is unchanged.
+- **Section headings arrive with a fade and a rise only; the clip mask ("ink lifting") is gone.** Chrome repaints an animated `clip-path` on every frame, which dropped one frame per heading on a slowed CPU: 7 slow frames on desktop and 1 on a phone, 0 and 0 without it. The new hero, the footer, the photos and every other arrival were ruled out by switching each off in turn. `arrive-ink` keeps its own distance (.5em) and 600ms. Not established: why the check passed before, since the animation dates from the first arrival work. Rule: arrivals animate opacity and transform only.
+- **A swipe row doesn't snap until it has arrived** (phones and tablets). Its items wait 24px to the side and slide in; a shifted item also shifts the point the row snaps to, so the row sat scrolled 24px and re-snapped on every frame of the slide. The first tile changed direction 12 times in Gifting and 11 in Reviews. Snapping is now off in the row's own style while items wait or arrive, and an animation hands it back after 700ms (`snap-back`). A first try that switched it off with the animation left one frame where it was on, and the row jumped 24px in that frame.
+- **The phone menu's folding lists (Gifts, Help) open and close in one move.** The list inside has a 12px bottom margin; it stayed inside the box while the height animated and escaped when it stopped, so everything below dropped 12px in one frame and jumped back on closing. `display: flow-root` on the folding box keeps it inside. The FAQ was measured and has no such step.
+- **Two new checks:** 1c (swipe rows never scroll by themselves and no item changes direction while arriving, phone and tablet) and, in 21, folding lists move what is below them only as much as their own height changes.
+
 ## 2026-10-06 (a new footer: links first, signature last; docs/footer-plan.md)
 
 - **The footer is rebuilt from scratch** (Raushan asked for a professional, aligned, modern footer with everything a shop footer needs). It replaces the centred banner footer of 2026-10-01 and its trim of 2026-10-04.

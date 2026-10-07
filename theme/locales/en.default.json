@@ -437,7 +437,7 @@
     "ship_done": "You've got free shipping",
     "all_done": "Free shipping and free gift unlocked",
     "gift_done": "Free gift unlocked",
-    "all_done_off": "Free shipping, free gift and {{ off }} off unlocked",
+    "all_done_off": "Free shipping, gift and {{ off }} off unlocked",
     "ship_off_done": "Free shipping and {{ off }} off unlocked",
     "earned_ship": "Free shipping",
     "earned_gift": "Free gift",
