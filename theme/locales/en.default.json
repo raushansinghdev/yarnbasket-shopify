@@ -309,7 +309,7 @@
     "sign_in": "Sign in",
     "greeting": "Hi, {{ name }}",
     "your_account": "Your account",
-    "row_hint": "Orders, saved items & help",
+    "row_hint": "Orders & help",
     "menu_label": "Your account",
     "orders": "Orders",
     "saved": "Saved",

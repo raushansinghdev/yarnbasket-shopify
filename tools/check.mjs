@@ -2351,6 +2351,29 @@ if (want('21')) {
     }
     await browser.close();
   }
+  // The lower list (2026-10-07): Saved items and Custom & bulk orders are two tiles of one height side by side under
+  // the account row; the heart is filled once something is saved and the count shows.
+  for (const w of [390, 360]) {
+    const { browser, page } = await open(chromium, { viewport: { width: w, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, { reducedMotion: 'reduce', init: () => { try { localStorage.setItem('yb-saved', JSON.stringify(['a-saved-piece'])); } catch {} } });
+    await page.click('[data-menu-open]');
+    await page.waitForTimeout(600);
+    const t = await page.evaluate(() => {
+      const d = document.querySelector('#MenuDrawer');
+      const tiles = [...d.querySelectorAll('.drawer__quick > a')].map((a) => a.getBoundingClientRect());
+      const count = d.querySelector('.drawer__quick [data-saved-count]');
+      const panel = d.querySelector('.drawer__panel').getBoundingClientRect();
+      return {
+        n: tiles.length,
+        row: new Set(tiles.map((r) => Math.round(r.top))).size === 1,
+        heights: [...new Set(tiles.map((r) => Math.round(r.height)))],
+        inside: tiles.every((r) => r.left >= panel.left && r.right <= panel.right + 1),
+        heart: getComputedStyle(d.querySelector('.drawer__quick .icon__fill')).fill,
+        count: count && !count.hidden ? count.textContent : '',
+      };
+    });
+    record(`Menu, ${w}px: two tiles of one height under the account row`, t.n === 2 && t.row && t.heights.length === 1 && t.heights[0] >= 48 && t.inside && t.heart !== 'none' && t.count === '1', `${t.n} tiles, one row: ${t.row}, heights: ${t.heights.join(', ')}px, inside the panel: ${t.inside}, heart fill: ${t.heart}, count: "${t.count}"`);
+    await browser.close();
+  }
   // A folding list opens and closes in one smooth move (2026-10-07): what is below it moves only as much as the
   // list's own height changes, frame by frame. A margin escaping the folding box shows up as a step here.
   {
