@@ -346,7 +346,7 @@
               {%- render 'icon', icon: 'whatsapp' -%}{{ 'account.whatsapp' | t }}
               <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
             </a>
-            <a class="btn btn--ghost" href="{{ help_base }}{{ 'account.custom_message' | t | url_encode }}" rel="noopener" target="_blank">
+            <a class="btn btn--ghost" href="{{ help_base }}{{ 'account.custom_message' | t | replace: '&#39;', "'" | url_encode }}" rel="noopener" target="_blank">
               {%- render 'icon', icon: 'gift' -%}{{ 'account.custom' | t }}
               <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
             </a>

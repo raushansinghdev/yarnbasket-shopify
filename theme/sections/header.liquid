@@ -273,7 +273,7 @@
       {%- if whatsapp != blank -%}
         {%- assign i = i | plus: 1 -%}
         <li class="drawer__quick" style="--i: {{ i }}">
-          <a href="https://wa.me/{{ whatsapp }}?text={{ 'header.menu_whatsapp_message' | t | url_encode }}" rel="noopener" target="_blank">
+          <a href="https://wa.me/{{ whatsapp }}?text={{ 'header.menu_whatsapp_message' | t | replace: '&#39;', "'" | url_encode }}" rel="noopener" target="_blank">
             {%- render 'icon', icon: 'whatsapp' -%}
             {{ 'header.menu_whatsapp' | t }}
             <span class="visually-hidden">({{ 'header.whatsapp' | t }}, {{ 'accessibility.new_window' | t }})</span>
