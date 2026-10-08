@@ -79,7 +79,7 @@ const fresh = () => fetch(`${location.pathname}?sections=${sectionId}`).then((r)
 
 /* ---------- Refreshing the cart in place ----------
    Lines with taps not yet sent keep their own element; other lines keep their photo (no flash). Undo rows stay
-   after the line they followed. Scroll position and focus are put back. */
+   after the line they followed. Focus is put back and nothing on screen moves (cart-rows.js). */
 const dirty = new Set();
 // Where focus is, in a form that survives the refresh ("this line's +", or an id).
 const PARTS = ['.qty__minus', '.qty__plus', '.qty__input', '.cart-line__title', '.cart-undo__btn'];
@@ -96,23 +96,20 @@ const render = (html) => {
   const active = document.activeElement;
   const focusAt = root.contains(active) ? focusPath(active) : '';
   const top = root.querySelector('[data-scroll]')?.scrollTop;
+  window.ybCart.before?.();
   const oldList = root.querySelector('[data-lines]');
   const list = next.querySelector('[data-lines]');
   if (oldList && list) {
-    const order = [...oldList.children];
-    order.forEach((was) => {
-      const li = was.matches('.cart-line') && list.querySelector(`:scope > [data-key="${CSS.escape(was.dataset.key)}"]`);
-      if (!li) return;
-      if (dirty.has(was.dataset.key)) li.replaceWith(was);
-      else li.firstElementChild.replaceWith(was.firstElementChild);
-    });
-    let prev = null;
-    order.forEach((el) => {
-      if (el.matches('.cart-undo')) {
-        const anchor = prev && list.querySelector(`:scope > [data-key="${CSS.escape(prev)}"]`);
-        anchor ? anchor.after(el) : list.prepend(el);
+    // Shopify re-keys a line when its discounts change: then found by its variant.
+    let prev;
+    [...oldList.children].forEach((was) => {
+      let now = was;
+      if (was.matches('.cart-undo')) prev ? prev.after(was) : list.prepend(was);
+      else if ((now = list.querySelector(`:scope > [data-key="${CSS.escape(was.dataset.key)}"]`) || list.querySelector(`:scope > [data-variant="${was.dataset.variant}"]`))) {
+        if (dirty.has(was.dataset.key)) now.replaceWith((now = was));
+        else now.firstElementChild.replaceWith(was.firstElementChild);
       }
-      prev = el.dataset.key;
+      prev = now;
     });
   }
   const was = root.querySelector('[data-rewards]');
@@ -123,7 +120,7 @@ const render = (html) => {
   root.replaceChildren(...next.childNodes);
   root.dataset.count = next.dataset.count;
   const scroller = root.querySelector('[data-scroll]');
-  if (scroller && top) scroller.scrollTop = top;
+  scroller?.scrollTo({ top, behavior: 'instant' });
   if (focusAt) root.querySelector(focusAt)?.focus({ preventScroll: true });
   if (!pending) root.classList.remove('is-busy');
   // Rewards: the bar moves from where it was, or from empty for a new goal; a goal reached or lost is said.

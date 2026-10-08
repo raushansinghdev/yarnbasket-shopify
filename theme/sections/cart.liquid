@@ -77,7 +77,8 @@
 </div>
 
 {% stylesheet %}
-  .cart-page { padding-top: clamp(var(--space-6), 1.5rem + 2vw, var(--space-8)); }
+  /* overflow-anchor: cart-rows.js keeps what is on screen in place through a redraw, so the browser must not too. */
+  .cart-page { padding-top: clamp(var(--space-6), 1.5rem + 2vw, var(--space-8)); overflow-anchor: none; }
   .cart-page__title { font-size: var(--fs-h2); line-height: 1.05; margin-bottom: var(--space-5); }
   .cart-page__count { font-family: var(--font-sans); font-style: normal; font-weight: 400; font-size: 1.125rem; letter-spacing: 0; color: var(--color-muted); white-space: nowrap; }
   /* minmax(0, …): the column never grows past the screen to fit a wide row (large text); rows wrap inside it. */

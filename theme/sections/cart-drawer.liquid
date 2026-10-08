@@ -136,7 +136,8 @@
   .cart-drawer[open][data-closing]::backdrop { opacity: 0; }
   @starting-style { .cart-drawer[open]::backdrop { opacity: 0; } }
 
-  .cart-drawer__root { display: flex; flex-direction: column; height: 100%; }
+  /* cart-rows.js keeps what is on screen in place through a redraw; the browser must not do it a second time. */
+  .cart-drawer__root { display: flex; flex-direction: column; height: 100%; overflow-anchor: none; }
   .cart-drawer__top {
     display: flex;
     align-items: center;

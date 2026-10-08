@@ -237,6 +237,13 @@ There's no Checkout button on an empty cart.
 
 ---
 
+### 6.7 Holding still (2026-10-08)
+
+A change redraws the cart, and nothing on screen moves: not for a "+" in the swipe rows, a removed line, Undo or
+the free gift arriving. `cart-rows.js` ("Holding still") measures the tapped piece (or the first kept thing in
+view) before and after each redraw and corrects the scroll at once. At the very top the cart stays at the top.
+Check §8e. See docs/decisions.md, 2026-10-08.
+
 ## 7. Accessibility checklist (WCAG 2.2 AA)
 
 - **Tap targets:** every one is at least 48 × 48px (our rule; WCAG asks for 24).

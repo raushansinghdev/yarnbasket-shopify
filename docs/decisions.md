@@ -2,6 +2,16 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-08 (cart: nothing moves when a piece is added or removed)
+
+- **The cart holds still through every change.** Raushan saw the drawer run to the top and glide back after a "+" in Little extras, and after removing a line, and asked that it not scroll at all so the shopper can keep exploring.
+- **Cause.** Every change redraws the whole cart, the scrolling box included, so it started from the top; the old position was then put back, but the box scrolls smoothly (for the tap on the amount beside Checkout), so putting it back was a visible glide. And the same scroll position is not the same view: an added piece is a new line above.
+- **What is held in place:** the card that was tapped; or else whatever was last tapped (a line, its Undo row) while it is in view; or else the first thing in view that survives a redraw. Measured before and after and corrected at once, before the browser paints. At the very top the cart stays at the top, so a new line is seen arriving. The same on `/cart`.
+- **The Undo row stays where its line was.** When removing a piece changes a discount, Shopify gives the other lines new keys; the Undo row lost its place and went to the top of the list. Lines are now also found by their variant.
+- **Every name in the swipe rows has two lines of room,** so a row is one height whichever pieces are in it and the end of the cart doesn't shift as cards come and go.
+- **The code is in `cart-rows.js`** ("Holding still"); cart.js is at its size budget and only calls `ybCart.before()` ahead of a redraw. The browser's own scroll anchoring is off inside the cart, so the two don't both correct.
+- Check §8e: with motion on, phone and desktop, frame by frame: the list never runs back and the tapped card and the Undo row don't move. It fails on the old code.
+
 ## 2026-10-07 (phone menu: one way to reach us, "Custom & bulk orders")
 
 - **The menu's lower list is the account row, Saved items and "Custom & bulk orders"** (Raushan). Custom and bulk orders are common for handmade work and the shop must not lose them, so the one contact row is named for that instead of "Chat on WhatsApp". It opens WhatsApp with "Hi Yarn Basket! I'd like to ask about a custom or bulk order."; screen readers also hear "Chat on WhatsApp, opens in a new window".

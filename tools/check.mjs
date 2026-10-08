@@ -768,6 +768,66 @@ if (want('9')) {
     const savedUrl = await pageUrl('saved', 'saved');
     const trackUrl = await pageUrl('track-order', 'track-order');
     const join = (url, q) => url + (url.includes('?') ? '&' : '?') + q;
+// 8e. The cart holds still (docs/decisions.md, 2026-10-08): adding a piece from the swipe rows or removing a line
+//     redraws the cart, and nothing on screen may move: the list never runs back to the top, the tapped card stays
+//     under the finger and the Undo row sits where its line was. With motion on: that is where the glide showed.
+if (want('8e')) {
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => !/free-gift|test-product/.test(`${p.handle},${[].concat(p.tags).join(',')}`) && p.variants.length === 1 && p.variants[0].available), () => []);
+  if (products.length < 5) console.log('SKIP  Cart holds still                               needs five products that can be bought');
+  for (const [label, device] of products.length < 5 ? [] : [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
+    const { browser, page, errors } = await open(chromium, device);
+    await page.request.post(site('/cart/clear.js'));
+    await page.request.post(site('/cart/add.js'), { data: { items: products.slice(0, 5).map((p) => ({ id: p.variants[0].id, quantity: 1 })) } });
+    await page.reload({ waitUntil: 'load' });
+    await page.click('.site-header__cart');
+    await page.waitForSelector('#CartDrawer [data-row-add]', { state: 'visible', timeout: 10000 }).catch(() => {});
+    // The rows fill one after another, and the free gift arrives on its own: start from a cart at rest.
+    await page.waitForTimeout(2500);
+    // Every frame until stop(): how far the list has run, and where the watched piece is while it is on the page.
+    const watch = (pick) => page.evaluate((pick) => {
+      const body = () => document.querySelector('#CartDrawer [data-scroll]');
+      const el = new Function(`return ${pick}`)()();
+      if (!el) return false;
+      el.scrollIntoView({ block: 'center', behavior: 'instant' });
+      const key = el.dataset.key;
+      const seen = { from: body().scrollTop, low: Infinity, at: el.getBoundingClientRect().top, drift: 0, on: true };
+      const tick = () => {
+        const now = el.isConnected ? el : key && document.querySelector(`#CartDrawer .cart-undo[data-key="${CSS.escape(key)}"]`);
+        seen.low = Math.min(seen.low, body().scrollTop);
+        // The Undo row is measured from where it first sits (it has its own margin inside the line's place).
+        if (now && now !== el && !seen.undo) seen.undo = seen.at = now.getBoundingClientRect().top;
+        if (now) seen.drift = Math.max(seen.drift, Math.abs(now.getBoundingClientRect().top - seen.at));
+        if (seen.on) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+      window.__still = seen;
+      return true;
+    }, pick);
+    const rest = async () => { await page.waitForTimeout(1200); await page.waitForFunction(() => !document.querySelector('#CartDrawer [data-cart-root].is-busy'), null, { timeout: 10000 }).catch(() => {}); await page.waitForTimeout(1800); return page.evaluate(() => { window.__still.on = false; return window.__still; }); };
+    const verdict = (s) => [s.low >= s.from - 1 && s.drift <= 1, `the list ran from ${Math.round(s.from)}px to as low as ${Math.round(s.low)}px, the piece moved ${Math.round(s.drift)}px`];
+
+    const had = await page.evaluate(() => +document.querySelector('#CartDrawer [data-cart-root]').dataset.count);
+    if (await watch(`() => document.querySelector('#CartDrawer [data-row-add]')?.closest('li')`)) {
+      await page.evaluate(() => document.querySelector('#CartDrawer [data-row-add]').click());
+      const s = await rest();
+      const has = await page.evaluate(() => +document.querySelector('#CartDrawer [data-cart-root]').dataset.count);
+      const [ok, detail] = verdict(s);
+      record(`Cart holds still, ${label}: "+" in a swipe row`, ok && has > had && s.from > 0, `${detail}; items ${had} → ${has}`);
+    } else record(`Cart holds still, ${label}: "+" in a swipe row`, false, 'no card with a "+" in the drawer');
+
+    await watch(`() => document.querySelectorAll('#CartDrawer .cart-line:not(.is-gift)')[3]`);
+    await page.evaluate(() => document.querySelectorAll('#CartDrawer .cart-line:not(.is-gift)')[3].querySelector('.cart-line__remove').click());
+    const gone = await rest();
+    const undo = await page.evaluate(() => !!document.querySelector('#CartDrawer .cart-undo'));
+    const [ok, detail] = verdict(gone);
+    record(`Cart holds still, ${label}: removing a line`, ok && undo && gone.from > 0, `${detail}; Undo row there: ${undo}`);
+    record(`Cart holds still, ${label}: no script errors`, errors.length === 0, errors.join('; ') || 'none');
+    await page.request.post(site('/cart/clear.js'));
+    await browser.close();
+  }
+}
+
     for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
       const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
       const axeOn = async () => {

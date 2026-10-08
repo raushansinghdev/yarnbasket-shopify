@@ -68,6 +68,9 @@
      Saved page's card has lost its button row here, so its second row and the gap above it go too. */
   .cart-row .extra { grid-template-rows: auto 1fr auto; }
   .cart-row .saved-item { grid-template-rows: 1fr; gap: 0; }
+  /* Two lines of room for every name, so a row is one height whichever pieces are in it and the cart below it
+     never shifts as cards come and go. */
+  .cart-row :is(.extra__title, .card__title) { min-height: 2lh; }
   .cart-row .extra__title { align-self: start; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400; font-size: .9375rem; }
   .cart-row .extra .price { font-size: 1rem; font-weight: 600; color: var(--color-heading); }
   /* The button sits on the photo's bottom-right corner. The box covers the square photo whatever the card's

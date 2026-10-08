@@ -26,10 +26,58 @@ const listOf = (row) => row.querySelector('[data-row-list]');
 // A card's button (its link, should it ever have none).
 const action = (li) => li?.querySelector('.saved-item__btn, .extra__btn') || li?.querySelector('.card__link');
 
+/* ---------- Holding still ----------
+   A change redraws the cart, and what is on screen must not move. Held in place through every redraw (cart.js
+   calls before(), then says cart:rendered) and through the rows' own changes: the card that was tapped; or else
+   what was last tapped, while it is in view; or else the first thing in view that is the same element after a
+   redraw. At the very top the cart stays at the top, so a new line is seen arriving. Always at once: the
+   drawer's own scrolling is smooth. */
+const KEPT = '.cart-line > :first-child, .cart-undo, [data-cart-note], [data-cart-rows]';
+const scroller = () => {
+  const body = scope.querySelector('[data-scroll]');
+  // A short landscape phone: the whole drawer scrolls (sections/cart-drawer).
+  return !inDrawer || !body ? window : getComputedStyle(body).overflowY === 'visible' ? scope : body;
+};
+const where = (at) => (at === window ? scrollY : at.scrollTop);
+// The line, card or Undo row last tapped. A line is drawn again, so it is found by its key: its photo is kept,
+// and once it is removed its Undo row has the key.
+let touched = null;
+scope?.addEventListener('click', (event) => { touched = event.target.closest?.('.cart-line, .cart-undo, [data-row-list] > li') || touched; }, true);
+const tapped = () => {
+  const key = touched?.dataset.key;
+  return key ? scope.querySelector(`.cart-line[data-key="${CSS.escape(key)}"] > :first-child, .cart-undo[data-key="${CSS.escape(key)}"]`) : touched;
+};
+let mark = null;
+const before = (el) => {
+  const at = scroller();
+  const y = where(at);
+  const [edge, end] = at === window ? [0, innerHeight] : [at.getBoundingClientRect().top, at.getBoundingClientRect().bottom];
+  const seen = (k) => k.getBoundingClientRect().bottom > edge;
+  const mine = tapped();
+  const held = el?.isConnected ? el : y > 0 && ((mine?.isConnected && seen(mine) && mine.getBoundingClientRect().top < end && mine) || [...scope.querySelectorAll(KEPT)].find(seen));
+  mark = { y, held, from: held && held.getBoundingClientRect().top };
+};
+const after = () => {
+  if (!mark) return;
+  const { y, held, from } = mark;
+  const at = scroller();
+  mark = null;
+  at.scrollTo({ top: held && held.isConnected ? where(at) + held.getBoundingClientRect().top - from : y, behavior: 'instant' });
+};
+const still = (change, el) => {
+  before(el);
+  change();
+  after();
+};
+// Set while a card's "+" redraws the cart.
+let holding = null;
+if (scope) window.ybCart.before = () => before(holding);
+
 /* ---------- The rows' own element ----------
    The drawer redraws all of itself after every change, with the rows empty again. The filled element is kept
    and put back in their place, so the cards, their photos and the place in each row survive. */
 let rows = null;
+const across = new WeakMap();
 let savedRow, extrasRow, recentRow;
 const adopt = () => {
   const found = scope.querySelector('[data-cart-rows]');
@@ -45,6 +93,8 @@ const adopt = () => {
   const url = found.querySelector('[data-cart-extras]')?.dataset.url;
   if (url && extrasRow) extrasRow.dataset.url = url;
   found.replaceWith(rows);
+  // Out of the page and back in, a row starts from its first card again: put each where it was.
+  rows.querySelectorAll('[data-row-list]').forEach((list) => list.scrollTo({ left: across.get(list) || 0, behavior: 'instant' }));
 };
 
 /* ---------- Cards ---------- */
@@ -158,7 +208,8 @@ const draw = () => {
       ? fetch(extrasRow.dataset.url).then((r) => (r.ok ? r.text() : '')).then((html) => parse(html).querySelector('.extras')).catch(() => null)
       : null,
   ];
-  Promise.all(jobs).then(([savedCards, recentCards, extras]) => {
+  // Nothing on screen moves when a row above fills or empties.
+  Promise.all(jobs).then(([savedCards, recentCards, extras]) => still(() => {
     // A newer change has asked again, or a card is still showing its tick (it asks again when it goes).
     if (asked !== turn || leaving.size) return;
     if (savedRow) {
@@ -177,7 +228,7 @@ const draw = () => {
     }
     if (recentRow) put(recentRow, recentCards.filter(Boolean).slice(0, MAX));
     tidy();
-  });
+  }));
 };
 
 /* ---------- Add ---------- */
@@ -202,10 +253,13 @@ scope?.addEventListener('click', (event) => {
         leaving.delete(li);
         button.removeAttribute('aria-busy');
         delete button.dataset.added;
-        tidy();
+        still(tidy);
         draw();
       }, 900);
+      // The tapped card stays under the finger while the cart redraws around it.
+      holding = li;
     })
+      holding = null;
     .catch((err) => {
       const note = document.createElement('p');
       note.className = 'cart-row__note';
@@ -221,21 +275,18 @@ scope?.addEventListener('click', (event) => {
 let started = false;
 // Where the shopper was in the rows, for after the drawer has redrawn itself.
 let last = null;
-let top = 0;
 scope?.addEventListener('focusin', (event) => { last = rows?.contains(event.target) ? event.target : null; });
-scope?.addEventListener('scroll', (event) => { if (event.target.matches?.('[data-scroll]')) top = event.target.scrollTop; }, true);
+scope?.addEventListener('scroll', (event) => { if (event.target.matches?.('[data-row-list]')) across.set(event.target, event.target.scrollLeft); }, true);
 
 document.addEventListener('cart:rendered', () => {
   const was = rows;
   adopt();
-  if (inDrawer && was && rows.isConnected) {
-    const body = scope.querySelector('[data-scroll]');
-    if (body && top) body.scrollTop = top;
-    if (last?.isConnected && !scope.querySelector(':focus')) last.focus({ preventScroll: true });
+  if (inDrawer && was && rows.isConnected && last?.isConnected && !scope.querySelector(':focus')) last.focus({ preventScroll: true });
+  if (started && (!inDrawer || scope.open)) {
+    tidy();
+    draw();
   }
-  if (!started || (inDrawer && !scope.open)) return;
-  tidy();
-  draw();
+  after();
 });
 // A heart on one of the cards, or the list changed in another tab.
 document.addEventListener('saved:change', () => started && (!inDrawer || scope.open) && draw());
