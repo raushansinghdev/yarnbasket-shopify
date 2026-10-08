@@ -267,7 +267,7 @@
                   if help_base
                     assign help_url = 'account.help_message' | t: name: order.name | url_encode | prepend: help_base
                   else
-                    assign help_url = '/pages/contact'
+                    assign help_url = order.name | remove: '#' | url_encode | prepend: '/pages/contact?topic=order&order=' | append: '#ContactForm'
                   endif
                   assign ordered_on = order.created_at | date: '%-d %b %Y'
                   assign order_url = order.customer_url | default: routes.account_url
@@ -352,7 +352,7 @@
             </a>
           {%- else -%}
             <a class="btn" href="/pages/contact">{{ 'account.contact' | t }}</a>
-            <a class="btn btn--ghost" href="/pages/contact">{%- render 'icon', icon: 'gift' -%}{{ 'account.custom' | t }}</a>
+            <a class="btn btn--ghost" href="/pages/contact?topic=custom#ContactForm">{%- render 'icon', icon: 'gift' -%}{{ 'account.custom' | t }}</a>
           {%- endif -%}
         </div>
         <ul class="account__help-links" role="list">

@@ -83,6 +83,11 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
 - [ ] Help menu (Content → Menus → Help): add Shipping & delivery, Returns, FAQ and Our story as those pages are written
 - [ ] Payment gateway, COD, shipping and checkout: see "Shipping, payments and checkout" below
 
+- [ ] **Contact page (docs/contact-plan.md, built 2026-10-08):**
+  - send one message from `/pages/contact` by hand: the puzzle (Shopify's bot check) may show; check the thank-you panel, and which inbox the email lands in with Name, Email, Phone, Topic, Order number and Message (Settings → Notifications → sender email)
+  - the Contact page's template is `contact` (Content → Pages → Contact → Theme template) once this theme is published, or the quick answers don't show
+  - after publishing, Theme settings → Social on the live theme has the Contact hours and the Grievance officer
+
 ## Shipping, payments and checkout (docs/shipping-checkout-comparison.md, decided 2026-10-03)
 Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with Razorpay connected inside it, partial COD only (no full COD). Shopify's checkout with Razorpay stays as the fallback. Do them in this order:
 - [ ] **Razorpay account** (business KYC takes days, so start it first). Connect it in Shopify (Settings → Payments), so Shopify's checkout works as the fallback.

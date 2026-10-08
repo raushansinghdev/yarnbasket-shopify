@@ -37,7 +37,7 @@
         {{- 'saved.ask_make' | t -}}<span class="visually-hidden">: {{ product.title }} ({{ 'accessibility.new_window' | t }})</span>
       </a>
     {%- else -%}
-      <a class="btn btn--ghost saved-item__btn" href="/pages/contact">
+      <a class="btn btn--ghost saved-item__btn" href="/pages/contact?topic=product&amp;about={{ product.title | url_encode }}#ContactForm">
         {{- 'saved.ask_make' | t -}}<span class="visually-hidden">: {{ product.title }}</span>
       </a>
     {%- endif -%}

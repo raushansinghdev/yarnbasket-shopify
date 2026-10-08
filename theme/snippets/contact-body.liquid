@@ -1,0 +1,435 @@
+{%- comment -%}
+  Contact us (docs/contact-plan.md), on the page with the handle "contact". WhatsApp first: a damage claim needs a
+  video and only WhatsApp carries one. The shortcuts send most people to the right place in one tap; the form is for
+  everyone else. It posts as a normal page load, because Shopify may put its own bot check between the post and the
+  result; assets/contact.js only adds polish (messages under the fields, the count, a form filled in from the
+  address: ?topic=order&order=1042&about=…). Without a WhatsApp number (Theme settings → Social) the WhatsApp parts
+  are left out and the shortcuts lead to the form.
+{%- endcomment -%}
+{%- liquid
+  assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
+  assign email = settings.social_email | strip
+  assign instagram = settings.social_instagram
+  assign instagram_name = instagram | split: '?' | first | split: '/' | last
+  assign hours = settings.contact_hours
+  assign officer = settings.grievance_officer
+  assign track_url = pages['track-order'].url | default: '/pages/track-order'
+  assign max = 1000
+  if whatsapp != blank
+    assign wa = 'https://wa.me/' | append: whatsapp | append: '?text='
+    assign new_tab = 'accessibility.new_window' | t
+  endif
+-%}
+<div class="section contact scheme-soft">
+  <div class="contact__grid">
+    <div class="contact__side">
+      <div class="contact__head" data-arrive="lines">
+        <span class="contact__icon" aria-hidden="true">{%- render 'icon', icon: 'mail' -%}</span>
+        <p class="eyebrow">{{ 'general.say_hello' | t }}</p>
+        <h1 class="contact__title">{{ 'contact.title' | t }}</h1>
+        <p class="contact__lead">{{ 'contact.lead' | t }}</p>
+        {%- if hours != blank -%}<p class="contact__hours">{{ hours }}</p>{%- endif -%}
+      </div>
+
+      {%- if whatsapp != blank -%}
+        <div class="contact__wa">
+          <a class="btn" href="{{ wa }}{{ 'header.whatsapp_message' | t | url_encode }}" rel="noopener" target="_blank">
+            {%- render 'icon', icon: 'whatsapp' -%}{{ 'header.whatsapp' | t }}
+            <span class="visually-hidden">({{ new_tab }})</span>
+          </a>
+          <p class="contact__number">{{ settings.social_whatsapp }}</p>
+        </div>
+      {%- endif -%}
+
+      <section class="contact__needs" aria-labelledby="ContactNeeds">
+        <h2 class="eyebrow" id="ContactNeeds">{{ 'contact.needs_title' | t }}</h2>
+        <ul class="contact__rows" role="list" data-arrive="stagger">
+          <li style="--i: 0">
+            <a class="contact-row" href="{{ track_url }}">
+              {%- render 'icon', icon: 'package' -%}
+              <span class="contact-row__text">{{ 'contact.need_track' | t }}</span>
+              {%- render 'icon', icon: 'arrow', class: 'contact-row__go' -%}
+            </a>
+          </li>
+          <li style="--i: 1">
+            <a class="contact-row" {% if wa %}href="{{ wa }}{{ 'header.menu_whatsapp_message' | t | replace: '&#39;', "'" | url_encode }}" rel="noopener" target="_blank"{% else %}href="?topic=custom#ContactForm" data-topic-link="custom"{% endif %}>
+              {%- render 'icon', icon: 'gift' -%}
+              <span class="contact-row__text">
+                {{- 'contact.need_custom' | t -}}
+                {%- if wa %} <span class="visually-hidden">({{ 'header.whatsapp' | t }}, {{ new_tab }})</span>{% endif -%}
+              </span>
+              {%- render 'icon', icon: 'arrow', class: 'contact-row__go' -%}
+            </a>
+          </li>
+          <li style="--i: 2">
+            <a class="contact-row" {% if wa %}href="{{ wa }}{{ 'contact.damaged_message' | t | url_encode }}" rel="noopener" target="_blank"{% else %}href="?topic=damaged#ContactForm" data-topic-link="damaged"{% endif %}>
+              {%- render 'icon', icon: 'replace' -%}
+              <span class="contact-row__text">
+                {{- 'contact.need_damaged' | t -}}
+                {%- if wa %} <span class="visually-hidden">({{ 'header.whatsapp' | t }}, {{ new_tab }})</span>{% endif -%}
+                <span class="contact-row__hint">{{ 'contact.need_damaged_hint' | t }}</span>
+              </span>
+              {%- render 'icon', icon: 'arrow', class: 'contact-row__go' -%}
+            </a>
+          </li>
+          <li style="--i: 3">
+            <a class="contact-row" href="#ContactForm">
+              {%- render 'icon', icon: 'mail' -%}
+              <span class="contact-row__text">{{ 'contact.need_else' | t }}</span>
+              {%- render 'icon', icon: 'arrow', class: 'contact-row__go' -%}
+            </a>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="contact__main">
+      {%- form 'contact', id: 'ContactForm', class: 'contact__form', data-contact-form: '' -%}
+        {%- if form.posted_successfully? -%}
+          <div class="contact__sent" role="status" tabindex="-1" autofocus>
+            <span class="contact__sent-icon" aria-hidden="true">{%- render 'icon', icon: 'check' -%}</span>
+            <h2 class="contact__h2">{{ 'contact.sent_title' | t }}</h2>
+            <p>{{ 'contact.sent_text' | t }}</p>
+            <div class="contact__sent-links">
+              <a class="btn" href="{{ settings.shop_all_collection.url | default: routes.all_products_collection_url }}">{{ 'contact.sent_shop' | t }}</a>
+              <a class="btn btn--ghost" href="{{ track_url }}">{{ 'contact.need_track' | t }}</a>
+            </div>
+          </div>
+        {%- else -%}
+          <h2 class="contact__h2" id="ContactFormTitle">{{ 'contact.form_title' | t }}</h2>
+          <p class="contact__note">{{ 'contact.form_note' | t }}</p>
+
+          {%- if form.errors -%}
+            <div class="contact__summary" role="alert" tabindex="-1" autofocus>
+              <p>{{ 'contact.error_title' | t }}</p>
+              <ul>
+                {%- for field in form.errors -%}
+                  <li>
+                    {%- if field == 'form' -%}
+                      {{ form.errors.messages[field] }}
+                    {%- else -%}
+                      <a href="#Contact-{{ field }}">{{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }}</a>
+                    {%- endif -%}
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+
+          <div class="contact__field">
+            <label for="Contact-name">{{ 'contact.name' | t }}</label>
+            <input
+              id="Contact-name"
+              type="text"
+              name="contact[name]"
+              value="{{ form.name | default: customer.name | escape }}"
+              autocomplete="name"
+              required
+              aria-describedby="Contact-name-error"
+              data-error="{{ 'contact.name_error' | t }}"
+            >
+            <p class="contact__error" id="Contact-name-error" hidden></p>
+          </div>
+
+          <div class="contact__field">
+            <label for="Contact-email">{{ 'contact.email' | t }}</label>
+            <input
+              id="Contact-email"
+              type="email"
+              name="contact[email]"
+              value="{{ form.email | default: customer.email | escape }}"
+              autocomplete="email"
+              inputmode="email"
+              autocapitalize="off"
+              spellcheck="false"
+              required
+              aria-describedby="Contact-email-error"
+              {% if form.errors contains 'email' %}aria-invalid="true"{% endif %}
+              data-error="{{ 'contact.email_error' | t }}"
+            >
+            <p class="contact__error" id="Contact-email-error" {% unless form.errors contains 'email' %}hidden{% endunless %}>
+              {%- if form.errors contains 'email' -%}{{ 'contact.email_error' | t }}{%- endif -%}
+            </p>
+          </div>
+
+          <div class="contact__field">
+            <label for="Contact-phone">{{ 'contact.phone' | t }} <span class="contact__optional">{{ 'contact.optional' | t }}</span></label>
+            <input
+              id="Contact-phone"
+              type="tel"
+              name="contact[phone]"
+              value="{{ form.phone | default: customer.phone | escape }}"
+              autocomplete="tel"
+              aria-describedby="Contact-phone-hint"
+            >
+            <p class="contact__hint" id="Contact-phone-hint">{{ 'contact.phone_hint' | t }}</p>
+          </div>
+
+          {%- comment -%} The option's text is what reaches the inbox; data-key is what ?topic= and the script go by. {%- endcomment -%}
+          <div class="contact__field">
+            <label for="Contact-topic">{{ 'contact.topic' | t }}</label>
+            <select
+              id="Contact-topic"
+              name="contact[Topic]"
+              required
+              aria-describedby="Contact-topic-error"
+              data-error="{{ 'contact.topic_error' | t }}"
+              data-topic
+            >
+              <option value="">{{ 'contact.topic_choose' | t }}</option>
+              <option data-key="order">{{ 'contact.topic_order' | t }}</option>
+              <option data-key="custom">{{ 'contact.need_custom' | t }}</option>
+              <option data-key="damaged">{{ 'contact.need_damaged' | t }}</option>
+              <option data-key="product">{{ 'contact.topic_product' | t }}</option>
+              <option data-key="data">{{ 'contact.topic_data' | t }}</option>
+              <option data-key="else">{{ 'contact.need_else' | t }}</option>
+            </select>
+            <p class="contact__error" id="Contact-topic-error" hidden></p>
+            <p class="contact__hint contact__hint--note" data-topic-note="damaged">
+              {%- if wa -%}
+                {{ 'contact.damaged_note' | t }}
+                <a href="{{ wa }}{{ 'contact.damaged_message' | t | url_encode }}" rel="noopener" target="_blank">{{ 'header.whatsapp' | t }}<span class="visually-hidden"> ({{ new_tab }})</span></a>
+              {%- else -%}
+                {{ 'contact.damaged_note_email' | t }}
+              {%- endif -%}
+            </p>
+          </div>
+
+          <div class="contact__field" data-topic-field="order damaged">
+            <label for="Contact-order">{{ 'contact.order' | t }} <span class="contact__optional">{{ 'contact.optional' | t }}</span></label>
+            <input
+              id="Contact-order"
+              type="text"
+              name="contact[Order number]"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              maxlength="20"
+              aria-describedby="Contact-order-hint"
+              data-order
+            >
+            <p class="contact__hint" id="Contact-order-hint">{{ 'contact.order_hint' | t }}</p>
+          </div>
+
+          <div class="contact__field">
+            <label for="Contact-body">{{ 'contact.message' | t }}</label>
+            <textarea
+              id="Contact-body"
+              name="contact[body]"
+              rows="5"
+              maxlength="{{ max }}"
+              required
+              aria-describedby="Contact-body-error"
+              data-error="{{ 'contact.message_error' | t }}"
+              data-about="{{ 'contact.about' | t }}"
+              data-body
+            >{{ form.body }}</textarea>
+            <p class="contact__foot">
+              <span class="contact__error" id="Contact-body-error" hidden></span>
+              {%- assign left_template = 'contact.left' | t: count: 9999 -%}
+              <span class="contact__left" data-left data-template="{{ left_template | escape }}" hidden></span>
+            </p>
+          </div>
+
+          <button type="submit" class="btn contact__send" data-send data-sending="{{ 'contact.sending' | t }}">{{ 'contact.send' | t }}</button>
+          <p class="contact__privacy">
+            {{ 'contact.privacy' | t }}
+            {%- if shop.privacy_policy %} <a href="{{ shop.privacy_policy.url }}">{{ shop.privacy_policy.title }}</a>{% endif -%}
+          </p>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+
+    <div class="contact__more">
+      {%- if email != blank or instagram != blank -%}
+        <section aria-labelledby="ContactOther">
+          <h2 class="eyebrow" id="ContactOther">{{ 'contact.other_title' | t }}</h2>
+          <ul class="contact__channels" role="list">
+            {%- if email != blank -%}
+              <li><a class="contact__channel" href="mailto:{{ email | escape }}">{%- render 'icon', icon: 'mail' -%}{{ email | escape }}</a></li>
+            {%- endif -%}
+            {%- if instagram != blank -%}
+              <li>
+                <a class="contact__channel" href="{{ instagram }}" rel="noopener" target="_blank">
+                  {%- render 'icon', icon: 'instagram' -%}@{{ instagram_name | escape }}
+                  <span class="visually-hidden">Instagram ({{ 'accessibility.new_window' | t }})</span>
+                </a>
+              </li>
+            {%- endif -%}
+          </ul>
+        </section>
+      {%- endif -%}
+
+      <section class="contact__business" aria-labelledby="ContactBusiness">
+        <h2 class="eyebrow" id="ContactBusiness">{{ 'contact.business_title' | t }}</h2>
+        <p>{{ shop.name }} · {{ 'contact.business_place' | t }}</p>
+        {%- if officer != blank -%}
+          <p>
+            {{ 'contact.officer' | t: name: officer }}
+            {%- if email != blank %} · <a href="mailto:{{ email | escape }}">{{ email | escape }}</a>{% endif -%}
+            {%- if settings.social_whatsapp != blank %} · <span class="contact__nowrap">{{ settings.social_whatsapp }}</span>{% endif -%}
+          </p>
+          <p>{{ 'contact.complaints' | t }}</p>
+        {%- endif -%}
+        {%- if shop.terms_of_service -%}
+          <p><a href="{{ shop.terms_of_service.url }}">{{ 'contact.terms' | t }}</a></p>
+        {%- endif -%}
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'contact.js' | asset_url }}" type="module"></script>
+
+{% stylesheet %}
+  .contact { padding-block: var(--space-7) var(--section-space); }
+  /* minmax(0, 1fr): without it Safari sizes the column to a field's natural width, and a 320px phone scrolls sideways. */
+  .contact__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-7); max-width: 34rem; }
+  .contact__side { display: grid; gap: var(--space-6); }
+  .contact__head { display: grid; justify-items: start; gap: var(--space-2); }
+  .contact__icon .icon { width: 40px; height: 40px; color: var(--color-heading); }
+  .contact__icon .icon__fill { fill: var(--blush); }
+  .contact__title { font-size: clamp(2rem, 1.5rem + 2vw, 3rem); line-height: 1.05; }
+  .contact__lead { font-size: var(--fs-lead); line-height: 1.5; }
+  .contact__hours { color: var(--color-muted); font-size: var(--fs-small); }
+
+  .contact__wa { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); }
+  .contact__number { color: var(--color-muted); font-variant-numeric: tabular-nums; }
+  @media (max-width: 479px) {
+    .contact__wa .btn { width: 100%; }
+    .contact__number { width: 100%; text-align: center; }
+  }
+
+  .contact__needs { display: grid; gap: var(--space-3); }
+  .contact__rows { border-top: 1px solid var(--color-line-strong); }
+  .contact__rows li { border-bottom: 1px solid var(--color-line-strong); }
+  .contact-row {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) 18px;
+    align-items: center;
+    gap: var(--space-4);
+    min-height: 60px;
+    padding-block: var(--space-3);
+    color: var(--color-heading);
+    font-weight: 500;
+    line-height: 1.3;
+    text-decoration: none;
+  }
+  .contact-row .icon__fill { fill: var(--blush); }
+  .contact-row__hint { display: block; margin-top: 2px; color: var(--color-muted); font-size: var(--fs-small); font-weight: 400; }
+  .contact-row__go { width: 18px; height: 18px; transition: transform var(--dur-panel) var(--ease-out); }
+  .contact-row:active { scale: .99; }
+  @media (hover: hover) { .contact-row:hover .contact-row__go { transform: translateX(3px); } }
+
+  /* The form sits on the page's one white card. */
+  .contact__form {
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-5);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    scroll-margin-top: calc(var(--header-height) + var(--space-4));
+  }
+  .contact__h2 { font-size: var(--fs-h3); line-height: 1.15; }
+  .contact__note { margin-top: calc(var(--space-3) * -1); color: var(--color-muted); font-size: var(--fs-small); }
+  .contact__field { display: grid; gap: 6px; }
+  .contact__field label { font-weight: 500; color: var(--color-heading); line-height: 1.3; }
+  .contact__optional { font-weight: 400; color: var(--color-muted); }
+  /* 16px text: an iPhone zooms the page into anything smaller. The Taupe line is 4:1 on white, so the edge of a
+     field can be seen (WCAG 1.4.11); the page's own lines are too faint for that. */
+  .contact__field :is(input, select, textarea) {
+    width: 100%;
+    min-height: var(--tap);
+    padding: 0 var(--space-4);
+    border: 1.5px solid var(--taupe);
+    border-radius: var(--radius-sm);
+    background-color: var(--white);
+    color: var(--color-heading);
+    font: 400 1rem/1.5 var(--font-sans);
+    transition: border-color var(--dur-state) ease;
+  }
+  .contact__field textarea { min-height: 8.5rem; padding-block: var(--space-3); resize: vertical; }
+  .contact__field select {
+    appearance: none;
+    padding-right: var(--space-7);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234E3A31' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-3) center;
+    background-size: 20px;
+    cursor: pointer;
+  }
+  .contact__field :is(input, select, textarea):focus-visible { border-color: var(--cocoa); outline-offset: 2px; }
+  @media (hover: hover) { .contact__field :is(input, select, textarea):hover { border-color: var(--cocoa); } }
+  .contact__field [aria-invalid="true"], .contact__field [aria-invalid="true"]:hover { border-color: #9A3F33; }
+  .contact__hint { color: var(--color-muted); font-size: var(--fs-small); line-height: 1.45; }
+  .contact__hint--note { padding: var(--space-3); border-radius: var(--radius-sm); background: var(--blush-soft); color: var(--color-ink); }
+  .contact__hint a { color: var(--color-heading); font-weight: 500; text-underline-offset: 3px; }
+  /* The "!" disc means colour is not the only sign of an error. */
+  .contact__error { display: flex; align-items: baseline; gap: var(--space-2); color: #9A3F33; font-size: var(--fs-small); font-weight: 500; line-height: 1.45; }
+  .contact__error::before {
+    content: "!";
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #9A3F33;
+    color: var(--white);
+    font-size: .6875rem;
+    font-weight: 600;
+    line-height: 1;
+    translate: 0 1px;
+  }
+  .contact__foot { display: flex; gap: var(--space-3); min-height: 1.3em; font-size: var(--fs-small); }
+  .contact__left { margin-left: auto; color: var(--color-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .contact__send { width: 100%; }
+  .contact__send[aria-disabled="true"] { opacity: .7; pointer-events: none; }
+  .contact__privacy { margin-top: calc(var(--space-2) * -1); color: var(--color-muted); font-size: var(--fs-small); text-align: center; }
+  .contact__privacy a { text-underline-offset: 3px; }
+
+  .contact__summary { padding: var(--space-4); border: 1.5px solid #9A3F33; border-radius: var(--radius-sm); color: #9A3F33; font-size: var(--fs-small); }
+  .contact__summary p { font-weight: 500; }
+  .contact__summary ul { margin-top: var(--space-1); padding-left: 1.2em; }
+  .contact__summary a { display: inline-block; padding-block: var(--space-2); }
+
+  .contact__sent { display: grid; justify-items: start; gap: var(--space-3); }
+  .contact__sent-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--blush); color: var(--color-heading); }
+  .contact__sent-links { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
+  @media (prefers-reduced-motion: no-preference) {
+    .contact__sent { animation: msg-in 700ms var(--ease-spring) both; }
+  }
+
+  .contact__more { display: grid; gap: var(--space-6); }
+  .contact__more section { display: grid; justify-items: start; gap: var(--space-2); }
+  .contact__channels { display: grid; }
+  .contact__channel {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--tap);
+    color: var(--color-heading);
+    font-weight: 500;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .contact__channel .icon { width: 22px; height: 22px; }
+  @media (hover: hover) { .contact__channel:hover { text-decoration: underline; text-underline-offset: 4px; } }
+  .contact__business { color: var(--color-muted); font-size: var(--fs-small); }
+  .contact__business a { display: inline-block; padding-block: var(--space-1); color: inherit; text-underline-offset: 3px; }
+  .contact__nowrap { white-space: nowrap; }
+
+  @media (min-width: 750px) {
+    .contact__form { padding: var(--space-6); }
+  }
+  /* Desktop: the ways to reach us on the left, the form on the right, on the FAQ's grid. */
+  @media (min-width: 990px) {
+    .contact__grid { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); grid-template-rows: auto 1fr; gap: var(--space-7) var(--space-9); align-items: start; max-width: none; }
+    .contact__main { grid-column: 2; grid-row: 1 / span 2; max-width: 38rem; }
+    .contact__more { grid-column: 1; grid-row: 2; }
+    .contact__form { padding: var(--space-7); }
+    .contact__send { width: auto; justify-self: start; min-width: 14rem; }
+    .contact__privacy { text-align: left; }
+  }
+{% endstylesheet %}

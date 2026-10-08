@@ -129,7 +129,7 @@
           <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
         </a>
       {%- else -%}
-        <a class="btn btn--ghost search-custom__btn" href="/pages/contact">{{ 'search.custom_contact' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+        <a class="btn btn--ghost search-custom__btn" href="/pages/contact?topic=custom&amp;about={{ terms | url_encode }}#ContactForm">{{ 'search.custom_contact' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
       {%- endif -%}
     </div>
   {%- endif -%}

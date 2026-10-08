@@ -2,6 +2,22 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-08 (a contact page; docs/contact-plan.md)
+
+`/pages/contact` showed only its title, and seven places in the shop send people there.
+
+- **WhatsApp first, the form below** (Raushan's choice, Claude's recommendation). A damage claim needs a video and Shopify's contact form can't carry a file. Under the heading: a "Chat on WhatsApp" button, then four shortcuts (Track an order, Custom or bulk order, Damaged or wrong item, Something else), then the form.
+- **The form asks for Name, Email, Phone or WhatsApp number (optional), What is it about?, Order number (optional, only for order help and damaged items) and Message (1,000 characters).** Labels above the fields, a message under each wrong field, focus on the first one. It posts as a normal page load because Shopify may show its bot check; the script only adds polish and the form works without it.
+- **A short legal block** (Raushan): Yarn Basket, Bihar, India; grievance officer Priya Singh with the email and number; "We acknowledge complaints within 48 hours"; a link to the Terms. The full address and GSTIN stay in the Terms, off the most visited help page.
+- **No Call button** (Raushan). The number is text beside the WhatsApp button.
+- **The reply promise is "We usually reply within a day"**, with "Monday to Saturday, 10am to 6pm" under it (Raushan). The hours and the grievance officer's name are two new settings under Theme settings → Social.
+- **Links from elsewhere arrive with the form filled in:** `?topic=order&order=1042`, `?topic=custom`, `?topic=product&about=<name>`. Changed in the account page, Track order, Saved, the product page and search. They only show when no WhatsApp number is set.
+- **Four quick answers under the form** (delivery time, free shipping and COD, damaged items, custom orders), the FAQ section in its compact form. They come with the `contact` template.
+- **Field edges are Taupe**, 4:1 on white; the page's faint lines are too light for the edge of a field. A rule for any later form.
+- **SEO, waiting for Raushan's yes:** `ContactPage` structured data with the shop's customer-service contact.
+- **Check 23** is new. Not done: a real send (Shopify's bot check stopped the automated one, and Claude doesn't solve those), so the sent panel has not been seen.
+
+
 ## 2026-10-08 (cart: nothing moves when a piece is added or removed)
 
 - **The cart holds still through every change.** Raushan saw the drawer run to the top and glide back after a "+" in Little extras, and after removing a line, and asked that it not scroll at all so the shopper can keep exploring.

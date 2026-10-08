@@ -2,8 +2,9 @@
   This section is used in the page template to render store pages like About us
   or Contact us.
 
-  Three pages are recognised by their handle, so they work whatever template the admin picked (docs/account-plan.md,
-  account-hub-plan.md): "saved" (Saved items), "track-order" (Track your order) and "account" (Your account). The
+  Four pages are recognised by their handle, so they work whatever template the admin picked (docs/account-plan.md,
+  account-hub-plan.md, contact-plan.md): "saved" (Saved items), "track-order" (Track your order), "account" (Your
+  account) and "contact" (Contact us; its quick answers come only with the "contact" template). The
   live theme's template list doesn't include ours until this theme is published.
 
   https://shopify.dev/docs/storefronts/themes/architecture/templates/page
@@ -15,6 +16,8 @@
     {%- render 'track-order-body' -%}
   {%- when 'account' -%}
     {%- render 'account-body' -%}
+  {%- when 'contact' -%}
+    {%- render 'contact-body' -%}
   {%- else -%}
     <h1>{{ page.title }}</h1>
 

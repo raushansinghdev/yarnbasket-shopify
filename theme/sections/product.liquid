@@ -59,8 +59,10 @@
     assign ask_url = wa | append: ask_tail
     assign make_url = wa | append: make_tail
   else
-    assign ask_url = pages.contact.url | default: '/pages/contact'
-    assign make_url = ask_url
+    assign contact_url = pages.contact.url | default: '/pages/contact'
+    assign about = product.title | url_encode
+    assign ask_url = contact_url | append: '?topic=product&about=' | append: about | append: '#ContactForm'
+    assign make_url = contact_url | append: '?topic=custom&about=' | append: about | append: '#ContactForm'
   endif
 
   assign size_text = product.metafields.custom.size.value

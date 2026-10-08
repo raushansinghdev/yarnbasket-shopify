@@ -1,6 +1,6 @@
 {%- doc -%}
   JSON-LD for search engines and AI answer engines.
-  Home: Organization and WebSite (with site search). Product: our own Product data with one Offer per variant, shipping and a breadcrumb
+  Home: Organization and WebSite (with site search). Contact page: ContactPage with how to reach us. Product: our own Product data with one Offer per variant, shipping and a breadcrumb
   (docs/product-page-plan.md).
   The home page FAQ section outputs its own FAQPage data.
 {%- enddoc -%}
@@ -151,6 +151,37 @@
           ]
         }
       ]
+    }
+  </script>
+{%- elsif request.page_type == 'page' and page.handle == 'contact' -%}
+  {%- comment -%} How to reach us (docs/contact-plan.md): only the channels filled in under Theme settings → Social. {%- endcomment -%}
+  {%- assign phone = settings.social_whatsapp | remove: ' ' | remove: '-' -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "@id": {{ shop.url | append: page.url | append: '#contactpage' | json }},
+      "url": {{ shop.url | append: page.url | json }},
+      "name": {{ page.title | json }},
+      "inLanguage": "en-IN",
+      "mainEntity": {
+        "@type": "Organization",
+        "@id": {{ shop.url | append: '/#organization' | json }},
+        "name": {{ shop.name | json }},
+        "url": {{ shop.url | json }},
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          {%- if settings.social_email != blank %}
+          "email": {{ settings.social_email | strip | json }},
+          {%- endif %}
+          {%- if phone != blank %}
+          "telephone": {{ phone | json }},
+          {%- endif %}
+          "areaServed": "IN",
+          "availableLanguage": ["English", "Hindi"]
+        }
+      }
     }
   </script>
 {%- endif -%}
