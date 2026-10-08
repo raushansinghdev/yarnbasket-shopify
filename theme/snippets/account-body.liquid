@@ -155,10 +155,12 @@
         <p class="account__lead">{{ 'account.lead_out' | t }}</p>
         <p class="account__signin">
           <a class="btn" href="{{ routes.account_login_url }}" data-account-open>{{ 'account.sign_in' | t }}</a>
-          {%- if track_url -%}
-            <a class="account__quiet-link" href="{{ track_url }}">{{ 'account.track_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
-          {%- endif -%}
-          <a class="account__quiet-link" href="/pages/contact">{{ 'account.help_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+          <span class="account__signin-links">
+            {%- if track_url -%}
+              <a class="account__quiet-link" href="{{ track_url }}">{{ 'account.track_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+            {%- endif -%}
+            <a class="account__quiet-link" href="/pages/contact">{{ 'account.help_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+          </span>
         </p>
       </header>
     {%- endif -%}
@@ -412,6 +414,8 @@
   .account__hello--out .account__lead, .account__hello--out .account__signin { grid-column: 1 / -1; }
   .account__lead { max-width: 34rem; margin-top: var(--space-3); font-size: var(--fs-lead); line-height: 1.5; }
   .account__signin { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-top: var(--space-4); }
+  /* The two quiet links stay together: beside the button when there's room, otherwise under it as a tight pair. */
+  .account__signin-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-5); }
 
   /* Phones: three shortcuts under the greeting. Desktop shows everything at once, so they go. */
   .account__jump { margin-top: calc(var(--space-7) * -1 + var(--space-5)); }
