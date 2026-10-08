@@ -1,5 +1,5 @@
 // Contact page (docs/contact-plan.md). The form works without this file: it posts as a normal page load. This adds
-// a message under a field that is wrong, the order number only for the topics that have one, the characters left,
+// a message under a field that is wrong (the topic pills count as one), the order number only for the topics that have one, the characters left,
 // a form filled in from the address (?topic=order&order=1042&about=…) and a "Sending…" button.
 const form = document.querySelector('[data-contact-form]');
 const topic = form?.querySelector('[data-topic]');
@@ -11,14 +11,15 @@ if (topic) {
   const send = form.querySelector('[data-send]');
   const label = send.textContent;
   const checked = [...form.querySelectorAll('[data-error]')];
-  const key = () => topic.selectedOptions[0]?.dataset.key || '';
+  const radios = [...topic.querySelectorAll('input')];
+  const key = () => radios.find((r) => r.checked)?.dataset.key || '';
   const store = { get: () => { try { return JSON.parse(sessionStorage.getItem('yb-contact')) || {}; } catch { return {}; } }, set: (v) => { try { sessionStorage.setItem('yb-contact', JSON.stringify(v)); } catch {} } };
 
   form.noValidate = true;
   const ready = () => { send.removeAttribute('aria-disabled'); send.textContent = label; };
 
   const check = (field) => {
-    const bad = !field.validity.valid;
+    const bad = field === topic ? !key() : !field.validity.valid;
     const out = document.getElementById(`${field.id}-error`);
     if (bad) field.setAttribute('aria-invalid', 'true');
     else field.removeAttribute('aria-invalid');
@@ -33,8 +34,8 @@ if (topic) {
     form.querySelectorAll('[data-topic-note]').forEach((el) => { el.hidden = el.dataset.topicNote !== now; });
   };
   const pick = (wanted) => {
-    const option = [...topic.options].find((o) => o.dataset.key === wanted);
-    if (option) topic.value = option.value;
+    const radio = radios.find((r) => r.dataset.key === wanted);
+    if (radio) radio.checked = true;
     showTopic();
   };
   const count = () => {
@@ -53,11 +54,11 @@ if (topic) {
   showTopic();
   count();
 
-  checked.forEach((field) => {
+  checked.filter((field) => field !== topic).forEach((field) => {
     field.addEventListener('blur', () => { if (field.value || field.hasAttribute('aria-invalid')) check(field); });
     field.addEventListener('input', () => { if (field.hasAttribute('aria-invalid')) check(field); });
   });
-  topic.addEventListener('change', showTopic);
+  topic.addEventListener('change', () => { showTopic(); if (topic.hasAttribute('aria-invalid')) check(topic); });
   body.addEventListener('input', count);
   document.querySelectorAll('[data-topic-link]').forEach((link) => link.addEventListener('click', () => pick(link.dataset.topicLink)));
 
@@ -65,7 +66,7 @@ if (topic) {
     const wrong = checked.filter((field) => !check(field));
     if (wrong.length) {
       event.preventDefault();
-      wrong[0].focus();
+      (wrong[0] === topic ? radios[0] : wrong[0]).focus();
       return;
     }
     if (order.closest('[hidden]')) order.value = '';

@@ -154,8 +154,7 @@
     }
   </script>
 {%- elsif request.page_type == 'page' and page.handle == 'contact' -%}
-  {%- comment -%} How to reach us (docs/contact-plan.md): only the channels filled in under Theme settings → Social. {%- endcomment -%}
-  {%- assign phone = settings.social_whatsapp | remove: ' ' | remove: '-' -%}
+  {%- comment -%} How to reach us (docs/contact-plan.md): the contact email from Theme settings → Social. No number: the page doesn't ask for calls. {%- endcomment -%}
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -174,9 +173,6 @@
           "contactType": "customer service",
           {%- if settings.social_email != blank %}
           "email": {{ settings.social_email | strip | json }},
-          {%- endif %}
-          {%- if phone != blank %}
-          "telephone": {{ phone | json }},
           {%- endif %}
           "areaServed": "IN",
           "availableLanguage": ["English", "Hindi"]

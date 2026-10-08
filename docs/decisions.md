@@ -2,6 +2,19 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-08 (contact page, round 2: no number, no hours, a shorter form)
+
+Raushan looked on his phone, sent a message that arrived, and asked for Claude's opinion on four points, to go with it.
+
+- **The form stays** (Claude). Some people don't have WhatsApp to hand, the fallback links and written data requests need somewhere to land, and it costs nothing to run.
+- **No phone number on the page, and none in its structured data** (Raushan asked for it gone under the button; Claude took it out everywhere so the page says one thing). WhatsApp reaches the same number; the Terms keep it.
+- **No hours** (Raushan: replies can come at any time). "We usually reply within a day." is the promise. The "Contact hours" setting is removed.
+- **The phone field is gone and the topic is six pills** instead of a dropdown: every choice in view, one tap. They are radio buttons, so keyboards and screen readers get a normal group.
+- **Business details is a small table** (Business, Based in, Grievance officer, Complaints), not three grey sentences. Label above value on phones.
+- **Admin (Claude, Admin API):** the Contact page's SEO title and description are set. The `ContactPage` structured data stays, with the email only.
+- **Open, for Raushan:** the store's sender email is his personal Gmail; form messages go there and customers see it on order emails. Change it to weyarnbasket@gmail.com (launch checklist).
+
+
 ## 2026-10-08 (a contact page; docs/contact-plan.md)
 
 `/pages/contact` showed only its title, and seven places in the shop send people there.

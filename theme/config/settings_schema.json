@@ -64,17 +64,10 @@
       },
       {
         "type": "text",
-        "id": "contact_hours",
-        "label": "Contact hours",
-        "default": "Monday to Saturday, 10am to 6pm",
-        "info": "Shown under the reply time on the contact page."
-      },
-      {
-        "type": "text",
         "id": "grievance_officer",
         "label": "Grievance officer",
         "default": "Priya Singh",
-        "info": "Named under Business details on the contact page, with the contact email and WhatsApp number."
+        "info": "Named under Business details on the contact page, with the contact email for complaints."
       }
     ]
   },

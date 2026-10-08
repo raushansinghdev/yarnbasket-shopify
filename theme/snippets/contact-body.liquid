@@ -11,7 +11,6 @@
   assign email = settings.social_email | strip
   assign instagram = settings.social_instagram
   assign instagram_name = instagram | split: '?' | first | split: '/' | last
-  assign hours = settings.contact_hours
   assign officer = settings.grievance_officer
   assign track_url = pages['track-order'].url | default: '/pages/track-order'
   assign max = 1000
@@ -28,7 +27,6 @@
         <p class="eyebrow">{{ 'general.say_hello' | t }}</p>
         <h1 class="contact__title">{{ 'contact.title' | t }}</h1>
         <p class="contact__lead">{{ 'contact.lead' | t }}</p>
-        {%- if hours != blank -%}<p class="contact__hours">{{ hours }}</p>{%- endif -%}
       </div>
 
       {%- if whatsapp != blank -%}
@@ -37,7 +35,6 @@
             {%- render 'icon', icon: 'whatsapp' -%}{{ 'header.whatsapp' | t }}
             <span class="visually-hidden">({{ new_tab }})</span>
           </a>
-          <p class="contact__number">{{ settings.social_whatsapp }}</p>
         </div>
       {%- endif -%}
 
@@ -97,7 +94,7 @@
           </div>
         {%- else -%}
           <h2 class="contact__h2" id="ContactFormTitle">{{ 'contact.form_title' | t }}</h2>
-          <p class="contact__note">{{ 'contact.form_note' | t }}</p>
+          <p class="contact__reply">{{ 'contact.reply_by' | t }} <span class="contact__note">{{ 'contact.form_note' | t }}</span></p>
 
           {%- if form.errors -%}
             <div class="contact__summary" role="alert" tabindex="-1" autofocus>
@@ -152,38 +149,35 @@
             </p>
           </div>
 
+          {%- comment -%}
+            Pills, not a dropdown: every choice is in view and one tap picks one. They are radio buttons, so a keyboard
+            and a screen reader get a normal group. The pill's words are what reaches the inbox; data-key is what
+            ?topic= and the script go by.
+          {%- endcomment -%}
           <div class="contact__field">
-            <label for="Contact-phone">{{ 'contact.phone' | t }} <span class="contact__optional">{{ 'contact.optional' | t }}</span></label>
-            <input
-              id="Contact-phone"
-              type="tel"
-              name="contact[phone]"
-              value="{{ form.phone | default: customer.phone | escape }}"
-              autocomplete="tel"
-              aria-describedby="Contact-phone-hint"
-            >
-            <p class="contact__hint" id="Contact-phone-hint">{{ 'contact.phone_hint' | t }}</p>
-          </div>
-
-          {%- comment -%} The option's text is what reaches the inbox; data-key is what ?topic= and the script go by. {%- endcomment -%}
-          <div class="contact__field">
-            <label for="Contact-topic">{{ 'contact.topic' | t }}</label>
-            <select
+            <p class="contact__label" id="Contact-topic-label">{{ 'contact.topic' | t }}</p>
+            <div
+              class="contact__pills"
               id="Contact-topic"
-              name="contact[Topic]"
-              required
+              role="radiogroup"
+              aria-labelledby="Contact-topic-label"
               aria-describedby="Contact-topic-error"
+              aria-required="true"
               data-error="{{ 'contact.topic_error' | t }}"
               data-topic
             >
-              <option value="">{{ 'contact.topic_choose' | t }}</option>
-              <option data-key="order">{{ 'contact.topic_order' | t }}</option>
-              <option data-key="custom">{{ 'contact.need_custom' | t }}</option>
-              <option data-key="damaged">{{ 'contact.need_damaged' | t }}</option>
-              <option data-key="product">{{ 'contact.topic_product' | t }}</option>
-              <option data-key="data">{{ 'contact.topic_data' | t }}</option>
-              <option data-key="else">{{ 'contact.need_else' | t }}</option>
-            </select>
+              {%- liquid
+                assign pill_keys = 'order,custom,damaged,product,data,else' | split: ','
+                assign pill_names = 'contact.pill_order,contact.pill_custom,contact.pill_damaged,contact.pill_product,contact.pill_data,contact.need_else' | split: ','
+              -%}
+              {%- for pill_key in pill_keys -%}
+                {%- assign pill_name = pill_names[forloop.index0] | t -%}
+                <label class="contact-pill">
+                  <input class="visually-hidden" type="radio" name="contact[Topic]" value="{{ pill_name }}" data-key="{{ pill_key }}" required>
+                  <span>{{ pill_name }}</span>
+                </label>
+              {%- endfor -%}
+            </div>
             <p class="contact__error" id="Contact-topic-error" hidden></p>
             <p class="contact__hint contact__hint--note" data-topic-note="damaged">
               {%- if wa -%}
@@ -262,17 +256,22 @@
 
       <section class="contact__business" aria-labelledby="ContactBusiness">
         <h2 class="eyebrow" id="ContactBusiness">{{ 'contact.business_title' | t }}</h2>
-        <p>{{ shop.name }} · {{ 'contact.business_place' | t }}</p>
-        {%- if officer != blank -%}
-          <p>
-            {{ 'contact.officer' | t: name: officer }}
-            {%- if email != blank %} · <a href="mailto:{{ email | escape }}">{{ email | escape }}</a>{% endif -%}
-            {%- if settings.social_whatsapp != blank %} · <span class="contact__nowrap">{{ settings.social_whatsapp }}</span>{% endif -%}
-          </p>
-          <p>{{ 'contact.complaints' | t }}</p>
-        {%- endif -%}
+        <dl class="contact__facts">
+          <div><dt>{{ 'contact.biz_name' | t }}</dt><dd>{{ shop.name }}</dd></div>
+          <div><dt>{{ 'contact.biz_place' | t }}</dt><dd>{{ 'contact.business_place' | t }}</dd></div>
+          {%- if officer != blank -%}
+            <div><dt>{{ 'contact.biz_officer' | t }}</dt><dd>{{ officer }}</dd></div>
+            <div>
+              <dt>{{ 'contact.biz_complaints' | t }}</dt>
+              <dd>
+                {%- if email != blank -%}<a href="mailto:{{ email | escape }}">{{ email | escape }}</a>{%- endif -%}
+                <span class="contact__fact-note">{{ 'contact.complaints' | t }}</span>
+              </dd>
+            </div>
+          {%- endif -%}
+        </dl>
         {%- if shop.terms_of_service -%}
-          <p><a href="{{ shop.terms_of_service.url }}">{{ 'contact.terms' | t }}</a></p>
+          <a class="contact__terms" href="{{ shop.terms_of_service.url }}">{{ 'contact.terms' | t }}</a>
         {%- endif -%}
       </section>
     </div>
@@ -291,14 +290,8 @@
   .contact__icon .icon__fill { fill: var(--blush); }
   .contact__title { font-size: clamp(2rem, 1.5rem + 2vw, 3rem); line-height: 1.05; }
   .contact__lead { font-size: var(--fs-lead); line-height: 1.5; }
-  .contact__hours { color: var(--color-muted); font-size: var(--fs-small); }
 
-  .contact__wa { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); }
-  .contact__number { color: var(--color-muted); font-variant-numeric: tabular-nums; }
-  @media (max-width: 479px) {
-    .contact__wa .btn { width: 100%; }
-    .contact__number { width: 100%; text-align: center; }
-  }
+  @media (max-width: 479px) { .contact__wa .btn { width: 100%; } }
 
   .contact__needs { display: grid; gap: var(--space-3); }
   .contact__rows { border-top: 1px solid var(--color-line-strong); }
@@ -332,13 +325,14 @@
     scroll-margin-top: calc(var(--header-height) + var(--space-4));
   }
   .contact__h2 { font-size: var(--fs-h3); line-height: 1.15; }
-  .contact__note { margin-top: calc(var(--space-3) * -1); color: var(--color-muted); font-size: var(--fs-small); }
+  .contact__reply { margin-top: calc(var(--space-3) * -1); line-height: 1.5; }
+  .contact__note { display: block; color: var(--color-muted); font-size: var(--fs-small); }
   .contact__field { display: grid; gap: 6px; }
-  .contact__field label { font-weight: 500; color: var(--color-heading); line-height: 1.3; }
+  .contact__field > label, .contact__label { font-weight: 500; color: var(--color-heading); line-height: 1.3; }
   .contact__optional { font-weight: 400; color: var(--color-muted); }
   /* 16px text: an iPhone zooms the page into anything smaller. The Taupe line is 4:1 on white, so the edge of a
      field can be seen (WCAG 1.4.11); the page's own lines are too faint for that. */
-  .contact__field :is(input, select, textarea) {
+  .contact__field :is(input:not([type="radio"]), textarea) {
     width: 100%;
     min-height: var(--tap);
     padding: 0 var(--space-4);
@@ -350,18 +344,40 @@
     transition: border-color var(--dur-state) ease;
   }
   .contact__field textarea { min-height: 8.5rem; padding-block: var(--space-3); resize: vertical; }
-  .contact__field select {
-    appearance: none;
-    padding-right: var(--space-7);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234E3A31' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right var(--space-3) center;
-    background-size: 20px;
-    cursor: pointer;
-  }
-  .contact__field :is(input, select, textarea):focus-visible { border-color: var(--cocoa); outline-offset: 2px; }
-  @media (hover: hover) { .contact__field :is(input, select, textarea):hover { border-color: var(--cocoa); } }
+  .contact__field :is(input:not([type="radio"]), textarea):focus-visible { border-color: var(--cocoa); outline-offset: 2px; }
+  @media (hover: hover) { .contact__field :is(input:not([type="radio"]), textarea):hover { border-color: var(--cocoa); } }
   .contact__field [aria-invalid="true"], .contact__field [aria-invalid="true"]:hover { border-color: #9A3F33; }
+  /* The topic: each label is 44px tall for the thumb, the pill drawn inside it 38px, as in the phone menu. */
+  .contact__pills { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); border-radius: var(--radius-sm); }
+  .contact__pills:focus { outline: none; }
+  .contact-pill {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    color: var(--color-heading);
+    font-size: .9375rem;
+    line-height: 1.2;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .contact-pill::before {
+    content: "";
+    position: absolute;
+    inset: 3px 0;
+    z-index: -1;
+    border: 1.5px solid var(--taupe);
+    border-radius: var(--radius-pill);
+    transition: background-color var(--dur-state) ease, border-color var(--dur-state) ease;
+  }
+  .contact-pill:has(:checked) { font-weight: 500; }
+  .contact-pill:has(:checked)::before { border: 2px solid var(--cocoa-deep); background: var(--blush); }
+  .contact-pill:has(:focus-visible)::before { outline: 2px solid var(--color-ink); outline-offset: 2px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--rose) 45%, transparent); }
+  .contact-pill:active { scale: .97; }
+  .contact__pills[aria-invalid="true"] .contact-pill::before { border-color: #9A3F33; }
+  @media (hover: hover) { .contact-pill:hover::before { border-color: var(--cocoa); background: var(--blush-soft); } .contact-pill:has(:checked):hover::before { background: var(--blush); } }
   .contact__hint { color: var(--color-muted); font-size: var(--fs-small); line-height: 1.45; }
   .contact__hint--note { padding: var(--space-3); border-radius: var(--radius-sm); background: var(--blush-soft); color: var(--color-ink); }
   .contact__hint a { color: var(--color-heading); font-weight: 500; text-underline-offset: 3px; }
@@ -402,7 +418,7 @@
   }
 
   .contact__more { display: grid; gap: var(--space-6); }
-  .contact__more section { display: grid; justify-items: start; gap: var(--space-2); }
+  .contact__more section { display: grid; justify-items: start; gap: var(--space-2); min-width: 0; }
   .contact__channels { display: grid; }
   .contact__channel {
     display: inline-flex;
@@ -416,9 +432,17 @@
   }
   .contact__channel .icon { width: 22px; height: 22px; }
   @media (hover: hover) { .contact__channel:hover { text-decoration: underline; text-underline-offset: 4px; } }
-  .contact__business { color: var(--color-muted); font-size: var(--fs-small); }
-  .contact__business a { display: inline-block; padding-block: var(--space-1); color: inherit; text-underline-offset: 3px; }
-  .contact__nowrap { white-space: nowrap; }
+  /* Business details: a small table on the page's own lines, like the shortcut rows. */
+  .contact__business { width: 100%; }
+  .contact__facts { width: 100%; margin-top: var(--space-1); border-top: 1px solid var(--color-line-strong); }
+  .contact__facts > div { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: var(--space-1) var(--space-4); align-items: baseline; padding-block: var(--space-3); border-bottom: 1px solid var(--color-line-strong); }
+  .contact__facts dt { color: var(--color-muted); font-size: var(--fs-small); }
+  .contact__facts dd { color: var(--color-heading); font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; }
+  .contact__facts a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -12px -8px; color: inherit; text-underline-offset: 3px; }
+  .contact__fact-note { display: block; color: var(--color-muted); font-size: var(--fs-small); font-weight: 400; }
+  .contact__terms { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-muted); font-size: var(--fs-small); text-underline-offset: 3px; }
+  /* Phones: the label sits above its value, so the email is never cut in two. */
+  @media (max-width: 479px) { .contact__facts > div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
 
   @media (min-width: 750px) {
     .contact__form { padding: var(--space-6); }

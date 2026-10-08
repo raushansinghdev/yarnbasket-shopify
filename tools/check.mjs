@@ -2568,7 +2568,8 @@ if (want('22')) {
 
 // 23. Contact page (docs/contact-plan.md): axe on the page as it opens and with every message showing; nothing runs
 //     off a 320px screen; every control is 44px tall with 16px text; an empty send goes nowhere, names each wrong
-//     field and puts focus on the first; the order number shows only for the topics that have one; a link with
+//     field and puts focus on the first; the topic is a row of pills that work as one radio group; no phone number
+//     or hours on the page; the order number shows only for the topics that have one; a link with
 //     ?topic=&order=&about= arrives filled in; without JavaScript every field is there and the form still posts.
 //     Nothing is sent: a real send emails the shop, so that is tried by hand.
 if (want('23')) {
@@ -2582,15 +2583,19 @@ if (want('23')) {
     if (!(await page.locator('[data-contact-form]').count())) { record(`Contact, ${label}`, false, 'no contact form on /pages/contact'); await browser.close(); continue; }
     const v0 = await axeRun(page);
     const m = await page.evaluate(() => {
-      const controls = [...document.querySelectorAll('.contact a, .contact button, .contact input, .contact select, .contact textarea')].filter((el) => el.getBoundingClientRect().width);
+      const controls = [...document.querySelectorAll('.contact a, .contact button, .contact input:not([type="radio"]), .contact textarea, .contact-pill')].filter((el) => el.getBoundingClientRect().width);
       // A link inside a sentence is measured with its line, as WCAG 2.5.8 does.
       const small = controls.filter((el) => !el.closest('p') && el.getBoundingClientRect().height < 44).map((el) => el.id || el.textContent.trim().slice(0, 20));
-      const fields = [...document.querySelectorAll('.contact__field :is(input, select, textarea)')];
+      const fields = [...document.querySelectorAll('.contact__field :is(input:not([type="radio"]), textarea)')];
+      const pills = [...document.querySelectorAll('.contact-pill')];
+      const text = document.querySelector('.contact').innerText;
       return { sideways: document.documentElement.scrollWidth > innerWidth + 1, small, tiny: fields.filter((f) => parseFloat(getComputedStyle(f).fontSize) < 16).length, unlabelled: fields.filter((f) => !f.labels.length).length,
+        pills: pills.length, pillsOut: pills.filter((el) => el.getBoundingClientRect().right > innerWidth - 16).length, number: /\+91|\d{5} ?\d{5}/.test(text), hours: /\d ?[ap]m\b/i.test(text),
         h1: document.querySelectorAll('main h1').length, order: !document.querySelector('[data-order]').closest('[hidden]'), faq: !!document.querySelector('main .faq') };
     });
     record(`Contact, ${label}: fits, one heading, quick answers`, !m.sideways && m.h1 === 1 && m.faq, `sideways: ${m.sideways}, h1: ${m.h1}, quick answers: ${m.faq}`);
     record(`Contact, ${label}: controls 44px, fields 16px and labelled`, m.small.length === 0 && m.tiny === 0 && m.unlabelled === 0, `under 44px: ${m.small.join(', ') || 'none'}; under 16px: ${m.tiny}; no label: ${m.unlabelled}`);
+    record(`Contact, ${label}: six topic pills inside the card, no number or hours on the page`, m.pills === 6 && m.pillsOut === 0 && !m.number && !m.hours, `${m.pills} pills, ${m.pillsOut} past the edge; a phone number: ${m.number}; hours: ${m.hours}`);
     // An empty send.
     const before = page.url();
     await page.locator('[data-send]').click();
@@ -2608,16 +2613,20 @@ if (want('23')) {
     await page.locator('#Contact-name').fill('Asha');
     const cleared = await page.evaluate(() => !document.getElementById('Contact-name').hasAttribute('aria-invalid') && document.getElementById('Contact-name-error').hidden);
     // The order number follows the topic.
-    const shown = async (key) => page.evaluate((k) => { const t = document.querySelector('[data-topic]'); t.value = [...t.options].find((o) => o.dataset.key === k).value; t.dispatchEvent(new Event('change', { bubbles: true })); return { order: !document.querySelector('[data-order]').closest('[hidden]'), note: !document.querySelector('[data-topic-note]').hidden }; }, key);
+    const shown = async (key) => page.evaluate((k) => { document.querySelector(`[data-topic] input[data-key="${k}"]`).closest('label').click(); return { told: document.getElementById('Contact-topic-error').hidden, order: !document.querySelector('[data-order]').closest('[hidden]'), note: !document.querySelector('[data-topic-note]').hidden }; }, key);
     const [o, d, x] = [await shown('order'), await shown('damaged'), await shown('else')];
-    record(`Contact, ${label}: messages clear, order number follows the topic`, cleared && !m.order && o.order && !o.note && d.order && d.note && !x.order && !x.note, `cleared: ${cleared}; order number at first: ${m.order}, order help: ${o.order}, damaged: ${d.order} (video note: ${d.note}), something else: ${x.order}`);
+    // The pills are one radio group: an arrow key moves the choice.
+    await page.locator('[data-topic] input[data-key="order"]').focus();
+    await page.keyboard.press('ArrowRight');
+    const arrow = await page.evaluate(() => document.querySelector('[data-topic] input:checked').dataset.key);
+    record(`Contact, ${label}: messages clear, order number follows the topic`, cleared && o.told && arrow === 'custom' && !m.order && o.order && !o.note && d.order && d.note && !x.order && !x.note, `cleared: ${cleared}, topic message gone once picked: ${o.told}; right arrow from the first pill picks "${arrow}"; order number at first: ${m.order}, order help: ${o.order}, damaged: ${d.order} (video note: ${d.note}), something else: ${x.order}`);
     record(`Contact, ${label} (axe, as it opens and with messages)`, v0.length === 0 && v1.length === 0 && errors.length === 0, `${v0.join(', ') || '0 violations'}; ${v1.join(', ') || '0 violations'}${errors.length ? `; errors: ${errors[0]}` : ''}`);
     await browser.close();
   }
   {
     // Arriving from a link elsewhere in the shop.
     const { browser, page } = await open(chromium, devices['Pixel 7'], { reducedMotion: 'reduce', path: path('&topic=order&order=1042&about=Rose%20%26%20Daisy') });
-    const f = await page.evaluate(() => ({ topic: document.querySelector('[data-topic]').selectedOptions[0].dataset.key, order: document.querySelector('[data-order]').value, shown: !document.querySelector('[data-order]').closest('[hidden]'), body: document.querySelector('[data-body]').value, left: document.querySelector('[data-left]').textContent.trim() }));
+    const f = await page.evaluate(() => ({ topic: document.querySelector('[data-topic] input:checked')?.dataset.key, order: document.querySelector('[data-order]').value, shown: !document.querySelector('[data-order]').closest('[hidden]'), body: document.querySelector('[data-body]').value, left: document.querySelector('[data-left]').textContent.trim() }));
     record('Contact: a link with a topic arrives filled in', f.topic === 'order' && f.order === '1042' && f.shown && /Rose & Daisy/.test(f.body) && /^\d+ left$/.test(f.left) && !/^1000/.test(f.left), `topic ${f.topic}, order "${f.order}" (shown: ${f.shown}), message "${f.body.trim()}", "${f.left}"`);
     const wa = await page.evaluate(() => [...document.querySelectorAll('.contact a[href*="wa.me"]')].map((a) => decodeURIComponent(a.href.split('text=')[1] || '').replace(/\+/g, ' ')));
     if (wa.length) record('Contact: WhatsApp links say what they are about', wa.length === 4 && wa.some((t) => /custom or bulk/.test(t)) && wa.filter((t) => /damaged/.test(t)).length === 2 && wa.every((t) => t.length > 10 && !/&#/.test(t)), `${wa.length} links: ${wa.map((t) => `"${t.slice(0, 34)}…"`).join(', ')}`);
@@ -2630,8 +2639,8 @@ if (want('23')) {
     const ctx = await browser.newContext({ ...devices['Pixel 7'], javaScriptEnabled: false });
     const page = await ctx.newPage();
     await page.goto(new globalThis.URL(path(), URL).href, { waitUntil: 'load' });
-    const n = await page.evaluate(() => { const form = document.querySelector('[data-contact-form]'); return { fields: [...form.querySelectorAll('input:not([type="hidden"]), select, textarea')].filter((f) => f.getBoundingClientRect().height > 0).length, action: form.getAttribute('action'), method: form.method, native: !form.noValidate }; }).catch(() => null);
-    record('Contact: works without JavaScript', !!n && n.fields === 6 && /\/contact/.test(n.action) && n.method === 'post' && n.native, n ? `${n.fields} fields shown, posts to ${n.action}, browser's own checks: ${n.native}` : 'no form');
+    const n = await page.evaluate(() => { const form = document.querySelector('[data-contact-form]'); return { fields: [...form.querySelectorAll('input:not([type="hidden"]):not([type="radio"]), textarea')].filter((f) => f.getBoundingClientRect().height > 0).length, pills: form.querySelectorAll('input[type="radio"][required]').length, action: form.getAttribute('action'), method: form.method, native: !form.noValidate }; }).catch(() => null);
+    record('Contact: works without JavaScript', !!n && n.fields === 4 && n.pills === 6 && /\/contact/.test(n.action) && n.method === 'post' && n.native, n ? `${n.fields} fields and ${n.pills} topic pills shown, posts to ${n.action}, browser's own checks: ${n.native}` : 'no form');
     await browser.close();
   }
 }

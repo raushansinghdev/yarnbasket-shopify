@@ -1,6 +1,6 @@
 # Contact page
 
-**Status: built 2026-10-08, waiting for Raushan's look on a phone and one real send.** Decisions in `decisions.md`. Guarded by `npm run check -- --only 23`. Preview: `/pages/contact?view=contact` (until the page's template is set to `contact`, plain `/pages/contact` shows the page without the quick answers).
+**Status: built 2026-10-08, round 2 the same day (see the end: no phone number or hours, topic pills, no phone field, business details as a table). Where this page and "Round 2" differ, Round 2 is what is built.** Decisions in `decisions.md`. Guarded by `npm run check -- --only 23`. The store's Contact page already uses the `contact` template, so `/pages/contact` shows everything.
 
 Mockups (the page as built): `docs/mockups/contact-360.png`, `contact-1280.png`.
 
@@ -195,4 +195,19 @@ What differs from the plan above, and what was found on the way:
 - **Check 23 has 18 lines** on 360, 320 and 1280px: fit, one h1, 44px controls, 16px labelled fields, the empty send, messages clearing, the order number following the topic, axe as the page opens and with messages, a filled-in arrival, the WhatsApp messages, and no JavaScript.
 - **Found, not fixed (not this page):** the phone menu's "Custom orders" tile opens WhatsApp with "I&#39;d like to ask…" in the message. The `t` filter escapes the apostrophe before `url_encode`; `replace: '&#39;', "'"` first fixes it, as the product page does. It is in `theme/sections/header.liquid`, which another session has open.
 
-Still to do, with Raushan's go: set the page's template to `contact` and its SEO title and description (Admin API); approve the `ContactPage` structured data.
+
+## Round 2 (2026-10-08, after Raushan's look on a phone)
+
+Raushan sent a real message and it arrived. He asked for the phone number and the hours to go, for better-looking business details, and whether the form is worth keeping; then for Claude's opinion, to go with it.
+
+- **The form stays, shorter.** Not everyone has WhatsApp to hand (a work laptop, a corporate buyer); it is where the fallback links land and where a data request can be made in writing; Shopify sends the email and filters spam, so it costs nothing to run.
+- **No phone number anywhere on the page:** not under the WhatsApp button, not in the grievance line, not in the structured data. The WhatsApp button reaches the same number and the Terms keep it.
+- **No hours.** "We usually reply within a day." is the one promise; the thank-you panel says "We usually reply within a day, by email." The "Contact hours" setting is removed. The Terms still say Monday to Saturday, 10am to 6pm for the grievance officer: that is the legal promise.
+- **The phone field is gone.** Fields: Name, Email, What is it about?, Order number (optional, for an order or a damaged item), Message.
+- **"What is it about?" is six pills, not a dropdown:** An order · Custom or bulk · Damaged item · A product · My data · Something else. Radio buttons in a `radiogroup`, so arrows move and a screen reader hears one group; each is 44px to tap with a 38px pill drawn inside, Taupe edge, Blush with a Cocoa line when chosen. The pill's words are what the email carries.
+- **"We'll reply by email."** is the first line under "Send us a message".
+- **Business details is a small table** on the page's lines: Business, Based in, Grievance officer, Complaints (the email, "Acknowledged within 48 hours"), then the Terms link. On phones the label sits above its value, so the email is never cut in two.
+- **Admin (Claude, Admin API, read back):** the Contact page's SEO title is "Contact us" and its description "Contact Yarn Basket on WhatsApp or by message. We usually reply within a day." Its template was already `contact` (Shopify's default for that page).
+- **For Raushan:** form messages go to the store's sender email, today singhraushan2410@gmail.com, which is also what customers see on order emails. Settings → Notifications → Sender email → weyarnbasket@gmail.com, then confirm the link sent there (launch checklist).
+- **Check 23 has 21 lines:** adds six pills inside the card, no number or hours on the page, the right arrow moving the choice, and the topic's message going once one is picked.
+- Still not seen by Claude: the thank-you panel and Shopify's own error list (the bot check). Raushan's send worked.
