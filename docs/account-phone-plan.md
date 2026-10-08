@@ -1,6 +1,6 @@
 # Account plan, round 3: the account page on phones
 
-Status: **Built 2026-10-03.** Follows `account-hub-plan.md` (round 2). Raushan asked for all three parts and said to plan, build, test and push in one go.
+Status: **Built 2026-10-03.** Changed 2026-10-08: the "Need help?" panel is gone and the Help shortcut opens the Contact page (decisions.md, "Help has one place"). Follows `account-hub-plan.md` (round 2). Raushan asked for all three parts and said to plan, build, test and push in one go.
 
 ## 0. What Raushan raised (2026-10-03)
 

@@ -3,12 +3,13 @@
   "account"). One scrolling page in the store's own look; Shopify's hosted pages are only for editing details and an
   order's full page.
   Signed in: greeting, shortcuts (phones), the latest 3 orders, Saved and Recently viewed (filled by account-page.js
-  from this browser; Recently viewed can be cleared), Your details, Need help? (WhatsApp, a custom piece, policies),
-  Sign out, and "Download or delete my data".
+  from this browser; Recently viewed can be cleared), Your details, Sign out, and
+  "Download or delete my data". Help isn't repeated here (docs/decisions.md, 2026-10-08): the phones' Help shortcut
+  goes to the Contact page, and each order card has its own "Need help?".
   Phones (docs/account-phone-plan.md): the greeting row is the way to Your details, which is its own page there (this
   page with ?view=account-details: back link, the details, Edit, Sign out, "Download or delete my data"), so the card
   and the data link leave the phone page. Desktop keeps the card beside the orders and the greeting is plain text.
-  Signed out: a sign-in card (Shopify's sheet; without it, Shopify's sign-in page), Track an order, Saved, help.
+  Signed out: a sign-in card (Shopify's sheet; without it, Shopify's sign-in page), Track an order, Contact us, Saved.
   Demo (the account-demo template with Demo content on, nobody signed in): the signed-in page with made-up orders, so
   the layout can be judged and tested without a real sign-in. Remove with the other demo files before launch.
 
@@ -144,7 +145,7 @@
           {%- if saved_url -%}
             <li><a class="tap" href="{{ saved_url }}">{%- render 'icon', icon: 'heart' -%}<span>{{ 'account.saved' | t }}</span><span class="account__jump-count" data-saved-count hidden></span></a></li>
           {%- endif -%}
-          <li><a class="tap" href="#help">{%- render 'icon', icon: 'help' -%}<span>{{ 'account.help' | t }}</span></a></li>
+          <li><a class="tap" href="/pages/contact">{%- render 'icon', icon: 'help' -%}<span>{{ 'account.help' | t }}</span></a></li>
         </ul>
       </nav>
     {%- else -%}
@@ -157,6 +158,7 @@
           {%- if track_url -%}
             <a class="account__quiet-link" href="{{ track_url }}">{{ 'account.track_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
           {%- endif -%}
+          <a class="account__quiet-link" href="/pages/contact">{{ 'account.help_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
         </p>
       </header>
     {%- endif -%}
@@ -329,42 +331,15 @@
       </section>
     </div>
 
-    <div class="account__side">
-      {%- if signed_in -%}
+    {%- if signed_in -%}
+      <div class="account__side">
         <section class="account__block account__details" id="details" aria-labelledby="AccountDetails" tabindex="-1" data-arrive>
           <h2 class="account__h2" id="AccountDetails">{{ 'account.details_title' | t }}</h2>
           {{ details_card }}
         </section>
-      {%- endif -%}
-
-      <section class="account__block account__help panel-blush" id="help" aria-labelledby="AccountHelp" tabindex="-1" data-arrive>
-        <h2 class="account__h2" id="AccountHelp">{{ 'account.help_title' | t }}</h2>
-        <p>{{ 'account.help_text' | t }}</p>
-        <div class="account__help-btns">
-          {%- if help_base -%}
-            <a class="btn" href="{{ help_base }}{{ 'header.whatsapp_message' | t | url_encode }}" rel="noopener" target="_blank">
-              {%- render 'icon', icon: 'whatsapp' -%}{{ 'account.whatsapp' | t }}
-              <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
-            </a>
-            <a class="btn btn--ghost" href="{{ help_base }}{{ 'account.custom_message' | t | replace: '&#39;', "'" | url_encode }}" rel="noopener" target="_blank">
-              {%- render 'icon', icon: 'gift' -%}{{ 'account.custom' | t }}
-              <span class="visually-hidden">({{ 'accessibility.new_window' | t }})</span>
-            </a>
-          {%- else -%}
-            <a class="btn" href="/pages/contact">{{ 'account.contact' | t }}</a>
-            <a class="btn btn--ghost" href="/pages/contact?topic=custom#ContactForm">{%- render 'icon', icon: 'gift' -%}{{ 'account.custom' | t }}</a>
-          {%- endif -%}
-        </div>
-        <ul class="account__help-links" role="list">
-          {%- if track_url -%}<li><a href="{{ track_url }}">{{ 'track.title' | t }}</a></li>{%- endif -%}
-          {%- if shop.shipping_policy -%}<li><a href="{{ shop.shipping_policy.url }}">{{ shop.shipping_policy.title }}</a></li>{%- endif -%}
-          {%- if shop.refund_policy -%}<li><a href="{{ shop.refund_policy.url }}">{{ shop.refund_policy.title }}</a></li>{%- endif -%}
-          {%- if help_base -%}<li><a href="/pages/contact">{{ 'account.contact' | t }}</a></li>{%- endif -%}
-        </ul>
-      </section>
-
-      {%- if signed_in -%}{{ out_block }}{%- endif -%}
-    </div>
+        {{ out_block }}
+      </div>
+    {%- endif -%}
   </div>
 </div>
 
@@ -383,8 +358,6 @@
   /* Signed out there's little to show: one calm column instead of a half-empty two. */
   @media (min-width: 900px) {
     .account--out .account__grid { grid-template-columns: minmax(0, 46rem); }
-    .account--out .account__side { position: static; }
-    .account--out .account__help { max-width: 34rem; }
   }
   .account__block { scroll-margin-top: calc(var(--header-height) + var(--space-4)); }
   .account__block:focus, .account__title:focus { outline: none; }
@@ -568,13 +541,6 @@
   .account__dl dd { margin: 0; overflow-wrap: break-word; color: var(--color-heading); }
   .account__muted { color: var(--color-muted); }
   .account__edit { width: 100%; min-height: var(--tap); margin-top: var(--space-3); font-size: .9375rem; }
-
-  .account__help { display: grid; gap: var(--space-3); padding: var(--space-5); border-radius: var(--radius-lg); color: var(--color-ink); }
-  .account__help > p { color: var(--color-ink); }
-  .account__help-btns { display: grid; gap: var(--space-2); }
-  .account__help-btns .btn { min-height: var(--tap); font-size: .9375rem; }
-  .account__help-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-4); }
-  .account__help-links a { display: inline-flex; align-items: center; min-height: var(--tap); color: var(--color-heading); font-size: var(--fs-small); text-decoration-color: var(--cocoa); text-underline-offset: 3px; }
 
   .account__out { display: grid; justify-items: start; gap: var(--space-1); }
   .account__sign-out { min-height: var(--tap); font-size: .9375rem; }

@@ -1209,7 +1209,8 @@ if (want('12')) {
 //     signing out the next page says so, once. Until Raushan creates the "account" page, it's /pages/contact?view=.
 //     Phones (docs/account-phone-plan.md): the greeting row goes to Your details, which is its own page there (axe,
 //     one h1, the details, Edit, Sign out, a way back); desktop keeps the card and the greeting is plain. Recently
-//     viewed on the account page can be cleared.
+//     viewed on the account page can be cleared. Help isn't repeated on the page (docs/decisions.md, 2026-10-08):
+//     no help panel, the phones' Help shortcut and the signed-out link both go to the Contact page.
 if (want('13')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const acct = (await fetch(site('/pages/account'))).ok ? site('/pages/account') : site('/pages/contact?view=account');
@@ -1257,6 +1258,11 @@ if (want('13')) {
         await page.click('[data-account-clear]');
         await page.waitForTimeout(300);
         const after = await page.evaluate(() => ({
+    const guest = await page.evaluate(() => {
+      const a = document.querySelector('.account__signin a[href="/pages/contact"]');
+      return { tall: Math.round(a?.getBoundingClientRect().height || 0), panel: !!document.querySelector('.account #help'), side: !!document.querySelector('.account__side'), wide: document.documentElement.scrollWidth > innerWidth };
+    });
+    record(`Account page, ${label}: signed out, one link to the Contact page, no help panel`, guest.tall >= 44 && !guest.panel && !guest.side && !guest.wide, `link ${guest.tall}px tall, help panel: ${guest.panel}, empty side column: ${guest.side}, scrolls sideways: ${guest.wide}`);
           hidden: document.querySelector('[data-account-row="recent"]').hidden,
           kept: localStorage.getItem('yb-recent-products'),
           focus: document.activeElement.matches('[data-account-title]'),
@@ -1278,6 +1284,11 @@ if (want('13')) {
         wide: document.documentElement.scrollWidth > innerWidth,
       }));
       record(`Your details page, ${label} (axe)`, v4.length === 0 && det.solo && det.h1 === 1 && det.rows === 5 && det.edit === 1 && det.out === 1 && det.back.includes('view=account-demo') && det.backTall >= 44 && !det.wide, `${v4.join(', ') || '0 violations'}; h1: ${det.h1}, rows: ${det.rows}, Edit: ${det.edit}, Sign out: ${det.out}, back to ${det.back} (${det.backTall}px tall), scrolls sideways: ${det.wide}`);
+      const help = await page.evaluate(() => {
+        const tile = [...document.querySelectorAll('.account__jump a')].find((a) => a.querySelector('.icon--help, [class*="help"]') || /help/i.test(a.textContent));
+        return { panel: !!document.querySelector('.account #help'), dead: document.querySelectorAll('.account a[href="#help"]').length, shown: !!tile?.offsetParent, to: tile?.getAttribute('href') || '', cards: document.querySelectorAll('.order-card a[href*="wa.me"], .order-card a[href*="/pages/contact"]').length };
+      });
+      record(`Account page, ${label}: no help panel; Help ${label === 'phone' ? 'shortcut goes to the Contact page' : 'is the header\'s'}; order cards keep theirs`, !help.panel && help.dead === 0 && help.to === '/pages/contact' && help.shown === (label === 'phone') && help.cards >= 3, `help panel: ${help.panel}, links to #help: ${help.dead}, Help shortcut shown: ${help.shown}, to ${help.to}, order cards with "Need help?": ${help.cards}`);
       await page.goto(demoUrl, { waitUntil: 'load' });
       await page.waitForTimeout(600);
 

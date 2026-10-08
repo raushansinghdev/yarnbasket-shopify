@@ -51,7 +51,7 @@ Things to finish in the Shopify admin (Raushan) before the store opens. Deferred
 
 ## Account page (docs/account-hub-plan.md, built 2026-10-03)
 - [ ] **Page "Your account"** (Online Store → Pages → Add page): title "Your account", handle `account`, content empty. The handle is what matters: the header menu, the drawer row and the Help links find it by handle, whatever template the admin shows.
-- [ ] **Customer account main menu** (Content → Menus): Orders, Profile, Saved (`/pages/saved`), Help (`/pages/account#help`). Remove "Track an order": once signed in, the orders are right there. The Track page stays for guests (Help menu and the account page).
+- [ ] **Customer account main menu** (Content → Menus): Orders, Profile, Saved (`/pages/saved`), Help (the Contact page; changed from `/pages/account#help` on 2026-10-08, when the account page's help panel was removed). Remove "Track an order": once signed in, the orders are right there. The Track page stays for guests (Help menu and the account page).
 - [ ] **Sign in once and look at the signed-in states:** the header menu (initial, latest order, Sign out), the account page's real orders (Track parcel / Buy again / Need help?), Your details, then Sign out → "You're signed out" on the page you were on. Signing in needs an email code, so this can't be scripted.
 - [ ] **Before launch:** delete `theme/templates/page.account-demo.json` with the other demo files (it shows made-up orders, and only while Demo content is on).
 

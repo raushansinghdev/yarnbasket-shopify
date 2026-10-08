@@ -135,6 +135,8 @@ The largest corner radius, so buttons and cards match our rounded pills and card
 - **Keep Help in Shopify's account menu:** those pages have no store navigation, so it's the only way to help from there.
 - **The dropdown becomes:** you (→ your account) · Orders · Saved · Your details · Sign out. That's four rows plus you, calmer.
 
+**Changed 2026-10-08:** the account page's "Need help?" panel is removed, because the Contact page built that day does its job. Shopify's account menu Help and the phones' Help shortcut now open the Contact page. See `decisions.md`, 2026-10-08 ("Help has one place").
+
 Alternative: rename the dropdown item to **"Order help"** and point it at your latest order's WhatsApp message. It's more specific, but it duplicates the order card's button.
 
 ---

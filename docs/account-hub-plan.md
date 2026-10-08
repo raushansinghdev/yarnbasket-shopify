@@ -550,9 +550,9 @@ Loyalty points, referrals, store credit, reviews, gift reminders and phone OTP s
 | AH10 | After sign out, land on | **The same page** if Shopify allows it (B0), else home |
 | AH11 | What sign-out clears on the device | **Keep Saved, clear Recently viewed** |
 | AH12 | "Download or delete my data" link | **Yes** (DPDP), going to the contact page |
-| AH13 | "Ask for a custom piece" on the account page | **Yes**, WhatsApp |
+| AH13 | "Ask for a custom piece" on the account page | **Yes**, WhatsApp. **Removed 2026-10-08** with the "Need help?" panel (decisions.md) |
 | AH14 | Shopify branding: when | **Now on the dev store** (it's UI, not launch admin), domain at launch |
-| AH15 | Shopify's account menu | **Orders, Profile, Saved, Help** |
+| AH15 | Shopify's account menu | **Orders, Profile, Saved, Help** (Help opens the Contact page since 2026-10-08) |
 | AH16 | Phase C app blocks | **After launch, only if needed** |
 | AH17 | Google sign-in: when | **Now: run G0 on the dev store this week** (it's mostly admin, about 1.5 hours with the spike), turn it on as soon as G0 passes, and redo the domain values at launch. Waiting until launch week means testing sign-in during the busiest week |
 | AH18 | Which Google account owns the Cloud project | **The business Gmail**, plus a second owner |

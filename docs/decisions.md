@@ -2,6 +2,20 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-08 (Help has one place; the account page's "Need help?" panel is gone)
+
+Raushan asked why Help is in the menu and again on the account page, and asked for the arrangement to be thought through from scratch.
+
+- **The rule: "Help" always leads to the same place, and help about one order sits on that order.** The menu's and footer's Help lists are on every page, the Contact page is the hub, and each order card and the Track page keep their own "Need help?" with the order number filled in. Nothing else is called Help.
+- **The account page's "Need help?" panel is removed** (WhatsApp, "Ask for a custom piece", four links). It was kept on 2026-10-03 because it was the only place with a WhatsApp button. The Contact page, built 2026-10-08, does that job better (WhatsApp first, a damage row with the unboxing-video note, a form), so the panel had become a second, weaker copy. This replaces that part of the 2026-10-03 entry.
+- **The phones' Help shortcut on the account page stays and opens the Contact page** (it used to jump down to the panel). Two taps to WhatsApp, as before. Before, the same word meant a list of pages in the menu and a WhatsApp panel here.
+- **Signed out, the page has one quiet link, "Need help? Contact us"**, beside "Track an order without signing in". Guests have no shortcuts there. The empty side column is no longer drawn.
+- **Signed in on desktop there is no replacement:** HELP is in the bar above and every order card has its button.
+- **"Ask for a custom piece" leaves the account page** (AH13). A custom order isn't help. It stays on the Contact page ("Custom or bulk order"), the phone menu's "Custom orders" tile and the search page.
+- **Admin change (Claude, Admin API, 2026-10-08):** in `customer-account-main-menu`, Help now links to the Contact page (was `/pages/account#help`). Read back from the store: Orders, Profile, Saved, Help → `/pages/contact`.
+- **Check 13** now fails if the account page has a help panel or a link to `#help`, if the phones' Help shortcut doesn't go to the Contact page, or if the signed-out link is missing or under 44px.
+- **Later:** when the Shipping & delivery, FAQ and Our story pages exist, the footer's Help list should hold the same help links as the menu's. Today it also has Your account and Saved items, which aren't help.
+
 ## 2026-10-08 (contact page, round 2: no number, no hours, a shorter form)
 
 Raushan looked on his phone, sent a message that arrived, and asked for Claude's opinion on four points, to go with it.
