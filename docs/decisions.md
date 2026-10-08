@@ -18,6 +18,15 @@ Newest first. Each entry says what was decided and why, so later work doesn't re
 - **Check 23** is new. Not done: a real send (Shopify's bot check stopped the automated one, and Claude doesn't solve those), so the sent panel has not been seen.
 
 
+## 2026-10-08 (cart: the swipe rows stay as they are while the cart is open)
+
+- **No card leaves, arrives or changes place while the shopper is looking.** Raushan saw the suggestions reshuffle after a "+" and asked for everything to stay static, with the tick kept on the added piece. Until now an added card left after a moment and the rows were asked for again after every change; the suggestions follow the first piece in the cart, and a new piece becomes the first, so the whole row could change.
+- **The rows are drawn when the cart is opened,** and again with the next opening: that is when pieces in the cart drop out and new suggestions come in. On `/cart`, with the next load of the page. Adding, removing, Undo, the free gift and a heart on a card change nothing in between.
+- **An added card keeps its place, with a tick in place of the "+".** The tick is a state, not a button: a second tap adds nothing (the quantity is on the piece's line above), and it reads "… is in your cart". A second tap that added another, or took the piece out, would invite mistakes. Focus stays on it.
+- **Taken out of the cart, the card has its "+" back.** The tick follows the cart, so Undo ticks it again.
+- **Withdrawn: two lines of room for every name in these rows** (the entry below). The rows no longer change while open, so nothing shifts, and a row of short names carries no empty line again (2026-10-06).
+- Check §8d: the rows are the same before and after an Add, the card is ticked and no longer a button, a second press adds nothing, and the "+" is back when the piece is taken out. §8e still holds.
+
 ## 2026-10-08 (cart: nothing moves when a piece is added or removed)
 
 - **The cart holds still through every change.** Raushan saw the drawer run to the top and glide back after a "+" in Little extras, and after removing a line, and asked that it not scroll at all so the shopper can keep exploring.

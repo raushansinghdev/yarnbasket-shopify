@@ -73,6 +73,7 @@
     "saved_all": "See all saved",
     "extras_add": "Add",
     "extras_add_label": "Add {{ title }} to cart",
+    "extras_in_cart": "{{ title }} is in your cart",
     "extras_choose": "Choose",
     "cap": "{{ count }} is the most of one piece per order. For more, message us on WhatsApp.",
     "cap_have": "You already have {{ have }} of this in your cart. {{ count }} is the most per order."

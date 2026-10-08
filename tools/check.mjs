@@ -562,8 +562,9 @@ if (want('8b')) {
 // 8d. One cart (docs/cart-plan.md "One cart", 2026-10-05; replaces 8c): the drawer and the cart page show the same,
 //     in the same order: the pieces, the gift note, the price details, then three swipe rows: Saved for later,
 //     Little extras ("You may also like" once every reward is earned) and Recently viewed. No piece shows twice or
-//     is already in the cart; a row with nothing to show is hidden; an Add in a row puts the piece in the cart,
-//     takes its card away and moves focus to the next one. The drawer has no form inside its form, keeps focus
+//     is already in the cart; a row with nothing to show is hidden; an Add in a row puts the piece in the cart and
+//     its card stays, with a tick in place of the "+" and every row as it was (2026-10-08); taken out of the cart,
+//     it has its "+" back. The drawer has no form inside its form, keeps focus
 //     inside and its pinned bottom no taller; the page pins Checkout whenever the card's own is off screen.
 //     axe on both. Needs products.
 if (want('8d')) {
@@ -694,7 +695,10 @@ if (want('8d')) {
         record(`${tag}: pinned Checkout whenever the card's is off screen`, atTop.on !== atTop.bar && inRows.on !== inRows.bar && (inRows.bar || h > 700), `at the top: button on screen ${atTop.on}, bar ${atTop.bar}; in the rows: button on screen ${inRows.on}, bar ${inRows.bar}`);
       }
 
-      // Add from Saved for later: the keyboard reaches the button, the piece lands in the cart, focus moves on.
+      // Add from Saved for later: the keyboard reaches the button, the piece lands in the cart; the rows stay as
+      // they are, the card keeps its place with a tick, and focus stays on it.
+      const cardsOf = (r) => r.rows.map((x) => x.cards.join()).join(' | ');
+      const button = () => page.evaluate(([root, name]) => { const b = [...document.querySelectorAll(`${root} [data-cart-saved] li`)].find((li) => li.querySelector('.card__title').textContent.trim() === name)?.querySelector('[data-row-add]'); return b ? { ticked: 'added' in b.dataset && getComputedStyle(b.querySelector('.row-add__done')).display !== 'none', off: b.getAttribute('aria-disabled') === 'true', label: b.getAttribute('aria-label') || '', focus: b === document.activeElement } : {}; }, [ROOT[place], added]);
       const added = await page.evaluate((root) => document.querySelector(`${root} [data-cart-saved] [data-row-add]`).closest('li').querySelector('.card__title').textContent.trim(), ROOT[place]);
       await page.focus(`${ROOT[place]} [data-cart-saved] [data-row-add]`);
       await page.keyboard.press('Enter');
@@ -702,14 +706,21 @@ if (want('8d')) {
       await page.waitForTimeout(2500);
       const after = await read(page, place);
       const said = await page.textContent(place === 'drawer' ? '#CartDrawer [data-cart-live]' : '[data-cart-status]').catch(() => '');
-      record(`${tag}: Add in Saved puts it in the cart, focus moves on`, after.count === first.count + 1 && after.lines.includes(added) && after.twice === 0 && after.inCart === 0 && after.focusRow === 'Saved for later' && after.focusIn && (said || '').includes(added) && after.foot <= first.foot + 1, `"${added}" in the cart: ${after.lines.includes(added)}, still in a row: ${after.inCart}, focus on "${after.focus}" in "${after.focusRow}", said: ${(said || '').includes(added)}, pinned bottom ${first.foot} → ${after.foot}px`);
+      const on = await button();
+      record(`${tag}: Add in Saved puts it in the cart, the card stays with a tick`, after.count === first.count + 1 && after.lines.includes(added) && cardsOf(after) === cardsOf(first) && on.ticked && on.off && /in your cart/.test(on.label) && on.focus && (said || '').includes(added) && after.foot <= first.foot + 1, `"${added}" in the cart: ${after.lines.includes(added)}, rows as they were: ${cardsOf(after) === cardsOf(first)}, ticked: ${on.ticked}, a button no more: ${on.off}, reads "${on.label}", focus stays: ${on.focus}, said: ${(said || '').includes(added)}, pinned bottom ${first.foot} → ${after.foot}px`);
+      // A second tap adds nothing.
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1500);
+      const twice = (await read(page, place)).count;
+      record(`${tag}: the tick adds nothing more`, twice === first.count + 1, `count ${after.count} → ${twice}`);
 
-      // Taken out again, it comes back to its row.
+      // Taken out again, the rows are still as they were and the card has its "+" back.
       await page.evaluate(([root, name]) => [...document.querySelectorAll(`${root} .cart-line`)].find((l) => l.querySelector('.cart-line__title').textContent.trim() === name).querySelector('.cart-line__remove').click(), [ROOT[place], added]);
       await page.waitForFunction(([root, n]) => +document.querySelector(`${root} [data-cart-root]`).dataset.count === n, [ROOT[place], first.count], { timeout: 10000 }).catch(() => {});
       await page.waitForTimeout(2500);
       const back = await read(page, place);
-      record(`${tag}: a piece taken out of the cart is back in its row`, back.count === first.count && back.rows[0].cards.includes(added) && back.twice === 0, `count ${back.count}, Saved for later: ${back.rows[0].cards.join(' / ')}`);
+      const off = await button();
+      record(`${tag}: a piece taken out of the cart has its "+" back`, back.count === first.count && cardsOf(back) === cardsOf(first) && off.ticked === false && !off.off && !/in your cart/.test(off.label), `count ${back.count}, rows as they were: ${cardsOf(back) === cardsOf(first)}, ticked: ${off.ticked}, reads "${off.label || 'its own words'}"`);
 
       // Every reward earned: the same row is "You may also like".
       const dear = [...products].sort((x, y) => y.variants[0].price - x.variants[0].price)[0];

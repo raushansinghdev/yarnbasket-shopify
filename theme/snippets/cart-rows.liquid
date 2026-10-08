@@ -5,8 +5,9 @@
   white circle that adds in one tap, or a "Choose" pill that opens the page of a piece with options. The heart
   keeps the top-right corner. The Saved page's card has "Add to cart" and "Choose options" under it; here
   cart-rows.js gives it the face below and moves it onto the photo.
-  Empty shells: assets/cart-rows.js fills them and hides a row with nothing to show. No piece shows twice, and
-  none that is already in the cart. Without JavaScript nothing shows and the cart ends after the price details.
+  Empty shells: assets/cart-rows.js fills them when the cart is opened and hides a row with nothing to show. No
+  piece shows twice, and none that is already in the cart. After that the rows stay as they are until the next
+  opening: a piece added from a card keeps its card, with a tick in place of the "+". Without JavaScript nothing shows and the cart ends after the price details.
   The suggestions are based on the first piece in the cart that was chosen (the free gift sits first once it's
   added, and says nothing about taste), and are switched off in Theme settings → Cart.
 
@@ -30,7 +31,7 @@
   assign extras_id = 'CartExtrasTitle-' | append: place
   assign recent_id = 'CartRecentTitle-' | append: place
 -%}
-<div class="cart-rows" data-cart-rows data-products="{{ routes.root_url }}products/" data-choose="{{ 'cart.extras_choose' | t | escape }}">
+<div class="cart-rows" data-cart-rows data-products="{{ routes.root_url }}products/" data-choose="{{ 'cart.extras_choose' | t | escape }}" data-in-cart="{{ 'cart.extras_in_cart' | t: title: '[title]' | escape }}">
   <template data-row-face>{%- render 'icon', icon: 'plus' -%}{%- render 'icon', icon: 'check', class: 'row-add__done' -%}<span class="visually-hidden">{{ 'cart.extras_add' | t }}</span></template>
   <section class="cart-row" aria-labelledby="{{ saved_id }}" tabindex="-1" data-cart-saved hidden>
     {%- render 'product-row', title: saved_title, id: saved_id, shell: true -%}
@@ -68,9 +69,6 @@
      Saved page's card has lost its button row here, so its second row and the gap above it go too. */
   .cart-row .extra { grid-template-rows: auto 1fr auto; }
   .cart-row .saved-item { grid-template-rows: 1fr; gap: 0; }
-  /* Two lines of room for every name, so a row is one height whichever pieces are in it and the cart below it
-     never shifts as cards come and go. */
-  .cart-row :is(.extra__title, .card__title) { min-height: 2lh; }
   .cart-row .extra__title { align-self: start; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400; font-size: .9375rem; }
   .cart-row .extra .price { font-size: 1rem; font-weight: 600; color: var(--color-heading); }
   /* The button sits on the photo's bottom-right corner. The box covers the square photo whatever the card's
@@ -116,10 +114,11 @@
   .cart-row .row-add:focus-visible { outline-offset: -4px; }
   .cart-row .row-add .icon { width: 18px; height: 18px; color: currentColor; }
   @media (hover: hover) { .cart-row .row-add:hover::before { border-color: var(--cocoa); background: var(--blush-soft); } }
-  /* Added: a tick on Cocoa for a moment, then the card goes. */
+  /* In the cart: a tick on Cocoa, and no longer a button. */
   .row-add__done, .row-add[data-added] .icon:not(.row-add__done) { display: none; }
   .row-add[data-added] .row-add__done { display: block; }
-  .cart-row .row-add[data-added] { color: var(--cream); }
+  .cart-row .row-add[data-added] { color: var(--cream); cursor: default; }
+  .cart-row .row-add[data-added]:active::before { scale: none; }
   .cart-row .row-add[data-added]::before { border-color: var(--cocoa-deep); background: var(--cocoa-deep); }
   .cart-row [data-row-add][aria-busy="true"]:not([data-added]) { opacity: .6; }
   @media (forced-colors: active) { .cart-row .row-add::before { border-color: CanvasText; background: Canvas; } }

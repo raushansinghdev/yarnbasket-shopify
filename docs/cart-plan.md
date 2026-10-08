@@ -244,6 +244,10 @@ the free gift arriving. `cart-rows.js` ("Holding still") measures the tapped pie
 view) before and after each redraw and corrects the scroll at once. At the very top the cart stays at the top.
 Check §8e. See docs/decisions.md, 2026-10-08.
 
+The swipe rows are drawn when the cart is opened and stay as they are until the next opening: an added piece
+keeps its card, with a tick in place of the "+" (a state, not a button), and has the "+" back if it is taken out.
+Check §8d.
+
 ## 7. Accessibility checklist (WCAG 2.2 AA)
 
 - **Tap targets:** every one is at least 48 × 48px (our rule; WCAG asks for 24).

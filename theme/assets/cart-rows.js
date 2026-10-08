@@ -3,11 +3,14 @@
   The three swipe rows at the end of the cart, the same in the drawer and on /cart (snippets/cart-rows.liquid):
   Saved for later, Little extras ("You may also like" once every reward is earned) and Recently viewed.
   - Saved for later: this browser's saved pieces (saved.js) that can be bought now, from sections/saved-item
-  - Little extras: sections/cart-extras through Shopify's product recommendations, asked again after every change
+  - Little extras: sections/cart-extras through Shopify's product recommendations
   - Recently viewed: the last product pages seen in this browser that can be bought now, from the same section,
     so each has its button too. On every card's photo: "+" to add, or Choose for a piece with options
   6 cards a row at most, nothing that is in the cart, no piece twice (the shopper's own rows keep theirs and the
   suggestions give way), and a row with nothing to show is hidden.
+  The rows are drawn when the cart is opened and then stay as they are (docs/decisions.md, 2026-10-08): no card
+  leaves, arrives or changes place while the shopper is looking. A piece added from a card keeps its card, with a
+  tick in place of the "+".
   The drawer fetches this file with its first opening (cart.js calls the default export on every opening); the
   cart page loads it after cart-page.js and fills the rows when they come near the screen. Without it the cart
   simply ends after the price details.
@@ -152,8 +155,6 @@ const buyCard = (handle) => card(handle, 'saved-item', (doc) => {
 });
 
 /* ---------- Filling the rows ---------- */
-// A card that was just added stays for a moment, showing its tick.
-const leaving = new Set();
 // The row's cards become these, unless they already are. Focus stays on the same piece, or moves to its
 // neighbour, or to the row itself.
 const put = (row, next) => {
@@ -180,7 +181,6 @@ const tidy = () => {
   [savedRow, recentRow, extrasRow].filter(Boolean).forEach((row) => {
     const keep = [...listOf(row).children].filter((li) => {
       const handle = handleOf(li);
-      if (leaving.has(li)) return seen.add(handle);
       if (cart.has(handle) || seen.has(handle)) return false;
       return seen.add(handle);
     }).slice(0, MAX);
@@ -210,8 +210,8 @@ const draw = () => {
   ];
   // Nothing on screen moves when a row above fills or empties.
   Promise.all(jobs).then(([savedCards, recentCards, extras]) => still(() => {
-    // A newer change has asked again, or a card is still showing its tick (it asks again when it goes).
-    if (asked !== turn || leaving.size) return;
+    // A newer opening has asked again.
+    if (asked !== turn) return;
     if (savedRow) {
       const shown = savedCards.filter(Boolean).slice(0, MAX);
       put(savedRow, shown);
@@ -228,13 +228,14 @@ const draw = () => {
     }
     if (recentRow) put(recentRow, recentCards.filter(Boolean).slice(0, MAX));
     tidy();
+    marks();
   }));
 };
 
 /* ---------- Add ---------- */
 scope?.addEventListener('click', (event) => {
   const button = event.target.closest('[data-row-add]');
-  if (!button || button.getAttribute('aria-busy') === 'true') return;
+  if (!button || button.getAttribute('aria-busy') === 'true' || 'added' in button.dataset) return;
   const li = button.closest('li');
   const row = li.closest('.cart-row');
   const title = (li.querySelector('.card__title, .extra__title')?.textContent || '').trim();
@@ -242,24 +243,13 @@ scope?.addEventListener('click', (event) => {
   button.setAttribute('aria-busy', 'true');
   enqueue(() => send('cart/add.js', withSections({ items: [{ id: +button.dataset.rowAdd, quantity: 1 }] })))
     .then((res) => {
-      // The card's "+" is a tick for a moment, then the card goes; focus moves to the next card.
-      leaving.add(li);
-      button.dataset.added = '';
+      // The tapped card stays under the finger while the cart redraws around it, and its "+" becomes a tick.
+      holding = li;
       render(res.sections?.[sectionId]);
       const count = +box()?.dataset.count;
       counted(count);
       say(fmt(S.added, { title, count: count === 1 ? S.one : S.other.replace('99', count) }));
-      setTimeout(() => {
-        leaving.delete(li);
-        button.removeAttribute('aria-busy');
-        delete button.dataset.added;
-        still(tidy);
-        draw();
-      }, 900);
-      // The tapped card stays under the finger while the cart redraws around it.
-      holding = li;
     })
-      holding = null;
     .catch((err) => {
       const note = document.createElement('p');
       note.className = 'cart-row__note';
@@ -280,16 +270,14 @@ scope?.addEventListener('scroll', (event) => { if (event.target.matches?.('[data
 
 document.addEventListener('cart:rendered', () => {
   const was = rows;
+      holding = null;
+      button.removeAttribute('aria-busy');
+      marks();
   adopt();
   if (inDrawer && was && rows.isConnected && last?.isConnected && !scope.querySelector(':focus')) last.focus({ preventScroll: true });
-  if (started && (!inDrawer || scope.open)) {
-    tidy();
-    draw();
-  }
+  marks();
   after();
 });
-// A heart on one of the cards, or the list changed in another tab.
-document.addEventListener('saved:change', () => started && (!inDrawer || scope.open) && draw());
 
 // The drawer: called on every opening.
 export default function fill() {
