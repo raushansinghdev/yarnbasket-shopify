@@ -1,64 +1,597 @@
 {%- comment -%}
-  Collection page: INTERIM until build-plan Phase 3. It replaces Skeleton's starter, whose 500px-wide grid columns
-  made phones scroll sideways, and links like "Shop all" and the empty cart's tiles already lead here.
-  For now: the title, the compact product cards (search-results-plan D8: search and collections share them),
-  2 / 3 / 4 / 5 across, and Shopify's page links. Phase 3 adds filters, sort and "Load more".
+  Collection page (docs/collection-plan.md, build-plan Phase 3). Works fully without JavaScript; collection.js swaps
+  results in place, opens the phone sheet, loads more and keeps the shopper's place on Back.
+  - Heading: the title with the count beside it. The description sits under it from 768px and after the products on phones.
+  - Craft row: chips between the Shop collection and the craft collections (real pages; filters and sort ride along).
+    The phone sheet repeats them as its first group, because the row scrolls away and the Filter pill does not.
+  - Filters are tick lists (snippets/collection-filters): in the bar's drop-downs, and in the sheet as groups that open.
+  - Desktop (from 768px): one slim bar that sticks under the header: each filter a drop-down, Sort on the right.
+  - Phones: a floating "Filter · Sort" pill at the thumb. Each opens a bottom sheet.
+  - Applied filters show as chips to take off. Compact cards 2 / 3 / 4 across, 24 a page, "Load more".
+  Every filter and sort choice is a link, marked nofollow; meta-tags keeps filtered pages out of search engines.
+  The free gift and test products are never listed, whatever the collection holds ("all" holds everything).
 {%- endcomment -%}
-<div class="section collection-page scheme-white">
-  <h1 class="collection-page__title">{{ collection.title }}</h1>
-  {%- if collection.description != blank -%}
-    <div class="collection-page__intro rte">{{ collection.description }}</div>
-  {%- endif -%}
+{%- liquid
+  assign shop_all = settings.shop_all_collection
+  assign crafts = section.settings.crafts
+  assign show_crafts = false
+  if crafts.count > 0
+    if collection.handle == shop_all.handle
+      assign show_crafts = true
+    endif
+    for craft in crafts
+      if craft.handle == collection.handle
+        assign show_crafts = true
+      endif
+    endfor
+  endif
 
-  {%- paginate collection.products by 36 -%}
-    {%- if collection.products.size > 0 -%}
-      <h2 class="visually-hidden">{{ 'search.products' | t }}</h2>
-      <ul class="product-grid collection-page__grid" role="list" data-arrive="stagger">
-        {%- for product in collection.products -%}
-          {%- comment -%} Never the free gift or a test product, whatever the collection holds ("all" holds everything). {%- endcomment -%}
-          {%- if product.tags contains 'free-gift' or product.tags contains 'test-product' or product.id == settings.gift_product.id -%}{%- continue -%}{%- endif -%}
-          {%- liquid
-            assign load = 'lazy'
-            if paginate.current_page == 1 and forloop.index <= 4
-              assign load = 'eager'
-            endif
-          -%}
-          <li style="--i: {{ forloop.index0 | modulo: 5 }}">
-            {%- render 'product-card', product: product, index: forloop.index0, loading: load, sizes: '(min-width: 1280px) 240px, (min-width: 990px) 22vw, (min-width: 768px) 30vw, calc(50vw - 24px)', compact: true -%}
+  # What is applied: `query` is every filter without the price ("&a=b"), `price_query` the price.
+  assign query = ''
+  assign price_query = ''
+  assign applied = 0
+  assign sort_by = collection.sort_by | default: collection.default_sort_by
+  assign sort_query = ''
+  if collection.sort_by != blank and collection.sort_by != collection.default_sort_by
+    assign sort_query = '&sort_by=' | append: collection.sort_by
+  endif
+  assign clear_url = collection.url
+  if sort_query != ''
+    assign clear_url = sort_query | remove_first: '&' | prepend: '?' | prepend: collection.url
+  endif
+  for filter in collection.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil
+        assign n = filter.min_value.value | divided_by: 100
+        assign price_query = price_query | append: '&' | append: filter.min_value.param_name | append: '=' | append: n
+      endif
+      if filter.max_value.value != nil
+        assign n = filter.max_value.value | divided_by: 100
+        assign price_query = price_query | append: '&' | append: filter.max_value.param_name | append: '=' | append: n
+      endif
+      if price_query != ''
+        assign applied = applied | plus: 1
+      endif
+    else
+      if show_crafts and filter.param_name == 'filter.p.product_type'
+        continue
+      endif
+      for value in filter.active_values
+        assign v = value.value | url_encode
+        assign query = query | append: '&' | append: value.param_name | append: '=' | append: v
+        assign applied = applied | plus: 1
+      endfor
+    endif
+  endfor
+  # `filter_query` is every filter without the sort (for the Sort links); `query` gains the sort (for the price links).
+  assign filter_query = query | append: price_query
+  assign query = sort_query | append: query
+  assign carry = query | append: price_query | remove_first: '&'
+  if carry != ''
+    assign carry = carry | prepend: '?'
+  endif
+
+  assign total = collection.products_count
+  assign count_text = 'collections.pieces' | t: count: total
+  assign grid_sizes = '(min-width: 1280px) 302px, (min-width: 1100px) 23vw, (min-width: 768px) 30vw, calc(50vw - 24px)'
+  assign sorted_template = 'search.status_sorted' | t: sort: '[sort]'
+-%}
+{%- comment -%} Sort: each order is a link, as each filter choice is. The collection's own order needs no sort_by. {%- endcomment -%}
+{%- assign sort_name = '' -%}
+{%- capture sort_options -%}
+  {%- for option in collection.sort_options -%}
+    {%- liquid
+      assign name = option.name
+      assign keep = true
+      case option.value
+        when 'manual', 'most-relevant'
+          # "Featured" is the order the collection is kept in; the other of the two would be a second "Featured".
+          assign name = 'collections.sort_featured' | t
+          if option.value != collection.default_sort_by
+            assign keep = false
+          endif
+        when 'best-selling'
+          assign name = 'collections.sort_bestselling' | t
+        when 'created-descending'
+          assign name = 'collections.sort_newest' | t
+        when 'price-ascending'
+          assign name = 'collections.sort_price_up' | t
+        when 'price-descending'
+          assign name = 'collections.sort_price_down' | t
+        else
+          assign keep = false
+      endcase
+      assign current = false
+      if option.value == sort_by
+        assign keep = true
+        assign current = true
+        assign sort_name = name
+      endif
+      assign q = filter_query
+      unless option.value == collection.default_sort_by
+        assign q = q | append: '&sort_by=' | append: option.value
+      endunless
+      assign href = collection.url
+      if q != ''
+        assign href = q | remove_first: '&' | prepend: '?' | prepend: collection.url
+      endif
+    -%}
+    {%- if keep -%}
+      <li>
+        <a class="cf-sort__opt" href="{{ href }}" rel="nofollow" data-swap data-sort data-key="sort-{{ option.value }}" {% if current %}aria-current="true"{% endif %}>
+          {{- name -}}
+          {%- if current -%}{%- render 'icon', icon: 'check' -%}{%- endif -%}
+        </a>
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+<div class="section collection-page scheme-white" data-collection data-section-id="{{ section.id }}" data-sorted="{{ sorted_template | escape }}">
+  {%- comment -%} Marks the page as scripted before it paints, so the phone pill never flashes in after the no-JavaScript bar. {%- endcomment -%}
+  <script>document.currentScript.parentElement.dataset.js = '';</script>
+
+  <div class="collection-page__head">
+    <h1 class="collection-page__title" tabindex="-1" data-collection-top data-region="title" data-doc-title="{{ page_title | escape }}{% unless page_title contains shop.name %} &ndash; {{ shop.name | escape }}{% endunless %}">{{ collection.title }}</h1>
+    <p class="collection-page__count" data-region="count">{{ count_text }}</p>
+  </div>
+  {%- comment -%} Always here, empty or not: a craft chosen in the sheet brings its own description. {%- endcomment -%}
+  <div class="collection-page__intro rte" data-region="intro">{{- collection.description -}}</div>
+
+  {%- if show_crafts -%}
+    <nav class="cf-crafts" aria-label="{{ 'general.crafts' | t }}" data-region="crafts">
+      <ul class="cf-crafts__list" role="list">
+        <li>
+          <a class="search-chip cf-craft cf-craft--all" href="{{ shop_all.url | default: routes.all_products_collection_url }}{{ carry }}" {% if collection.handle == shop_all.handle %}aria-current="page"{% endif %}>
+            {{- 'search.all' | t -}}
+          </a>
+        </li>
+        {%- for craft in crafts -%}
+          {%- if craft.all_products_count == 0 -%}{%- continue -%}{%- endif -%}
+          <li>
+            <a class="search-chip cf-craft" href="{{ craft.url }}{{ carry }}" {% if craft.handle == collection.handle %}aria-current="page"{% endif %}>
+              {%- if craft.featured_image -%}
+                <img src="{{ craft.featured_image | image_url: width: 96, height: 96, crop: 'center' }}" alt="" width="32" height="32" loading="eager" decoding="async">
+              {%- endif -%}
+              {{- craft.title | remove_first: 'Crochet ' -}}
+            </a>
           </li>
         {%- endfor -%}
       </ul>
-      {%- if paginate.pages > 1 -%}
-        <nav class="collection-page__pages" aria-label="{{ 'general.pagination' | t }}">
-          {{- paginate | default_pagination -}}
-        </nav>
+    </nav>
+  {%- endif -%}
+
+  <p class="visually-hidden" role="status" data-collection-status></p>
+
+  {%- paginate collection.products by 24 -%}
+    {%- liquid
+      assign shown = paginate.current_offset | plus: collection.products.size
+      assign show_text = 'collections.show_pieces' | t: count: total
+    -%}
+    <div class="cf-bar" data-region="bar">
+      {%- render 'collection-filters', context: 'bar', steps: section.settings.price_steps, query: query, hide_type: show_crafts -%}
+      {%- if sort_options != blank -%}
+        <details class="cf-dd cf-sort" name="collection-filter" data-dd="sort">
+          <summary class="cf-pill" data-key="dd-sort">
+            <span class="cf-sort__label">{{ 'search.sort' | t }}:</span>
+            <span>{{ sort_name }}</span>
+            {%- render 'icon', icon: 'chevron' -%}
+          </summary>
+          <div class="cf-pop cf-pop--end">
+            <ul class="cf-sort__list" role="list">{{ sort_options }}</ul>
+          </div>
+        </details>
       {%- endif -%}
-    {%- else -%}
-      <p class="collection-page__empty">{{ 'general.collection_empty' | t }}</p>
-      <a class="btn btn--knob collection-page__all" href="{{ routes.all_products_collection_url }}">
-        {{- 'header.shop_all' | t -}}
-        <span class="btn__knob">{%- render 'icon', icon: 'arrow' -%}</span>
-      </a>
+    </div>
+
+    <div class="cf-applied" data-region="applied">
+      {%- if applied > 0 -%}
+        <ul class="cf-applied__list" role="list" aria-label="{{ 'collections.applied' | t }}">
+          {%- for filter in collection.filters -%}
+            {%- if filter.type == 'price_range' -%}
+              {%- if price_query != '' -%}
+                {%- liquid
+                  assign lo_money = filter.min_value.value | money_without_trailing_zeros
+                  assign hi_money = filter.max_value.value | money_without_trailing_zeros
+                  assign next_money = filter.max_value.value | plus: 100 | money_without_trailing_zeros
+                  if filter.min_value.value == nil
+                    assign text = 'collections.price_under' | t: price: next_money
+                  elsif filter.max_value.value == nil
+                    assign text = 'collections.price_over' | t: price: lo_money
+                  else
+                    assign text = 'collections.price_between' | t: from: lo_money, to: hi_money
+                  endif
+                -%}
+                <li>
+                  <a class="cf-tag" href="{{ filter.url_to_remove }}" rel="nofollow" data-swap data-key="tag-price" aria-label="{{ 'collections.remove' | t: label: text | escape }}">
+                    {{- text }}{% render 'icon', icon: 'close' -%}
+                  </a>
+                </li>
+              {%- endif -%}
+            {%- else -%}
+              {%- if show_crafts and filter.param_name == 'filter.p.product_type' -%}{%- continue -%}{%- endif -%}
+              {%- for value in filter.active_values -%}
+                {%- liquid
+                  assign text = value.label
+                  if filter.param_name == 'filter.v.availability' and value.value == '1'
+                    assign text = 'collections.in_stock_only' | t
+                  endif
+                -%}
+                <li>
+                  <a class="cf-tag" href="{{ value.url_to_remove }}" rel="nofollow" data-swap data-key="tag-{{ value.param_name }}={{ value.value | escape }}" aria-label="{{ 'collections.remove' | t: label: text | escape }}">
+                    {{- text | escape }}{% render 'icon', icon: 'close' -%}
+                  </a>
+                </li>
+              {%- endfor -%}
+            {%- endif -%}
+          {%- endfor -%}
+          <li><a class="cf-clear" href="{{ clear_url }}" rel="nofollow" data-swap data-key="clear">{{ 'collections.clear_all' | t }}</a></li>
+        </ul>
+      {%- endif -%}
+    </div>
+
+    <div class="cf-float" data-region="float">
+      <button type="button" class="cf-float__btn" aria-haspopup="dialog" aria-controls="CollectionFilters" data-sheet-open="CollectionFilters" data-key="open">
+        {%- render 'icon', icon: 'filter' -%}
+        {{- 'collections.filter' | t -}}
+        {%- if applied > 0 -%}
+          <span class="cf-badge" aria-hidden="true">{{ applied }}</span>
+          <span class="visually-hidden">{{ 'collections.applied_count' | t: count: applied }}</span>
+        {%- endif -%}
+      </button>
+      {%- if sort_options != blank -%}
+        <button type="button" class="cf-float__btn" aria-haspopup="dialog" aria-controls="CollectionSort" data-sheet-open="CollectionSort" data-key="open-sort">
+          {%- render 'icon', icon: 'sort' -%}
+          {{- 'search.sort' | t -}}
+        </button>
+      {%- endif -%}
+    </div>
+
+    <div class="collection-page__results" data-region="results">
+      {%- if collection.products.size > 0 -%}
+        <h2 class="visually-hidden">{{ 'search.products' | t }}</h2>
+        <ul class="product-grid collection-page__grid" role="list" data-collection-grid data-arrive="stagger">
+          {%- for product in collection.products -%}
+            {%- if product.tags contains 'free-gift' or product.tags contains 'test-product' or product.id == settings.gift_product.id -%}{%- continue -%}{%- endif -%}
+            {%- liquid
+              assign load = 'lazy'
+              assign first = false
+              if paginate.current_page == 1 and forloop.index <= 4
+                assign load = 'eager'
+                if forloop.first
+                  assign first = true
+                endif
+              endif
+            -%}
+            <li style="--i: {{ forloop.index0 | modulo: 4 }}">
+              {%- render 'product-card', product: product, index: forloop.index0, loading: load, priority: first, sizes: grid_sizes, compact: true -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+        {%- if paginate.next -%}
+          <div class="collection-page__more" data-collection-more>
+            <p class="collection-page__showing">{{ 'search.showing' | t: shown: shown, total: total }}</p>
+            <a class="btn btn--ghost" href="{{ paginate.next.url }}" data-load-more>{{ 'search.load_more' | t }}</a>
+          </div>
+        {%- endif -%}
+      {%- elsif applied > 0 -%}
+        <div class="collection-page__none">
+          <h2 class="collection-page__none-title">{{ 'collections.none_title' | t }}</h2>
+          <p>{{ 'collections.none_text' | t }}</p>
+          <a class="btn btn--ghost" href="{{ clear_url }}" rel="nofollow" data-swap data-key="clear-none">{{ 'collections.clear_filters' | t }}</a>
+        </div>
+        {%- liquid
+          assign picks = collections['bestsellers'].products | where: 'available'
+          capture gift_skip
+            render 'gift-skip', products: picks
+          endcapture
+          assign gift_skip = gift_skip | strip
+          assign picks_label = 'search.picks' | t
+          if picks.size > 0
+            render 'product-row', title: picks_label, id: 'CollectionPicks', products: picks, exclude: gift_skip
+          endif
+        -%}
+      {%- else -%}
+        <p class="collection-page__empty">{{ 'general.collection_empty' | t }}</p>
+        <a class="btn btn--knob collection-page__all" href="{{ shop_all.url | default: routes.all_products_collection_url }}">
+          {{- 'header.shop_all' | t -}}
+          <span class="btn__knob">{%- render 'icon', icon: 'arrow' -%}</span>
+        </a>
+      {%- endif -%}
+    </div>
+
+    <dialog class="cf-sheet" id="CollectionFilters" aria-labelledby="CollectionFiltersTitle" data-scroll-lock closedby="any" data-sheet data-filter-sheet>
+      <div class="cf-sheet__top">
+        <h2 class="cf-sheet__title" id="CollectionFiltersTitle">{{ 'collections.filter' | t }}</h2>
+        <button type="button" class="icon-btn cf-sheet__close" aria-label="{{ 'collections.close_filters' | t }}" data-sheet-close>{%- render 'icon', icon: 'close' -%}</button>
+      </div>
+      <div class="cf-sheet__body" data-region="sheet">
+        {%- if show_crafts -%}
+          {%- comment -%} The craft row again, as links to the same pages: one at a time, and the other filters ride along. {%- endcomment -%}
+          {%- liquid
+            assign at_all = false
+            assign craft_now = 'search.all' | t
+            if collection.handle == shop_all.handle
+              assign at_all = true
+            else
+              assign craft_now = collection.title | remove_first: 'Crochet '
+            endif
+            assign craft_label = 'collections.craft' | t
+            assign craft_rows = 2
+            for craft in crafts
+              if craft.all_products_count > 0
+                assign craft_rows = craft_rows | plus: 1
+              endif
+            endfor
+            assign craft_rows = craft_rows | divided_by: 2
+          -%}
+          <details class="cf-acc" name="collection-sheet" data-dd="sheet:craft">
+            <summary class="cf-acc__head" data-key="acc-craft">
+              <span class="cf-acc__name">{{ craft_label }}</span>
+              <span class="cf-acc__now{% unless at_all %} is-on{% endunless %}">{{ craft_now }}</span>
+              {%- render 'icon', icon: 'chevron' -%}
+            </summary>
+            <div class="cf-rows" role="radiogroup" aria-label="{{ craft_label }}" style="--rows: {{ craft_rows }}; --rows-all: {{ craft_rows }}">
+              <a class="cf-row" href="{{ shop_all.url | default: routes.all_products_collection_url }}{{ carry }}" role="radio" aria-checked="{{ at_all }}" data-swap data-key="craft-all">
+                <span class="cf-box cf-box--dot" aria-hidden="true"></span>
+                <span class="cf-row__name">{{ 'search.all' | t }}</span>
+              </a>
+              {%- for craft in crafts -%}
+                {%- if craft.all_products_count == 0 -%}{%- continue -%}{%- endif -%}
+                {%- assign here = false -%}
+                {%- if craft.handle == collection.handle -%}{%- assign here = true -%}{%- endif -%}
+                <a class="cf-row" href="{{ craft.url }}{{ carry }}" role="radio" aria-checked="{{ here }}" data-swap data-key="craft-{{ craft.handle }}">
+                  <span class="cf-box cf-box--dot" aria-hidden="true"></span>
+                  <span class="cf-row__name">{{ craft.title | remove_first: 'Crochet ' }}</span>
+                </a>
+              {%- endfor -%}
+            </div>
+          </details>
+        {%- endif -%}
+        {%- render 'collection-filters', context: 'sheet', steps: section.settings.price_steps, query: query, hide_type: show_crafts -%}
+      </div>
+      <div class="cf-sheet__foot" data-region="sheet-foot">
+        {%- if applied > 0 -%}
+          <a class="btn btn--ghost" href="{{ clear_url }}" rel="nofollow" data-swap data-key="clear">{{ 'collections.clear_all' | t }}</a>
+        {%- endif -%}
+        <button type="button" class="btn" data-sheet-close data-key="show">{{ show_text }}</button>
+      </div>
+    </dialog>
+
+    {%- if sort_options != blank -%}
+      <dialog class="cf-sheet" id="CollectionSort" aria-labelledby="CollectionSortTitle" data-scroll-lock closedby="any" data-sheet>
+        <div class="cf-sheet__top">
+          <h2 class="cf-sheet__title" id="CollectionSortTitle">{{ 'collections.sort_by' | t }}</h2>
+          <button type="button" class="icon-btn cf-sheet__close" aria-label="{{ 'collections.close_sort' | t }}" data-sheet-close>{%- render 'icon', icon: 'close' -%}</button>
+        </div>
+        <div class="cf-sheet__body" data-region="sort-sheet">
+          <ul class="cf-sort__list" role="list">{{ sort_options }}</ul>
+        </div>
+      </dialog>
     {%- endif -%}
   {%- endpaginate -%}
 </div>
 
+<script src="{{ 'collection.js' | asset_url }}" type="module"></script>
+
 {% stylesheet %}
-  .collection-page { padding-top: clamp(var(--space-6), 1.5rem + 2vw, var(--space-8)); }
-  .collection-page__title { font-size: var(--fs-h2); line-height: 1.05; margin-bottom: var(--space-5); }
-  .collection-page__intro { max-width: 40rem; margin: calc(var(--space-3) * -1) 0 var(--space-6); color: var(--color-muted); }
+  /* Clipped at the sides for the bar's full-width ground (clip, not hidden: sticky still works). */
+  .collection-page { padding-top: clamp(var(--space-5), 1rem + 1.5vw, var(--space-7)); overflow-x: clip; }
+  .collection-page__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-3); }
+  .collection-page__title { min-width: 0; font-size: var(--fs-h2); line-height: 1.05; overflow-wrap: anywhere; }
+  .collection-page__title:focus { outline: none; }
+  .collection-page__count { flex: none; font-size: .9375rem; color: var(--color-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .collection-page__intro { max-width: 40rem; margin-bottom: var(--space-4); color: var(--color-muted); }
+  .collection-page__intro:empty { display: none; }
+
+  /* Craft row: one line; it swipes while the page is narrower than the chips. */
+  .cf-crafts { margin-bottom: var(--space-4); }
+  .cf-crafts__list { display: flex; gap: var(--space-2); }
+  .cf-crafts__list > li { flex: none; }
+  .search-chip.cf-craft { min-height: 44px; padding-left: 6px; }
+  .search-chip.cf-craft--all { padding-inline: 18px; }
+  .cf-craft img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--blush); }
+  @media (max-width: 1099px) {
+    .cf-crafts__list { overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding: 4px var(--gutter); scroll-padding-inline: var(--gutter); }
+    .cf-crafts__list::-webkit-scrollbar { display: none; }
+    .cf-crafts { margin-block: -4px calc(var(--space-4) - 4px); }
+  }
+
+  /* The bar (from 768px, and at every width without JavaScript): sticks under the header and moves with it. */
+  .cf-bar { display: none; }
+  .collection-page:not([data-js]) .cf-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4); }
+  @media (min-width: 768px) {
+    .collection-page .cf-bar {
+      position: sticky;
+      top: var(--header-height);
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+      padding-block: 10px;
+      background: var(--color-bg);
+      transition: top var(--dur-panel) var(--ease-out);
+    }
+    /* The bar's ground and hairlines run the full width of the screen, so cards never show beside it. */
+    .cf-bar::before { content: ""; position: absolute; inset: 0 -100vmax; z-index: -1; border-block: 1px solid var(--color-line); background: var(--color-bg); }
+    html.header-hidden:not(:has(.header-section:focus-within)) .cf-bar { top: 0; transition-timing-function: var(--ease-in-out); }
+    html:has(.cf-bar) { scroll-padding-top: calc(var(--header-height) + 64px + var(--space-4)); }
+  }
+  @media (min-width: 768px) and (max-height: 480px) {
+    .collection-page .cf-bar { position: static; }
+    html:has(.cf-bar) { scroll-padding-top: var(--space-4); }
+  }
+  /* Sort: the last pill of the bar, opening a short list with a tick on the order in use. The phone sheet shows the same list. */
+  .cf-bar .cf-sort { margin-left: auto; }
+  .cf-sort__label { font-weight: 400; color: var(--color-muted); }
+  .cf-pop.cf-pop--end { left: auto; right: 0; }
+  .cf-pop.cf-pop--end:has(> .cf-sort__list) { padding: var(--space-2); }
+  .cf-sort__list { display: grid; gap: 2px; min-width: 13.5rem; }
+  .cf-sort__opt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: 48px;
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--color-heading);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--dur-state) ease;
+  }
+  .cf-sort__opt[aria-current] { background: var(--blush-soft); font-weight: 500; }
+  .cf-sort__opt .icon { width: 20px; height: 20px; }
+  @media (hover: hover) { .cf-sort__opt:hover { background: var(--blush-soft); } }
+  .cf-sheet__body > .cf-sort__list { margin-inline: calc(var(--space-3) * -1); padding-block: var(--space-2); }
+
+  /* Applied filters: chips to take off, then "Clear all". One swipe row on phones. */
+  .cf-applied__list { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4); }
+  .cf-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: 0 var(--space-3) 0 var(--space-4);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--blush-soft);
+    color: var(--color-heading);
+    font-size: .9375rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .cf-tag .icon { width: 16px; height: 16px; }
+  @media (hover: hover) { .cf-tag:hover { background: var(--blush); border-color: var(--rose); } }
+  .cf-clear { display: inline-flex; align-items: center; min-height: 44px; padding-inline: var(--space-2); color: var(--color-heading); font-size: .9375rem; text-decoration: underline; text-decoration-color: var(--rose); text-underline-offset: 4px; white-space: nowrap; }
+  @media (max-width: 767px) {
+    .cf-applied__list { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding: 4px var(--gutter); margin-block: -4px calc(var(--space-4) - 4px); }
+    .cf-applied__list::-webkit-scrollbar { display: none; }
+    .cf-applied__list > li { flex: none; }
+  }
+
+  /* Phones: Filter and Sort float at the thumb. The pill sticks to the bottom of the screen while the list runs
+     under it and comes to rest after the last product, so it never sits on the footer. It comes first in the HTML
+     (before the products, for keyboards and screen readers) and is placed last on screen. */
+  .cf-float { display: none; }
+  @media (max-width: 767px) {
+    .collection-page__intro { order: 2; margin: var(--space-6) 0 0; }
+    .collection-page[data-js] .cf-float {
+      order: 3;
+      position: sticky;
+      bottom: max(var(--space-4), env(safe-area-inset-bottom));
+      z-index: 20;
+      justify-self: center;
+      display: flex;
+      height: 48px;
+      margin-top: var(--space-5);
+      border-radius: var(--radius-pill);
+      background: var(--cocoa-deep);
+      color: var(--cream);
+      box-shadow: 0 10px 24px -10px rgb(78 58 49 / .6);
+    }
+    /* A card reached by keyboard stops clear of the pill. On the cards, not the page: page-wide scroll padding made
+       the page jump when a control inside the pill took focus (2026-10-10). */
+    .collection-page__grid :is(a, button) { scroll-margin-bottom: 88px; }
+    /* Saved and added-to-cart pop-ups sit above the pill. */
+    :root:has(.collection-page[data-js]) { --buybar: 60px; }
+  }
+  .cf-float__btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: 100%;
+    padding: 0 18px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: inherit;
+    font: 500 .9375rem var(--font-sans);
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cf-float__btn + .cf-float__btn::before { content: ""; position: absolute; inset: 10px auto 10px 0; width: 1px; background: rgb(251 246 239 / .32); }
+  .cf-float__btn .icon { width: 20px; height: 20px; }
+  .cf-float__btn:active { background: rgb(251 246 239 / .12); }
+  .cf-float__btn:focus-visible { outline: 2px solid var(--cream); outline-offset: -5px; box-shadow: none; }
+  .cf-float .cf-badge { background: var(--cream); color: var(--cocoa-deep); }
+
+  /* The filter sheet: a native <dialog> rising from the bottom, like the menu and cart drawers from the sides. */
+  .cf-sheet {
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: 90dvh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: var(--white);
+    color: var(--color-ink);
+    transform: translateY(100%);
+    transition: transform var(--dur-panel) var(--ease-out), overlay var(--dur-panel) allow-discrete, display var(--dur-panel) allow-discrete;
+  }
+  .cf-sheet[open] { display: flex; flex-direction: column; transform: none; }
+  .cf-sheet[open][data-closing] { transform: translateY(100%); transition-timing-function: var(--ease-in-out); }
+  @starting-style { .cf-sheet[open] { transform: translateY(100%); } }
+  .cf-sheet::backdrop { background: rgba(51, 37, 31, .32); opacity: 0; transition: opacity var(--dur-panel) ease, overlay var(--dur-panel) allow-discrete, display var(--dur-panel) allow-discrete; }
+  .cf-sheet[open]::backdrop { opacity: 1; }
+  .cf-sheet[open][data-closing]::backdrop { opacity: 0; }
+  @starting-style { .cf-sheet[open]::backdrop { opacity: 0; } }
+  @media (min-width: 768px) { .cf-sheet { inset: auto auto 0 50%; width: min(32rem, 100%); translate: -50% 0; } }
+  .cf-sheet__top { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) var(--gutter) var(--space-1); }
+  .cf-sheet__title { font-size: 1.625rem; line-height: 1.1; }
+  .cf-sheet__close { margin-right: -10px; }
+  .cf-sheet__body { container-type: inline-size; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--space-1) var(--gutter) var(--space-3); transition: opacity var(--dur-state) ease; }
+  .cf-sheet__foot { display: flex; gap: var(--space-3); padding: var(--space-3) var(--gutter) max(var(--space-4), env(safe-area-inset-bottom)); border-top: 1px solid var(--color-line); }
+  .cf-sheet__foot .btn { flex: 1; min-height: 50px; }
+  .cf-sheet__foot .btn--ghost { flex: none; }
+
+  /* Compact cards: 2 across, 3 from 768px, 4 from 1100px. */
   .collection-page .collection-page__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5) var(--space-3); }
   @media (min-width: 768px) { .collection-page .collection-page__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6) var(--space-5); } }
-  @media (min-width: 990px) { .collection-page .collection-page__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-  @media (min-width: 1280px) { .collection-page .collection-page__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-  .collection-page__pages { display: flex; justify-content: center; margin-top: var(--space-7); }
-  .collection-page__pages :is(a, .current) { display: inline-grid; place-items: center; min-width: var(--tap); min-height: var(--tap); padding: 0 var(--space-2); color: var(--color-heading); }
-  .collection-page__empty { margin-bottom: var(--space-5); color: var(--color-muted); }
+  @media (min-width: 1100px) { .collection-page .collection-page__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .collection-page__results { display: grid; gap: var(--space-7); transition: opacity var(--dur-state) ease; }
+  .collection-page.is-busy :is(.collection-page__results, .cf-sheet__body) { opacity: .6; }
+  .collection-page__more { display: grid; justify-items: center; gap: var(--space-3); }
+  .collection-page__showing { font-size: .9375rem; color: var(--color-muted); }
+  .collection-page__more [aria-disabled="true"] { opacity: .6; }
+
+  .collection-page__none { display: grid; justify-items: start; gap: var(--space-3); padding-top: var(--space-3); }
+  .collection-page__none-title { font-size: 1.625rem; line-height: 1.15; }
+  .collection-page__none p { color: var(--color-muted); }
+  .collection-page__empty { color: var(--color-muted); }
+
+  @media (prefers-reduced-motion: reduce) { .cf-sheet, .cf-sheet::backdrop, .collection-page .cf-bar { transition: none; } }
+  @media (forced-colors: active) {
+    .cf-tag, .cf-sheet { border: 1px solid CanvasText; }
+    .collection-page[data-js] .cf-float { border: 1px solid CanvasText; }
+  }
 {% endstylesheet %}
 
 {% schema %}
 {
   "name": "t:general.collection",
-  "settings": []
+  "settings": [
+    {
+      "type": "collection_list",
+      "id": "crafts",
+      "label": "Craft row",
+      "limit": 8,
+      "info": "Chips above the products on the Shop collection and on each of these collections. \"All\" leads to the Shop all collection (Theme settings)."
+    },
+    {
+      "type": "text",
+      "id": "price_steps",
+      "label": "Price steps (₹)",
+      "default": "200,400,1000,2000",
+      "info": "Where the price filter is cut, low to high with commas. Only the bands in use show: with nothing above ₹499, \"200,400,1000,2000\" gives Under ₹200, ₹200 to ₹399, ₹400 and above."
+    }
+  ]
 }
 {% endschema %}

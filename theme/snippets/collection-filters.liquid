@@ -1,0 +1,415 @@
+{%- doc -%}
+  The collection page's filter groups (docs/collection-plan.md, round 4), drawn from whatever Shopify's
+  `collection.filters` holds, so a filter added or removed in the admin (Search & Discovery → Filters) needs no code.
+  Rendered twice by sections/collection: as drop-downs in the desktop bar and as groups that open in the phone sheet.
+  Both hold the same list of rows. No counts beside the choices (2026-10-10): the sheet's button counts the result
+  after every tap, a choice with nothing to show is dimmed, and "Lily 2" undersells a small handmade catalogue.
+  - Price: radio buttons (one at a time), "Any price" first, then ranges cut at the section's "Price steps".
+    Only the bands in use show: one that starts above the dearest piece is left out, and the last reads "and above".
+  - List filters (occasion, flower, craft…): tick boxes (several at a time). A value with nothing to show stays, dimmed.
+    In the sheet a group of more than 10 shows the 8 with the most pieces (and any that are ticked) and "Show all".
+  - Availability: one "In stock only" switch, shown only while something is sold out.
+  Every choice is a plain link, so it works without JavaScript; collection.js swaps the results in place.
+  In the sheet each group's heading says what is applied ("Birthday, For her") or "Any".
+
+  @param {string} context - 'bar' (drop-downs) or 'sheet' (groups that open, one at a time)
+  @param {string} steps - Price steps in rupees, as "200,400"
+  @param {string} query - The applied filters and sort without the price, as "&a=b&c=d" (for the price links)
+  @param {boolean} [hide_type] - Leave out the product type filter (pages that have the craft row)
+
+  @example
+  {% render 'collection-filters', context: 'bar', steps: '200,400', query: query %}
+{%- enddoc -%}
+{% # theme-check-disable ValidScopedCSSClass %}
+{%- for filter in collection.filters -%}
+  {%- liquid
+    assign label = filter.label
+    assign on = 0
+    assign now = ''
+    assign kind = 'group'
+    assign extras = 0
+    assign switch = blank
+    if hide_type and filter.param_name == 'filter.p.product_type'
+      continue
+    endif
+  -%}
+  {%- capture options -%}
+    {%- if filter.type == 'price_range' -%}
+      {%- liquid
+        assign kind = 'radiogroup'
+        assign cuts = steps | split: ','
+        assign cur_min = nil
+        assign cur_max = nil
+        if filter.min_value.value != nil
+          assign cur_min = filter.min_value.value | divided_by: 100
+        endif
+        if filter.max_value.value != nil
+          assign cur_max = filter.max_value.value | divided_by: 100
+        endif
+        assign top = filter.range_max | divided_by: 100
+        assign lo = nil
+        assign base = collection.url | append: '?' | append: query | replace: '?&', '?'
+        assign any = false
+        if cur_min == nil and cur_max == nil
+          assign any = true
+        endif
+        assign any_href = base
+        if query == ''
+          assign any_href = collection.url
+        endif
+      -%}
+      <a class="cf-row" href="{{ any_href }}" rel="nofollow" role="radio" aria-checked="{{ any }}" data-swap data-key="price-any">
+        <span class="cf-box cf-box--dot" aria-hidden="true"></span>
+        <span class="cf-row__name">{{ 'collections.any_price' | t }}</span>
+      </a>
+      {%- for i in (0..cuts.size) -%}
+        {%- liquid
+          assign hi = nil
+          assign next = nil
+          if i < cuts.size
+            assign next = cuts[i] | strip | plus: 0
+            assign hi = next | minus: 1
+            # The last band in use has no upper end: "₹400 and above" until something dearer than the next step is listed.
+            if lo != nil and next > top
+              assign hi = nil
+            endif
+          endif
+          assign range = ''
+          if lo != nil
+            assign range = range | append: '&filter.v.price.gte=' | append: lo
+            assign lo_money = lo | times: 100 | money_without_trailing_zeros
+          endif
+          if hi != nil
+            assign range = range | append: '&filter.v.price.lte=' | append: hi
+            assign hi_money = hi | times: 100 | money_without_trailing_zeros
+            assign next_money = next | times: 100 | money_without_trailing_zeros
+          endif
+          if lo == nil
+            assign text = 'collections.price_under' | t: price: next_money
+          elsif hi == nil
+            assign text = 'collections.price_over' | t: price: lo_money
+          else
+            assign text = 'collections.price_between' | t: from: lo_money, to: hi_money
+          endif
+          assign active = false
+          if cur_min == lo and cur_max == hi
+            assign active = true
+            assign on = 1
+            assign now = text
+          endif
+          assign href = base | append: range | replace: '?&', '?'
+          assign show = true
+          if lo != nil and lo > top and active == false
+            assign show = false
+          endif
+          assign lo = next
+        -%}
+        {%- if show -%}
+          <a class="cf-row" href="{{ href }}" rel="nofollow" role="radio" aria-checked="{{ active }}" data-swap data-key="price-{{ i }}">
+            <span class="cf-box cf-box--dot" aria-hidden="true"></span>
+            <span class="cf-row__name">{{ text }}</span>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- elsif filter.type == 'list' and filter.param_name == 'filter.v.availability' -%}
+      {%- for value in filter.values -%}
+        {%- if value.value == '1' -%}
+          {%- assign in_stock = value -%}
+        {%- else -%}
+          {%- assign sold_out = value.count -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if in_stock != blank -%}
+        {%- if in_stock.active or sold_out > 0 -%}
+          {%- capture switch -%}
+            <a
+              class="cf-switch"
+              href="{% if in_stock.active %}{{ in_stock.url_to_remove }}{% else %}{{ in_stock.url_to_add }}{% endif %}"
+              rel="nofollow"
+              role="switch"
+              aria-checked="{% if in_stock.active %}true{% else %}false{% endif %}"
+              data-swap
+              data-key="in-stock"
+            >
+              <span class="cf-switch__track" aria-hidden="true"></span>
+              {{- 'collections.in_stock_only' | t -}}
+            </a>
+          {%- endcapture -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- elsif filter.type == 'list' or filter.type == 'boolean' -%}
+      {%- liquid
+        assign on = filter.active_values.size
+        assign fold = false
+        assign extras = 0
+        if context == 'sheet' and filter.values.size > 10
+          assign fold = true
+          assign by_count = filter.values | sort: 'count' | reverse
+          assign cutoff = by_count[7].count
+          assign room = 8
+        endif
+      -%}
+      {%- for value in filter.values -%}
+        {%- liquid
+          assign extra = false
+          if fold
+            if value.active or value.count >= cutoff and room > 0
+              assign room = room | minus: 1
+            else
+              assign extra = true
+              assign extras = extras | plus: 1
+            endif
+          endif
+          if value.active
+            if now != ''
+              assign now = now | append: ', '
+            endif
+            assign now = now | append: value.label
+          endif
+        -%}
+        {%- if value.count == 0 and value.active == false -%}
+          <span class="cf-row{% if extra %} cf-extra{% endif %}" aria-disabled="true">
+            <span class="cf-box" aria-hidden="true"></span>
+            <span class="cf-row__name">{{ value.label | escape }}</span>
+          </span>
+        {%- else -%}
+          <a
+            class="cf-row{% if extra %} cf-extra{% endif %}"
+            href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}"
+            rel="nofollow"
+            role="checkbox"
+            aria-checked="{{ value.active }}"
+            data-swap
+            data-key="{{ value.param_name }}={{ value.value | escape }}"
+          >
+            <span class="cf-box" aria-hidden="true">{%- render 'icon', icon: 'check' -%}</span>
+            <span class="cf-row__name">{{ value.label | escape }}</span>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if extras > 0 -%}
+        <button type="button" class="cf-clear cf-more" data-show-all>{{ 'collections.show_all' | t: count: filter.values.size }}</button>
+      {%- endif -%}
+    {%- endif -%}
+  {%- endcapture -%}
+  {%- liquid
+    assign options = options | strip
+    assign count = options | split: 'class="cf-box' | size | minus: 1
+    # The sheet lays a list out in two columns, read down the first and then the second: how many rows that takes.
+    assign rows_all = count | plus: 1 | divided_by: 2
+    assign rows = count | minus: extras | plus: 1 | divided_by: 2
+    # A list with one choice narrows nothing, so it only shows while it is applied. ("Any price" is not a choice.)
+    if kind == 'radiogroup'
+      assign count = count | minus: 1
+    endif
+    if count < 2 and on == 0
+      assign options = ''
+    endif
+  -%}
+
+  {%- if switch != blank -%}
+    {%- if context == 'bar' -%}
+      {{- switch -}}
+    {%- else -%}
+      <div class="cf-acc cf-acc--switch">{{ switch }}</div>
+    {%- endif -%}
+  {%- elsif options != blank -%}
+    {%- if context == 'bar' -%}
+      <details class="cf-dd" name="collection-filter" data-dd="{{ filter.param_name }}">
+        <summary class="cf-pill{% if on > 0 %} is-on{% endif %}" data-key="dd-{{ filter.param_name }}">
+          {{- label | escape -}}
+          {%- if on > 0 -%}
+            <span class="cf-badge" aria-hidden="true">{{ on }}</span>
+            <span class="visually-hidden">{{ 'collections.applied_count' | t: count: on }}</span>
+          {%- endif -%}
+          {%- render 'icon', icon: 'chevron' -%}
+        </summary>
+        <div class="cf-pop">
+          <div class="cf-rows" role="{{ kind }}" aria-label="{{ label | escape }}">{{ options }}</div>
+        </div>
+      </details>
+    {%- else -%}
+      <details class="cf-acc" name="collection-sheet" data-dd="sheet:{{ filter.param_name }}">
+        <summary class="cf-acc__head" data-key="acc-{{ filter.param_name }}">
+          <span class="cf-acc__name">{{ label | escape }}</span>
+          <span class="cf-acc__now{% if on > 0 %} is-on{% endif %}">
+            {%- if now != '' -%}{{ now | escape }}{%- else -%}{{ 'collections.any' | t }}{%- endif -%}
+          </span>
+          {%- render 'icon', icon: 'chevron' -%}
+        </summary>
+        <div class="cf-rows" role="{{ kind }}" aria-label="{{ label | escape }}" data-group="{{ filter.param_name }}" style="--rows: {{ rows }}; --rows-all: {{ rows_all }}">{{ options }}</div>
+      </details>
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{% stylesheet %}
+  /* A filter in the desktop bar: a pill that opens a small panel of choices under it. */
+  .cf-dd { position: relative; }
+  .cf-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 var(--space-3) 0 var(--space-4);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--white);
+    color: var(--color-heading);
+    font-weight: 500;
+    font-size: .9375rem;
+    white-space: nowrap;
+    list-style: none;
+    cursor: pointer;
+    transition: background-color var(--dur-state) ease, border-color var(--dur-state) ease;
+  }
+  .cf-pill::-webkit-details-marker { display: none; }
+  .cf-pill .icon { width: 18px; height: 18px; transition: rotate var(--dur-state) var(--ease-out); }
+  .cf-dd[open] > .cf-pill .icon { rotate: 180deg; }
+  .cf-dd[open] > .cf-pill, .cf-pill.is-on { border-color: var(--cocoa-deep); background: var(--blush-soft); }
+  @media (hover: hover) { .cf-pill:hover { background: var(--blush-soft); border-color: var(--rose); } }
+  .cf-badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: var(--cocoa-deep);
+    color: var(--cream);
+    font-size: .75rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .cf-pop {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 0;
+    z-index: 5;
+    width: max-content;
+    max-width: min(22rem, 100vw - var(--gutter) * 2);
+    /* A long list scrolls inside the panel, which never runs off the screen under the bar. */
+    max-height: min(31rem, 100dvh - var(--header-height) - 96px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--space-2);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    box-shadow: 0 18px 40px -18px rgb(78 58 49 / .35);
+  }
+
+  /* The choices: one per line. A square box where several can be ticked, a round one where it is one at a time. */
+  .cf-rows { display: grid; gap: 2px; }
+  .cf-pop .cf-rows { min-width: 14rem; }
+  .cf-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 48px;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--color-heading);
+    text-decoration: none;
+    transition: background-color var(--dur-state) ease;
+  }
+  @media (hover: hover) { a.cf-row:hover { background: var(--blush-soft); } }
+  /* In the drop-downs, used with a mouse, the rows sit a little closer. */
+  .cf-pop .cf-row { min-height: 44px; padding-block: 0; }
+  .cf-row[aria-checked="true"] { font-weight: 500; }
+  .cf-row[aria-disabled] { opacity: .5; }
+  .cf-row__name { min-width: 0; overflow-wrap: anywhere; }
+  .cf-box {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--taupe);
+    border-radius: 6px;
+    background: var(--white);
+    color: var(--cream);
+    transition: background-color var(--dur-state) ease, border-color var(--dur-state) ease;
+  }
+  .cf-box .icon { width: 14px; height: 14px; opacity: 0; }
+  .cf-box--dot { border-radius: 50%; }
+  .cf-box--dot::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--cocoa-deep); scale: 0; transition: scale var(--dur-state) var(--ease-out); }
+  .cf-row[aria-checked="true"] .cf-box { border-color: var(--cocoa-deep); }
+  .cf-row[aria-checked="true"] .cf-box:not(.cf-box--dot) { background: var(--cocoa-deep); }
+  .cf-row[aria-checked="true"] .cf-box .icon { opacity: 1; }
+  .cf-row[aria-checked="true"] .cf-box--dot::after { scale: 1; }
+  /* A long group in the sheet: the rest wait behind "Show all" (with the script only; without it all are shown). */
+  .cf-more, .collection-page[data-js] .cf-rows:not([data-all]) > .cf-extra { display: none; }
+  .collection-page[data-js] .cf-rows:not([data-all]) > .cf-more { display: inline-flex; justify-self: start; margin-left: var(--space-1); border: 0; background: none; font-family: inherit; cursor: pointer; }
+
+  /* In the phone sheet each filter is a row that opens, one at a time, and says what is applied. */
+  .cf-acc + .cf-acc { border-top: 1px solid var(--color-line); }
+  .cf-acc__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 52px;
+    color: var(--color-heading);
+    font-weight: 500;
+    list-style: none;
+    cursor: pointer;
+  }
+  .cf-acc__head::-webkit-details-marker { display: none; }
+  .cf-acc__name { min-width: 0; overflow-wrap: anywhere; }
+  .cf-acc__now { flex: 1 1 3rem; min-width: 0; overflow: hidden; color: var(--color-muted); font-weight: 400; font-size: .9375rem; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+  .cf-acc__now.is-on { color: var(--color-heading); font-weight: 500; }
+  .cf-acc__head .icon { flex: none; width: 20px; height: 20px; transition: rotate var(--dur-state) var(--ease-out); }
+  .cf-acc[open] > .cf-acc__head .icon { rotate: 180deg; }
+  /* Two columns, read down the first and then the second (--rows is half the choices); one column when the sheet
+     is narrower than 17rem, which is large text on a small phone. */
+  .cf-acc > .cf-rows {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(var(--rows), auto);
+    grid-auto-flow: column;
+    gap: 2px 0;
+    margin-inline: calc(var(--space-2) * -1);
+    padding-bottom: var(--space-3);
+  }
+  .cf-acc > .cf-rows[data-all], .collection-page:not([data-js]) .cf-acc > .cf-rows { --rows: var(--rows-all); }
+  .cf-acc > .cf-rows > .cf-row { gap: 10px; padding-inline: var(--space-2); line-height: 1.25; }
+  .cf-acc > .cf-rows > .cf-more { grid-column: 1 / -1; grid-row: calc(var(--rows) + 1); }
+  @container (max-width: 17rem) {
+    .cf-acc > .cf-rows { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-flow: row; }
+    .cf-acc > .cf-rows > .cf-more { grid-column: auto; grid-row: auto; }
+  }
+  .cf-acc--switch .cf-switch { display: flex; flex-direction: row-reverse; justify-content: space-between; min-height: 56px; padding-inline: 0; font-weight: 500; }
+
+  .cf-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding-inline: 6px;
+    color: var(--color-heading);
+    font-size: .9375rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .cf-switch__track { position: relative; flex: none; width: 40px; height: 24px; border-radius: 12px; background: var(--taupe); transition: background-color var(--dur-state) ease; }
+  .cf-switch__track::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--white);
+    transition: translate var(--dur-state) var(--ease-out);
+  }
+  .cf-switch[aria-checked="true"] .cf-switch__track { background: var(--cocoa-deep); }
+  .cf-switch[aria-checked="true"] .cf-switch__track::after { translate: 16px 0; }
+  @media (forced-colors: active) {
+    .cf-pill, .cf-pop, .cf-box { border-color: CanvasText; }
+    .cf-row[aria-checked="true"] .cf-box:not(.cf-box--dot) { background: Highlight; }
+    .cf-box--dot::after { background: Highlight; }
+    .cf-switch__track { border: 1px solid CanvasText; }
+    .cf-switch__track::after { background: CanvasText; }
+  }
+{% endstylesheet %}

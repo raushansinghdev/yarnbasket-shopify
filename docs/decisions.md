@@ -2,6 +2,25 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-10 (collection page: filters, sort, 4 across)
+
+Raushan asked for the collection page to be designed from scratch, with filters and sort, and thought five across was too many. Plan, mock-ups and "As built": `docs/collection-plan.md`.
+
+- **4 across on desktop (from 1100px), 3 on tablets, 2 on phones; 24 a page with "Load more".** Photos are 278 to 302px wide (were about 225px). Search results follow, so a product looks the same in both. This replaces D7 of `search-results-plan.md` (5 across from 1280px).
+- **Desktop: a slim bar of drop-downs with Sort on the right, sticking under the header.** Chosen from three mock-ups: a sidebar cost a whole column of products, and one Filter button hid what can be filtered.
+- **Phones: a floating "Filter · Sort" pill at the thumb.** Filter opens a bottom sheet, Sort the phone's own picker. A toolbar row at the top would have pushed the first product 115px down; it starts at 225px.
+- **A craft row of chips on Shop and the craft collections**, linking between those real pages. On gift and flower collections, craft is an ordinary filter.
+- **Filters: Price as three preset ranges (not a slider), Occasion, Flower & motif, In stock only. No Colour filter:** only 6 of 55 pieces have a colour option, so it would hide most pieces of that colour.
+- **Occasion and Flower & motif are product metafields made from the tags** (`custom.occasion`, `custom.motif`, written 2026-10-10 by `catalog-upload.py filters`: 103 values on 54 products). Shopify's filters cannot group tags, and one "Tags" filter would mix occasions, flowers and "set". The tags stay the source of truth.
+- **Each filter or sort is one step Back; coming Back from a product keeps the loaded cards and the place.**
+- **Sort is our own list, never the browser's drop-down** (round 2, same day): a "Sort by" sheet on phones and a drop-down pill on desktop, each order a link. The native picker looked unfinished beside the Filter sheet.
+- **Nothing page-wide may pad the scroll for the floating pill:** it made the page jump 354px when Sort took focus. The cards carry a scroll margin instead.
+- **No quick add on cards this round** (Raushan): photo, name, price and the heart only.
+- **Raushan's admin step:** Search & Discovery → Filters → Product type, Occasion, Flower & motif (launch checklist). Until then only Price shows.
+- **Round 3, same day (Raushan asked, agreed to the recommendation):** the filters are on (he added them; Craft = product type). The phone sheet's first group is Craft, the craft row again as links to the same collections (one at a time, filters kept, swapped in behind the open sheet); the product type filter stays hidden where the row shows, so there is one mechanism. Sheet groups over 10 choices fold to the top 8 by pieces with "Show all"; desktop drop-downs get a height cap. Details: docs/collection-plan.md, Round 3.
+- **Round 4, same day (Raushan: "think from scratch"; plan approved):** filter choices are tick lists, not pills: tick boxes for pick-several, radio buttons for pick-one, one row per choice with its count, the same on phone and desktop. In the phone sheet each filter is a row that opens one at a time and says what is applied. Cost accepted: one more tap. Details and what was not chosen: docs/collection-plan.md, Round 4.
+- **Round 5, same day (his suggestions, my recommendations, accepted):** no price slider; price bands grow with the prices (steps 200, 400, 1000, 2000; only bands in use show, the last open-ended) because bouquets may reach ₹3,000 to ₹5,000. Sheet lists are two columns of tick rows, not pills. No counts beside the choices. Details: docs/collection-plan.md, Round 5.
+
 ## 2026-10-08 (Help has one place; the account page's "Need help?" panel is gone)
 
 Raushan asked why Help is in the menu and again on the account page, and asked for the arrangement to be thought through from scratch.

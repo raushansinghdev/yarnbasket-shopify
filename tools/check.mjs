@@ -2722,6 +2722,295 @@ if (want('23')) {
 
 // Money (tools/money-check.mjs, docs/decisions.md 2026-10-05): every price shown is the store's and follows the price
 // rule, nothing that isn't for sale is listed, and the cart charges what the page said. Its own lines print above ours.
+// 24. Collection page (docs/collection-plan.md): 2 / 3 / 4 across with nothing running off the screen; on a phone the
+//     first product is on the first screen and Filter and Sort float at the thumb; a price filter chosen in the sheet
+//     narrows the list in place, is one step Back, and leaves focus where it was; Sort is our own list (a sheet on
+//     phones, a drop-down on desktop), never the browser's, and a tap on Filter or Sort never moves the page; "Load more"
+//     adds the next page with no repeats and coming Back from a product keeps the cards and the place; no focused
+//     card hides under the floating pill or the sticky bar; on desktop the bar's drop-down works by mouse and keys
+//     and the bar moves with the header; a filtered page is kept out of search engines; without JavaScript every
+//     choice is still a link or a form. Uses the price filter only, which every store has.
+if (want('24')) {
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const shop = '/collections/shop';
+  const axeRun = async (page) => {
+    await page.addScriptTag({ content: axe.source });
+    // The floating pill always lies over some card as the list runs under it; a heart it covers is reached by scrolling, so that one is not a small target.
+    return page.evaluate(async () => {
+      const pill = document.querySelector('.cf-float')?.getBoundingClientRect();
+      const under = (sel) => { const r = document.querySelector(sel)?.getBoundingClientRect(); return !!r && !!pill && pill.height > 0 && r.bottom > pill.top && r.top < pill.bottom && r.right > pill.left && r.left < pill.right; };
+      const found = (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations;
+      return found.map((x) => ({ id: x.id, nodes: x.id === 'target-size' ? x.nodes.filter((n) => !under(n.target[0])) : x.nodes })).filter((x) => x.nodes.length).map((x) => `${x.id} (${x.nodes.length}: ${x.nodes[0].target})`);
+    });
+  };
+  const cards = (page) => page.evaluate(() => [...document.querySelectorAll('[data-collection-grid] > li')].map((li) => ({ href: li.querySelector('a').pathname, price: +li.querySelector('.price').textContent.match(/₹\s*([\d,]+)/)[1].replace(/,/g, '') })));
+  const settle = (page) => page.waitForFunction(() => !document.querySelector('[data-collection].is-busy'), null, { timeout: 15000 }).then(() => page.waitForTimeout(700));
+  const phone = (width, height = 780) => ({ ...devices['Pixel 7'], viewport: { width, height } });
+
+  // Columns and edges at every width.
+  for (const [w, cols] of [[320, 2], [360, 2], [768, 3], [1100, 4], [1280, 4], [1440, 4]]) {
+    const { browser, page, errors } = await open(chromium, w < 768 ? phone(w) : { viewport: { width: w, height: 900 } }, { reducedMotion: 'reduce', path: shop });
+    const m = await page.evaluate(() => {
+      const media = [...document.querySelectorAll('[data-collection-grid] .card__media')].map((el) => el.getBoundingClientRect());
+      const shown = (sel) => { const el = document.querySelector(sel); return !!el && el.getBoundingClientRect().height > 0; };
+      return { cols: media.filter((r) => Math.abs(r.top - media[0].top) < 2).length, first: Math.round(media[0].top + scrollY), photo: Math.round(media[0].width), n: media.length,
+        sideways: document.documentElement.scrollWidth > innerWidth + 1, bar: shown('.cf-bar'), pill: shown('.cf-float'), h1: document.querySelectorAll('main h1').length, crafts: document.querySelectorAll('.cf-craft').length };
+    });
+    const right = w < 768 ? m.pill && !m.bar && m.first <= (w === 360 ? 235 : 250) : m.bar && !m.pill && (w < 1280 || m.photo >= 270);
+    record(`Collection ${w}px: ${cols} across, fits`, m.cols === cols && m.n === 24 && !m.sideways && m.h1 === 1 && m.crafts >= 2 && right && errors.length === 0, `${m.cols} across, ${m.n} cards, photo ${m.photo}px, first product at ${m.first}px, bar: ${m.bar}, pill: ${m.pill}, sideways: ${m.sideways}${errors.length ? `, errors: ${errors[0]}` : ''}`);
+    await browser.close();
+  }
+
+  {
+    // Phone: the sheet, a filter, Back and Forward, Sort.
+    const { browser, page, errors } = await open(chromium, phone(360), { reducedMotion: 'reduce', path: shop });
+    const v0 = await axeRun(page);
+    const whole = +(await page.evaluate(() => document.querySelector('[data-region="count"]').textContent.match(/\d+/)[0]));
+    const pill = await page.evaluate(() => { const r = document.querySelector('.cf-float').getBoundingClientRect(); return { inView: r.top > innerHeight / 2 && r.bottom <= innerHeight, h: Math.round(r.height), names: [...document.querySelectorAll('.cf-float__btn')].map((b) => b.textContent.trim().replace(/\s+/g, ' ')) }; });
+    await page.locator('[data-sheet-open="CollectionFilters"]').click();
+    await page.waitForTimeout(500);
+    const opened = await page.evaluate(() => { const d = document.getElementById('CollectionFilters'); return { open: d.open, modal: d.matches(':modal'), focusIn: d.contains(document.activeElement), small: [...d.querySelectorAll('a, button, summary')].filter((el) => { const h = el.getBoundingClientRect().height; return h > 0 && h < 44; }).length,
+      heads: [...d.querySelectorAll('.cf-acc__head')].map((h) => h.textContent.trim().replace(/\s+/g, ' ')), openGroups: d.querySelectorAll('details[open]').length, scrolls: d.querySelector('[data-region="sheet"]').scrollHeight > d.querySelector('[data-region="sheet"]').clientHeight + 1, top: Math.round(d.getBoundingClientRect().top) }; });
+    // The groups open one at a time; the choices are tick boxes (several) or radio buttons (one), and the heading says what is applied.
+    await page.locator('#CollectionFilters [data-key="acc-filter.p.m.custom.occasion"]').click();
+    const box = page.locator('#CollectionFilters [data-dd="sheet:filter.p.m.custom.occasion"] a.cf-row').first();
+    const boxName = (await box.locator('.cf-row__name').textContent()).trim();
+    await box.focus();
+    await page.keyboard.press('Space');
+    await settle(page);
+    const ticked = await page.evaluate(() => { const g = document.querySelector('#CollectionFilters [data-dd="sheet:filter.p.m.custom.occasion"]'); const a = document.activeElement; const rows = [...g.querySelectorAll('.cf-row')];
+      return { open: g.open, role: a.getAttribute('role'), checked: a.getAttribute('aria-checked'), inGroup: g.contains(a), now: g.querySelector('.cf-acc__now').textContent.trim(), group: g.querySelector('.cf-rows').getAttribute('role'), named: !!g.querySelector('.cf-rows').getAttribute('aria-label'), small: rows.filter((r) => r.getBoundingClientRect().height < 44).length, narrow: rows.filter((r) => r.getBoundingClientRect().width < 130).length, cols: new Set(rows.map((r) => Math.round(r.getBoundingClientRect().left))).size, tops: new Set(rows.map((r) => Math.round(r.getBoundingClientRect().top))).size, n: rows.length, counts: g.querySelectorAll('.cf-row__count').length,
+        downFirst: rows.length > 2 && rows[1].getBoundingClientRect().left === rows[0].getBoundingClientRect().left && rows[1].getBoundingClientRect().top > rows[0].getBoundingClientRect().top, scrolls: g.closest('[data-region="sheet"]').scrollHeight > g.closest('[data-region="sheet"]').clientHeight + 1 }; });
+    const v6 = await axeRun(page);
+    await page.keyboard.press('Space');
+    await settle(page);
+    const unticked = await page.evaluate(() => ({ checked: document.activeElement.getAttribute('aria-checked'), url: location.search }));
+    await page.locator('#CollectionFilters [data-key="acc-filter.v.price"]').click();
+    await page.waitForTimeout(300);
+    const one = await page.evaluate(() => [...document.querySelectorAll('#CollectionFilters details[open]')].map((d) => d.dataset.dd));
+    await page.locator('#CollectionFilters [data-key="price-any"]').focus();
+    await page.keyboard.press('ArrowDown');
+    const arrow = await page.evaluate(() => ({ key: document.activeElement.dataset.key, role: document.activeElement.getAttribute('role'), any: document.querySelector('#CollectionFilters [data-key="price-any"]').getAttribute('aria-checked'), url: location.search }));
+    record('Collection, phone: the sheet opens short, one group at a time', opened.heads.length >= 3 && opened.heads.every((h) => /(Any|All)$/.test(h)) && opened.openGroups === 0 && !opened.scrolls && opened.top > 200 && one.length === 1 && one[0] === 'sheet:filter.v.price',
+      `${opened.heads.join(' | ')}; open at first: ${opened.openGroups}; scrolls: ${opened.scrolls}; sheet starts at ${opened.top}px of 780; after opening a second group, open: ${one.join()}`);
+    record('Collection, phone: tick boxes and radio buttons', ticked.open && ticked.role === 'checkbox' && ticked.checked === 'true' && ticked.inGroup && ticked.now === boxName && ticked.group === 'group' && ticked.named && ticked.small === 0 && ticked.narrow === 0 && ticked.cols === 2 && ticked.tops === Math.ceil(ticked.n / 2) && ticked.downFirst && ticked.counts === 0 && !ticked.scrolls && unticked.checked === 'false' && unticked.url === '' && arrow.key === 'price-0' && arrow.role === 'radio' && arrow.any === 'true' && arrow.url === '' && v6.length === 0,
+      `Space ticks "${boxName}": ${ticked.role} ${ticked.checked}, group stays open: ${ticked.open}, heading says "${ticked.now}", rows under 44px: ${ticked.small}, ${ticked.n} choices in ${ticked.cols} columns and ${ticked.tops} rows, read down first: ${ticked.downFirst}, numbers beside them: ${ticked.counts}; Space again: ${unticked.checked}; arrow down from "Any price": focus on ${arrow.key} (${arrow.role}), nothing applied: ${arrow.url === ''}; ${v6.length} violations${v6.length ? `: ${v6.join('; ')}` : ''}`);
+    // Price bands follow the prices: only those in use show, and the last one has no upper end.
+    const bands = await page.evaluate(() => [...document.querySelectorAll('#CollectionFilters [data-dd="sheet:filter.v.price"] a.cf-row')].map((r) => ({ name: r.textContent.trim(), q: new URL(r.href).search })));
+    const lastBand = bands[bands.length - 1];
+    record('Collection: price bands in use only, the last open-ended', bands.length >= 3 && bands.length <= 6 && bands[0].q === '' && /lte=/.test(bands[1].q) && !/gte=/.test(bands[1].q) && /gte=/.test(lastBand.q) && !/lte=/.test(lastBand.q) && /above/.test(lastBand.name), bands.map((b) => `${b.name} (${b.q || 'none'})`).join(' | '));
+    const v1 = await axeRun(page);
+    const preset = page.locator('#CollectionFilters [data-key="price-0"]');
+    await preset.click();
+    await settle(page);
+    const list = await cards(page);
+    const f = await page.evaluate(() => ({ url: location.search, open: document.getElementById('CollectionFilters').open, focus: document.activeElement.dataset.key, current: document.activeElement.getAttribute('aria-checked'), group: document.querySelector('#CollectionFilters [data-dd="sheet:filter.v.price"]').open,
+      show: document.querySelector('#CollectionFilters [data-key="show"]').textContent.trim(), count: document.querySelector('[data-region="count"]').textContent.trim(), said: document.querySelector('[data-collection-status]').textContent.trim() }));
+    const total = +f.count.match(/\d+/)[0];
+    record('Collection, phone: Filter and Sort float at the thumb', pill.inView && pill.h >= 44 && pill.names.length === 2 && /Filter/.test(pill.names[0]) && /Sort/.test(pill.names[1]), `in view: ${pill.inView}, ${pill.h}px tall, "${pill.names.join('" "')}"`);
+    record('Collection, phone: the sheet is a modal with focus inside', opened.open && opened.modal && opened.focusIn && opened.small === 0, `open: ${opened.open}, modal: ${opened.modal}, focus inside: ${opened.focusIn}, controls under 44px: ${opened.small}`);
+    record('Collection, phone: a price filter narrows in place', /filter\.v\.price\.lte=199/.test(f.url) && f.open && list.length > 0 && total < whole && list.every((c) => c.price < 200) && f.focus === 'price-0' && f.current === 'true' && f.group && f.show.includes(String(total)) && list.length === Math.min(24, total) && f.said === f.count,
+      `${f.url}; sheet open: ${f.open}; ${list.length} cards, dearest ₹${Math.max(...list.map((c) => c.price))}; focus on ${f.focus}; "${f.show}"; said "${f.said}"`);
+    await page.locator('#CollectionFilters [data-key="show"]').click();
+    await page.waitForTimeout(600);
+    const closed = await page.evaluate(() => ({ open: document.getElementById('CollectionFilters').open, focus: document.activeElement.dataset.key, badge: document.querySelector('.cf-float .cf-badge')?.textContent.trim(), tags: [...document.querySelectorAll('.cf-tag')].map((a) => a.textContent.trim()) }));
+    const robots = (await fetch(site(`${shop}?filter.v.price.lte=199`)).then((r) => r.text())).match(/<meta name="robots" content="([^"]*)"/)?.[1];
+    const v2 = await axeRun(page);
+    record('Collection, phone: closing shows what is applied', !closed.open && closed.focus === 'open' && closed.badge === '1' && closed.tags.length === 1 && /Under ₹200/.test(closed.tags[0]), `open: ${closed.open}, focus on ${closed.focus}, badge ${closed.badge}, chips: ${closed.tags.join(', ')}`);
+    await page.goBack();
+    await settle(page);
+    const back = { url: page.url(), n: (await cards(page)).length, sheet: await page.evaluate(() => document.getElementById('CollectionFilters').open) };
+    await page.goForward();
+    await settle(page);
+    const fwd = { url: page.url(), n: (await cards(page)).length };
+    record('Collection, phone: Back undoes the filter, Forward redoes it', !/filter/.test(back.url) && /collections\/shop/.test(back.url) && back.n === 24 && !back.sheet && /lte=199/.test(fwd.url) && fwd.n === list.length, `back: ${back.url.split('/').pop()} (${back.n} cards), forward: ${fwd.url.split('/').pop()} (${fwd.n} cards)`);
+    // Taking the chip off.
+    await page.locator('.cf-tag').click();
+    await settle(page);
+    const off = await page.evaluate(() => ({ url: location.search, tags: document.querySelectorAll('.cf-tag').length, focus: document.activeElement.matches('[data-collection-top], [data-region] *') }));
+    // Sort: its own sheet, one choice, which closes it.
+    await page.locator('[data-sheet-open="CollectionSort"]').click();
+    await page.waitForTimeout(500);
+    const sortSheet = await page.evaluate(() => { const d = document.getElementById('CollectionSort'); const rows = [...d.querySelectorAll('.cf-sort__opt')]; return { modal: d.matches(':modal'), focusIn: d.contains(document.activeElement), rows: rows.length, ticked: rows.filter((a) => a.getAttribute('aria-current') === 'true').length, small: rows.filter((a) => a.getBoundingClientRect().height < 44).length, selects: document.querySelectorAll('[data-collection] select').length }; });
+    const v4 = await axeRun(page);
+    await page.locator('#CollectionSort [data-key="sort-price-ascending"]').click();
+    await settle(page);
+    const up = await cards(page);
+    const said = await page.evaluate(() => document.querySelector('[data-collection-status]').textContent.trim());
+    const afterSort = await page.evaluate(() => ({ open: document.getElementById('CollectionSort').open, focus: document.activeElement.dataset.key, ticked: document.querySelector('#CollectionSort [aria-current="true"]')?.dataset.key }));
+    await page.locator('[data-sheet-open="CollectionSort"]').click();
+    await page.waitForTimeout(500);
+    await page.locator('#CollectionSort [data-key="sort-price-descending"]').click();
+    await settle(page);
+    const down = await cards(page);
+    record('Collection, phone: Sort is its own sheet, closed by a choice', sortSheet.modal && sortSheet.focusIn && sortSheet.rows >= 3 && sortSheet.ticked === 1 && sortSheet.small === 0 && sortSheet.selects === 0 && !afterSort.open && afterSort.focus === 'open-sort' && afterSort.ticked === 'sort-price-ascending' && v4.length === 0,
+      `modal: ${sortSheet.modal}, focus inside: ${sortSheet.focusIn}, ${sortSheet.rows} orders, ${sortSheet.ticked} ticked, rows under 44px: ${sortSheet.small}, browser drop-downs: ${sortSheet.selects}; after a choice open: ${afterSort.open}, focus on ${afterSort.focus}, ticked ${afterSort.ticked}; ${v4.join(', ') || '0 violations'}`);
+    const ordered = (a, dir) => a.every((c, i) => !i || (c.price - a[i - 1].price) * dir >= 0);
+    record('Collection, phone: a chip comes off; Sort orders by price', off.url === '' && off.tags === 0 && off.focus && ordered(up, 1) && ordered(down, -1) && up[0].price < down[0].price && /Sorted by Price: low to high/.test(said) && /sort_by=price-descending/.test(page.url()),
+      `after the chip: "${off.url}", focus kept: ${off.focus}; low to high starts ₹${up[0].price}, high to low starts ₹${down[0].price}; said "${said}"`);
+    // The sheet's Craft group: the craft row again (the row scrolls away, the Filter pill does not). A craft is
+    // another collection, swapped in behind the open sheet with the filters kept; Back undoes it.
+    await page.goto(site(shop), { waitUntil: 'load' });
+    await settle(page);
+    await page.locator('[data-sheet-open="CollectionFilters"]').click();
+    await page.waitForTimeout(500);
+    await page.locator('#CollectionFilters [data-key="acc-filter.v.price"]').click();
+    await page.locator('#CollectionFilters [data-key="price-0"]').click();
+    await settle(page);
+    await page.locator('#CollectionFilters [data-key="acc-craft"]').click();
+    await page.waitForTimeout(300);
+    const craftKeys = await page.evaluate(() => ({ row: [...document.querySelectorAll('.cf-crafts a')].map((a) => a.pathname), sheet: [...document.querySelectorAll('#CollectionFilters [data-key^="craft-"]')].map((a) => a.pathname), first: document.querySelector('#CollectionFilters .cf-acc__name')?.textContent.trim() }));
+    await page.locator(`#CollectionFilters [data-key^="craft-"] >> nth=2`).click();
+    await settle(page);
+    const craft = await page.evaluate(() => ({ url: location.pathname + location.search, h1: document.querySelector('h1').textContent.trim(), tab: document.title, row: document.querySelector('.cf-crafts [aria-current]')?.pathname, ticked: document.querySelector('#CollectionFilters [data-key^="craft-"][aria-checked="true"]')?.pathname, now: document.querySelector('#CollectionFilters [data-dd="sheet:craft"] .cf-acc__now').textContent.trim(), open: document.getElementById('CollectionFilters').open, focusIn: document.getElementById('CollectionFilters').contains(document.activeElement), said: document.querySelector('[data-collection-status]').textContent.trim() }));
+    craft.dear = Math.max(...(await cards(page)).map((c) => c.price));
+    const serverTab = (await fetch(site(craft.url)).then((r) => r.text())).match(/<title>\s*([^<]*?)\s*<\/title>/)?.[1].replace(/&ndash;/g, '–').replace(/&amp;/g, '&');
+    const v5 = await axeRun(page);
+    await page.goBack();
+    await settle(page);
+    const craftBack = await page.evaluate(() => ({ url: location.pathname + location.search, h1: document.querySelector('h1').textContent.trim(), row: document.querySelector('.cf-crafts [aria-current]')?.pathname }));
+    record('Collection, phone: the sheet lists the crafts; choosing one keeps the filters', craftKeys.first === 'Craft' && craftKeys.sheet.length > 2 && craftKeys.sheet.join() === craftKeys.row.join() && craft.url === `${craftKeys.sheet[2]}?filter.v.price.lte=199` && craft.row === craftKeys.sheet[2] && craft.ticked === craftKeys.sheet[2] && craft.h1.includes(craft.now) && craft.open && craft.focusIn && craft.tab === serverTab && craft.dear <= 199 && craft.said.startsWith(craft.h1) && v5.length === 0 && craftBack.url === shop.replace(/^\/?/, '/') && craftBack.row === craftKeys.sheet[0],
+      `${craftKeys.sheet.length} crafts, same as the row: ${craftKeys.sheet.join() === craftKeys.row.join()}; chose ${craft.url}: "${craft.h1}", tab "${craft.tab}" (server: "${serverTab}"), row and sheet agree: ${craft.row === craft.ticked}, sheet open: ${craft.open}, dearest ₹${craft.dear}, said "${craft.said}"; ${v5.length} violations; Back: ${craftBack.url} "${craftBack.h1}"`);
+    record('Collection, phone (axe: plain, sheet open, filtered)', v0.length === 0 && v1.length === 0 && v2.length === 0 && errors.length === 0, `${v0.join(', ') || '0 violations'}; ${v1.join(', ') || '0 violations'}; ${v2.join(', ') || '0 violations'}${errors.length ? `; errors: ${errors[0]}` : ''}`);
+    record('Collection: a filtered page stays out of search engines', /noindex/.test(robots || ''), `robots on the filtered page: ${robots || 'none'}`);
+
+    // Nothing matches.
+    await page.goto(site(`${shop}?filter.v.price.gte=99999`), { waitUntil: 'load' });
+    await page.waitForTimeout(1500);
+    const none = await page.evaluate(() => ({ title: document.querySelector('.collection-page__none-title')?.textContent.trim(), clear: !!document.querySelector('.collection-page__none [data-swap]'), tags: document.querySelectorAll('.cf-tag').length, pill: (() => { const r = document.querySelector('.cf-float').getBoundingClientRect(); return r.height > 0; })(), sideways: document.documentElement.scrollWidth > innerWidth + 1 }));
+    const v3 = await axeRun(page);
+    await page.locator('.collection-page__none [data-swap]').click();
+    await settle(page);
+    const cleared = (await cards(page)).length;
+    record('Collection, phone: nothing matches is not a dead end', !!none.title && none.clear && none.tags === 1 && none.pill && !none.sideways && v3.length === 0 && cleared === 24, `"${none.title}", Clear filters: ${none.clear}, Filter still there: ${none.pill}; ${v3.join(', ') || '0 violations'}; cleared to ${cleared} cards`);
+    await browser.close();
+  }
+
+  {
+    // Load more, then Back from a product.
+    const { browser, page } = await open(chromium, phone(360), { reducedMotion: 'reduce', path: shop });
+    const robots = await page.evaluate(() => document.querySelector('meta[name="robots"]')?.content || '');
+    const all = +(await page.evaluate(() => document.querySelector('[data-region="count"]').textContent.match(/\d+/)[0]));
+    await page.locator('[data-load-more]').click();
+    await page.waitForFunction(() => document.querySelectorAll('[data-collection-grid] > li').length > 24, null, { timeout: 15000 });
+    await page.waitForTimeout(500);
+    const two = await cards(page);
+    const focus = await page.evaluate(() => [...document.querySelectorAll('[data-collection-grid] > li')].findIndex((li) => li.contains(document.activeElement)));
+    const showing = await page.evaluate(() => document.querySelector('.collection-page__showing')?.textContent.trim() || 'all shown');
+    record('Collection: Load more adds the next page', two.length === Math.min(48, all) && new Set(two.map((c) => c.href)).size === two.length && focus === 24 && !/noindex/.test(robots), `${two.length} cards of ${all}, repeats: ${two.length - new Set(two.map((c) => c.href)).size}, focus on card ${focus + 1}, "${showing}"`);
+    // A tap on Filter or Sort never moves the page (2026-10-10: page-wide scroll padding made Sort jump 350px).
+    const moved = [];
+    for (const y of [0, 700, 1e6]) {
+      for (const id of ['CollectionFilters', 'CollectionSort']) {
+        await page.evaluate((top) => scrollTo({ top, behavior: 'instant' }), y);
+        await page.waitForTimeout(300);
+        const before = await page.evaluate(() => Math.round(scrollY));
+        await page.locator(`[data-sheet-open="${id}"]`).tap();
+        await page.waitForTimeout(500);
+        const during = await page.evaluate(() => Math.round(scrollY));
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(500);
+        const after = await page.evaluate(() => Math.round(scrollY));
+        if (during !== before || after !== before) moved.push(`${id} at ${before}px: ${during}px, then ${after}px`);
+      }
+    }
+    record('Collection, phone: a tap on Filter or Sort leaves the page where it is', moved.length === 0, moved.join('; ') || 'top, mid-list and the end: no movement');
+    await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+    await page.locator('[data-collection-grid] > li').nth(24).locator('a.card__link').focus();
+    // No focused card under the pill: Tab through a screenful.
+    let hidden = 0;
+    for (let i = 0; i < 14; i++) {
+      await page.keyboard.press('Tab');
+      hidden += await page.evaluate(() => { const a = document.activeElement.getBoundingClientRect(); const p = document.querySelector('.cf-float').getBoundingClientRect(); const name = document.activeElement.querySelector?.('.card__info')?.getBoundingClientRect(); return name && name.bottom > p.top && name.top < p.bottom && a.left < p.right && a.right > p.left ? 1 : 0; });
+    }
+    record('Collection, phone: no focused card hides under the pill', hidden === 0, `${hidden} of 14 focused cards had the name or price under the pill`);
+    await page.evaluate(() => scrollTo({ top: document.querySelectorAll('[data-collection-grid] > li')[30].getBoundingClientRect().top + scrollY - 200, behavior: 'instant' }));
+    await page.waitForTimeout(300);
+    const y = await page.evaluate(() => Math.round(scrollY));
+    await page.locator('[data-collection-grid] > li').nth(30).locator('a.card__link').click();
+    await page.waitForURL('**/products/**', { timeout: 20000 });
+    await page.waitForTimeout(800);
+    await page.goBack();
+    await page.waitForURL('**/collections/**', { timeout: 20000 });
+    await page.waitForFunction(() => document.querySelectorAll('[data-collection-grid] > li').length > 24, null, { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(1200);
+    const again = { n: (await cards(page)).length, y: await page.evaluate(() => Math.round(scrollY)) };
+    record('Collection: Back from a product keeps the cards and the place', again.n === two.length && Math.abs(again.y - y) < 80, `${again.n} cards (had ${two.length}), at ${again.y}px (was ${y}px)`);
+    await browser.close();
+  }
+
+  {
+    // Desktop: the bar.
+    const { browser, page, errors } = await open(chromium, { viewport: { width: 1280, height: 900 } }, { path: shop });
+    const v0 = await axeRun(page);
+    const summary = page.locator('.cf-bar .cf-dd summary').first();
+    await summary.click();
+    const pop = await page.evaluate(() => { const p = document.querySelector('.cf-dd[open] .cf-pop'); const r = p?.getBoundingClientRect(); return !!r && r.height > 0 && r.right <= innerWidth && [...p.querySelectorAll('a')].every((a) => a.getBoundingClientRect().height >= 44); });
+    const v1 = await axeRun(page);
+    await page.locator('.cf-bar [data-key="price-0"]').click();
+    await settle(page);
+    const list = await cards(page);
+    const after = await page.evaluate(() => ({ open: !!document.querySelector('.cf-bar .cf-dd[open]'), focus: document.activeElement.dataset.key, inBar: !!document.activeElement.closest('.cf-bar'), badge: document.querySelector('.cf-bar .cf-badge')?.textContent.trim() }));
+    await page.keyboard.press('Escape');
+    const esc = await page.evaluate(() => ({ open: !!document.querySelector('.cf-bar .cf-dd[open]'), focus: document.activeElement.tagName }));
+    await summary.click();
+    await page.mouse.click(640, 700);
+    const outside = await page.evaluate(() => !document.querySelector('.cf-bar .cf-dd[open]'));
+    record('Collection, desktop: a drop-down filters and stays open', pop && list.length > 0 && list.every((c) => c.price < 200) && after.open && after.focus === 'price-0' && after.inBar && after.badge === '1', `panel fits: ${pop}; ${list.length} cards under ₹200; still open: ${after.open}; focus on ${after.focus}; badge ${after.badge}`);
+    record('Collection, desktop: Esc and a click outside close it', !esc.open && esc.focus === 'SUMMARY' && outside, `Esc closed: ${!esc.open}, focus on ${esc.focus}; click outside closed: ${outside}`);
+    // Sort from its drop-down, then the bar while scrolling.
+    await page.locator('.cf-bar [data-key="dd-sort"]').click();
+    const sortPop = await page.evaluate(() => { const r = document.querySelector('.cf-sort[open] .cf-pop')?.getBoundingClientRect(); return !!r && r.height > 0 && r.right <= innerWidth && r.left >= 0; });
+    await page.locator('.cf-bar [data-key="sort-price-ascending"]').click();
+    await settle(page);
+    const sorted = await cards(page);
+    const focusSort = await page.evaluate(() => `${document.activeElement.dataset.key}${document.querySelector('.cf-sort[open]') ? ' (still open)' : ''}: ${document.activeElement.textContent.trim().replace(/\s+/g, ' ')}`);
+    await page.goto(site(shop), { waitUntil: 'load' });
+    await page.waitForTimeout(1500);
+    await page.mouse.wheel(0, 1400);
+    await page.waitForTimeout(900);
+    const down = await page.evaluate(() => ({ top: Math.round(document.querySelector('.cf-bar').getBoundingClientRect().top), hidden: document.documentElement.classList.contains('header-hidden') }));
+    await page.mouse.wheel(0, -200);
+    await page.waitForTimeout(900);
+    const upAgain = await page.evaluate(() => ({ top: Math.round(document.querySelector('.cf-bar').getBoundingClientRect().top), header: Math.round(document.querySelector('.header-section').getBoundingClientRect().bottom) }));
+    let under = 0;
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press('Tab');
+      under += await page.evaluate(() => { const el = document.activeElement; if (!el.closest('[data-collection-grid]')) return 0; return el.getBoundingClientRect().top < document.querySelector('.cf-bar').getBoundingClientRect().bottom - 1 ? 1 : 0; });
+    }
+    record('Collection, desktop: Sort orders, focus stays on it', sortPop && sorted.every((c, i) => !i || c.price >= sorted[i - 1].price) && /^dd-sort: Sort: ?Price: low to high$/.test(focusSort), `panel fits: ${sortPop}; low to high from ₹${sorted[0]?.price} to ₹${sorted.at(-1)?.price}; focus on ${focusSort}`);
+    record('Collection, desktop: the bar sticks and moves with the header', down.hidden && down.top === 0 && Math.abs(upAgain.top - upAgain.header) <= 1 && under === 0, `scrolling down: bar at ${down.top}px (header hidden: ${down.hidden}); up again: bar at ${upAgain.top}px under a ${upAgain.header}px header; focused cards under the bar: ${under}`);
+    record('Collection, desktop (axe: plain, drop-down open)', v0.length === 0 && v1.length === 0 && errors.length === 0, `${v0.join(', ') || '0 violations'}; ${v1.join(', ') || '0 violations'}${errors.length ? `; errors: ${errors[0]}` : ''}`);
+    await browser.close();
+  }
+
+  {
+    // Without JavaScript, on a phone.
+    const browser = await chromium.launch();
+    const ctx = await browser.newContext({ ...phone(360), javaScriptEnabled: false });
+    const page = await ctx.newPage();
+    await page.goto(site(shop), { waitUntil: 'load' });
+    const n = await page.evaluate(() => {
+      const shown = (el) => !!el && el.getBoundingClientRect().height > 0;
+      const bar = document.querySelector('.cf-bar');
+      return { bar: shown(bar), pill: shown(document.querySelector('.cf-float')), links: [...bar.querySelectorAll('a[href*="filter.v.price"]')].length, sorts: bar.querySelectorAll('.cf-sort a[href]').length,
+        more: document.querySelector('[data-load-more]')?.getAttribute('href') || '', sideways: document.documentElement.scrollWidth > innerWidth + 1 };
+    });
+    await page.locator('.cf-bar summary').first().click();
+    await page.locator('.cf-bar [data-key="price-0"]').click();
+    await page.waitForLoadState('load');
+    const prices = await cards(page);
+    record('Collection: works without JavaScript', n.bar && !n.pill && n.links >= 2 && n.sorts >= 3 && /page=2/.test(n.more) && !n.sideways && prices.length > 0 && prices.every((c) => c.price < 200), `bar shown: ${n.bar}, pill: ${n.pill}, ${n.links} price links, ${n.sorts} sort links, Load more → ${n.more}; after the price link: ${prices.length} cards under ₹200`);
+    await browser.close();
+  }
+
+  {
+    const js = await fetch(site('/collections/shop')).then((r) => r.text()).then((html) => html.match(/[^"']+collection\.js[^"']*/)?.[0]);
+    const kb = js ? await fetch(js.startsWith('//') ? `https:${js}` : new globalThis.URL(js, URL).href).then((r) => r.arrayBuffer()).then(async (b) => (await new Response(new Blob([b]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer()).byteLength / 1024) : 99;
+    record('Collection: script size', kb < 4.5, `collection.js ${kb.toFixed(1)} KB gzipped (budget 4.5 KB)`);
+  }
+}
+
 if (want('money')) {
   const run = spawnSync(process.execPath, [fileURLToPath(new globalThis.URL('./money-check.mjs', import.meta.url)), '--url', URL], { stdio: 'inherit' });
   record('Money check (prices, what is on sale, the cart)', run.status === 0, run.status === 0 ? 'see its lines above' : 'failed: see its lines above, or run npm run check:money');

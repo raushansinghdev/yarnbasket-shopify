@@ -87,7 +87,42 @@
     }
   },
   "collections": {
-    "title": "Collections"
+    "title": "Collections",
+    "craft": "Craft",
+    "any": "Any",
+    "any_price": "Any price",
+    "show_all": "Show all {{ count }}",
+    "pieces": {
+      "one": "{{ count }} piece",
+      "other": "{{ count }} pieces"
+    },
+    "show_pieces": {
+      "one": "Show {{ count }} piece",
+      "other": "Show {{ count }} pieces"
+    },
+    "filter": "Filter",
+    "applied": "Filters applied",
+    "applied_count": {
+      "one": "{{ count }} applied",
+      "other": "{{ count }} applied"
+    },
+    "remove": "Remove {{ label }}",
+    "clear_all": "Clear all",
+    "clear_filters": "Clear filters",
+    "in_stock_only": "In stock only",
+    "price_under": "Under {{ price }}",
+    "price_between": "{{ from }} to {{ to }}",
+    "price_over": "{{ price }} and above",
+    "sort_featured": "Featured",
+    "sort_bestselling": "Bestselling",
+    "sort_newest": "Newest",
+    "sort_price_up": "Price: low to high",
+    "sort_price_down": "Price: high to low",
+    "none_title": "No pieces match these filters",
+    "none_text": "Try taking one off, or see everything we make.",
+    "close_filters": "Close filters",
+    "sort_by": "Sort by",
+    "close_sort": "Close sort"
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",

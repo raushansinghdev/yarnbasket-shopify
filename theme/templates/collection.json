@@ -11,7 +11,16 @@
   "sections": {
     "main": {
       "type": "collection",
-      "settings": {}
+      "settings": {
+        "crafts": [
+          "bouquets",
+          "keychains",
+          "hair-accessories",
+          "bag-charms",
+          "flower-pots"
+        ],
+        "price_steps": "200,400,1000,2000"
+      }
     }
   },
   "order": [

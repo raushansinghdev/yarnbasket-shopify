@@ -7,6 +7,7 @@ Safe to rerun: a product or collection that already exists by handle is left alo
   python3 tools/catalog-upload.py names handle [handle ...]   sends only the name and SEO title (photos, stock, prices and the URL untouched)
   python3 tools/catalog-upload.py prices        sets every variant's price, and the free gift's, from costs.json (photos and stock untouched)
   python3 tools/catalog-upload.py collections [--force]
+  python3 tools/catalog-upload.py filters       writes each product's Occasion and Flower & motif (from its tags) for the collection page's filters
   python3 tools/catalog-upload.py covers        replaces every collection's cover photo, nothing else (needs Pillow)
   python3 tools/catalog-upload.py tests         moves the test products to vendor "Yarn Basket Test"
   python3 tools/catalog-upload.py home          uploads the home page photos to Files, prints their names
@@ -43,6 +44,24 @@ def gql(query, variables=None, mutate=False):
             raise SystemExit(f'GraphQL call failed:\n{r.stdout[-1500:]}\n{r.stderr[-1500:]}')
         res = json.load(open(of))
     return res.get('data', res)
+
+
+# The collection page's filters (docs/collection-plan.md): Search & Discovery filters by metafield, not by tag, so
+# each product's occasion and motif tags are also written as two list metafields. The tags stay the source of truth.
+OCCASIONS = {'occasion-birthday': 'Birthday', 'occasion-anniversary': 'Anniversary', 'occasion-thank-you': 'Thank you',
+             'occasion-for-her': 'For her', 'occasion-for-him': 'For him'}
+MOTIFS = {'sunflower': 'Sunflower', 'daisy': 'Daisy', 'rose': 'Rose', 'tulip': 'Tulip', 'lily': 'Lily', 'evil-eye': 'Evil eye',
+          'bee': 'Bee', 'chick': 'Chick', 'octopus': 'Octopus', 'peacock': 'Peacock feather'}
+FILTERS = (('occasion', 'Occasion', OCCASIONS), ('motif', 'Flower & motif', MOTIFS))
+
+
+def filter_fields(p):
+    out = []
+    for key, _, names in FILTERS:
+        values = [names[tag] for tag in names if tag in p['tags']]
+        if values:
+            out.append({'namespace': 'custom', 'key': key, 'type': 'list.single_line_text_field', 'value': json.dumps(values)})
+    return out
 
 
 def check(errors, what):
@@ -123,6 +142,7 @@ def products(handles, force):
                 item['file'] = first
             variants.append(item)
         metafields = [{'namespace': 'custom', 'key': 'size', 'type': 'multi_line_text_field', 'value': p['size']}] if p['size'] else []
+        metafields += filter_fields(p)
         inp = {'handle': p['handle'], 'title': p['title'], 'descriptionHtml': p['description'], 'vendor': DATA['vendor'],
                'productType': p['type'], 'tags': p['tags'], 'status': 'ACTIVE',
                'seo': {'title': p['seo_title'], 'description': p['seo_description']},
@@ -133,11 +153,35 @@ def products(handles, force):
             # productSet deletes every metafield it isn't given (2026-10-06: a resend wiped the test ratings), so
             # whatever the product carries beyond ours is sent back as it is.
             kept = gql('query($id: ID!) { product(id: $id) { metafields(first: 50) { nodes { namespace key type value } } } }', {'id': pid})['product']['metafields']['nodes']
-            inp['metafields'] = metafields + [m for m in kept if m['namespace'] != 'global' and (m['namespace'], m['key']) != ('custom', 'size')]
+            inp['metafields'] = metafields + [m for m in kept if m['namespace'] != 'global' and (m['namespace'], m['key']) not in (('custom', 'size'), ('custom', 'occasion'), ('custom', 'motif'))]
         d = gql('mutation($input: ProductSetInput!) { productSet(synchronous: true, input: $input) { product { id handle variants(first: 20) { nodes { title price } } media(first: 30) { nodes { id } } } userErrors { field message code } } }',
                 {'input': inp}, mutate=True)['productSet']
         check(d['userErrors'], p['handle'])
         print('ok:', d['product']['handle'], len(d['product']['variants']['nodes']), 'variants,', len(d['product']['media']['nodes']), 'photos')
+
+
+def filters():
+    """Occasion and Flower & motif on every product, from its tags. Touches nothing else on the product."""
+    have = gql('{ metafieldDefinitions(first: 100, ownerType: PRODUCT) { nodes { namespace key } } }')['metafieldDefinitions']['nodes']
+    for key, name, _ in FILTERS:
+        if {'namespace': 'custom', 'key': key} in have:
+            print('definition exists:', key)
+            continue
+        d = gql('mutation($d: MetafieldDefinitionInput!) { metafieldDefinitionCreate(definition: $d) { createdDefinition { id name } userErrors { field message code } } }',
+                {'d': {'namespace': 'custom', 'key': key, 'name': name, 'type': 'list.single_line_text_field', 'ownerType': 'PRODUCT'}}, mutate=True)['metafieldDefinitionCreate']
+        check(d['userErrors'], key)
+        print('definition created:', d['createdDefinition']['name'])
+    fields = []
+    for p in DATA['products']:
+        pid = existing('product', p['handle'])
+        if not pid:
+            print('not in the store, skipped:', p['handle'])
+            continue
+        fields += [dict(m, ownerId=pid) for m in filter_fields(p)]
+    for i in range(0, len(fields), 25):
+        d = gql('mutation($m: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $m) { metafields { id } userErrors { field message code } } }', {'m': fields[i:i + 25]}, mutate=True)['metafieldsSet']
+        check(d['userErrors'], 'metafieldsSet')
+    print('set', len(fields), 'metafields on', len({f['ownerId'] for f in fields}), 'products')
 
 
 def prices():
@@ -278,6 +322,8 @@ if __name__ == '__main__':
         prices()
     elif cmd == 'collections':
         collections(force)
+    elif cmd == 'filters':
+        filters()
     elif cmd == 'covers':
         covers()
     elif cmd == 'names':

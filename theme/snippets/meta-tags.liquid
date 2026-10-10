@@ -36,15 +36,28 @@
 {%- comment -%}
   Search results are endless thin pages: keep them out of search engines (robots.txt also blocks /search). The Saved,
   Track and Account pages are personal (docs/account-plan.md, account-hub-plan.md), so they stay out too. So does a
-  test product's page (tag "test-product"), which is open only for the checks until it's deleted.
+  test product's page (tag "test-product"), which is open only for the checks until it's deleted. A collection that
+  is filtered or sorted is the same products as the collection itself (its canonical), so it stays out as well
+  (docs/collection-plan.md).
 {%- endcomment -%}
 {%- liquid
   assign is_test = false
   if request.page_type == 'product' and product.tags contains 'test-product'
     assign is_test = true
   endif
+  assign is_narrowed = false
+  if request.page_type == 'collection'
+    if collection.sort_by != blank
+      assign is_narrowed = true
+    endif
+    for filter in collection.filters
+      if filter.active_values.size > 0 or filter.min_value.value != nil or filter.max_value.value != nil
+        assign is_narrowed = true
+      endif
+    endfor
+  endif
 -%}
-{%- if is_test or request.page_type == 'search' or template.suffix == 'saved' or template.suffix == 'track-order' or page.handle == 'saved' or page.handle == 'track-order' or template.suffix contains 'account' or page.handle == 'account' %}
+{%- if is_test or is_narrowed or request.page_type == 'search' or template.suffix == 'saved' or template.suffix == 'track-order' or page.handle == 'saved' or page.handle == 'track-order' or template.suffix contains 'account' or page.handle == 'account' %}
   <meta name="robots" content="noindex, follow">
 {%- endif %}
 

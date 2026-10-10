@@ -4,7 +4,7 @@
   - One search box: this one. On /search the header's pill steps back to the lens (sections/header.liquid).
   - The h1 says what was searched; the count and Sort share one row; craft chips only when results span 2+ crafts
     (Search & Discovery app → Filters → Product type).
-  - Results are compact cards (square photo, plain name): 2 across on phones, up to 5 on wide screens.
+  - Results are compact cards (square photo, plain name): 2 across on phones, up to 4 on wide screens.
   - 1–4 products: a slim "More to love" row. No products but pages matched: those first. Nothing: §6.1 of the plan.
   One Shopify search returns products, pages and blog posts together: products go into the grid, pages and posts
   into "Help & stories". While Demo content is on and the store has no products, the demo products are searched.
@@ -28,7 +28,7 @@
     render 'gift-skip', products: buyable
   endcapture
   assign gift_skip = gift_skip | strip
-  assign grid_sizes = '(min-width: 1280px) 240px, (min-width: 990px) 22vw, (min-width: 768px) 30vw, calc(50vw - 24px)'
+  assign grid_sizes = '(min-width: 1280px) 302px, (min-width: 1100px) 23vw, (min-width: 768px) 30vw, calc(50vw - 24px)'
 -%}
 {%- assign sorted_template = 'search.status_sorted' | t: sort: '[sort]' -%}
 <div class="section search-page scheme-soft" data-search-page data-section-id="{{ section.id }}" data-sorted="{{ sorted_template | escape }}">
@@ -314,11 +314,10 @@
   @media (min-width: 768px) { .search-page__chips { flex-wrap: wrap; } }
   .search-page__chips .search-chip { min-height: 44px; }
 
-  /* Compact results: 2 across, 3 from 768px, 4 from 990px, 5 from 1280px. */
+  /* Compact results: 2 across, 3 from 768px, 4 from 1100px, as on the collection pages (docs/collection-plan.md). */
   .search-page .search-page__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5) var(--space-3); }
   @media (min-width: 768px) { .search-page .search-page__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6) var(--space-5); } }
-  @media (min-width: 990px) { .search-page .search-page__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-  @media (min-width: 1280px) { .search-page .search-page__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+  @media (min-width: 1100px) { .search-page .search-page__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
   .search-page__results { display: grid; gap: var(--space-7); transition: opacity var(--dur-state) ease; }
   .search-page__results.is-busy { opacity: .6; }
 

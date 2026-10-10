@@ -13,6 +13,7 @@
   @param {product} [product] - The product. Blank renders a placeholder.
   @param {string} [sizes] - Image sizes attribute for the grid it sits in
   @param {string} [loading] - 'lazy' (default) or 'eager'
+  @param {boolean} [priority] - true for the first photo of a list page: it is that page's main image (snippets/image)
   @param {number} [index] - Position in the grid, used for staggered reveal and placeholder art
   @param {number} [demo] - Which demo product (1–8) to show when product is blank. Defaults to index + 1.
   @param {boolean} [skip_bestseller] - Don't show the Bestseller badge (in a list that is already the bestsellers)
@@ -55,7 +56,7 @@
       <div class="card__media media">
         {%- if product.featured_media -%}
           {%- assign main_alt = product.featured_media.alt | default: product.title | escape -%}
-          {%- render 'image', image: product.featured_media.preview_image, sizes: img_sizes, loading: loading, class: 'card__img', alt: main_alt -%}
+          {%- render 'image', image: product.featured_media.preview_image, sizes: img_sizes, loading: loading, priority: priority, class: 'card__img', alt: main_alt -%}
           {%- if product.media[1] -%}
             {%- render 'image', image: product.media[1].preview_image, sizes: img_sizes, class: 'card__img card__img--alt', alt: '' -%}
           {%- endif -%}
