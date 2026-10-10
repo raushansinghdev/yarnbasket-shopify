@@ -1078,3 +1078,8 @@ Raushan accepted every recommendation in search-plan §13.
 - **On a normal day the phone hero is a centred "label", like the logo** (Raushan asked for a better idea for the words under the photo): the heading's lead-in in small spaced capitals, the yarn lettering as the one loud thing, a centred button, no description on phones. A centred photo gets centred words; the festival hero keeps its left-aligned words.
 - **Normal-day hero photo: the standing sunflower bouquet**, an AI edit of the real photo (hand removed, tag added), uploaded to Shopify Files 2026-10-06. Raushan chose it; a square photo is shown whole on phones.
 
+
+## 2026-10-10: product page, the top block (docs/product-page-plan.md "Round 9")
+- **The collection and the rating share one line above the name; the name sits on its price.** The four stacked rows hid the option pills behind the pinned buttons on a 360 x 740 phone. 60px less, nothing removed. Three layouts were built and measured before choosing.
+- **A product's collection link is its craft (its product type), never an occasion.** It was the first collection in the alphabet ("Anniversary Gifts" on a rose). One link only, no tag chips: "Pairs well with" and "You may also like" do the discovery. The breadcrumb given to search engines names the same collection.
+- **The rating is not beside the name:** 48 of 55 names would wrap to a second line on a phone.

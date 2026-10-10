@@ -444,6 +444,41 @@ buy box of PP4.
   they are sent, not when they are made.
 - Check 20 is 87 checks, all passing; checks 8 and 8b were adapted (a piece in the cart has no Add to cart button).
 
+## Round 9 (2026-10-10, a tighter top: collection, rating, name, price)
+
+Raushan: the block between the photos and the options has too much empty space, and is "BIRTHDAY GIFTS" above the
+name useful when a product is in several collections?
+
+Measured first (sunflower bouquet): the collection, the name, the rating and the price were four rows, 207px from
+the top of the block to the option pills on a 360px phone. On a 360 x 740 screen the pills sat at 681-729px and the
+pinned buttons start at 675px, so **the options were hidden behind the buttons on arrival**.
+
+- **One line above the name: `CROCHET BOUQUETS · ★ 4.9 (86)`**, then the name, then the price. 147px to the pills
+  now (60px less), and the pills end at 669px, above the buttons. Desktop: 220px → 159px. Nothing is removed.
+- **Why this one.** Three were built in the browser and measured: (A) name, then "★ 4.9 (86) · Crochet Bouquets",
+  then price: 153px, but two underlined links side by side, and with no rating a lone link between name and price;
+  (C) the rating at the end of the price row: 147px, but on sale the price row wraps to two lines (191px);
+  (G, built) keeps the name on its price, and with no rating it is just collection, name, price.
+- **Not the rating beside the name:** 48 of the 55 names are longer than "Sunflower Crochet Bouquet", which already
+  fills 272 of a 360px phone's 320px, so nearly every name would wrap to a second line.
+- **The collection stays, and is the craft.** It was whichever collection Shopify lists first, which is
+  alphabetical: the single rose said "Anniversary Gifts", the daisy pot "Birthday Gifts". Now it is the collection
+  named after the product type (`Bouquets` → `/collections/bouquets`; all six exist). Product cards never link
+  through a collection, so "the collection the shopper came through" never applied. Kept because it costs no
+  height beside the rating, is each product's one link up to its category, is the visible twin of the breadcrumb
+  search engines get, and holds the line so nothing moves when a product gets its first rating.
+- **The rating moved** from under the name to the line above it (changes "the rating sits by the name" from
+  round 5 only in where). It still jumps to the reviews.
+- **12px from the price to the options** (was 24px) and 6px from "Size: 1 sunflower" to the pills (was 8px).
+- How: no markup moved. `.pdp__head` is a two-column grid and the rating is placed on the collection's row, so the
+  page is still read as collection, name, rating, price, and the tab order is unchanged. Both links are 44px tall
+  (the collection was 32px and was let off the tap-size check; no longer). `snippets/structured-data` picks the
+  same collection.
+- Known: at 320px with the longest collection name ("Crochet Hair Accessories") and a rating, the collection takes
+  two lines. No sideways scroll.
+- Check 20 has three more checks (the craft and the breadcrumb agree; one line above a full-width name; options
+  above the buttons at 360 x 740). 104 pass; `check:money` 10 of 10.
+
 ## Photo guide (for Raushan)
 
 Five square photos per product, at least 1200px, in this order:

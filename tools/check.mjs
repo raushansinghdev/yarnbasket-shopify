@@ -1872,7 +1872,7 @@ if (want('20')) {
     const rows = await page.evaluate(() => ({
       titles: [...document.querySelectorAll('.product-row__title')].filter((h) => h.getClientRects().length).map((h) => h.textContent.trim()),
       self: [...document.querySelectorAll('.recs .card__link')].some((a) => a.getAttribute('href').split('?')[0] === location.pathname),
-      small: [...document.querySelectorAll('.pdp button, .pdp a, .pdp summary, .pdp .pill__label')].filter((el) => el.getClientRects().length && !el.closest('.rte')).map((el) => { const r = el.getBoundingClientRect(); return { h: Math.round(r.height), w: Math.round(r.width), c: el.className || el.tagName }; }).filter((r) => r.h < 44 && !/pdp__crumb/.test(r.c)).map((r) => `${r.c} ${r.w}x${r.h}`),
+      small: [...document.querySelectorAll('.pdp button, .pdp a, .pdp summary, .pdp .pill__label')].filter((el) => el.getClientRects().length && !el.closest('.rte')).map((el) => { const r = el.getBoundingClientRect(); return { h: Math.round(r.height), w: Math.round(r.width), c: el.className || el.tagName }; }).filter((r) => r.h < 44).map((r) => `${r.c} ${r.w}x${r.h}`),
     }));
     record('Product: "You may also like" loads, without this piece', rows.titles.some((t) => /also like/i.test(t)) && !rows.self, `rows: ${rows.titles.join(', ') || 'none'}; shows itself: ${rows.self}`);
     record('Product: tap targets at least 44px', rows.small.length === 0, rows.small.join(', ') || 'all fine');
@@ -1904,6 +1904,31 @@ if (want('20')) {
     record('Product 360 x 640: buy buttons on screen the whole page', [start, middle, end].every((b) => b.add && b.now) && start.adds === 1, `arrival ${start.add && start.now}, middle ${middle.add && middle.now}, end ${end.add && end.now}; Add to cart buttons on the page: ${start.adds}`);
     record('Product 360 x 640: name and price above the buttons', start.price <= start.top, `price ends ${Math.round(start.price)}px, buttons start ${Math.round(start.top)}px`);
     record('Product 360 x 640: footer and pop-ups clear the buttons', footer <= end.top + 1 && start.pad >= 60, `footer ends ${footer}px, buttons start ${Math.round(end.top)}px; page padded ${start.pad}px`);
+    await browser.close();
+  }
+
+  // Round 9: the collection and the rating are one line above the name, so on a 360 x 740 screen the options are
+  // above the pinned buttons on arrival. The collection is the piece's craft (its product type), never whichever
+  // collection comes first in the alphabet, and the breadcrumb given to search engines names the same one.
+  {
+    const { browser, page } = await visit('products/sunflower-crochet-bouquet', { ...PHONE, viewport: { width: 360, height: 740 } });
+    const top = await page.evaluate(() => {
+      const box = (sel) => document.querySelector(sel)?.getBoundingClientRect();
+      let crumb = '';
+      for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
+        try { const list = (JSON.parse(s.textContent)['@graph'] || []).find((x) => x['@type'] === 'BreadcrumbList'); if (list) crumb = new URL(list.itemListElement[1].item).pathname; } catch {}
+      }
+      const where = box('.pdp__crumb'); const rating = box('.pdp__rating'); const title = box('.pdp__title');
+      return {
+        href: document.querySelector('.pdp__crumb')?.getAttribute('href'), crumb,
+        line: !rating || (Math.abs(rating.top - where.top) < 2 && rating.left >= where.right - 1 && rating.bottom - 8 <= title.top),
+        name: title.height < 40 && Math.abs(title.width - box('.pdp__head').width) < 2,
+        pills: Math.round(box('.pill').bottom), bar: Math.round(box('.pdp__cta').top), from: Math.round(box('.pill').top - box('.pdp__head').top),
+      };
+    });
+    record('Product: the collection is the craft, breadcrumb too', top.href === '/collections/bouquets' && top.crumb === top.href, `link ${top.href}, breadcrumb ${top.crumb || 'none'}`);
+    record('Product: collection and rating on one line', top.line && top.name, `one line above the name: ${top.line}; name on one full-width line: ${top.name}`);
+    record('Product 360 x 740: options above the buttons', top.pills <= top.bar, `pills end ${top.pills}px, buttons start ${top.bar}px; ${top.from}px from the top of the block`);
     await browser.close();
   }
 

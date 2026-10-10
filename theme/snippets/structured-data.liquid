@@ -66,6 +66,13 @@
     assign rating_count = product.metafields.reviews.rating_count.value | default: 0
     assign crumb = collection
     if crumb == blank
+      assign craft_handle = product.type | handleize
+      assign craft = collections[craft_handle]
+      if craft.id
+        assign crumb = craft
+      endif
+    endif
+    if crumb == blank
       assign skip = 'frontpage,all,shop,bestsellers' | split: ','
       for c in product.collections
         if skip contains c.handle or c.id == settings.shop_all_collection.id

@@ -34,9 +34,19 @@
   endif
 
   comment
-    Where this piece lives: the collection the shopper came through, or its first craft collection.
+    Where this piece lives: the collection the shopper came through, or else its craft, which is the collection
+    named after its product type ("Bouquets" → bouquets). Never whichever collection Shopify lists first: that
+    is alphabetical, so a rose bouquet said "Anniversary Gifts" (round 9). The loop is only the last resort.
+    snippets/structured-data picks the same one for the breadcrumb.
   endcomment
   assign home = collection
+  if home == blank
+    assign craft_handle = product.type | handleize
+    assign craft = collections[craft_handle]
+    if craft.id
+      assign home = craft
+    endif
+  endif
   if home == blank
     assign skip = 'frontpage,all,shop,bestsellers' | split: ','
     for c in product.collections
@@ -91,9 +101,13 @@
   </div>
 
   <div class="pdp__info">
+    {%- comment -%}
+      Round 9: the collection and the rating share one line above the name (placed with CSS, so they are still
+      read in this order: where it lives, its name, its rating, its price), and the name sits right on its price.
+    {%- endcomment -%}
     <div class="pdp__head">
       {%- if home != blank -%}
-        <nav aria-label="{{ 'products.breadcrumb' | t }}">
+        <nav class="pdp__where" aria-label="{{ 'products.breadcrumb' | t }}">
           <a class="pdp__crumb" href="{{ home.url }}">{{ home.title }}</a>
         </nav>
       {%- endif -%}
@@ -101,7 +115,7 @@
 
       {%- if rating_count > 0 -%}
         {%- assign rating = product.metafields.reviews.rating.value.rating | round: 1 -%}
-        {%- comment -%} Like Amazon and Flipkart: the rating sits by the name and takes you down to the reviews (#reviews, sections/reviews). {%- endcomment -%}
+        {%- comment -%} The rating sits by the name and takes you down to the reviews (#reviews, sections/reviews). {%- endcomment -%}
         <a class="pdp__rating" href="#reviews">
           {%- render 'icon', icon: 'star' -%}
           <span aria-hidden="true">{{ rating }} <span class="pdp__rating-count">({{ rating_count }})</span></span>
@@ -405,11 +419,18 @@
   /* Phones: one column. The photos run edge to edge; everything else sits in the page's centre column. */
   .pdp { row-gap: var(--space-4); padding-bottom: var(--space-7); }
   .pdp__info { display: grid; gap: var(--space-5); }
-  .pdp__head { display: grid; gap: var(--space-1); }
+  /* The collection and the rating are one line above the name. Each keeps a 44px tap height; the negative margins
+     give the unused part back, so the line takes about 22px. */
+  .pdp__head { display: grid; grid-template-columns: auto 1fr; gap: var(--space-1) 0; }
+  .pdp__where, .pdp__rating { grid-row: 1; margin-block: -12px -10px; }
+  /* A flex box, so the link is exactly its 44px and not a text line's height around it. */
+  .pdp__where { grid-column: 1; display: flex; }
+  .pdp__title { grid-area: 2 / 1 / auto / -1; }
+  .pdp__price-row { grid-area: 3 / 1 / auto / -1; }
   .pdp__crumb {
     display: inline-flex;
     align-items: center;
-    min-height: 32px;
+    min-height: 44px;
     color: var(--color-muted);
     font-size: var(--fs-label);
     font-weight: 500;
@@ -419,9 +440,10 @@
   }
   @media (hover: hover) { .pdp__crumb:hover { color: var(--color-heading); text-decoration: underline; text-underline-offset: 4px; } }
   .pdp__title { font-size: clamp(1.75rem, 1.5rem + 1.2vw, 2.5rem); line-height: 1.1; text-wrap: balance; }
-  .pdp__rating { display: inline-flex; align-items: center; justify-self: start; gap: var(--space-1); min-height: 44px; margin-block: -6px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); text-decoration: none; }
+  .pdp__rating { grid-column: 2; display: inline-flex; white-space: nowrap; align-items: center; justify-self: start; gap: var(--space-1); min-height: 44px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); text-decoration: none; }
   .pdp__rating-count { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
   .pdp__rating .icon { width: 16px; height: 16px; fill: currentColor; }
+  .pdp__where + .pdp__title + .pdp__rating::before { content: "·"; margin-inline: var(--space-2) var(--space-1); color: var(--color-muted); }
   .pdp__rating-count { font-weight: 400; color: var(--color-muted); }
   .pdp__price-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-top: var(--space-2); }
   .pdp__price { display: flex; align-items: baseline; gap: var(--space-2); font-variant-numeric: tabular-nums; }
@@ -439,6 +461,8 @@
     line-height: 1.3;
   }
   .pdp__tax { font-size: .8125rem; color: var(--color-muted); }
+  /* The options belong to the price: 12px under it, not the column's 24px. */
+  .pdp__info > .options { margin-top: calc(var(--space-3) - var(--space-5)); }
   .pdp__limit { font-size: .8125rem; color: var(--color-ink); }
   .pdp__limit a { color: var(--color-heading); font-weight: 500; text-underline-offset: 3px; }
   /* The price and button answer a new choice with the site's "swap": the new value fades up 4px. */
