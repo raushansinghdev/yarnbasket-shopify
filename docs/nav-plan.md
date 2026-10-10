@@ -15,6 +15,7 @@ Status: **Stages 1–3 built 2026-10-02.** Raushan approved the recommendations 
   - A child that links to its parent's URL is the "all" link, so the theme adds none of its own (phone and desktop).
   - Measured: every link fits one 390 × 844 screen (last link ends at 815px); 360 × 740 scrolls 141px. Check section 21.
   - This replaces "Shop all as the last tile" above.
+- **Opened, Gifts is pills, not rows (2026-10-07, Raushan).** A folding list with a collection link in it shows its links as wrapping pills without icons: seven links on three lines, 144px at 390 and 360 wide; each pill is drawn 38px tall inside a 44px link (about 535px as rows). Help stays rows. Photos were considered and turned down; see docs/decisions.md of the same date.
 - **"Track order" is in the Help dropdown**, not in the drawer's bottom row. The bottom row is Account, then WhatsApp (once the number is set), then Instagram.
 - **Demo menu:** while Demo content is on and the main menu has no dropdowns, the header shows the planned menu (Shop / Gifts / Bestsellers / Help, with Our story last under Help) with demo craft photos. Its links only go to pages that exist. Once a real menu with dropdowns is saved in the admin, the demo menu goes away.
 - **How photo tiles are chosen:** a dropdown whose children are all collection links (2 or more) shows them as photo tiles. A dropdown with any collection link gets a "Shop all" / "View all" link. In the phone drawer only the first such dropdown is tiles, and the "all" link is skipped when a child already goes to the parent's URL.

@@ -16,6 +16,8 @@
   @param {string} [kid_handles] - Demo menu: child handles, '|'-separated
   @param {boolean} [tiles] - Show the children as photo tiles (a list of crafts). In the drawer this is the one open
     grid; the header passes false for any later list, which then folds like the other groups.
+  @param {boolean} [pills] - Drawer only: the folded list opens as wrapping pills, without icons (a list of
+    collections that isn't the open grid, such as Gifts)
   @param {boolean} [all_link] - Add a "Shop all" / "View all" link to the parent URL
 
   A child that already links to the parent's URL (a "Shop all" item in the admin menu) is that link, so the theme
@@ -157,7 +159,7 @@
           {{- title -}}
           {%- render 'icon', icon: 'chevron', class: 'drawer__chevron' -%}
         </summary>
-        <ul role="list" class="drawer__sub">
+        <ul role="list" class="drawer__sub{% if pills %} drawer__sub--pills{% endif %}">
           {%- for kid_title in k_titles -%}
             {%- liquid
               assign i = forloop.index0
@@ -165,7 +167,7 @@
             -%}
             <li{% if kid_key contains 'story' or kid_key contains 'about' %} class="is-about"{% endif %}>
               <a href="{{ k_urls[i] }}" {% if kids[i].current %}aria-current="page"{% endif %}>
-                {%- render 'menu-link-icon', handle: k_handles[i] -%}
+                {%- unless pills -%}{%- render 'menu-link-icon', handle: k_handles[i] -%}{%- endunless -%}
                 <span>{{ kid_title }}</span>
               </a>
             </li>

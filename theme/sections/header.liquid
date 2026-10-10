@@ -21,8 +21,9 @@
   assign bar_items = ''
   assign drawer_items = ''
   assign item_count = 0
-  # Phone drawer: only the first list of crafts is an open photo grid. A later one (Gifts) folds into a row with an
-  # arrow, like Help, so the whole menu fits about one screen (docs/nav-plan.md, "As built").
+  # Phone drawer: only the first list of crafts is an open photo grid. A later list of collections (Gifts) folds into
+  # a row with an arrow, like Help, so the whole menu fits about one screen; opened, its links are pills, not rows
+  # (docs/nav-plan.md, "As built").
   assign grid_used = false
 
   if demo_menu
@@ -40,6 +41,7 @@
       assign ku = blank
       assign kh = blank
       assign tiles = false
+      assign pills = false
       assign all_link = false
       assign here = false
       case forloop.index
@@ -54,6 +56,7 @@
           assign kt = 'Birthday|Anniversary|For her|Under ₹499'
           assign kh = 'birthday|anniversary|for-her|under-499'
           assign ku = all_url | append: '|' | append: all_url | append: '|' | append: all_url | append: '|' | append: all_url
+          assign pills = true
           assign all_link = true
         when 4
           assign kt = 'Track order|Shipping & delivery|FAQ|Contact us|Our story'
@@ -69,10 +72,11 @@
       assign drawer_tiles = false
       if tiles and grid_used == false
         assign drawer_tiles = true
+        assign pills = false
         assign grid_used = true
       endif
       capture drawer_item
-        render 'nav-item', place: 'drawer', index: forloop.index, title: d_title, url: d_urls[i], here: here, kid_titles: kt, kid_urls: ku, kid_handles: kh, tiles: drawer_tiles, all_link: all_link
+        render 'nav-item', place: 'drawer', index: forloop.index, title: d_title, url: d_urls[i], here: here, kid_titles: kt, kid_urls: ku, kid_handles: kh, tiles: drawer_tiles, pills: pills, all_link: all_link
       endcapture
       assign bar_items = bar_items | append: bar_item
       assign drawer_items = drawer_items | append: drawer_item
@@ -91,11 +95,13 @@
       endif
       # A dropdown of collections is a list of crafts: it shows as photo tiles, with a "Shop all" link.
       assign tiles = false
+      assign pills = false
       assign all_link = false
       if link.links.size > 0
         assign collection_kids = link.links | where: 'type', 'collection_link'
         if collection_kids.size > 0
           assign all_link = true
+          assign pills = true
         endif
         if collection_kids.size == link.links.size and link.links.size > 1
           assign tiles = true
@@ -107,10 +113,11 @@
       assign drawer_tiles = false
       if tiles and grid_used == false
         assign drawer_tiles = true
+        assign pills = false
         assign grid_used = true
       endif
       capture drawer_item
-        render 'nav-item', place: 'drawer', index: forloop.index, title: link.title, url: link.url, current: link.current, here: here, kids: link.links, tiles: drawer_tiles, all_link: all_link
+        render 'nav-item', place: 'drawer', index: forloop.index, title: link.title, url: link.url, current: link.current, here: here, kids: link.links, tiles: drawer_tiles, pills: pills, all_link: all_link
       endcapture
       assign bar_items = bar_items | append: bar_item
       assign drawer_items = drawer_items | append: drawer_item
@@ -738,6 +745,31 @@
   .drawer__sub .icon--brand { width: 36px; height: 36px; flex: none; }
   .drawer__sub-all { justify-content: space-between; font-size: var(--fs-label) !important; font-weight: 500; letter-spacing: var(--tracking-label); text-transform: uppercase; }
   .drawer__sub-all .icon { width: 18px; height: 18px; }
+  /* A folded list of collections (Gifts) opens as pills: short names wrap three or so to a line, a third of the
+     height of one row each. The link is 44px tall for the thumb; the pill drawn inside it is 38px, so it reads as a
+     small tag, not a button. The bottom margin stays, inside the folding box (see flow-root above). */
+  .drawer__sub--pills { display: flex; flex-wrap: wrap; gap: 2px var(--space-2); margin-left: 0; padding: var(--space-1) 0; border-left: 0; }
+  .drawer__sub--pills a {
+    position: relative;
+    isolation: isolate;
+    min-height: 44px;
+    margin-inline: 0;
+    padding: 0 var(--space-3);
+    font-size: .9375rem;
+    line-height: 1.2;
+  }
+  .drawer__sub--pills a::before {
+    content: "";
+    position: absolute;
+    inset: 3px 0;
+    z-index: -1;
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-pill);
+  }
+  .drawer__sub--pills a:active, .drawer__sub--pills a[aria-current] { background: none; }
+  .drawer__sub--pills a:active::before, .drawer__sub--pills a[aria-current]::before { background: var(--blush-soft); }
+  .drawer__sub--pills a[aria-current]::before { border-color: var(--cocoa-deep); }
+  .drawer__sub--pills .drawer__sub-all { gap: var(--space-2); letter-spacing: var(--tracking-label); }
 
   @media (prefers-reduced-motion: no-preference) {
     .drawer[open] :is(.drawer__nav > ul, .drawer__secondary) > li {

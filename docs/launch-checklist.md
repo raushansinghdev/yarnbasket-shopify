@@ -79,7 +79,7 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
 - [ ] Currency format `₹{{amount_no_decimals}}` (Settings → General → Store currency)
 - [ ] Search & Discovery: synonyms, Popular searches menu, product filters (search-plan §10)
 - [ ] Bestsellers collection
-- [ ] WhatsApp number, Instagram link and Contact email in Theme settings → Social (the footer's "Say hello" buttons appear once they are filled in: docs/footer-plan.md)
+- [x] WhatsApp number, Instagram link and Contact email in Theme settings → Social: set 2026-10-06 in `theme/config/settings_data.json` (+91 93219 79410, instagram.com/yarnbasket.in, weyarnbasket@gmail.com). The live theme keeps its own settings: check they are there after publishing.
 - [ ] Help menu (Content → Menus → Help): add Shipping & delivery, Returns, FAQ and Our story as those pages are written
 - [ ] Payment gateway, COD, shipping and checkout: see "Shipping, payments and checkout" below
 

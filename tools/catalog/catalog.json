@@ -970,7 +970,8 @@
    "tags": [
     "evil-eye",
     "occasion-thank-you",
-    "occasion-for-her"
+    "occasion-for-her",
+    "occasion-for-him"
    ],
    "option": null,
    "variants": [
@@ -1017,7 +1018,8 @@
    "tags": [
     "peacock",
     "occasion-thank-you",
-    "occasion-for-her"
+    "occasion-for-her",
+    "occasion-for-him"
    ],
    "option": null,
    "variants": [
@@ -1058,7 +1060,8 @@
    "type": "Keychains",
    "tags": [
     "bee",
-    "occasion-birthday"
+    "occasion-birthday",
+    "occasion-for-him"
    ],
    "option": null,
    "variants": [
@@ -1109,7 +1112,8 @@
    "type": "Keychains",
    "tags": [
     "chick",
-    "occasion-birthday"
+    "occasion-birthday",
+    "occasion-for-him"
    ],
    "option": null,
    "variants": [
@@ -1260,7 +1264,8 @@
     "bee",
     "chick",
     "set",
-    "occasion-birthday"
+    "occasion-birthday",
+    "occasion-for-him"
    ],
    "option": null,
    "variants": [
@@ -1360,7 +1365,8 @@
     "octopus",
     "evil-eye",
     "set",
-    "occasion-birthday"
+    "occasion-birthday",
+    "occasion-for-him"
    ],
    "option": null,
    "variants": [
@@ -2619,7 +2625,8 @@
    "tags": [
     "evil-eye",
     "set",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "occasion-for-him"
    ],
    "option": null,
    "variants": [
@@ -2947,7 +2954,8 @@
    "tags": [
     "bee",
     "set",
-    "occasion-birthday"
+    "occasion-birthday",
+    "occasion-for-him"
    ],
    "option": null,
    "variants": [
@@ -2979,7 +2987,8 @@
    "tags": [
     "chick",
     "set",
-    "occasion-birthday"
+    "occasion-birthday",
+    "occasion-for-him"
    ],
    "option": null,
    "variants": [
@@ -3017,7 +3026,8 @@
     "octopus",
     "set",
     "occasion-birthday",
-    "occasion-for-her"
+    "occasion-for-her",
+    "occasion-for-him"
    ],
    "option": "Colours",
    "variants": [
@@ -3305,6 +3315,22 @@
    "seo": [
     "Handmade Crochet Gifts for Her | Yarn Basket",
     "Crochet gifts for her, made by hand in India: flower bouquets, bag charms and hair accessories."
+   ]
+  },
+  {
+   "handle": "gifts-for-him",
+   "title": "Gifts for Him",
+   "rules": [
+    [
+     "tag",
+     "occasion-for-him"
+    ]
+   ],
+   "cover": "keychains/KC_Evil_1 3.png",
+   "description": "<p>Handmade crochet gifts for him: evil eye, bee, chick and octopus keychains for his keys, bag or bike.</p>",
+   "seo": [
+    "Handmade Crochet Gifts for Him | Yarn Basket",
+    "Crochet gifts for him, made by hand in India: evil eye, bee, chick and octopus keychains for keys and bags."
    ]
   },
   {

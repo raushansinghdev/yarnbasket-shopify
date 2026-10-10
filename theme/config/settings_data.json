@@ -11,6 +11,9 @@
     "discount_1_from": 999,
     "discount_1_amount": 50,
     "discount_2_from": 1299,
-    "discount_2_amount": 100
+    "discount_2_amount": 100,
+    "social_whatsapp": "+91 93219 79410",
+    "social_instagram": "https://www.instagram.com/yarnbasket.in/",
+    "social_email": "weyarnbasket@gmail.com"
   }
 }

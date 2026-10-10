@@ -16,6 +16,11 @@ Raushan asked why Help is in the menu and again on the account page, and asked f
 - **Check 13** now fails if the account page has a help panel or a link to `#help`, if the phones' Help shortcut doesn't go to the Contact page, or if the signed-out link is missing or under 44px.
 - **Later:** when the Shipping & delivery, FAQ and Our story pages exist, the footer's Help list should hold the same help links as the menu's. Today it also has Your account and Saved items, which aren't help.
 
+## 2026-10-08 (cart drawer: the × never scrolls away)
+
+- **Tapping the amount beside Checkout pushed the drawer's top bar, with its ×, off screen** (Raushan: "how am I supposed to close the cart now?"). It needed a cart long enough for the price details to start below the fold. The screen-reader-only words in the list are absolutely placed, and with no positioned box around them they belonged to the drawer itself, so the drawer had hidden content below its edge; bringing the price details into view then scrolled the whole drawer by that much.
+- **Fix: the scrolling list is their box** (`.cart-drawer__body { position: relative }`), so the drawer has nothing to scroll. Check §8b now fails if the drawer has scrolled or the × can't be tapped after that tap.
+
 ## 2026-10-08 (contact page, round 2: no number, no hours, a shorter form)
 
 Raushan looked on his phone, sent a message that arrived, and asked for Claude's opinion on four points, to go with it.
@@ -28,6 +33,14 @@ Raushan looked on his phone, sent a message that arrived, and asked for Claude's
 - **Admin (Claude, Admin API):** the Contact page's SEO title and description are set. The `ContactPage` structured data stays, with the email only.
 - **Open, for Raushan:** the store's sender email is his personal Gmail; form messages go there and customers see it on order emails. Change it to weyarnbasket@gmail.com (launch checklist).
 
+## 2026-10-08 (cart: "Your rewards" is its own card, a path; Price details is money only)
+
+- **Raushan found the Price details card muddled** once the reward steps were listed in it: steps ("Free shipping … from ₹499") and money rows ("Item total … ₹995") were both label-left, number-right, so thresholds read like prices.
+- **"Your rewards" is a card of its own, drawn as a path** (Raushan's choice over a list with the amount beside the name, or a tinted panel inside the card): a dot per step joined by a line, the name and the amount under each. Before Price details in the drawer; under the rewards line in the cart page's card. This replaces the list of the entry below; its rules stand (a declined gift reads "Free gift available", the second money-off step says "in total" until earned and then replaces the first).
+- **The free gift is a row like Shipping: "Free gift ~~₹89~~ Free"** (Raushan's choice over keeping the sum and renaming the row). It is no longer counted into Item total and taken off again by a row named after the Shopify discount. `cart-list-total` leaves a free gift out, so Item total, the amount struck through beside Checkout and the cart page's pinned bar agree: with only a gift and free shipping there is no Item total row and nothing struck through beside Checkout.
+- **"You save" still counts the gift**, with sale prices, discounts and the waived shipping fee: it is every minus and struck amount on the card. It is a soft sage band now, so it reads as the result and not as one more row.
+- **A gift that is still charged** (its discount is missing) is an ordinary line everywhere, as before.
+- Check §8b: with one piece and with everything unlocked, Item total less the minus rows is the Subtotal, "You save" is the minus and struck amounts, the struck amount beside Checkout is the Subtotal before the minus rows, and a gift line has its gift row.
 
 ## 2026-10-08 (a contact page; docs/contact-plan.md)
 
@@ -43,7 +56,6 @@ Raushan looked on his phone, sent a message that arrived, and asked for Claude's
 - **Field edges are Taupe**, 4:1 on white; the page's faint lines are too light for the edge of a field. A rule for any later form.
 - **SEO, waiting for Raushan's yes:** `ContactPage` structured data with the shop's customer-service contact.
 - **Check 23** is new. Not done: a real send (Shopify's bot check stopped the automated one, and Claude doesn't solve those), so the sent panel has not been seen.
-
 
 ## 2026-10-08 (cart: the swipe rows stay as they are while the cart is open)
 
@@ -64,6 +76,24 @@ Raushan looked on his phone, sent a message that arrived, and asked for Claude's
 - **The code is in `cart-rows.js`** ("Holding still"); cart.js is at its size budget and only calls `ybCart.before()` ahead of a redraw. The browser's own scroll anchoring is off inside the cart, so the two don't both correct.
 - Check §8e: with motion on, phone and desktop, frame by frame: the list never runs back and the tapped card and the Undo row don't move. It fails on the old code.
 
+## 2026-10-08 (cart: the rewards are one line, with the bar on the pinned bottom's top edge)
+
+- **The drawer's pinned bottom is 113px in every state** (was about 190px while a reward was ahead). Raushan found it took too much of the cart and asked for a rethink that keeps the information. Of three layouts shown, Raushan chose "edge bar, one line" (the others: a thin bar under the words, about 120px; rewards out of the pinned part altogether, about 81px, which hides the nudge).
+- **The progress bar is the pinned bottom's 3px top edge.** It takes the border's place and no height. On the cart page, where the card isn't pinned, the same bar sits under the words. Still one goal at a time, filling afresh for each.
+- **One line of words, and it is a link.** "Add ₹93 more for ₹50 off", with the goal's icon before it. A tap brings Little extras into view in the cart, with focus; without JavaScript, or when that row is empty, it opens the Shop collection from the cheapest piece. This replaces "Small add-ons". The goal's amount under the bar is gone: the sentence says how far.
+- **What's earned moved to "Your rewards" in Price details** (Raushan's choice over small ticked icons in the line, or dropping the ticks): every step that is switched on, ticked or not, with "from ₹…". More than the pinned ticks said, and the same in the drawer and on the page.
+- **The second money-off step reads "₹100 off in total"** until it is earned, and then replaces the ₹50 row. It replaces the first step, it isn't added to it, and two ticked rows would have read as ₹150.
+- **A declined gift with a step still ahead: "Add gift back" stays in the pinned line** (the ladder row says "Free gift available"). The plan had put the link in the ladder; but removing the gift moves focus to this link, and that must not land off screen. On a 320px phone it drops under the goal (132px).
+- **The tap handler is in `cart-rows.js`,** not cart.js (at its size budget), and listens in the capture phase: the drawer's own link handling would otherwise leave the page.
+- Check §8b: the limit with a step ahead is 120px (was 175); new checks for the one line, the edge bar, the ticked steps and the tap to Little extras.
+
+## 2026-10-07 (phone menu: Gifts opens as pills)
+
+- **Opened, Gifts shows its links as pills that wrap, not one row each** (Raushan found the list too tall and asked about a photo grid like Shop; Claude recommended pills, Raushan chose them). Seven links take three lines: 144px at 390 and 360 wide, against about 535px as rows.
+- **Not photos.** Seven tiles three across is three rows, about 590px, taller than the list it would replace. Occasion photos also don't tell the links apart (Birthday, Anniversary, Thank you and For her would all be a bouquet; "Under ₹299" has no photo), and a second photo grid competes with Shop, the main way in. The desktop Gifts panel keeps its six photo tiles.
+- **The rule:** in the phone menu, a folding list with a collection link in it that isn't the open photo grid opens as pills, without icons. Any other folding list (Help: pages) stays rows with icons. Nothing is tied to the name "Gifts".
+- **The pills are small: 38px tall, 15px text** (Raushan: not too big). The link around each is 44px tall, so the thumb's target is unchanged; the first build drew the pill at the full 48px and it read as a row of buttons. The current page's pill has the Blush tint and a Cocoa line. The arrow and the fold are unchanged. Check 21 has a new line: pills several to a line, 220px at most, none under 44px, none past the list's edge.
+
 ## 2026-10-07 (phone menu: one way to reach us, "Custom & bulk orders")
 
 - **The menu's lower list is the account row, Saved items and "Custom & bulk orders"** (Raushan). Custom and bulk orders are common for handmade work and the shop must not lose them, so the one contact row is named for that instead of "Chat on WhatsApp". It opens WhatsApp with "Hi Yarn Basket! I'd like to ask about a custom or bulk order."; screen readers also hear "Chat on WhatsApp, opens in a new window".
@@ -83,6 +113,14 @@ The full check before the push of 2026-10-06 failed three checks, and Raushan th
 - **The phone menu's folding lists (Gifts, Help) open and close in one move.** The list inside has a 12px bottom margin; it stayed inside the box while the height animated and escaped when it stopped, so everything below dropped 12px in one frame and jumped back on closing. `display: flow-root` on the folding box keeps it inside. The FAQ was measured and has no such step.
 - **Two new checks:** 1c (swipe rows never scroll by themselves and no item changes direction while arriving, phone and tablet) and, in 21, folding lists move what is below them only as much as their own height changes.
 
+## 2026-10-07 (Gifts menu: a sixth tile, "For him")
+
+- **The Gifts dropdown has six tiles, so it shows as two rows of three like Shop** (Raushan asked for the two to look alike). With five it was one long row; the rule in `nav-item` is one row up to five, two rows above that. No theme change: a new collection and a menu item.
+- **The sixth is "For him"** (Raushan's pick; Claude had suggested a seasonal Diwali tile). It sits after "For her". Collection `gifts-for-him`, filled by the tag `occasion-for-him`, cover photo the Evil Eye keychain.
+- **Ten products carry the tag, all keychains without flowers:** Evil Eye (single and pair), Bumble Bee (single and pair), Baby Chick (single and pair), Bee & Chick pair, Octopus pair, Octopus Pair & Evil Eye set, Peacock Feather. Everything else in the catalogue is flowers or hair pieces, so the page is keychains only until other pieces exist. The Sunflower Flower Pot was offered as a desk gift and left out.
+- **The home page's "Shop by occasion" row is unchanged** (four cards).
+- The tags and the collection are in `tools/catalog/catalog.json`; the tags went to the store with `tagsAdd`, not a product resend.
+
 ## 2026-10-06 (a new footer: links first, signature last; docs/footer-plan.md)
 
 - **The footer is rebuilt from scratch** (Raushan asked for a professional, aligned, modern footer with everything a shop footer needs). It replaces the centred banner footer of 2026-10-01 and its trim of 2026-10-04.
@@ -90,11 +128,12 @@ The full check before the push of 2026-10-06 failed three checks, and Raushan th
   - Desktop: the signature on the left five of twelve columns, the lists on the rest, 424px tall at 1280 (was 441).
 - **Phones show the lists open, not folded (Raushan's choice, Claude's recommendation).** 526px at 360 wide against 369px before, for 11 links instead of 7. Folded lists (about 380px) put the help links a tap away; the footer is the last thing on a page, so its height pushes nothing down.
 - **Shop follows the main menu's first dropdown**, so the two can't drift apart. **Help is the store's `footer` menu.**
-- **Say hello shows only the channels filled in** under Theme settings → Social (WhatsApp, Instagram, and a new "Contact email"). None are filled in yet, so the column is absent today; Help's "Contact us" covers it.
+- **Say hello shows only the channels filled in** under Theme settings → Social (WhatsApp, Instagram, and a new "Contact email"). Raushan gave all three the same day (+91 93219 79410, instagram.com/yarnbasket.in, weyarnbasket@gmail.com), so the column shows. With none filled in it is left out, and Help's "Contact us" covers it. The WhatsApp number also switches on the WhatsApp links in the menu drawer, the product page, Saved, search and the account page.
 - **The corner flowers left the footer** (they stay in the hero), with the crafts line, the short rule and the "Search" link. The WCAG 2.2.2 exception of 2026-10-01 no longer applies to the footer.
 - **Tried and dropped: the tagline drawn in yarn.** At footer size the strand is about 1px and reads as a scribble; the tagline is spaced capitals, as on the logo.
 - **Admin change (Claude, Admin API, 2026-10-06):** the `footer` menu, "Footer menu" with one item (Search), is now "Help": Track order, Contact us, Your account, Saved items. Read back from the store.
 - **Check 19** is rewritten for the new footer (limits in footer-plan.md).
+- **2026-10-07, two touches (Claude's recommendation, Raushan agreed):** "Hair" reads "Hair accessories" in the footer's Shop list, and one faint, still outline flower sits beside the logo as the footer's one brand touch. Still open: Shipping & returns, FAQ and Our story pages for the Help list.
 
 ## 2026-10-06 (nine short product names get one more word)
 

@@ -232,6 +232,40 @@ const draw = () => {
   }));
 };
 
+/* ---------- In the cart ----------
+   Between openings the cards stay where they are. One whose piece is in the cart shows a tick in place of its
+   "+": a state, not a button (the quantity is on the piece's line above). Taken out of the cart, it has its "+"
+   back. */
+const marks = () => {
+  const cart = rows && inCart();
+  rows?.querySelectorAll('[data-row-add]').forEach((button) => {
+    const li = button.closest('li');
+    const has = cart.has(handleOf(li));
+    if (has === 'added' in button.dataset) return;
+    if (has) {
+      button.dataset.added = button.getAttribute('aria-label') || '';
+      button.setAttribute('aria-disabled', 'true');
+      button.setAttribute('aria-label', fmt(rows.dataset.inCart, { title: (li.querySelector('.card__title, .extra__title')?.textContent || '').trim() }));
+    } else {
+      // The words it had: its own label, or the ones inside it.
+      button.dataset.added ? button.setAttribute('aria-label', button.dataset.added) : button.removeAttribute('aria-label');
+      button.removeAttribute('aria-disabled');
+      delete button.dataset.added;
+    }
+  });
+};
+
+/* ---------- "Add ₹… more": on to Little extras ----------
+   The rewards line is a link to the cheapest pieces (snippets/cart-rewards). While Little extras is showing, the
+   pieces are right here: the row is brought into view and takes focus, like the amount and the price details.
+   Capture: settled before the drawer's own link handling sees the click (cart.js). */
+scope?.addEventListener('click', (event) => {
+  if (!event.target.closest('[data-rewards-more]') || !extrasRow?.isConnected || extrasRow.hidden) return;
+  event.preventDefault();
+  extrasRow.scrollIntoView({ block: 'center' });
+  extrasRow.focus({ preventScroll: true });
+}, true);
+
 /* ---------- Add ---------- */
 scope?.addEventListener('click', (event) => {
   const button = event.target.closest('[data-row-add]');
@@ -246,6 +280,9 @@ scope?.addEventListener('click', (event) => {
       // The tapped card stays under the finger while the cart redraws around it, and its "+" becomes a tick.
       holding = li;
       render(res.sections?.[sectionId]);
+      holding = null;
+      button.removeAttribute('aria-busy');
+      marks();
       const count = +box()?.dataset.count;
       counted(count);
       say(fmt(S.added, { title, count: count === 1 ? S.one : S.other.replace('99', count) }));
@@ -270,9 +307,6 @@ scope?.addEventListener('scroll', (event) => { if (event.target.matches?.('[data
 
 document.addEventListener('cart:rendered', () => {
   const was = rows;
-      holding = null;
-      button.removeAttribute('aria-busy');
-      marks();
   adopt();
   if (inDrawer && was && rows.isConnected && last?.isConnected && !scope.querySelector(':focus')) last.focus({ preventScroll: true });
   marks();

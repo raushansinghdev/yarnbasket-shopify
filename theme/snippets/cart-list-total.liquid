@@ -3,6 +3,8 @@
   before discounts. A sale price (compare at) is not a Shopify discount, so cart.original_total_price leaves it out;
   the price details and the struck-through total start from this number instead, the same one the lines strike through
   (snippets/cart-line).
+  The free gift is left out while it is free: the shopper didn't choose it and was never going to pay for it, so it
+  is not added in and taken off again. The price details give it a row of its own (snippets/cart-details).
 
   @example
   {%- capture list_total -%}{%- render 'cart-list-total' -%}{%- endcapture -%}
@@ -10,7 +12,11 @@
 {%- enddoc -%}
 {%- liquid
   assign list_total = 0
+  assign gift_variant = settings.gift_product.variants.first.id
   for item in cart.items
+    if settings.gift_product != blank and item.variant_id == gift_variant and item.final_line_price == 0
+      continue
+    endif
     assign each = item.original_price
     if item.variant.compare_at_price > each
       assign each = item.variant.compare_at_price

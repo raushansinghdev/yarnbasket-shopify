@@ -35,6 +35,7 @@
               {%- endfor -%}
             </ul>
             {%- render 'cart-note', place: 'drawer' -%}
+            {%- render 'cart-rewards', part: 'ladder' -%}
             {%- render 'cart-details', place: 'drawer' -%}
             {%- render 'cart-rows', place: 'drawer' -%}
           </div>
@@ -154,7 +155,10 @@
   .cart-drawer__close .icon { transition: transform var(--dur-panel) var(--ease-spring); }
   @media (hover: hover) { .cart-drawer__close:hover .icon { transform: rotate(90deg); } }
   .cart-drawer__form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-  .cart-drawer__body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--space-4) var(--space-4); }
+  /* position: the screen-reader-only words in the list (absolutely placed) belong to this box and scroll with it.
+     Without it they belong to the drawer, which then has hidden content below its edge, and bringing the price
+     details into view scrolled the whole drawer: the top bar and its × went off screen (2026-10-08). */
+  .cart-drawer__body { position: relative; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--space-4) var(--space-4); }
   .cart-drawer__body .cart-note { margin-top: var(--space-2); }
   /* The swipe rows (snippets/cart-rows) run to the drawer's edges, and stay swipe rows at every width: the
      drawer is 440px on a desktop too, where the page lays a row out 6 across. */
@@ -171,16 +175,23 @@
   }
   /* The amount beside Checkout scrolls here to the price details. They are no longer the end of the list, so
      the heading stops a little below the top and the whole card shows. */
+  /* "Your rewards": a card of its own, before the price details. */
+  .cart-drawer .ladder { margin-top: var(--space-4); padding: var(--space-4); border-radius: var(--radius-md); background: var(--color-surface); }
+  @media (forced-colors: active) { .cart-drawer .ladder { border: 1px solid CanvasText; } }
   .cart-drawer .cart-details__title { scroll-margin-top: var(--space-6); }
   @media (prefers-reduced-motion: no-preference) { .cart-drawer__body { scroll-behavior: smooth; } }
   .cart-drawer__body .cart-empty { padding-block: var(--space-6); }
   .cart-drawer__foot {
+    position: relative;
     flex: none;
     padding: var(--space-3) var(--space-4) max(var(--space-3), env(safe-area-inset-bottom));
     border-top: 1px solid var(--color-line-strong);
     background: var(--color-bg);
     box-shadow: 0 -12px 24px -22px rgb(78 58 49 / .5);
   }
+  /* While a reward is ahead, its progress bar is the pinned bottom's top edge: it takes the border's place and
+     no height (snippets/cart-rewards). */
+  .cart-drawer__foot .rewards__track { position: absolute; inset: -1px 0 auto; border-radius: 0; }
   /* At 400% zoom, with large text or on a short landscape phone, the pinned parts would cover most of the screen:
      let it all scroll. In em, so a larger browser text size counts too (31.25em is 500px at the usual size). */
   @media (max-height: 31.25em) {

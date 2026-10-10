@@ -2,6 +2,14 @@
 
 Status: **built and tested 2026-10-03, in three rounds.** Not committed yet. `npm run check`: 171/171, with the new section 8b.
 
+### Round 4 (2026-10-08): the rewards are one line
+
+With a step ahead the pinned bottom was back near 190px (earned ticks, words, bar with a marker, "Small add-ons" and the goal's amount). Now it is 113px in every state:
+
+- The bar is the pinned bottom's 3px top edge; the words are one line and a link to Little extras.
+- The earned ticks and every step's amount are "Your rewards" in Price details (`cart-rewards` with `part: 'ladder'`).
+- Details and reasons: `docs/decisions.md`, 2026-10-08. Where the rounds below differ, this is what's built.
+
 ### As built
 
 **Round 1 (C1–C7 approved as recommended).** One row in the drawer's pinned bottom, no "Ships in 1–3 days" in the cart, no ₹0 discount notes, and the pill pop-up without the rewards line.

@@ -37,6 +37,15 @@
           <span class="footer__tagline">{{ 'general.tagline' | t }}</span>
         </span>
       </a>
+      {%- comment -%} One faint outline flower, as on the brand banner. It never moves. {%- endcomment -%}
+      <svg class="footer__flower" viewBox="-15 -15 30 30" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width=".8">
+        <ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2"/>
+        <ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(72)"/>
+        <ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(144)"/>
+        <ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(216)"/>
+        <ellipse cx="0" cy="-6.6" rx="4.4" ry="6.2" transform="rotate(288)"/>
+        <circle r="2.2"/>
+      </svg>
     </div>
 
     <div class="footer__lists">
@@ -45,7 +54,14 @@
           <h2 class="eyebrow" id="Footer-shop">{{ shop_title }}</h2>
           <ul role="list">
             {%- for link in shop_links -%}
-              <li><a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a></li>
+              {%- liquid
+                # The menu says "Hair" under a photo; a bare list needs the whole name.
+                assign title = link.title
+                if link.type == 'collection_link' and link.object.handle == 'hair-accessories'
+                  assign title = 'general.hair_accessories' | t
+                endif
+              -%}
+              <li><a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ title }}</a></li>
             {%- endfor -%}
           </ul>
         </nav>
@@ -128,8 +144,14 @@
 
   /* Phones: the lists, the stitches, the signature, the last lines. Everything starts at the page's left edge. */
   .footer__inner { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); container-type: inline-size; }
-  .footer__sign { order: 1; padding-top: var(--space-5); background: var(--stitches); }
+  .footer__sign { position: relative; order: 1; padding-top: var(--space-5); background: var(--stitches); }
+  /* Faint through its colour, not opacity: the arrival checks read low opacity as an arrival that never finished.
+     It sits in the clear space right of the name, beside the logo at every width. */
+  .footer__flower { position: absolute; right: 2px; bottom: 2px; width: 52px; height: 52px; rotate: 14deg; color: color-mix(in srgb, var(--taupe) 32%, transparent); pointer-events: none; }
   .footer__base { order: 2; }
+
+  /* Narrow phones: smaller, so it keeps clear of the tagline. */
+  @media (max-width: 349px) { .footer__flower { width: 32px; height: 32px; bottom: 12px; } }
 
   /* The signature: the basket beside the name and tagline, as on the brand kit's horizontal logo. */
   .footer__logo { display: inline-flex; align-items: center; gap: var(--space-3); max-width: 100%; }
@@ -218,6 +240,7 @@
   /* Desktop: one row. The signature takes the left five of twelve columns, the lists the rest. */
   @media (min-width: 990px) {
     .footer__inner { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-6) var(--space-5); }
+    .footer__flower { top: 0; right: 12%; bottom: auto; width: 68px; height: 68px; }
     .footer__base { grid-column: 1 / -1; display: flex; gap: var(--space-5); }
     .footer__copy { margin-right: auto; }
     .footer__policies { gap: 0 var(--space-5); }

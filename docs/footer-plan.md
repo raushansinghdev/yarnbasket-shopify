@@ -61,10 +61,10 @@ The signature takes the left five of twelve columns, the lists the rest. From 75
 
 | Part | Where it comes from |
 |---|---|
-| Shop list | The main menu's first dropdown, so a craft added to the header appears here too. The section's "Shop list" setting overrides it |
+| Shop list | The main menu's first dropdown, so a craft added to the header appears here too. The section's "Shop list" setting overrides it. The menu's "Hair" reads "Hair accessories" here (`general.hair_accessories`): a bare list needs the whole name |
 | Help list | The store's `footer` menu (section setting "Help list"). The menu's name is the heading |
 | Say hello | Round buttons for WhatsApp, Instagram and email: only the ones filled in under Theme settings → Social. With none, the column is left out, because Help already has "Contact us" |
-| Signature | The basket, the shop's name as text, and the tagline in spaced capitals, linking home |
+| Signature | The basket, the shop's name as text, and the tagline in spaced capitals, linking home. Beside it, one faint outline flower from the brand banner, which never moves (added 2026-10-07 as the footer's one brand touch; 52px on phones, 32px under 350px wide, 68px on desktop) |
 | Last lines | Copyright, the store's policies (automatic), payment icons (automatic, once a gateway is on), Back to top |
 
 - Ground: Soft blush, with a hairline on top. The newsletter stays the only Blush band.
@@ -79,7 +79,7 @@ The signature takes the left five of twelve columns, the lists the rest. From 75
 
 ## What went away
 
-- The four corner flowers, their motion and their clearance test. With aligned lists there is no clear corner for them. The WCAG 2.2.2 exception recorded for them on 2026-10-01 no longer applies to the footer. They stay in the hero.
+- The four floating corner flowers, their motion and their clearance test (one still flower came back beside the logo on 2026-10-07). With aligned lists there is no clear corner for them. The WCAG 2.2.2 exception recorded for them on 2026-10-01 no longer applies to the footer. They stay in the hero.
 - The centred crafts line with dots, and the short rule.
 - "Search" in the footer menu.
 

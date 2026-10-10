@@ -29,8 +29,11 @@
   assign saved = list_total | minus: cart.total_price
 -%}
 <div class="cart-summary cart-summary--{{ place }}">
-  {%- render 'cart-rewards', place: place -%}
-  {%- if place == 'page' -%}{%- render 'cart-details', place: 'page' -%}{%- endif -%}
+  {%- render 'cart-rewards' -%}
+  {%- if place == 'page' -%}
+    {%- render 'cart-rewards', part: 'ladder' -%}
+    {%- render 'cart-details', place: 'page' -%}
+  {%- endif -%}
 
   <div class="cart-summary__main">
     {%- if place == 'drawer' -%}
@@ -85,6 +88,8 @@
   .cart-summary__express:empty { display: none; }
   .cart-summary__pay ul { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
   .cart-summary__pay-icon { width: 38px; height: 24px; }
+  /* The page's card: the rewards' steps end with a rule, and the price rows follow. */
+  .cart-summary--page .ladder { padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-line-strong); }
 
   /* The drawer: the amount on the left, Checkout filling the rest of the row. When the two don't fit side by side
      (large text), Checkout wraps under the amount at full width. The dotted underline says the amount can be

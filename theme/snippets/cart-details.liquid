@@ -8,7 +8,8 @@
   (snippets/cart-list-total), so the rows add up to the subtotal.
   Shipping is never added in here: it says "Free", the flat fee from Theme settings → Cart, or that checkout works
   it out. Once free shipping is unlocked and the flat fee is set, the fee is struck through beside "Free".
-  "You save" under the subtotal adds it all up: sale prices, discounts and the shipping fee that was waived.
+  The free gift has a row like Shipping: its price struck through beside "Free". It is in no other row.
+  "You save" under the subtotal adds it all up: sale prices, discounts, the gift and the shipping fee that was waived.
 
   @param {string} place - 'drawer' or 'page'. The drawer gets a visible heading; the page's card has its own.
 
@@ -36,9 +37,20 @@
     render 'cart-list-total'
   endcapture
   assign list_total = list_total | plus: 0
+  # The free gift: its price, struck through beside "Free" on a row of its own. It is in neither the item total nor
+  # the rows of discounts (cart-list-total leaves it out too), so nothing is added in and taken off again.
+  assign gift_value = 0
+  assign gift_line = nil
+  assign gift_variant = settings.gift_product.variants.first.id
+  for item in cart.items
+    if settings.gift_product != blank and item.variant_id == gift_variant and item.final_line_price == 0
+      assign gift_line = item
+      assign gift_value = gift_value | plus: item.original_line_price
+    endif
+  endfor
   assign saved = list_total | minus: cart.total_price
-  assign sale = list_total | minus: cart.original_total_price
-  assign saved_all = saved | plus: waived
+  assign sale = list_total | plus: gift_value | minus: cart.original_total_price
+  assign saved_all = saved | plus: waived | plus: gift_value
 -%}
 <div class="cart-details cart-details--{{ place }}" id="CartDetails-{{ place }}">
   {%- if place == 'drawer' -%}
@@ -57,13 +69,32 @@
         </div>
       {%- endif -%}
       {%- for discount in cart.discount_applications -%}
-        {%- if discount.total_allocated_amount > 0 -%}
+        {%- liquid
+          # Without what this discount gave the gift.
+          assign taken = discount.total_allocated_amount
+          for given in gift_line.line_level_discount_allocations
+            if given.discount_application.title == discount.title
+              assign taken = taken | minus: given.amount
+            endif
+          endfor
+        -%}
+        {%- if taken > 0 -%}
           <div class="cart-details__row cart-details__row--deal">
             <dt>{{ discount.title | escape }}</dt>
-            <dd>−{{ discount.total_allocated_amount | money }}</dd>
+            <dd>−{{ taken | money }}</dd>
           </div>
         {%- endif -%}
       {%- endfor -%}
+    {%- endif -%}
+    {%- if gift_value > 0 -%}
+      <div class="cart-details__row" data-gift-row>
+        <dt>{{ 'rewards.earned_gift' | t }}</dt>
+        <dd>
+          <span class="visually-hidden">{{ 'products.regular_price' | t }}</span>
+          <s>{{ gift_value | money_without_trailing_zeros }}</s>
+          {{ 'cart.shipping_free' | t }}
+        </dd>
+      </div>
     {%- endif -%}
     <div class="cart-details__row">
       <dt>{{ 'cart.shipping' | t }}</dt>
@@ -89,15 +120,16 @@
 
 {% stylesheet %}
   .cart-details { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
-  .cart-details__rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); transition: opacity var(--dur-state) ease; }
+  .cart-details__rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); transition: opacity var(--dur-state) ease; }
   /* A row wraps (the amount drops under its label) when the two no longer fit side by side: large text. */
   .cart-details__row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 var(--space-4); font-size: var(--fs-small); font-variant-numeric: tabular-nums; }
   .cart-details__row dd { margin: 0; flex: none; text-align: end; }
   .cart-details__row--deal { color: var(--color-muted); }
   .cart-details__row s { color: var(--color-muted); margin-inline-end: .25em; }
   /* Sage darkened to pass AA for small text on the card. */
-  .cart-details__saved { font-size: var(--fs-small); font-weight: 500; color: #4E6344; }
-  .cart-details__row--total { padding-top: var(--space-2); border-top: 1px solid var(--color-line-strong); font-weight: 500; font-size: 1.125rem; color: var(--color-heading); }
+  /* A band, so it reads as the result of the rows above and not as one more of them. */
+  .cart-details__saved { padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--sage) 22%, transparent); font-size: var(--fs-small); font-weight: 500; color: #3F5237; }
+  .cart-details__row--total { padding-top: var(--space-3); border-top: 1px solid var(--color-line-strong); font-weight: 500; font-size: 1.125rem; color: var(--color-heading); }
   .cart-details__tax { font-size: .75rem; color: var(--color-muted); }
 
   /* The drawer: a card at the end of the list. Arriving from the amount beside Checkout, it lights up for a moment,

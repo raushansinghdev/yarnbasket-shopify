@@ -472,15 +472,22 @@ if (want('8b')) {
           state: rewards?.dataset.state || 'off',
           done: !rewards || rewards.classList.contains('is-done'),
           top: +(rewards?.dataset.top || 0),
+          // Rewards (round 4): one line of words, the progress bar on the pinned bottom's top edge, and every step
+          // on a path in "Your rewards", a card of its own before the price details.
+          edge: (() => { const t = dr.querySelector('.cart-drawer__foot .rewards__track')?.getBoundingClientRect(); const f = dr.querySelector('.cart-drawer__foot').getBoundingClientRect(); return !!t && Math.abs(t.top - f.top) <= 1 && Math.abs(t.width - f.width) <= 1 && t.height <= 4; })(),
+          words: (() => { const t = dr.querySelector('[data-rewards-text]'); return t ? Math.round(t.getBoundingClientRect().height / parseFloat(getComputedStyle(t).lineHeight)) : 0; })(),
+          ladder: dr.querySelectorAll('.ladder li').length,
+          reached: dr.querySelectorAll('.ladder li.is-reached').length,
           side: dr.scrollWidth > dr.clientWidth + 1 || [...dr.querySelectorAll('.cart-drawer__foot *')].some((e) => e.getBoundingClientRect().right > box.right + 1),
         };
       });
       return { toast, drawer };
     };
     const judge = (name, { toast: t, drawer: d }) => {
-      const limit = d.done ? 125 : 175;
+      const limit = d.done ? 125 : 120;
       record(`Compact cart, ${w}px, ${name}: the bar changes, no pop-up`, t.none && t.bar, `no pop-up: ${t.none}, stepper in the bar: ${t.bar}`);
       record(`Compact cart, ${w}px, ${name}: small pinned bottom`, d.foot <= limit && d.row && d.btn[1] >= 48 && d.btn[0] >= 150 && !d.side, `${d.foot}px (limit ${limit}, rewards: ${d.state}), subtotal beside Checkout: ${d.row}, Checkout ${d.btn[0]}×${d.btn[1]}, sideways scroll: ${d.side}`);
+      if (d.state !== 'off') record(`Compact cart, ${w}px, ${name}: rewards are one line, the bar is the top edge, the steps are a card of their own`, d.words === 1 && d.edge === !d.done && d.ladder > 0 && (!d.done || d.reached === d.ladder), `${d.words} line(s) of words, bar on the edge: ${d.edge} (a step ahead: ${!d.done}), ${d.reached} of ${d.ladder} step(s) ticked`);
       record(`Compact cart, ${w}px, ${name}: no "Ships in", no ₹0 notes`, !/Ships in/.test(d.text) && !/−₹0\)/.test(d.text), `"Ships in": ${/Ships in/.test(d.text)}, "(−₹0)": ${/−₹0\)/.test(d.text)}`);
       record(`Compact cart, ${w}px, ${name}: lines are one height, bin beside the stepper`, d.heights.length <= 1 && d.binRow && d.tallNames === 0, `line heights: ${d.heights.join(', ') || 'none'}px, bin in the stepper's row: ${d.binRow}, lines made taller by a name: ${d.tallNames}`);
       record(`Compact cart, ${w}px, ${name}: one product, one line`, d.lines === d.products, `${d.lines} line(s) for ${d.products} product(s)`);
@@ -495,13 +502,36 @@ if (want('8b')) {
         const body = dr.querySelector('.cart-drawer__body').getBoundingClientRect();
         const box = card.getBoundingClientRect();
         const amount = dr.querySelector('[data-details]');
-        return { focus: document.activeElement?.matches('[data-details-at]'), seen: box.top >= body.top - 1 && box.bottom <= body.bottom + 1, rows: [...card.querySelectorAll('dt')].map((dt) => dt.textContent.trim()).join(', '), same: card.querySelector('.cart-details__row--total dd').textContent.trim() === amount.querySelector('.cart-summary__now').textContent.trim(), name: amount.textContent.replace(/\s+/g, ' ').trim(), tap: Math.round(Math.min(amount.getBoundingClientRect().width, amount.getBoundingClientRect().height)) };
+        const x = dr.querySelector('[data-cart-close]').getBoundingClientRect();
+        // The drawer itself never scrolls (only its list does): the × stays where it is, and can be tapped.
+        const pinned = dr.scrollTop === 0 && dr.scrollHeight <= dr.clientHeight + 1 && !!document.elementFromPoint(x.left + x.width / 2, x.top + x.height / 2)?.closest('[data-cart-close]');
+        return { pinned, focus: document.activeElement?.matches('[data-details-at]'), seen: box.top >= body.top - 1 && box.bottom <= body.bottom + 1, rows: [...card.querySelectorAll('dt')].map((dt) => dt.textContent.trim()).join(', '), same: card.querySelector('.cart-details__row--total dd').textContent.trim() === amount.querySelector('.cart-summary__now').textContent.trim(), name: amount.textContent.replace(/\s+/g, ' ').trim(), tap: Math.round(Math.min(amount.getBoundingClientRect().width, amount.getBoundingClientRect().height)) };
       });
-      record(`Compact cart, ${w}px, ${name}: the amount goes to Price details`, r.focus && r.seen && r.same && /Shipping/.test(r.rows) && r.tap >= 44, `focus on the heading: ${r.focus}, card in view: ${r.seen}, rows: ${r.rows}, same amount: ${r.same}, button reads "${r.name}", ${r.tap}px`);
+      // The card is money only and adds up (2026-10-08): Item total less the minus rows is the Subtotal; the free gift
+      // is a row like Shipping (its price struck through beside "Free") and in no other row; "You save" is every
+      // minus and struck amount; the amount struck through beside Checkout is the Subtotal before the minus rows.
+      const m = await page.evaluate(() => {
+        const dr = document.getElementById('CartDrawer');
+        const card = dr.querySelector('.cart-details');
+        const n = (t) => +(t || '').replace(/[^\d.]/g, '');
+        const rows = [...card.querySelectorAll('.cart-details__row')].map((r) => ({ label: r.querySelector('dt').textContent.trim(), text: r.querySelector('dd').textContent.replace(/\s+/g, ' ').trim(), struck: n(r.querySelector('s')?.textContent) }));
+        const minus = rows.filter((r) => r.text.startsWith('−')).reduce((a, r) => a + n(r.text), 0);
+        const item = rows.find((r) => r.label === 'Item total');
+        return { minus, struck: rows.reduce((a, r) => a + r.struck, 0), item: item ? n(item.text) : null, sub: n(card.querySelector('.cart-details__row--total dd').textContent), save: n(card.querySelector('.cart-details__saved')?.textContent), strike: n(dr.querySelector('.cart-summary__amount s')?.textContent), giftLine: !!dr.querySelector('.cart-line.is-gift'), giftRow: !!card.querySelector('[data-gift-row] s'), inside: !!card.querySelector('.ladder'), text: rows.map((r) => `${r.label} ${r.text}`).join(', ') };
+      });
+      record(`Compact cart, ${w}px, ${name}: Price details is money only and adds up`, !m.inside && (m.item === null ? m.minus === 0 : m.item - m.minus === m.sub) && m.save === m.minus + m.struck && m.strike === (m.minus > 0 ? m.sub + m.minus : 0) && m.giftLine === m.giftRow, `${m.text}; you save ₹${m.save}; struck beside Checkout: ₹${m.strike}; gift line: ${m.giftLine}, gift row: ${m.giftRow}`);
+      record(`Compact cart, ${w}px, ${name}: the amount goes to Price details`, r.pinned && r.focus && r.seen && r.same && /Shipping/.test(r.rows) && r.tap >= 44, `the × still in reach: ${r.pinned}, focus on the heading: ${r.focus}, card in view: ${r.seen}, rows: ${r.rows}, same amount: ${r.same}, button reads "${r.name}", ${r.tap}px`);
     };
     await page.request.post(site('/cart/clear.js'));
     const one = await addAndOpen();
     judge('one piece', one);
+    // The rewards line: a tap brings Little extras into view, with focus, and stays in the cart.
+    if (!one.drawer.done && (await page.$('#CartDrawer [data-cart-extras]:not([hidden])'))) {
+      await page.click('#CartDrawer [data-rewards-more]');
+      await page.waitForTimeout(600);
+      const m = await page.evaluate(() => { const dr = document.getElementById('CartDrawer'); const row = dr.querySelector('[data-cart-extras]').getBoundingClientRect(); const body = dr.querySelector('.cart-drawer__body').getBoundingClientRect(); const a = dr.querySelector('[data-rewards-more]').getBoundingClientRect(); return { open: dr.open, focus: document.activeElement?.matches('[data-cart-extras]'), seen: row.top >= body.top - 1 && row.top < body.bottom, tap: Math.round(parseFloat(getComputedStyle(dr.querySelector('[data-rewards-more]'), '::after').height) || a.height) }; });
+      record(`Compact cart, ${w}px, one piece: the rewards line goes to Little extras`, m.open && m.focus && m.seen && m.tap >= 44, `drawer still open: ${m.open}, focus on the row: ${m.focus}, row in view: ${m.seen}, tap area ${m.tap}px tall`);
+    }
     await details('one piece');
     // Past the top step (free shipping, then the gift), so every reward is unlocked and the gift line is in the cart.
     if (one.drawer.top > 0) {
@@ -548,8 +578,8 @@ if (want('8b')) {
         const rows = await page.evaluate(() => [...document.querySelectorAll('#CartDetails-page .cart-details__row')].map((r) => [r.querySelector('dt').textContent.trim(), r.querySelector('dd').textContent.replace(/\s+/g, ' ').trim()]));
         const num = (label) => +(rows.find((r) => r[0] === label)?.[1] || '').replace(/[^\d.]/g, '');
         const taken = rows.filter((r) => r[1].startsWith('−')).reduce((n, r) => n + +r[1].replace(/[^\d.]/g, ''), 0);
-        // "You save" is everything taken off, plus the shipping fee struck through beside "Free" (when the fee is set).
-        const save = await page.evaluate(() => ({ line: document.querySelector('#CartDetails-page .cart-details__saved')?.textContent.trim() || '', fee: +(document.querySelector('#CartDetails-page .cart-details__row s')?.textContent.replace(/[^\d.]/g, '') || 0) }));
+        // "You save" is everything taken off, plus what is struck through beside "Free": the shipping fee (when it is set) and the gift.
+        const save = await page.evaluate(() => ({ line: document.querySelector('#CartDetails-page .cart-details__saved')?.textContent.trim() || '', fee: [...document.querySelectorAll('#CartDetails-page .cart-details__row s')].reduce((n, s) => n + +s.textContent.replace(/[^\d.]/g, ''), 0) }));
         record('Compact cart: price details count a sale price', num('Product discount') === off && num('Item total') - taken === num('Subtotal') && +save.line.replace(/[^\d.]/g, '') === taken + save.fee, `${rows.map((r) => r.join(' ')).join(', ')}; "${save.line}"`);
       } else console.log('SKIP  Compact cart: price details count a sale price   no product with a compare-at price');
     }
@@ -765,20 +795,6 @@ if (want('8d')) {
   }
 }
 
-// 9. Account & saved (docs/account-plan.md): a heart saves and survives a reload; the drawer's account row opens
-//    Shopify's sheet (phones) and Esc returns to the menu button; the Saved page draws the list, Remove + Undo work;
-//    a shared link is read-only with "Save all"; axe on the Saved (full and empty) and Track pages. Until Raushan
-//    creates the Saved and Track pages, they're previewed on /pages/contact with ?view=. Needs products.
-if (want('9')) {
-  const site = (path) => new globalThis.URL(path, URL).href;
-  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift')), () => []);
-  const handles = products.filter((p) => p.variants.some((v) => v.available)).slice(0, 3).map((p) => p.handle);
-  const pageUrl = async (handle, view) => ((await fetch(site(`/pages/${handle}`))).ok ? site(`/pages/${handle}`) : site(`/pages/contact?view=${view}`));
-  if (handles.length < 2) console.log('SKIP  Account & saved checks                         no products in the store (import tools/test-products.csv)');
-  else {
-    const savedUrl = await pageUrl('saved', 'saved');
-    const trackUrl = await pageUrl('track-order', 'track-order');
-    const join = (url, q) => url + (url.includes('?') ? '&' : '?') + q;
 // 8e. The cart holds still (docs/decisions.md, 2026-10-08): adding a piece from the swipe rows or removing a line
 //     redraws the cart, and nothing on screen may move: the list never runs back to the top, the tapped card stays
 //     under the finger and the Undo row sits where its line was. With motion on: that is where the glide showed.
@@ -839,6 +855,20 @@ if (want('8e')) {
   }
 }
 
+// 9. Account & saved (docs/account-plan.md): a heart saves and survives a reload; the drawer's account row opens
+//    Shopify's sheet (phones) and Esc returns to the menu button; the Saved page draws the list, Remove + Undo work;
+//    a shared link is read-only with "Save all"; axe on the Saved (full and empty) and Track pages. Until Raushan
+//    creates the Saved and Track pages, they're previewed on /pages/contact with ?view=. Needs products.
+if (want('9')) {
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift')), () => []);
+  const handles = products.filter((p) => p.variants.some((v) => v.available)).slice(0, 3).map((p) => p.handle);
+  const pageUrl = async (handle, view) => ((await fetch(site(`/pages/${handle}`))).ok ? site(`/pages/${handle}`) : site(`/pages/contact?view=${view}`));
+  if (handles.length < 2) console.log('SKIP  Account & saved checks                         no products in the store (import tools/test-products.csv)');
+  else {
+    const savedUrl = await pageUrl('saved', 'saved');
+    const trackUrl = await pageUrl('track-order', 'track-order');
+    const join = (url, q) => url + (url.includes('?') ? '&' : '?') + q;
     for (const [label, device] of [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]]) {
       const { browser, page, errors } = await open(chromium, device, { reducedMotion: 'reduce' });
       const axeOn = async () => {
@@ -1228,6 +1258,11 @@ if (want('13')) {
     await page.waitForTimeout(800);
     const v1 = await axeOn();
     record(`Account page, ${label}: signed out (axe)`, v1.length === 0, v1.join(', ') || '0 violations');
+    const guest = await page.evaluate(() => {
+      const a = document.querySelector('.account__signin a[href="/pages/contact"]');
+      return { tall: Math.round(a?.getBoundingClientRect().height || 0), panel: !!document.querySelector('.account #help'), side: !!document.querySelector('.account__side'), wide: document.documentElement.scrollWidth > innerWidth };
+    });
+    record(`Account page, ${label}: signed out, one link to the Contact page, no help panel`, guest.tall >= 44 && !guest.panel && !guest.side && !guest.wide, `link ${guest.tall}px tall, help panel: ${guest.panel}, empty side column: ${guest.side}, scrolls sideways: ${guest.wide}`);
     if (!hasDemo) console.log(`SKIP  Account page, ${label}: signed-in demo            Demo content is off`);
     else {
       await page.goto(demoUrl, { waitUntil: 'load' });
@@ -1249,6 +1284,11 @@ if (want('13')) {
       });
       if (label === 'phone') record('Account page, phone: the greeting row goes to Your details', row.shown && row.tap && row.to.includes('account-details') && row.name.length > 0 && !row.card, `arrow shown: ${row.shown}, name, email and initial are the link: ${row.tap}, to ${row.to}, called "${row.name}"; details card on the page: ${row.card}`);
       else record('Account page, desktop: details card beside the orders, greeting plain', !row.shown && row.card, `greeting link shown: ${row.shown}, details card shown: ${row.card}`);
+      const help = await page.evaluate(() => {
+        const tile = [...document.querySelectorAll('.account__jump a')].find((a) => a.querySelector('.icon--help, [class*="help"]') || /help/i.test(a.textContent));
+        return { panel: !!document.querySelector('.account #help'), dead: document.querySelectorAll('.account a[href="#help"]').length, shown: !!tile?.offsetParent, to: tile?.getAttribute('href') || '', cards: document.querySelectorAll('.order-card a[href*="wa.me"], .order-card a[href*="/pages/contact"]').length };
+      });
+      record(`Account page, ${label}: no help panel; Help ${label === 'phone' ? 'shortcut goes to the Contact page' : 'is the header\'s'}; order cards keep theirs`, !help.panel && help.dead === 0 && help.to === '/pages/contact' && help.shown === (label === 'phone') && help.cards >= 3, `help panel: ${help.panel}, links to #help: ${help.dead}, Help shortcut shown: ${help.shown}, to ${help.to}, order cards with "Need help?": ${help.cards}`);
 
       if (seen.length && label === 'phone') {
         await page.evaluate((list) => localStorage.setItem('yb-recent-products', JSON.stringify(list)), seen);
@@ -1258,11 +1298,6 @@ if (want('13')) {
         await page.click('[data-account-clear]');
         await page.waitForTimeout(300);
         const after = await page.evaluate(() => ({
-    const guest = await page.evaluate(() => {
-      const a = document.querySelector('.account__signin a[href="/pages/contact"]');
-      return { tall: Math.round(a?.getBoundingClientRect().height || 0), panel: !!document.querySelector('.account #help'), side: !!document.querySelector('.account__side'), wide: document.documentElement.scrollWidth > innerWidth };
-    });
-    record(`Account page, ${label}: signed out, one link to the Contact page, no help panel`, guest.tall >= 44 && !guest.panel && !guest.side && !guest.wide, `link ${guest.tall}px tall, help panel: ${guest.panel}, empty side column: ${guest.side}, scrolls sideways: ${guest.wide}`);
           hidden: document.querySelector('[data-account-row="recent"]').hidden,
           kept: localStorage.getItem('yb-recent-products'),
           focus: document.activeElement.matches('[data-account-title]'),
@@ -1284,11 +1319,6 @@ if (want('13')) {
         wide: document.documentElement.scrollWidth > innerWidth,
       }));
       record(`Your details page, ${label} (axe)`, v4.length === 0 && det.solo && det.h1 === 1 && det.rows === 5 && det.edit === 1 && det.out === 1 && det.back.includes('view=account-demo') && det.backTall >= 44 && !det.wide, `${v4.join(', ') || '0 violations'}; h1: ${det.h1}, rows: ${det.rows}, Edit: ${det.edit}, Sign out: ${det.out}, back to ${det.back} (${det.backTall}px tall), scrolls sideways: ${det.wide}`);
-      const help = await page.evaluate(() => {
-        const tile = [...document.querySelectorAll('.account__jump a')].find((a) => a.querySelector('.icon--help, [class*="help"]') || /help/i.test(a.textContent));
-        return { panel: !!document.querySelector('.account #help'), dead: document.querySelectorAll('.account a[href="#help"]').length, shown: !!tile?.offsetParent, to: tile?.getAttribute('href') || '', cards: document.querySelectorAll('.order-card a[href*="wa.me"], .order-card a[href*="/pages/contact"]').length };
-      });
-      record(`Account page, ${label}: no help panel; Help ${label === 'phone' ? 'shortcut goes to the Contact page' : 'is the header\'s'}; order cards keep theirs`, !help.panel && help.dead === 0 && help.to === '/pages/contact' && help.shown === (label === 'phone') && help.cards >= 3, `help panel: ${help.panel}, links to #help: ${help.dead}, Help shortcut shown: ${help.shown}, to ${help.to}, order cards with "Need help?": ${help.cards}`);
       await page.goto(demoUrl, { waitUntil: 'load' });
       await page.waitForTimeout(600);
 
@@ -2424,6 +2454,15 @@ if (want('21')) {
       await page.keyboard.press('Enter');
       await page.waitForTimeout(500);
       const opened = await page.evaluate(() => { const g = document.querySelector('.drawer__group'); return { open: g.open, links: [...g.querySelectorAll('.drawer__sub a')].filter((a) => a.offsetHeight >= 44).length }; });
+      // Opened, a list of collections is pills (2026-10-07): a few to a line, so Gifts takes about a third of the height of rows.
+      const pills = await page.evaluate(() => {
+        const ul = document.querySelector('#MenuDrawer .drawer__sub--pills');
+        if (!ul) return null;
+        const box = ul.getBoundingClientRect();
+        const as = [...ul.querySelectorAll('a')].map((a) => a.getBoundingClientRect());
+        return { count: as.length, height: Math.round(box.height), lines: new Set(as.map((r) => Math.round(r.top))).size, short: as.filter((r) => r.height < 44).length, wide: as.filter((r) => r.right > box.right + 1 || r.left < box.left - 1).length };
+      });
+      record('Menu: Gifts opens as pills, several to a line', !!pills && pills.count >= 2 && pills.lines < pills.count && pills.height <= 220 && pills.short === 0 && pills.wide === 0, pills ? `${pills.count} pills on ${pills.lines} lines, ${pills.height}px tall (limit 220), under 44px: ${pills.short}, wider than the list: ${pills.wide}` : 'no pill list found');
       const v2 = await run();
       await page.keyboard.press('Escape');
       await page.waitForTimeout(700);

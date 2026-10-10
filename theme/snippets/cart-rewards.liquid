@@ -1,21 +1,25 @@
 {%- doc -%}
-  The cart's rewards (docs/offers-plan.md §5, docs/pricing-plan.md): one goal at a time. A line of words names the
-  next goal ("Add ₹120 more for free shipping") and a thin bar runs from the last goal reached to that one, so it
-  fills afresh for each goal; what's already earned sits above as short ticks. The ladder is free shipping, the free
-  gift, then up to two money-off steps (Theme settings → Cart). The words are the truth; the bar and its amount are
-  decoration. Drawn by the server, so it's right without JavaScript; rewards.js adds and removes the gift and reads
-  its state from the data attributes here.
+  The cart's rewards (docs/offers-plan.md §5, docs/pricing-plan.md, docs/cart-compact-plan.md round 4): one goal at
+  a time. A line of words names the next goal ("Add ₹120 more for free shipping") and a 3px bar runs from the last
+  goal reached to that one, so it fills afresh for each goal. The ladder is free shipping, the free gift, then up to
+  two money-off steps (Theme settings → Cart). The words are the truth; the bar is decoration. Drawn by the server,
+  so it's right without JavaScript; rewards.js adds and removes the gift and reads its state from the data
+  attributes here.
+
+  The line is a link while a goal is ahead: to the cheapest pieces, or (cart-rows.js) to Little extras in the cart.
+  What's already earned, and every step with its amount, is the ladder: a card of its own before the price details.
 
   Shipping uses the cart total as Shopify's free rate sees it (after discounts). The gift step uses the total without
   the gift itself, so a gift that's still charged (its discount is missing) can't pay for its own step. The money-off
   steps use the items' subtotal before order discounts, as Shopify's automatic discounts do: otherwise the ₹50 just
   earned would push the cart back under its own step.
 
-  @param {string} place - 'drawer' or 'page'. The drawer offers "Small add-ons" while a goal is still ahead; the
-    page has Little extras for that.
+  @param {string} [part] - 'ladder' for the list of every step; otherwise the line and its bar. Only the line
+    carries data-rewards.
 
   @example
-  {% render 'cart-rewards', place: 'drawer' %}
+  {% render 'cart-rewards' %}
+  {% render 'cart-rewards', part: 'ladder' %}
 {%- enddoc -%}
 {%- liquid
   assign ship_at = settings.free_shipping_threshold | default: 0 | times: 100
@@ -168,110 +172,183 @@
         assign text = 'rewards.ship_done' | t
       endif
     endif
-
-    # What's already earned, shown as ticks above the next goal.
-    assign show_earned = false
-    if ahead and next != 'ship'
-      if ship_at > 0 or gift_on or earned_off > 0
-        assign show_earned = true
-      endif
-    endif
   -%}
-  <div
-    class="rewards{% unless ahead %} is-done{% endunless %}"
-    data-rewards
-    data-state="{{ state }}"
-    data-top="{{ top }}"
-    data-ship-at="{{ ship_at }}"
-    data-fee="{{ settings.shipping_fee | default: 0 | times: 100 }}"
-    {% if gift_on %}
-      data-gift-variant="{{ gift_variant.id }}"
-      data-gift-name="{{ gift_name }}"
-      data-gift-at="{{ gift_at }}"
-      data-gift-at-money="{{ gift_at | money_without_trailing_zeros | escape }}"
-      data-total="{{ total }}"
-      data-gift-key="{{ gift_line.key }}"
-      data-gift-paid="{{ gift_paid }}"
-      {% if gift_variant.available %}data-gift-available{% endif %}
-      {% if declined %}data-gift-declined{% endif %}
-    {% endif %}
-  >
-    {%- if show_earned -%}
-      <ul class="rewards__earned" role="list">
+  {%- if part == 'ladder' -%}
+    {%- liquid
+      assign ship_money = ship_at | money_without_trailing_zeros
+      assign gift_money = gift_at | money_without_trailing_zeros
+      assign off1_at_money = off1_at | money_without_trailing_zeros
+      assign off2_at_money = off2_at | money_without_trailing_zeros
+      assign off1_money = off1 | money_without_trailing_zeros
+      assign off2_money = off2 | money_without_trailing_zeros
+      assign unlocked = 'rewards.unlocked' | t
+      assign not_yet = 'rewards.not_yet' | t
+      assign gift_got = false
+      if gift_line and gift_paid == 0 and total >= gift_at
+        assign gift_got = true
+      endif
+      assign gift_label = 'rewards.earned_gift' | t
+      assign gift_waits = false
+      if gift_line == nil and total >= gift_at
+        assign gift_waits = true
+        assign gift_label = 'rewards.gift_declined' | t
+      endif
+    -%}
+    <div class="ladder">
+      <p class="ladder__title" id="RewardsLadderTitle">{{ 'rewards.title' | t }}</p>
+      <ul class="ladder__steps" role="list" aria-labelledby="RewardsLadderTitle">
         {%- if ship_at > 0 -%}
-          <li>{%- render 'icon', icon: 'check' -%}{{ 'rewards.earned_ship' | t }}</li>
+          <li class="{% if cart.total_price >= ship_at %}is-reached{% elsif next == 'ship' %}is-next{% endif %}">
+            {%- if cart.total_price >= ship_at -%}
+              {%- render 'icon', icon: 'check' -%}<span class="visually-hidden">{{ unlocked }}</span>
+            {%- else -%}
+              <i></i><span class="visually-hidden">{{ not_yet }}</span>
+            {%- endif -%}
+            <span class="ladder__name">{{ 'rewards.earned_ship' | t }}</span>
+            <span class="ladder__at"><span aria-hidden="true">{{ ship_money }}</span><span class="visually-hidden">{{ 'rewards.from' | t: amount: ship_money }}</span></span>
+          </li>
         {%- endif -%}
-        {%- if gift_on and gift_line and next != 'gift' -%}
-          <li>{%- render 'icon', icon: 'check' -%}{{ 'rewards.earned_gift' | t }}</li>
-        {%- elsif gift_open -%}
-          <li>
-            {{- 'rewards.gift_declined' | t -}}
+        {%- if gift_on -%}
+          <li class="{% if gift_got %}is-reached{% elsif next == 'gift' or gift_waits %}is-next{% endif %}">
+            {%- if gift_got -%}
+              {%- render 'icon', icon: 'check' -%}<span class="visually-hidden">{{ unlocked }}</span>
+            {%- else -%}
+              <i></i><span class="visually-hidden">{{ not_yet }}</span>
+            {%- endif -%}
+            <span class="ladder__name">{{ gift_label }}</span>
+            <span class="ladder__at"><span aria-hidden="true">{{ gift_money }}</span><span class="visually-hidden">{{ 'rewards.from' | t: amount: gift_money }}</span></span>
+          </li>
+        {%- endif -%}
+        {%- comment -%} The second step replaces the first, it isn't added to it: once it's earned only it is listed,
+        and until then it says "in total". {%- endcomment -%}
+        {%- if off2_on and basis >= off2_at -%}
+          <li class="{% if true %}is-reached{% elsif false %}is-next{% endif %}">
+            {%- if true -%}
+              {%- render 'icon', icon: 'check' -%}<span class="visually-hidden">{{ unlocked }}</span>
+            {%- else -%}
+              <i></i><span class="visually-hidden">{{ not_yet }}</span>
+            {%- endif -%}
+            <span class="ladder__name">{{ 'rewards.earned_off' | t: off: off2_money }}</span>
+            <span class="ladder__at"><span aria-hidden="true">{{ off2_at_money }}</span><span class="visually-hidden">{{ 'rewards.from' | t: amount: off2_at_money }}</span></span>
+          </li>
+        {%- elsif off1_on -%}
+          <li class="{% if basis >= off1_at %}is-reached{% elsif next == 'save' %}is-next{% endif %}">
+            {%- if basis >= off1_at -%}
+              {%- render 'icon', icon: 'check' -%}<span class="visually-hidden">{{ unlocked }}</span>
+            {%- else -%}
+              <i></i><span class="visually-hidden">{{ not_yet }}</span>
+            {%- endif -%}
+            <span class="ladder__name">{{ 'rewards.earned_off' | t: off: off1_money }}</span>
+            <span class="ladder__at"><span aria-hidden="true">{{ off1_at_money }}</span><span class="visually-hidden">{{ 'rewards.from' | t: amount: off1_at_money }}</span></span>
+          </li>
+          {%- if off2_on -%}
+          <li class="{% if false %}is-reached{% elsif next == 'save-2' %}is-next{% endif %}">
+            {%- if false -%}
+              {%- render 'icon', icon: 'check' -%}<span class="visually-hidden">{{ unlocked }}</span>
+            {%- else -%}
+              <i></i><span class="visually-hidden">{{ not_yet }}</span>
+            {%- endif -%}
+            <span class="ladder__name">{{ 'rewards.off_total' | t: off: off2_money }}</span>
+            <span class="ladder__at"><span aria-hidden="true">{{ off2_at_money }}</span><span class="visually-hidden">{{ 'rewards.from' | t: amount: off2_at_money }}</span></span>
+          </li>
+          {%- endif -%}
+        {%- endif -%}
+      </ul>
+    </div>
+  {%- else -%}
+    <div
+      class="rewards{% unless ahead %} is-done{% endunless %}"
+      data-rewards
+      data-state="{{ state }}"
+      data-top="{{ top }}"
+      data-ship-at="{{ ship_at }}"
+      data-fee="{{ settings.shipping_fee | default: 0 | times: 100 }}"
+      {% if gift_on %}
+        data-gift-variant="{{ gift_variant.id }}"
+        data-gift-name="{{ gift_name }}"
+        data-gift-at="{{ gift_at }}"
+        data-gift-at-money="{{ gift_at | money_without_trailing_zeros | escape }}"
+        data-total="{{ total }}"
+        data-gift-key="{{ gift_line.key }}"
+        data-gift-paid="{{ gift_paid }}"
+        {% if gift_variant.available %}data-gift-available{% endif %}
+        {% if declined %}data-gift-declined{% endif %}
+      {% endif %}
+    >
+      <p class="rewards__text">
+        {%- if ahead -%}
+          {%- liquid
+            assign step_icon = 'truck'
+            if next == 'gift'
+              assign step_icon = 'gift'
+            elsif next != 'ship'
+              assign step_icon = 'cash'
+            endif
+          -%}
+          {%- comment -%} A link to the cheapest pieces, so it works without JavaScript; cart-rows.js goes to Little
+          extras in the cart instead when that row is showing. {%- endcomment -%}
+          <a
+            class="rewards__more"
+            href="{{ settings.shop_all_collection.url | default: routes.all_products_collection_url }}?sort_by=price-ascending"
+            data-rewards-more
+          >
+            {%- render 'icon', icon: step_icon -%}
+            <span data-rewards-text>{{ text }}</span>
+            <span class="visually-hidden">{{ 'rewards.more' | t }}</span>
+            {%- render 'icon', icon: 'chevron', class: 'rewards__go' -%}
+          </a>
+          {%- if gift_open -%}
             <a
               class="rewards__btn"
               href="{{ routes.cart_add_url }}?id={{ gift_variant.id }}&quantity=1"
               aria-label="{{ 'rewards.add_label' | t: gift: gift_name }}"
               data-gift-add
-              >{{ 'rewards.add_back' | t }}</a
+              >{{ 'rewards.add_gift_back' | t }}</a
             >
-          </li>
+          {%- endif -%}
+        {%- else -%}
+          {%- render 'icon', icon: 'check' -%}
+          <span data-rewards-text>{{ text }}</span>
+          {%- if button != blank -%}
+            {%- comment -%} A link, so it works without JavaScript too (Shopify adds the item and returns to the cart). {%- endcomment -%}
+            <a
+              class="rewards__btn"
+              href="{{ routes.cart_add_url }}?id={{ gift_variant.id }}&quantity=1"
+              aria-label="{{ 'rewards.add_label' | t: gift: gift_name }}"
+              data-gift-add
+              >{{ button }}</a
+            >
+          {%- endif -%}
         {%- endif -%}
-        {%- if earned_off > 0 -%}
-          <li>{%- render 'icon', icon: 'check' -%}{{ 'rewards.earned_off' | t: off: earned_off_money }}</li>
-        {%- endif -%}
-      </ul>
-    {%- endif -%}
-    <p class="rewards__text">
-      {%- unless ahead -%}{%- render 'icon', icon: 'check' -%}{%- endunless -%}
-      <span data-rewards-text>{{ text }}</span>
-      {%- if button != blank -%}
-        {%- comment -%} A link, so it works without JavaScript too (Shopify adds the item and returns to the cart). {%- endcomment -%}
-        <a
-          class="rewards__btn"
-          href="{{ routes.cart_add_url }}?id={{ gift_variant.id }}&quantity=1"
-          aria-label="{{ 'rewards.add_label' | t: gift: gift_name }}"
-          data-gift-add
-          >{{ button }}</a
-        >
+      </p>
+      {%- if ahead -%}
+        <div class="rewards__track" aria-hidden="true">
+          <span class="rewards__fill" style="--pct: {{ pct }}%" data-rewards-fill data-goal="{{ next }}"></span>
+        </div>
       {%- endif -%}
-    </p>
-    {%- if ahead -%}
-      {%- liquid
-        assign to_money = to | money_without_trailing_zeros
-        assign step_icon = 'truck'
-        if next == 'gift'
-          assign step_icon = 'gift'
-        elsif next != 'ship'
-          assign step_icon = 'cash'
-        endif
-      -%}
-      <div class="rewards__track" aria-hidden="true">
-        <span class="rewards__fill" style="--pct: {{ pct }}%" data-rewards-fill data-goal="{{ next }}"></span>
-        <span class="rewards__step is-last" style="--at: 100%">
-          {%- render 'icon', icon: step_icon -%}
-        </span>
-      </div>
-      {%- comment -%} "Small add-ons" shares the amount's row (drawer only), so it costs no extra line. {%- endcomment -%}
-      {%- if place == 'drawer' -%}
-        <a class="rewards__more" href="{{ settings.shop_all_collection.url | default: routes.all_products_collection_url }}?sort_by=price-ascending">
-          {{- 'rewards.more' | t -}}
-        </a>
-      {%- endif -%}
-      <div class="rewards__amounts" aria-hidden="true">
-        <span class="is-last" style="--at: 100%">{{ to_money }}</span>
-      </div>
-    {%- endif -%}
-  </div>
+    </div>
+  {%- endif -%}
 {%- endif -%}
 
 {% stylesheet %}
-  /* The ticks for what's earned, one line of words for the next goal, a 4px bar ending in that goal's round marker,
-     and the goal's amount in 12px under the marker. */
-  .rewards { display: grid; gap: var(--space-2); font-size: var(--fs-small); color: var(--color-heading); }
-  /* No wrapping between the parts: the tick stays beside the first line, and the words wrap inside their own box. */
-  .rewards__text { display: flex; align-items: flex-start; column-gap: var(--space-2); line-height: 1.4; }
-  .rewards__text > .icon { width: 18px; height: 18px; flex: none; margin-top: .0625rem; }
-  .rewards__text > span { min-width: 0; }
+  /* One line of words for the next goal and a 3px bar. In the drawer the bar is the pinned bottom's top edge
+     (sections/cart-drawer), so the rewards cost one line of height. */
+  .rewards { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); font-size: var(--fs-small); color: var(--color-heading); }
+  /* No wrapping between the tick and the words: the tick stays beside the first line, and the words wrap inside
+     their own box. Only "Add gift back" may drop under the goal. */
+  .rewards__text { display: flex; align-items: flex-start; gap: 0 var(--space-3); line-height: 1.4; }
+  .rewards__text:has(.rewards__more) { flex-wrap: wrap; justify-content: space-between; }
+  .rewards__text .icon { width: 18px; height: 18px; flex: none; margin-top: .0625rem; }
+  .rewards__text span { min-width: 0; }
+  .rewards__text > .icon { margin-inline-end: calc(var(--space-2) - var(--space-3)); }
+  /* The tap area is taller than the line (WCAG 2.5.8) without adding to it. */
+  .rewards__more { position: relative; display: flex; align-items: flex-start; gap: var(--space-2); min-width: 0; color: inherit; text-decoration: none; }
+  .rewards__more::after { content: ""; position: absolute; inset: -12px -8px; }
+  .rewards__more .rewards__go { width: 16px; height: 16px; margin-top: .125rem; margin-inline-start: calc(var(--space-1) * -1); color: var(--color-muted); transform: rotate(-90deg); }
+  /* Above the goal's padded tap area, so its own taps reach it. */
   .rewards__btn {
+    position: relative;
+    z-index: 1;
     display: inline-flex;
     flex: none;
     align-items: center;
@@ -283,79 +360,39 @@
     text-underline-offset: 3px;
     text-decoration-color: var(--rose);
   }
-  /* Shares the amounts row: lifted onto it, with a tap area taller than the 16px row (WCAG 2.5.8). */
-  .rewards__more {
-    position: relative;
-    z-index: 1;
-    justify-self: start;
-    grid-row: 4;
-    grid-column: 1;
-    margin-top: -4px;
-    font-size: .75rem;
-    line-height: 16px;
-    color: var(--color-muted);
-    text-decoration: underline;
-    text-underline-offset: 3px;
+  @media (hover: hover) {
+    .rewards__btn:hover { text-decoration-thickness: 2px; }
+    .rewards__more:hover [data-rewards-text] { text-decoration: underline; text-underline-offset: 3px; }
   }
-  .rewards__more::after { content: ""; position: absolute; inset: -14px -8px; }
-  .rewards__amounts { grid-row: 4; grid-column: 1; }
-  @media (hover: hover) { .rewards__btn:hover, .rewards__more:hover { text-decoration-thickness: 2px; } }
-  /* What's already earned: one short row of ticks above the next goal. */
-  .rewards__earned { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-3); font-size: .75rem; line-height: 16px; color: var(--color-ink); }
-  .rewards__earned li { display: inline-flex; align-items: center; gap: var(--space-1); }
-  .rewards__earned .icon { width: 14px; height: 14px; flex: none; color: var(--color-heading); }
-  .rewards__earned .rewards__btn { margin-inline-start: var(--space-1); }
-  /* Explicit rows, so the link and the amount share the last row. */
-  .rewards__earned { grid-row: 1; }
-  .rewards__text { grid-row: 2; }
-  .rewards__track { grid-row: 3; }
 
-  .rewards__track { position: relative; height: 22px; margin-inline-end: 0; }
-  .rewards__track::before, .rewards__fill {
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    top: 9px;
-    height: 4px;
-    border-radius: 4px;
-  }
-  .rewards__track::before { inset-inline-end: 0; background: var(--color-line-strong); }
+  .rewards__track { height: 3px; border-radius: 3px; background: var(--color-line-strong); overflow: hidden; }
   /* cart.js sets the old width for a frame after a refresh, so the bar moves from where it was (motion-plan "Progress"). */
-  .rewards__fill { width: var(--pct); background: var(--cocoa); transition: width 600ms var(--ease-out), background-color var(--dur-state) ease; }
+  .rewards__fill { display: block; width: var(--pct); height: 100%; border-radius: 0 3px 3px 0; background: var(--cocoa); transition: width 600ms var(--ease-out); }
   @media (prefers-reduced-motion: reduce) { .rewards__fill { transition: none; } }
   html.lite .rewards__fill { transition: none; }
-  .rewards.is-done .rewards__fill { background: var(--sage); }
-  .rewards__step {
-    position: absolute;
-    top: 0;
-    inset-inline-start: var(--at);
-    display: grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    border: 1.5px solid var(--color-line-strong);
-    border-radius: 50%;
-    background: var(--white);
-    color: var(--color-muted);
-    transform: translateX(-50%);
-    transition: background-color var(--dur-state) ease, border-color var(--dur-state) ease, color var(--dur-state) ease;
-  }
-  .rewards__step.is-last { transform: translateX(-100%); }
-  .rewards__step .icon { width: 14px; height: 14px; stroke-width: 2; }
-  .rewards__step.is-reached { background: var(--sage); border-color: var(--sage); color: var(--cocoa-deep); }
 
-  .rewards__amounts { position: relative; height: 16px; margin-top: -4px; font-size: .75rem; line-height: 16px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
-  .rewards__amounts > span { position: absolute; inset-inline-start: var(--at); transform: translateX(-50%); white-space: nowrap; }
-  .rewards__amounts > .is-last { transform: translateX(-100%); }
-  .rewards__amounts > .is-near { display: none; }
-
-  /* Once everything is unlocked the full bar has nothing left to say: only the words stay
-     (docs/cart-compact-plan.md). */
-  .rewards.is-done :is(.rewards__track, .rewards__amounts) { display: none; }
+  /* The ladder: every step as a dot on a path, its name and the amount it starts from under it. Its own card in
+     the drawer (sections/cart-drawer), so it is never read as part of the price rows. */
+  .ladder { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+  .ladder__title { font-weight: 500; font-size: 1rem; line-height: 1.3; color: var(--color-heading); }
+  .ladder__steps { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  .ladder__steps li { position: relative; display: grid; justify-items: center; align-content: start; gap: 2px; padding-inline: 2px; text-align: center; font-size: .8125rem; line-height: 1.3; color: var(--color-muted); }
+  .ladder__steps :is(.is-reached, .is-next) { color: var(--color-heading); }
+  .ladder__name { text-wrap: balance; }
+  .ladder__steps .is-next .ladder__name { font-weight: 500; }
+  .ladder__steps :is(.icon, i) { position: relative; z-index: 1; width: 20px; height: 20px; margin-bottom: var(--space-1); border-radius: 50%; }
+  .ladder__steps .icon { padding: 3px; background: var(--sage); color: var(--cocoa-deep); stroke-width: 2.5; }
+  .ladder__steps i { border: 1.5px solid var(--color-line-strong); background: var(--color-surface); }
+  .ladder__steps .is-next i { border-color: var(--taupe-ink); }
+  /* The path: from the dot before to this one; cocoa between two earned steps. */
+  .ladder__steps li + li::before { content: ""; position: absolute; top: 9px; inset-inline: calc(-50% + 14px) calc(50% + 14px); height: 2px; border-radius: 2px; background: var(--color-line-strong); }
+  .ladder__steps .is-reached + .is-reached::before { background: var(--cocoa); }
+  .ladder__at { font-size: .75rem; color: var(--color-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
   @media (forced-colors: active) {
-    .rewards__track::before { border: 1px solid CanvasText; }
+    .rewards__track { border: 1px solid CanvasText; }
     .rewards__fill { background: Highlight; }
-    .rewards__step { border-color: CanvasText; }
+    .ladder__steps .icon { background: none; border: 1px solid CanvasText; }
+    .ladder__steps li + li::before { background: CanvasText; }
   }
 {% endstylesheet %}
