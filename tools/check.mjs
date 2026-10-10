@@ -1921,7 +1921,7 @@ if (want('20')) {
       const where = box('.pdp__crumb'); const rating = box('.pdp__rating'); const title = box('.pdp__title');
       return {
         href: document.querySelector('.pdp__crumb')?.getAttribute('href'), crumb,
-        line: !rating || (Math.abs(rating.top - where.top) < 2 && rating.left >= where.right - 1 && rating.bottom - 8 <= title.top),
+        line: !rating || (Math.abs(rating.top - where.top) < 2 && rating.left >= where.right - 1 && Math.abs(rating.right - title.right) < 2 && rating.bottom - 8 <= title.top),
         name: title.height < 40 && Math.abs(title.width - box('.pdp__head').width) < 2,
         pills: Math.round(box('.pill').bottom), bar: Math.round(box('.pdp__cta').top), from: Math.round(box('.pill').top - box('.pdp__head').top),
       };

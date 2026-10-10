@@ -479,6 +479,29 @@ pinned buttons start at 675px, so **the options were hidden behind the buttons o
 - Check 20 has three more checks (the craft and the breadcrumb agree; one line above a full-width name; options
   above the buttons at 360 x 740). 104 pass; `check:money` 10 of 10.
 
+### Round 9, second look (2026-10-10)
+
+Raushan, on the built page: does it look good, and is that the best place for the rating?
+
+- **The card under the options was 48px away, three times every other gap.** On phones the buy form is pinned to
+  the bottom and its empty row was meant to give its space back with a negative margin, but a grid row can't be
+  less than nothing, so the column's 24px gap was counted on both sides of it. The card now sits 16px under the
+  options (or under the price when there are none), so its three promises show whole above the buttons at 412 x 915.
+- **Price 26px** (was 22px): the second thing a shopper looks for, and it read no heavier than the option labels.
+- **The rating is at the end of the collection's line, on the column's right edge**, not joined to the collection
+  with a dot: "CROCHET BOUQUETS · ★ 4.9 (86)" could be read as the collection's rating. Four places were built
+  and looked at on a phone and on desktop:
+  - joined with a dot (the first build): no height, but that misreading, and two type styles run together;
+  - under the name (Amazon, Flipkart): the clearest, but 30px more, which puts the pills back behind the buttons
+    at 360 x 740 (they would end at 693px; the buttons start at 675px);
+  - a chip on the photo's bottom left (Myntra): no height and strong on a phone, but on desktop it is a column
+    away from the name and the price, and it is a fifth thing on top of the photo;
+  - **end of the line (built):** no height, reads as the piece's own, lines up with the right edge of the buttons
+    and the card on every width.
+- Without the dot the longest collection name and a rating fit one line down to 360px; at 320px the name takes two.
+- Now: 141px from the top of the block to the pills at 360px (207px at the start of the round); pills end at 663px.
+  Check 20: 104 pass (the one-line check now also wants the rating on the name's right edge); `check:money` 10 of 10.
+
 ## Photo guide (for Raushan)
 
 Five square photos per product, at least 1200px, in this order:

@@ -419,8 +419,9 @@
   /* Phones: one column. The photos run edge to edge; everything else sits in the page's centre column. */
   .pdp { row-gap: var(--space-4); padding-bottom: var(--space-7); }
   .pdp__info { display: grid; gap: var(--space-5); }
-  /* The collection and the rating are one line above the name. Each keeps a 44px tap height; the negative margins
-     give the unused part back, so the line takes about 22px. */
+  /* The collection and the rating are one line above the name: the collection at its start, the rating at its end,
+     on the column's right edge. Apart, so the rating reads as this piece's and not the collection's. Each keeps a
+     44px tap height; the negative margins give the unused part back, so the line takes about 22px. */
   .pdp__head { display: grid; grid-template-columns: auto 1fr; gap: var(--space-1) 0; }
   .pdp__where, .pdp__rating { grid-row: 1; margin-block: -12px -10px; }
   /* A flex box, so the link is exactly its 44px and not a text line's height around it. */
@@ -440,14 +441,13 @@
   }
   @media (hover: hover) { .pdp__crumb:hover { color: var(--color-heading); text-decoration: underline; text-underline-offset: 4px; } }
   .pdp__title { font-size: clamp(1.75rem, 1.5rem + 1.2vw, 2.5rem); line-height: 1.1; text-wrap: balance; }
-  .pdp__rating { grid-column: 2; display: inline-flex; white-space: nowrap; align-items: center; justify-self: start; gap: var(--space-1); min-height: 44px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); text-decoration: none; }
+  .pdp__rating { grid-column: 2; display: inline-flex; white-space: nowrap; align-items: center; justify-self: end; padding-left: var(--space-3); gap: var(--space-1); min-height: 44px; font-size: var(--fs-small); font-weight: 500; color: var(--color-heading); text-decoration: none; }
   .pdp__rating-count { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
   .pdp__rating .icon { width: 16px; height: 16px; fill: currentColor; }
-  .pdp__where + .pdp__title + .pdp__rating::before { content: "·"; margin-inline: var(--space-2) var(--space-1); color: var(--color-muted); }
   .pdp__rating-count { font-weight: 400; color: var(--color-muted); }
   .pdp__price-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-top: var(--space-2); }
   .pdp__price { display: flex; align-items: baseline; gap: var(--space-2); font-variant-numeric: tabular-nums; }
-  .pdp__now { font-size: 1.375rem; font-weight: 500; letter-spacing: .01em; color: var(--color-heading); }
+  .pdp__now { font-size: 1.625rem; line-height: 1.2; font-weight: 500; letter-spacing: .01em; color: var(--color-heading); }
   .pdp__was { font-size: 1rem; color: var(--color-muted); }
   .pdp__badge {
     padding: 3px 10px;
@@ -502,6 +502,9 @@
        no-JavaScript option list. */
     .pdp__form { margin-top: calc(var(--space-4) - var(--space-5)); }
     .pdp__form:not(:has(.pdp__limit:not([hidden]), .pdp__select)) { display: block; height: 0; margin-top: calc(var(--space-5) * -1); }
+    /* An empty row still has the column's gap on both sides (a row can't be less than nothing, so the margin above
+       gives nothing back): the card under it takes both, and sits 16px under the options or the price (round 9). */
+    .pdp__form:not(:has(.pdp__limit:not([hidden]), .pdp__select)) + .assure { margin-top: calc(var(--space-4) - var(--space-5) * 2); }
     .pdp__cta {
       position: fixed;
       inset: auto 0 0;

@@ -1083,3 +1083,5 @@ Raushan accepted every recommendation in search-plan §13.
 - **The collection and the rating share one line above the name; the name sits on its price.** The four stacked rows hid the option pills behind the pinned buttons on a 360 x 740 phone. 60px less, nothing removed. Three layouts were built and measured before choosing.
 - **A product's collection link is its craft (its product type), never an occasion.** It was the first collection in the alphabet ("Anniversary Gifts" on a rose). One link only, no tag chips: "Pairs well with" and "You may also like" do the discovery. The breadcrumb given to search engines names the same collection.
 - **The rating is not beside the name:** 48 of 55 names would wrap to a second line on a phone.
+- **The rating sits at the end of the collection's line, on the right edge, with no dot between them** (second look, same day): joined, it read as the collection's rating. Under the name costs 30px and hides the options again; on the photo it is lost on desktop.
+- **16px between the options and the delivery card on phones** (was 48px, a gap counted twice), and the **price is 26px**.
