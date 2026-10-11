@@ -2,6 +2,105 @@
 
 Decided with Raushan on 2026-10-04. Built the same day (see "As built").
 
+**Revisited on 2026-10-12** (see "The 2026-10-12 strategy" below, which wins wherever the two differ): single
+prices unchanged, free delivery from ₹299 with ₹79 under it, combos a quarter off every piece after the dearest,
+the gift from ₹599.
+
+## The 2026-10-12 strategy
+
+Raushan's questions: delivery and ads are paid once per order, so why price them as a share? Shouldn't free
+delivery start lower? Shouldn't a pack save something real?
+
+What was found:
+
+- **3 × making cost already puts more of the ad on big pieces** (about ₹100 on a ₹499 bouquet, ₹18 on an ₹89
+  keychain), which is what we want if people come for a bouquet and add a keychain. And the prices are genuine:
+  crochet keychains sell elsewhere for ₹94 to ₹250 (Amazon, Magic Needles, The Thread Way), a bouquet with keychain
+  for ₹499 (Blinkit). **Single prices stay.**
+- **The ₹499 free-delivery line was the real problem.** 77 of the 86 choices cost less than ₹499, so nearly
+  everything showed a fee when bought alone. At ₹299, 29 ship free alone and the 42 priced ₹149 to ₹298 get there
+  with one add-on. A fee seen at checkout is the most quoted reason Indian shoppers leave.
+- **About a third of a single piece's price pays for delivery and the ad.** An extra piece in the same parcel
+  needs neither, so most of that third is given back on combos.
+- **The real ad cost is not known.** Published figures for India run from ₹150 to ₹700 a purchase (agency
+  estimates, not our data). It is measured after launch, not guessed into the prices: a higher price lowers the
+  share of visitors who buy, which raises the ad cost per order.
+
+The rules:
+
+1. **Single pieces and bouquets: 3 × making cost**, as before.
+2. **Free delivery from ₹299. Under ₹299, delivery is ₹79** (Raushan: with the line that easy to cross, the charge
+   should cover the courier in full).
+3. **Combos (a pack, pair or set that is not a bouquet): each piece at its single price, and every piece after the
+   dearest a quarter off.** A combo never costs more than 3 × its cost, and one that ships free at 3 × is never
+   priced under ₹299, where it would pay ₹79 delivery and cost the buyer more. A bouquet is one arrangement and the
+   piece the ads show, so it is not a combo. `combo_saving` and `free_delivery_from` in `costs.json`; the rule is
+   `price_of` in `tools/catalog_pricing.py`.
+4. **Free gift from ₹599** (was ₹799): a bouquet buyer at ₹449 to ₹499 has a next goal one or two add-ons away.
+   ₹50 off from ₹999 and ₹100 off from ₹1,299 stay.
+5. **Ads show bouquets and sets (₹299 and up); small pieces are add-ons.** A lone small piece cannot pay for an ad
+   at any fair price.
+
+The 26 combo prices that changed (none went up; no single piece or bouquet moved):
+
+| Combo | Was | Now |
+|---|---|---|
+| Two flower keychains, lily pair, daisy pair, claw clip pairs (6) | ₹179 | ₹159 |
+| Flower + evil eye, peacock or octopus keychain sets (5) | ₹199 | ₹179 |
+| Evil eye pair, octopus pairs (3) | ₹209 | ₹189 |
+| Chick + flower pairs (2) | ₹259 | ₹239 |
+| Three-keychain sets (2 + 2) | ₹269 / ₹289 | ₹219 / ₹239 |
+| Headband + clips / + claw clip | ₹199 / ₹289 | ₹189 / ₹249 |
+| Chick pair, bee + chick pair, octopus + evil eye set | ₹329 / ₹319 / ₹319 | ₹299 |
+| Curtain tie-back, pack of 4 | ₹599 | ₹479 |
+| Bee pair, tie-back pack of 2, sunflower + evil eye + octopus set | ₹299 | ₹299 (on the line) |
+
+What a buyer pays, delivery included:
+
+| | One | Two together | The second one costs |
+|---|---|---|---|
+| Daisy keychain | ₹89 + ₹79 = ₹168 | ₹159 + ₹79 = ₹238 | ₹70 |
+| Evil eye keychain | ₹109 + ₹79 = ₹188 | ₹189 + ₹79 = ₹268 | ₹80 |
+| Bee keychain | ₹149 + ₹79 = ₹228 | ₹299, free delivery | ₹71 |
+| Curtain tie-back | ₹149 + ₹79 = ₹228 | ₹299, free delivery (four: ₹479) | ₹71 |
+
+What it costs us: an order between ₹299 and ₹498 no longer pays a delivery fee, and the combos earn ₹10 to ₹50 less
+each (the pack of four ₹110 less), for fewer abandoned checkouts and more pieces in a parcel.
+
+### Measure for 15 days, then tune
+
+Three numbers from the first 15 days of ads: the ad cost per order, the average order value, the share of orders
+under ₹299. Compare the ad cost with what an order leaves after making, the courier (₹60 assumed; Shiprocket's
+blended cost is about ₹36 to ₹45 a 500g parcel before GST, more for a bulky bouquet) and 7.5% fees:
+
+| Order | Buyer pays | Left for the ad and profit |
+|---|---|---|
+| One keychain | ₹89 + ₹79 | ₹65 |
+| A two-keychain set | ₹159 + ₹79 | ₹100 |
+| A ₹299 pair | ₹299 | ₹117 |
+| A three-keychain set | ₹239 + ₹79 | ₹139 |
+| A three-flower bouquet | ₹499 | ₹236 |
+| Bouquet + keychain | ₹588 | ₹289 |
+
+If ads cost more than these leave: better-aimed ads and bigger baskets first, the two lines (₹299, ₹599) next,
+prices last.
+
+Not decided here: cash on delivery. 20 to 30% of COD parcels are refused in India and each costs ₹100 to ₹150;
+prepaid refusals are under 2%. A prepaid saving and partial COD are on the launch checklist.
+
+Sources (2026-10-12; blogs and tools, to be read as ranges): upgrowth.in/meta-ads-price-benchmarks,
+creatorcity.in/blog/meta-ads-d2c-brands-india, funnelhouse.in/meta-ads-cost-india,
+instacode.in/blog/how-to-set-shipping-charges-online-store-india, productgrowth.in/insights/ecommerce/fix-cart-abandonment-7-days,
+checkthat.ai/brands/shiprocket/pricing, hillteck.com/blog/rto-trends-2026-indian-d2c.html,
+magicneedles.in/collections/handmade-cute-keychains, thethreadway.in, blinkit.com (Chubsy Knits bouquet).
+
+Built 2026-10-12: the price rule and the 26 prices; Theme settings (free delivery 299, fee 79, gift 599) and the
+announcement bar's words; in the admin (by Raushan) the Domestic "Standard" rate ₹79, free from ₹299, and the gift
+discount, now "Free sunflower keychain over ₹599". Checked: `check:money` 10 of 10 (₹294 pays ₹79 delivery, ₹343
+pays none); checks 8 and 11, 26 of 26; in the cart ₹229 says "Add ₹70 more for free shipping", ₹338 "Add ₹261 more
+for a free gift", ₹628 has the gift and says "Add ₹371 more for ₹50 off". Check 8 now adds the cheapest single
+piece: two of the ₹399 set it used earn the gift.
+
 ## The price rule
 
 **Price = 3 × making cost**, rounded to the nearest ten, minus one.

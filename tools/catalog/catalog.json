@@ -932,7 +932,8 @@
    "type": "Keychains",
    "tags": [
     "daisy",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "occasion-for-her"
    ],
    "option": "Colour",
    "variants": [
@@ -943,7 +944,7 @@
      "parts": {
       "flower keychain": 1
      },
-     "swatch": "55 60 48"
+     "swatch": "56 58 50"
     },
     {
      "value": "Blue",
@@ -952,13 +953,22 @@
      "parts": {
       "flower keychain": 1
      },
-     "swatch": "53 62 48"
+     "swatch": "50 68 50"
+    },
+    {
+     "value": "White + blue pair",
+     "price": 179,
+     "sku": "KC_DSY_1_DSY_Blue_1",
+     "parts": {
+      "flower keychain": 2
+     },
+     "swatch": "54 45 62"
     }
    ],
-   "description": "<p>A soft daisy with a raised centre, crocheted by hand. Choose classic white and yellow, or blue.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "description": "<p>A soft daisy with a raised centre, crocheted by hand. Choose classic white and yellow, blue, or one of each as a pair.</p><p>Clip it to keys, a bag or a zip. Each comes on a metal ring and chain.</p>",
    "size": null,
    "seo_title": "Daisy Flower Crochet Keychain, Handmade | Yarn Basket",
-   "seo_description": "A handmade crochet daisy keychain in white or blue, on a metal ring. A small gift for keys and bags.",
+   "seo_description": "A handmade crochet daisy keychain in white or blue, or a pair of both, on a metal ring.",
    "photos": [
     {
      "src": "keychains/KC_DSY_1 2.png",
@@ -979,6 +989,16 @@
      "src": "keychains/KC_DSY_Blue_1 2.png",
      "alt": "Blue crochet daisy keychain held in a hand, view 2",
      "variant": "Blue"
+    },
+    {
+     "src": "keychains/KC_DSY_1_DSY_Blue_1 1.png",
+     "alt": "White and blue crochet daisy keychains held in a hand",
+     "variant": "White + blue pair"
+    },
+    {
+     "src": "keychains/KC_DSY_1_DSY_Blue_1 2.png",
+     "alt": "White and blue crochet daisy keychains held in a hand, view 2",
+     "variant": "White + blue pair"
     }
    ]
   },
@@ -992,41 +1012,56 @@
     "occasion-for-her",
     "occasion-for-him"
    ],
-   "option": null,
+   "option": "Pack",
    "variants": [
     {
-     "value": null,
+     "value": "Single",
      "price": 149,
      "sku": "KC_Evil_1",
      "parts": {
       "evil eye keychain": 1
-     }
+     },
+     "swatch": "49 57 36"
+    },
+    {
+     "value": "Pair",
+     "price": 209,
+     "sku": "KC_Evil_2",
+     "parts": {
+      "evil eye keychain": 2
+     },
+     "swatch": "50 63 58"
     }
    ],
-   "description": "<p>The evil eye, in rings of deep blue, white and sky blue, crocheted by hand. A small charm to carry with you or to give for good luck.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "description": "<p>The evil eye, in rings of deep blue, white and sky blue, crocheted by hand. A small charm to carry with you or to give for good luck.</p><p>Choose one, or a pair: one to keep and one to give.</p><p>Clip it to keys, a bag or a zip. Each comes on a metal ring and chain.</p>",
    "size": null,
    "seo_title": "Evil Eye Crochet Keychain, Handmade Nazar | Yarn Basket",
-   "seo_description": "A handmade crochet evil eye (nazar) keychain on a metal ring. A good luck charm for keys and bags.",
+   "seo_description": "A handmade crochet evil eye (nazar) keychain on a metal ring. A good luck charm, sold singly or as a pair.",
    "photos": [
     {
      "src": "keychains/KC_Evil_1 3.png",
      "alt": "Crochet evil eye keychain held in a hand",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/KC_Evil_1 4.png",
      "alt": "Crochet evil eye keychain held in a hand, view 2",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/KC_Evil_1 1.png",
      "alt": "Crochet evil eye keychain held in a hand, view 3",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/KC_Evil_1 2.png",
      "alt": "Crochet evil eye keychain held in a hand, view 4",
-     "variant": null
+     "variant": "Single"
+    },
+    {
+     "src": "keychains/KC_Evil_2 1.png",
+     "alt": "Two crochet evil eye keychains held in a hand",
+     "variant": "Pair"
     }
    ]
   },
@@ -1082,46 +1117,61 @@
     "occasion-birthday",
     "occasion-for-him"
    ],
-   "option": null,
+   "option": "Pack",
    "variants": [
     {
-     "value": null,
+     "value": "Single",
      "price": 179,
      "sku": "KC_BEE_1",
      "parts": {
       "bee": 1
-     }
+     },
+     "swatch": "50 52 42"
+    },
+    {
+     "value": "Pair",
+     "price": 299,
+     "sku": "KC_BEE_2",
+     "parts": {
+      "bee": 2
+     },
+     "swatch": "53 57 52"
     }
    ],
-   "description": "<p>A round little bee with white wings and a stitched smile, crocheted and stuffed by hand.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "description": "<p>A round little bee with white wings and a stitched smile, crocheted and stuffed by hand.</p><p>Choose one, or a pair: one to keep and one to give.</p><p>Clip it to keys, a bag or a zip. Each comes on a metal ring and chain.</p>",
    "size": null,
    "seo_title": "Bumble Bee Crochet Keychain, Handmade | Yarn Basket",
-   "seo_description": "A handmade crochet bee keychain with a stitched smile, on a metal ring. A cute gift for keys and bags.",
+   "seo_description": "A handmade crochet bee keychain with a stitched smile, on a metal ring. Sold singly or as a pair.",
    "photos": [
     {
      "src": "keychains/KC_BEE_1 1.png",
      "alt": "Crochet bee keychain with white wings held in a hand",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/KC_BEE_1 4.png",
      "alt": "Crochet bee keychain with white wings held in a hand, view 2",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/KC_BEE_1 2.png",
      "alt": "Crochet bee keychain with white wings held in a hand, view 3",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/KC_BEE_1 3.png",
      "alt": "Crochet bee keychain with white wings held in a hand, view 4",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/ChatGPT Image Jul 18, 2026, 03_10_21 PM.png",
      "alt": "Crochet bee keychain held by its ring",
-     "variant": null
+     "variant": "Single"
+    },
+    {
+     "src": "keychains/ChatGPT Image Jul 5, 2026, 01_09_24 AM.png",
+     "alt": "Two crochet bee keychains held in a hand",
+     "variant": "Pair"
     }
    ]
   },
@@ -1134,51 +1184,71 @@
     "occasion-birthday",
     "occasion-for-him"
    ],
-   "option": null,
+   "option": "Pack",
    "variants": [
     {
-     "value": null,
+     "value": "Single",
      "price": 179,
      "sku": "KC_CHK_1",
      "parts": {
       "chick keychain": 1
-     }
+     },
+     "swatch": "56 57 44"
+    },
+    {
+     "value": "Pair",
+     "price": 329,
+     "sku": "KC_CHK_2",
+     "parts": {
+      "chick keychain": 2
+     },
+     "swatch": "54 59 54"
     }
    ],
-   "description": "<p>A yellow chick still wearing its eggshell, crocheted and stuffed by hand, with tiny wings and red feet.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
+   "description": "<p>A yellow chick still wearing its eggshell, crocheted and stuffed by hand, with tiny wings and red feet.</p><p>Choose one, or a pair: one to keep and one to give.</p><p>Clip it to keys, a bag or a zip. Each comes on a metal ring and chain.</p>",
    "size": null,
    "seo_title": "Baby Chick Crochet Keychain, Handmade | Yarn Basket",
-   "seo_description": "A handmade crochet chick keychain in an eggshell hat, on a metal ring. A cute gift for keys and bags.",
+   "seo_description": "A handmade crochet chick keychain in an eggshell hat, on a metal ring. Sold singly or as a pair.",
    "photos": [
     {
      "src": "keychains/KC_CHK_1 1.png",
      "alt": "Crochet chick keychain in an eggshell hat held in a hand",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/KC_CHK_1 2.png",
      "alt": "Crochet chick keychain in an eggshell hat held in a hand, view 2",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/ChatGPT Image Jul 18, 2026, 12_49_19 PM.png",
      "alt": "Crochet chick keychain in an eggshell hat held by its ring",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/ChatGPT Image Jul 18, 2026, 01_20_01 PM.png",
      "alt": "Crochet chick keychain in an eggshell hat held by its ring, view 2",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/ChatGPT Image Jul 18, 2026, 01_25_58 PM.png",
      "alt": "Crochet chick keychain in an eggshell hat held by its ring, view 3",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "keychains/ChatGPT Image Jul 18, 2026, 12_42_13 PM.png",
      "alt": "Crochet chick keychain in an eggshell hat held by its ring, view 4",
-     "variant": null
+     "variant": "Single"
+    },
+    {
+     "src": "keychains/ChatGPT Image Jul 5, 2026, 12_49_19 AM.png",
+     "alt": "Two crochet chick keychains held in a hand",
+     "variant": "Pair"
+    },
+    {
+     "src": "keychains/ChatGPT Image Jul 5, 2026, 01_18_36 AM.png",
+     "alt": "Two crochet chick keychains held in a hand, view 2",
+     "variant": "Pair"
     }
    ]
   },
@@ -1923,31 +1993,70 @@
     "occasion-thank-you",
     "home-decor"
    ],
-   "option": null,
+   "option": "Pack",
    "variants": [
     {
-     "value": null,
+     "value": "Single",
      "price": 199,
      "sku": "CTie_SF",
      "parts": {
       "curtain tie-back": 1
-     }
+     },
+     "swatch": "whole"
+    },
+    {
+     "value": "Pack of 2",
+     "price": 299,
+     "sku": "CTie_SF_2",
+     "parts": {
+      "curtain tie-back": 2
+     },
+     "swatch": "whole"
+    },
+    {
+     "value": "Pack of 4",
+     "price": 599,
+     "sku": "CTie_SF_4",
+     "parts": {
+      "curtain tie-back": 4
+     },
+     "swatch": "whole"
     }
    ],
-   "description": "<p>A big crocheted sunflower with two hanging leaves that holds a curtain open. It wraps around the curtain and fastens behind the flower. Made by hand, one at a time.</p><p>Sold singly: add two for a pair of curtains.</p>",
+   "description": "<p>A big crocheted sunflower with two hanging leaves that holds a curtain open. It wraps around the curtain and fastens behind the flower. Made by hand, one at a time.</p><p>Choose a single, a pack of two for a pair of curtains, or a pack of four.</p>",
    "size": null,
    "seo_title": "Sunflower Crochet Curtain Tie-back, Handmade | Yarn Basket",
-   "seo_description": "A handmade crochet sunflower curtain tie-back with hanging leaves. A sunny touch for any room.",
+   "seo_description": "A handmade crochet sunflower curtain tie-back with hanging leaves, sold singly or in packs of two and four.",
    "photos": [
     {
      "src": "Curtain Tie/CTie_SF 1.png",
      "alt": "Crochet sunflower curtain tie-back on a curtain",
-     "variant": null
+     "variant": "Single"
     },
     {
      "src": "Curtain Tie/CTie_SF 2.png",
      "alt": "Crochet sunflower curtain tie-back on a curtain, view 2",
-     "variant": null
+     "variant": "Single"
+    },
+    {
+     "src": "Curtain Tie/CTie_SF_2 1.png",
+     "alt": "Two crochet sunflower tie-backs on dark curtains",
+     "variant": "Pack of 2"
+    },
+    {
+     "src": "Curtain Tie/CTie_SF_2 2.png",
+     "alt": "Two crochet sunflower tie-backs on printed curtains",
+     "variant": "Pack of 2"
+    },
+    {
+     "src": "Curtain Tie/CTie_SF_4 2.png",
+     "alt": "Four crochet sunflower tie-backs on dark curtains",
+     "variant": "Pack of 4"
+    },
+    {
+     "src": "Curtain Tie/CTie_SF_4 1.png",
+     "alt": "Four crochet sunflower tie-backs on printed curtains",
+     "variant": "Pack of 4"
     }
    ]
   },
@@ -2185,44 +2294,6 @@
     {
      "src": "Bouquet/BQ_TLP_Blue_1_RS_Yellow_1_DSY_1 3.png",
      "alt": "Crochet bouquet of a blue tulip, a yellow rose and a daisy, view 3",
-     "variant": null
-    }
-   ]
-  },
-  {
-   "handle": "daisy-keychain-pair",
-   "title": "White & Blue Daisy Keychain Pair",
-   "type": "Keychains",
-   "tags": [
-    "daisy",
-    "set",
-    "occasion-thank-you",
-    "occasion-for-her"
-   ],
-   "option": null,
-   "variants": [
-    {
-     "value": null,
-     "price": 179,
-     "sku": "KC_DSY_1_DSY_Blue_1",
-     "parts": {
-      "flower keychain": 2
-     }
-    }
-   ],
-   "description": "<p>Our daisy keychain in both colours: one white, one blue. Two hand-crocheted keychains to keep together or share.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
-   "size": null,
-   "seo_title": "White & Blue Daisy Crochet Keychain Pair | Yarn Basket",
-   "seo_description": "A pair of handmade crochet daisy keychains, one white and one blue, each on a metal ring.",
-   "photos": [
-    {
-     "src": "keychains/KC_DSY_1_DSY_Blue_1 1.png",
-     "alt": "White and blue crochet daisy keychains held in a hand",
-     "variant": null
-    },
-    {
-     "src": "keychains/KC_DSY_1_DSY_Blue_1 2.png",
-     "alt": "White and blue crochet daisy keychains held in a hand, view 2",
      "variant": null
     }
    ]
@@ -2600,96 +2671,6 @@
    ]
   },
   {
-   "handle": "sunflower-curtain-tie-back-set",
-   "title": "Sunflower Curtain Tie-Back Set",
-   "type": "Home decor",
-   "tags": [
-    "sunflower",
-    "home-decor",
-    "set"
-   ],
-   "option": "Pack",
-   "variants": [
-    {
-     "value": "Pack of 2",
-     "price": 299,
-     "sku": "CTie_SF_2",
-     "parts": {
-      "curtain tie-back": 2
-     },
-     "swatch": "whole"
-    },
-    {
-     "value": "Pack of 4",
-     "price": 599,
-     "sku": "CTie_SF_4",
-     "parts": {
-      "curtain tie-back": 4
-     },
-     "swatch": "whole"
-    }
-   ],
-   "description": "<p>Our sunflower curtain tie-back in sets, for a pair of curtains or a whole room. Each one is a hand-crocheted sunflower with two leaves hanging below it.</p><p>Choose a pack of two or a pack of four.</p>",
-   "size": null,
-   "seo_title": "Sunflower Curtain Tie-Back Set, Handmade | Yarn Basket",
-   "seo_description": "Handmade crochet sunflower curtain tie-backs in a pack of two or four. A bright touch for any window.",
-   "photos": [
-    {
-     "src": "Curtain Tie/CTie_SF_2 1.png",
-     "alt": "Two crochet sunflower tie-backs on dark curtains",
-     "variant": "Pack of 2"
-    },
-    {
-     "src": "Curtain Tie/CTie_SF_2 2.png",
-     "alt": "Two crochet sunflower tie-backs on printed curtains",
-     "variant": "Pack of 2"
-    },
-    {
-     "src": "Curtain Tie/CTie_SF_4 2.png",
-     "alt": "Four crochet sunflower tie-backs on dark curtains",
-     "variant": "Pack of 4"
-    },
-    {
-     "src": "Curtain Tie/CTie_SF_4 1.png",
-     "alt": "Four crochet sunflower tie-backs on printed curtains",
-     "variant": "Pack of 4"
-    }
-   ]
-  },
-  {
-   "handle": "evil-eye-keychain-pair",
-   "title": "Evil Eye Crochet Keychain Pair",
-   "type": "Keychains",
-   "tags": [
-    "evil-eye",
-    "set",
-    "occasion-thank-you",
-    "occasion-for-him"
-   ],
-   "option": null,
-   "variants": [
-    {
-     "value": null,
-     "price": 209,
-     "sku": "KC_Evil_2",
-     "parts": {
-      "evil eye keychain": 2
-     }
-    }
-   ],
-   "description": "<p>Two evil eye keychains, each crocheted by hand in its own shades of blue. One to keep and one to give.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
-   "size": null,
-   "seo_title": "Evil Eye Crochet Keychain Pair, Handmade | Yarn Basket",
-   "seo_description": "A pair of handmade crochet evil eye keychains in shades of blue, each on a metal ring.",
-   "photos": [
-    {
-     "src": "keychains/KC_Evil_2 1.png",
-     "alt": "Two crochet evil eye keychains held in a hand",
-     "variant": null
-    }
-   ]
-  },
-  {
    "handle": "flower-crochet-claw-clips",
    "title": "Flower Crochet Claw Clips, Pair",
    "type": "Hair accessories",
@@ -2981,77 +2962,6 @@
     {
      "src": "sunflower item set/ChatGPT Image Jul 5, 2026, 06_53_18 PM.png",
      "alt": "Crochet sunflower headband, keychain, hair clips and hair tie",
-     "variant": null
-    }
-   ]
-  },
-  {
-   "handle": "bee-keychain-pair",
-   "title": "Bee Crochet Keychain Pair",
-   "type": "Keychains",
-   "tags": [
-    "bee",
-    "set",
-    "occasion-birthday",
-    "occasion-for-him"
-   ],
-   "option": null,
-   "variants": [
-    {
-     "value": null,
-     "price": 299,
-     "sku": "KC_BEE_2",
-     "parts": {
-      "bee": 2
-     }
-    }
-   ],
-   "description": "<p>Two smiling bees, crocheted and stuffed by hand. One to keep and one to give.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
-   "size": null,
-   "seo_title": "Bee Crochet Keychain Pair, Handmade | Yarn Basket",
-   "seo_description": "A pair of handmade crochet bee keychains with smiling faces, each on a metal ring.",
-   "photos": [
-    {
-     "src": "keychains/ChatGPT Image Jul 5, 2026, 01_09_24 AM.png",
-     "alt": "Two crochet bee keychains held in a hand",
-     "variant": null
-    }
-   ]
-  },
-  {
-   "handle": "chick-keychain-pair",
-   "title": "Chick Crochet Keychain Pair",
-   "type": "Keychains",
-   "tags": [
-    "chick",
-    "set",
-    "occasion-birthday",
-    "occasion-for-him"
-   ],
-   "option": null,
-   "variants": [
-    {
-     "value": null,
-     "price": 329,
-     "sku": "KC_CHK_2",
-     "parts": {
-      "chick keychain": 2
-     }
-    }
-   ],
-   "description": "<p>Two yellow chicks still wearing their eggshells, crocheted and stuffed by hand. One to keep and one to give.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
-   "size": null,
-   "seo_title": "Chick Crochet Keychain Pair, Handmade | Yarn Basket",
-   "seo_description": "A pair of handmade crochet chick keychains in eggshell hats, each on a metal ring.",
-   "photos": [
-    {
-     "src": "keychains/ChatGPT Image Jul 5, 2026, 12_49_19 AM.png",
-     "alt": "Two crochet chick keychains held in a hand",
-     "variant": null
-    },
-    {
-     "src": "keychains/ChatGPT Image Jul 5, 2026, 01_18_36 AM.png",
-     "alt": "Two crochet chick keychains held in a hand, view 2",
      "variant": null
     }
    ]
@@ -3446,7 +3356,6 @@
    "bee-crochet-keychain",
    "chick-crochet-keychain",
    "sunflower-evil-eye-keychain-set",
-   "daisy-keychain-pair",
    "daisy-evil-eye-keychain-set",
    "daisy-peacock-feather-keychain-set",
    "chick-flower-keychain-pair",
@@ -3455,9 +3364,6 @@
    "sunflower-two-daisies-keychain-set",
    "sunflower-blue-daisy-evil-eye-keychain-set",
    "sunflower-evil-eye-octopus-keychain-set",
-   "evil-eye-keychain-pair",
-   "bee-keychain-pair",
-   "chick-keychain-pair",
    "octopus-keychain-pair"
   ]
  },

@@ -1,6 +1,8 @@
 {
- "note": "Edit the numbers here, then run: python3 tools/catalog-build.py && python3 tools/catalog-upload.py prices. price = multiplier x (sum of parts + packaging), nearest ten, minus one. Each part's cost already includes its packaging (Raushan, 2026-10-04), so several pieces are simply the cost times the count and the packaging table is 0; put an amount there only to add something per listing on top. A part with null has no cost yet: listings that use it keep the placeholder price typed in catalog.json. All figures in rupees.",
+ "note": "Edit the numbers here, then run: python3 tools/catalog-build.py && python3 tools/catalog-upload.py prices. price = multiplier x (sum of parts + packaging), nearest ten, minus one. Each part's cost already includes its packaging (Raushan, 2026-10-04), so several pieces are simply the cost times the count and the packaging table is 0; put an amount there only to add something per listing on top. A part with null has no cost yet: listings that use it keep the placeholder price typed in catalog.json. All figures in rupees. combo_saving: in a pack, pair or set that is not a bouquet, every piece after the dearest costs this share less than bought alone (0.25 = a quarter off); a combo never costs more than the plain rule gives, and one that the plain rule puts at free_delivery_from or more is never priced under it (docs/pricing-plan.md, 2026-10-12). free_delivery_from must match Theme settings > Cart.",
  "multiplier": 3,
+ "combo_saving": 0.25,
+ "free_delivery_from": 299,
  "packaging": {
   "Bouquets": 0,
   "Flower pots": 0,

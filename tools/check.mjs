@@ -308,7 +308,8 @@ for (const [label, device] of want('7') ? [['phone', devices['Pixel 7']], ['desk
 if (want('8')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const products = await fetch(site('/products.json?limit=50')).then((r) => r.json()).then((d) => d.products.filter((p) => ![].concat(p.tags).join(',').includes('free-gift')), () => []);
-  const single = products.find((p) => p.variants.length === 1 && p.variants[0].available && !/lily/.test(p.handle));
+  // The cheapest one: two of a dearer piece earn the free gift (from ₹599 since 2026-10-12), and its line would be counted as the piece's.
+  const single = products.filter((p) => p.variants.length === 1 && p.variants[0].available && !/lily/.test(p.handle)).sort((a, b) => a.variants[0].price - b.variants[0].price)[0];
   const limited = products.find((p) => p.handle === 'lily-of-the-valley-bag-charm');
   if (!single) console.log('SKIP  Cart checks                                    no products in the store (import tools/test-products.csv)');
   for (const [label, device] of single ? [['phone', devices['Pixel 7']], ['desktop', devices['Desktop Chrome']]] : []) {

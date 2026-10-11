@@ -1104,3 +1104,21 @@ Raushan accepted every recommendation in search-plan §13.
 - **The rating is not beside the name:** 48 of 55 names would wrap to a second line on a phone.
 - **The rating sits at the end of the collection's line, on the right edge, with no dot between them** (second look, same day): joined, it read as the collection's rating. Under the name costs 30px and hides the options again; on the photo it is lost on desktop.
 - **16px between the options and the delivery card on phones** (was 48px, a gap counted twice), and the **price is 26px**.
+
+## 2026-10-12: the same piece in a different count is one product
+- **A single and its pair or pack are one product with an option, never two listings** (Raushan, on the curtain tie-back and its set). The same rule as colours (2026-10-04): one page collects the reviews and sales, the shopper on the single sees the pack exists, and the Shop page has one card, not two alike.
+- **Merged (55 → 50 products, still 86 variants):** Sunflower Crochet Curtain Tie-back (Pack: Single, Pack of 2, Pack of 4); the bee, chick and evil eye keychains (Pack: Single, Pair); the daisy keychain (Colour: White, Blue, White + blue pair, like the lily charm). The single's page, name and address stay; the old pair pages redirect to it.
+- **Still their own products:** pairs and sets of different pieces (bee + chick, octopus + blue daisy, the keychain sets), and the octopus pair, which has no single.
+- **The five old listings are archived in the admin, not deleted,** so nothing is lost; they can be deleted once the merged pages have been looked at.
+- **No price changed.** The single and its pack now sit side by side, and some packs cost a rupee or two more than the singles added up (tie-back: 2 × ₹149 = ₹298 against ₹299). Pack pricing is the next thing to decide.
+- **A merged product leaves the Gift sets collection** (it is no longer tagged `set`, like the lily charm). Five fewer cards there.
+- How: `tools/catalog/catalog.json`, then `catalog-build.py` and `catalog-upload.py products <handles> --force`. A product's studio photos are filed under its handle and option, so they were copied to the new names first; otherwise the upload would have fallen back to the photos as shot.
+
+## 2026-10-12: pricing revisited (docs/pricing-plan.md, "The 2026-10-12 strategy")
+- **Single prices stay at 3 × making cost.** A share of the price already puts more of the ad on bouquets than on add-ons, and the prices sit at or under what others charge.
+- **Free delivery from ₹299 (was ₹499); under it delivery is ₹79 (was ₹49).** 77 of 86 choices cost under ₹499, so nearly everything showed a fee. Raushan chose ₹79: the line is easy to cross and the charge should cover the courier.
+- **Combos save for real: every piece after the dearest is a quarter off** (Raushan: ₹20 was not enough; a second piece needs no second ad or delivery). Not bouquets. 26 prices down, none up. A combo that ships free is never priced under ₹299.
+- **Free gift from ₹599 (was ₹799).**
+- **The ad cost is measured, not assumed:** 15 days of ads, then tune the lines before the prices. An ad cost of ₹150 an order was considered and dropped as a pricing input: it was a guess, and a higher price raises it.
+- **Considered and not chosen:** free delivery on everything with delivery inside every price (₹89 keychain → ₹139); a "multiplier + fixed amount" rule for every price (wait for real ad data).
+

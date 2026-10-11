@@ -127,7 +127,9 @@ Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with 
 
 ## Catalogue (docs/catalog-plan.md)
 
-- [ ] Redo the reward figures (gift ₹799, ₹50 off ₹999, ₹100 off ₹1,299) with the real courier rate and ad cost per order
+- [x] **Shopify admin, to match the theme (done by Raushan 2026-10-12, money check 10 of 10):** Settings → Shipping and delivery → Domestic "Standard": ₹79, free from ₹299 (is ₹49, free from ₹499). Discounts → "Free sunflower keychain over ₹799": minimum purchase ₹599, and rename it. Then `npm run check:money` must pass 10 of 10.
+- [ ] After the first 15 days of ads: ad cost per order, average order value and share of orders under ₹299, then tune the lines (₹299 delivery, ₹599 gift, ₹50 off ₹999, ₹100 off ₹1,299) and the courier figure (docs/pricing-plan.md, "Measure for 15 days")
+- [ ] Decide the prepaid saving and partial COD before launch: 20 to 30% of COD parcels are refused and each costs ₹100 to ₹150
 - [ ] Add Size text for keychains, pots, charms, hair pieces and the larger bouquets
 - [ ] Clean photos (no stickers, no text, real piece) for the held-back products, then list them
 - [ ] Replace the starting stock of 100 per variant with real counts

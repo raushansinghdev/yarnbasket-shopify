@@ -91,3 +91,6 @@ Size text is set only where a dimension image gave it (single-stem bouquets, 10 
 - Real stock counts in place of 100.
 - Clean photos for the held-back products.
 - "Best selling" order has no meaning until there are sales.
+- 2026-10-12: singles merged with their pairs and packs (docs/decisions.md, same date). 50 products, 86 variants.
+  A new piece that also sells as a pair or a pack is added as one product with a "Pack" option from the start.
+
