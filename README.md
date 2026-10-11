@@ -4,11 +4,14 @@ Storefront for **Yarn Basket**, handmade crochet from India.
 
 ## Current: coming-soon page
 
-`coming-soon/` is a static holding page served on GitHub Pages at https://yarnbasket.in. Its "Shop on Meesho" button links to the [Meesho store](https://www.meesho.com/SSCreator).
+`coming-soon/` is a static holding site served on GitHub Pages at https://yarnbasket.in. Its "Shop on Meesho" button links to the [Meesho store](https://www.meesho.com/SSCreator).
 
-- Edit `coming-soon/index.html` and push to `main`. The [deploy workflow](.github/workflows/coming-soon.yml) publishes it automatically.
+Since 2026-10-11 it also carries the policies (`/policies/...`), Contact (`/pages/contact`), Our story (`/pages/our-story`) and eight pieces with their prices, at the addresses Shopify will serve later. The store is behind a password until launch, and Razorpay's reviewer needs to read these.
+
+- `npm run build:coming-soon` writes those pages from `docs/legal/`, the store and the theme's Our story text. Don't edit them by hand. `node tools/coming-soon-build.mjs --check` fails when a price, a name or a policy has changed since the last build.
+- Edit the top of `coming-soon/index.html` and `coming-soon/site.css` by hand. Push to `main`: the [deploy workflow](.github/workflows/coming-soon.yml) publishes the folder.
 - The logo animation comes from `Brand Kit/5-animation/website-splash-snippet.html`.
-- No build step and no JavaScript.
+- No JavaScript beyond the intro's skip.
 
 ## Next: custom Shopify theme
 

@@ -59,6 +59,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=Jost:wght@400;500&display=swap">
+<link rel="stylesheet" href="/site.css">
 
 <style>
   :root {
@@ -89,12 +90,15 @@
     font-size: 1rem;
     line-height: 1.6;
     overflow-x: hidden;
+    position: relative;
   }
 
   .wrap {
     position: relative;
     z-index: 1;
-    flex: 1;
+    flex: none;
+    min-height: 86vh; /* the first pieces show at the bottom of the screen */
+    min-height: 86svh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -170,26 +174,16 @@
   .cta:active { transform: translateY(0) scale(.98); transition-duration: .1s; }
   .cta:focus-visible { outline: 3px solid var(--rose); outline-offset: 4px; }
 
-  footer {
-    position: relative;
-    z-index: 1;
-    padding: 20px 20px max(24px, env(safe-area-inset-bottom));
-    font-size: .75rem;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    text-align: center;
-  }
-  footer p { margin: 0; text-wrap: balance; }
-
   /* Content follows once the logo has drawn itself and its name has settled in */
-  .reveal { animation: rise .8s var(--ease-out) var(--d, 1s) both; }
+  .reveal, [data-reveal] { animation: rise .8s var(--ease-out) var(--d, 1s) both; }
 
   /* Coming back (e.g. from Meesho) shows the finished page straight away */
-  html.no-intro .reveal, html.no-intro .yb-logo, html.no-intro .yb-logo * { animation: none !important; }
+  html.no-intro .reveal, html.no-intro [data-reveal], html.no-intro .yb-logo, html.no-intro .yb-logo * { animation: none !important; }
   @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
   /* Floating crochet flowers, echoing the brand banner */
-  .petals { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; color: var(--taupe); }
+  /* They stay with the first screen, so they never sit over the pieces below it. */
+  .petals { position: absolute; inset: 0 0 auto; height: 86vh; height: 86svh; z-index: 0; pointer-events: none; overflow: hidden; color: var(--taupe); }
   .petals svg { position: absolute; opacity: .22; animation: drift 16s ease-in-out infinite alternate; }
   .petals svg:nth-child(1) { width: 96px; top: 6%;  left: -18px; animation-duration: 17s; }
   .petals svg:nth-child(2) { width: 58px; top: 38%; left: 5%;    animation-duration: 13s; animation-delay: -4s; }
@@ -208,7 +202,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .reveal, .petals svg { animation: none !important; }
+    .reveal, [data-reveal], .petals svg { animation: none !important; }
     .cta, .cta svg { transition: none; }
   }
 
@@ -345,8 +339,72 @@
     </a>
   </main>
 
-  <footer class="reveal" style="--d:3.3s">
+  <!-- Written by tools/coming-soon-build.mjs (npm run build:coming-soon). Don't edit between the markers. -->
+  <!-- preview:start -->
+  <section class="preview reveal" style="--d:3.4s" id="preview" aria-labelledby="preview-title">
+    <div class="preview__head">
+      <h2 id="preview-title">A look at what’s coming</h2>
+      <p>A few of the pieces Priya makes by hand, at the prices in our new shop.</p>
+    </div>
+    <ul class="preview__grid">
+      <li>
+        <img src="/products/sunflower-crochet-bouquet.webp" alt="Crochet sunflower bouquet with one sunflower in black and gold wrap" width="600" height="600" loading="lazy" decoding="async">
+        <h3 class="preview__name">Sunflower Crochet Bouquet</h3>
+        <p class="preview__price">From ₹169</p>
+      </li>
+      <li>
+        <img src="/products/rose-trio-crochet-bouquet.webp" alt="Crochet bouquet of three red roses" width="600" height="600" loading="lazy" decoding="async">
+        <h3 class="preview__name">Rose Trio Crochet Bouquet</h3>
+        <p class="preview__price">₹499</p>
+      </li>
+      <li>
+        <img src="/products/sunflower-daisy-keychain-set.webp" alt="Crochet sunflower and daisy keychains held in a hand" width="600" height="600" loading="lazy" decoding="async">
+        <h3 class="preview__name">Sunflower &amp; Daisy Keychain Set</h3>
+        <p class="preview__price">₹159</p>
+      </li>
+      <li>
+        <img src="/products/pink-tulips-daisy-crochet-bouquet.webp" alt="Crochet bouquet of two pink tulips and a white daisy" width="600" height="600" loading="lazy" decoding="async">
+        <h3 class="preview__name">Pink Tulips &amp; Daisy Crochet Bouquet</h3>
+        <p class="preview__price">₹469</p>
+      </li>
+      <li>
+        <img src="/products/daisy-crochet-pot.webp" alt="White crochet daisy in a crochet pot" width="600" height="600" loading="lazy" decoding="async">
+        <h3 class="preview__name">Daisy Crochet Flower Pot</h3>
+        <p class="preview__price">₹229</p>
+      </li>
+      <li>
+        <img src="/products/lily-of-the-valley-crochet-bag-charm.webp" alt="Pink lily of the valley crochet charm on a black bag" width="600" height="600" loading="lazy" decoding="async">
+        <h3 class="preview__name">Lily of the Valley Crochet Bag Charm</h3>
+        <p class="preview__price">From ₹89</p>
+      </li>
+      <li>
+        <img src="/products/sunflower-daisy-bee-crochet-bouquet.webp" alt="Crochet bouquet of a sunflower, a daisy and a smiling bee" width="600" height="600" loading="lazy" decoding="async">
+        <h3 class="preview__name">Sunflower, Daisy &amp; Bee Crochet Bouquet</h3>
+        <p class="preview__price">₹479</p>
+      </li>
+      <li>
+        <img src="/products/evil-eye-crochet-keychain.webp" alt="Crochet evil eye keychain held in a hand" width="600" height="600" loading="lazy" decoding="async">
+        <h3 class="preview__name">Evil Eye Crochet Keychain</h3>
+        <p class="preview__price">From ₹109</p>
+      </li>
+    </ul>
+    <p class="preview__note">Prices are in Indian rupees and include GST. The new shop opens soon; ordering there isn’t open yet.</p>
+  </section>
+  <!-- preview:end -->
+
+  <!-- footer:start -->
+  <footer class="site-foot" data-reveal style="--d:3.5s">
+    <ul>
+      <li><a href="/policies/shipping-policy">Shipping</a></li>
+      <li><a href="/policies/refund-policy">Refunds</a></li>
+      <li><a href="/policies/terms-of-service">Terms</a></li>
+      <li><a href="/policies/privacy-policy">Privacy</a></li>
+      <li><a href="/policies/contact-information">Contact information</a></li>
+      <li><a href="/pages/contact">Contact us</a></li>
+      <li><a href="/pages/our-story">Our story</a></li>
+    </ul>
     <p>© 2026 Yarn Basket · Handmade in India</p>
   </footer>
+  <!-- footer:end -->
 </body>
 </html>
