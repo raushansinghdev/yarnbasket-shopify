@@ -2,6 +2,38 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-11 (Cashfree is the main gateway, Razorpay the backup)
+
+- **Cashfree takes the payments while its offer lasts** (Raushan): 0% instead of 1.95% on the first ₹20 lakh of sales, until 31 March 2027, for new merchants. UPI, ordinary cards and net banking are covered; Amex, corporate cards, EMI and pay-later are not. Its terms say GST on platform fees "is not waived": read that line before counting on a true zero.
+- **Razorpay stays as the backup,** so one gateway's outage, hold or rejection doesn't stop sales. Both accounts use weyarnbasket@gmail.com, Priya Singh's proprietorship, category "Gift Shops" and `https://yarnbasket.in`.
+- **Open: which of the two connects inside Shiprocket Checkout.** A listing names Cashfree among its gateways; Cashfree's integrations FAQ says it does not integrate with Shiprocket. Ask on the quote call. If Cashfree doesn't connect there, Razorpay goes inside Shiprocket Checkout as first planned and Cashfree sits in Shopify's checkout.
+- **State:** Cashfree applied 2026-10-11, in review. Razorpay waits on a Udyam certificate (a utility bill for the Piro address would also pass).
+
+## 2026-10-11 (Razorpay: account, and what its reviewer can read)
+
+Raushan is opening the Razorpay account. The store is on the Development plan behind the password, so every `/policies/...` address redirects to the password page, and yarnbasket.in was a one-page holding site.
+
+- **The policies, Contact, Our story and eight priced pieces are on yarnbasket.in now** (Raushan chose this over waiting, opening the store early, or sending Razorpay the password). They sit at the addresses Shopify will serve later, so the links given to Razorpay keep working when the domain moves. Accepted risk: the reviewer may still want a working shop; then the store opens early, after cleanup.
+- **One copy of every rule.** `tools/coming-soon-build.mjs` writes the pages from `docs/legal/`, the store's Privacy policy and the theme's Our story text; nothing is typed twice. `--check` fails when the files no longer match.
+- **The preview shows the store's prices and has no buy button.** Meesho's prices differ, so no piece links to Meesho; the line under the grid says ordering isn't open yet.
+- **Razorpay stays the gateway, and it is needed whatever Shiprocket offers:** it is what makes Shopify's own checkout (the fallback) take money. Account: weyarnbasket@gmail.com, Priya Singh's sole proprietorship. Still to ask Shiprocket: whether our own Razorpay account connects inside Shiprocket Checkout (their help page names no gateways, and they now sell Shiprocket Payments).
+
+## 2026-10-11 (help pages and policies; docs/help-pages-plan.md)
+
+Raushan asked what stands before launch; the Help pages and policies came first because Razorpay's review looks for them and nothing outside blocks them.
+
+- **Shipping & delivery and Returns & refunds are Shopify's own policy pages** (`/policies/shipping-policy`, `/policies/refund-policy`), written in plain words and styled by the theme. No second, friendlier copy as theme pages: every rule is written once, and the footer, checkout and the payment gateway read the same text.
+- **Dispatch is 1 to 2 working days for every listed piece** (Raushan). Custom pieces: time agreed first. The Terms draft and the Contact page said "1 to 3, made-to-order 3 to 7"; both corrected. Courier time is written as "usually 3 to 7 days after dispatch" until Raushan says otherwise.
+- **Policies hold no Liquid, so the Shipping policy's amounts are plain text.** Check 25 fails when they differ from Theme settings → Cart. Changing the delivery fee or the free-delivery line now means four places: Theme settings, the shipping rate, (the gift discount,) and `docs/legal/shipping-policy.html` saved to the store.
+- **The FAQ is one page, `/pages/faq`,** the existing FAQ section with named groups (new "Group heading" block, up to 30 blocks, "This is the page's title" setting). Home and Contact link to it as "All questions"; the product page's short list does not, so ad traffic stays on the product.
+- **Policy pages get the page grid and one line, "Still have a question? Contact us"** (help has one place).
+- **Footer Help list = the menu's six** (Track order, Shipping & delivery, Returns & refunds, FAQ, Contact us, Our story); "Your account" and "Saved items" leave it (both are in the header). The small policy row skips any policy the Help list already links.
+- **Our story and the Terms name only Priya Singh as the maker and owner** (Raushan, 2026-10-11: "add only Priya, remove Punam"; the GST registration is hers). The Terms' overview no longer says "run by Priya Singh and Punam Devi".
+- **Our story: Claude drafts, Raushan corrects and sends photos.** Mock-ups: `docs/mockups/our-story-phone.png`, `our-story-desktop.png`. Built the same day once he sent the facts.
+- **Admin changes (Claude, Admin API, 2026-10-11):** pages "FAQ" and "Our story" created (handles `faq`, `our-story`, their own templates, SEO title and description); the Refund, Shipping, Contact information and Terms policies saved from `docs/legal/`; main menu → Help and the footer's Help list set to the six links. All read back.
+- **The phone footer's height limit follows its content** (check 19): Help lines past four and a second row of policy links add their own height. The footer is 607px at 360px wide, from 526px; nothing else in it changed.
+- **Our story's words** come from Raushan's facts: Priya taught herself from YouTube, friends loved the pieces and began buying; about half an hour for a keychain, about an hour for a bouquet. Two chapters borrow a product photo until real ones arrive.
+
 ## 2026-10-10 (collection page: filters, sort, 4 across)
 
 Raushan asked for the collection page to be designed from scratch, with filters and sort, and thought five across was too many. Plan, mock-ups and "As built": `docs/collection-plan.md`.

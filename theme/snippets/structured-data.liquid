@@ -1,6 +1,6 @@
 {%- doc -%}
   JSON-LD for search engines and AI answer engines.
-  Home: Organization and WebSite (with site search). Contact page: ContactPage with how to reach us. Product: our own Product data with one Offer per variant, shipping and a breadcrumb
+  Home: Organization and WebSite (with site search). Contact page: ContactPage with how to reach us. Our story: AboutPage. Product: our own Product data with one Offer per variant, shipping and a breadcrumb
   (docs/product-page-plan.md).
   The home page FAQ section outputs its own FAQPage data.
 {%- enddoc -%}
@@ -158,6 +158,26 @@
           ]
         }
       ]
+    }
+  </script>
+{%- elsif request.page_type == 'page' and page.handle == 'our-story' -%}
+  {%- comment -%} Who we are (docs/help-pages-plan.md): the page is about the shop itself. {%- endcomment -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "@id": {{ shop.url | append: page.url | append: '#aboutpage' | json }},
+      "url": {{ shop.url | append: page.url | json }},
+      "name": {{ page.title | json }},
+      "inLanguage": "en-IN",
+      "mainEntity": {
+        "@type": "Organization",
+        "@id": {{ shop.url | append: '/#organization' | json }},
+        "name": {{ shop.name | json }},
+        "url": {{ shop.url | json }},
+        "founder": { "@type": "Person", "name": "Priya Singh" },
+        "address": { "@type": "PostalAddress", "addressLocality": "Piro", "addressRegion": "Bihar", "addressCountry": "IN" }
+      }
     }
   </script>
 {%- elsif request.page_type == 'page' and page.handle == 'contact' -%}

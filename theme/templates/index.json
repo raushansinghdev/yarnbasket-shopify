@@ -100,6 +100,7 @@
         "heading": "One stitch at a time",
         "text": "<p>Every piece is crocheted by hand with soft yarn, one stitch at a time. No machines, no shortcuts, so no two pieces are ever quite the same.</p>",
         "link_label": "Our story",
+        "link_url": "shopify://pages/our-story",
         "scheme": "soft"
       }
     },
@@ -213,7 +214,8 @@
       "settings": {
         "eyebrow": "Good to know",
         "heading": "Questions, answered",
-        "link_label": "",
+        "link_label": "All questions",
+        "link_url": "shopify://pages/faq",
         "scheme": "soft"
       },
       "blocks": {

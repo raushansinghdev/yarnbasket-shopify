@@ -9,19 +9,23 @@ Things to finish in the Shopify admin (Raushan) before the store opens. Deferred
 - [x] "Include sales tax in product price and shipping rate" is on
 
 ## Legal
-- [ ] **Terms of service:** paste `docs/legal/terms-of-service.html` (Settings → Policies → Terms of service → `</>` code view → paste → Save). First confirm the assumptions it makes:
+- [x] **All four policies saved to the store 2026-10-11** (Claude, from `docs/legal/`; docs/help-pages-plan.md): Refund, Shipping, Contact information, and the corrected Terms. `npm run check -- --only 25` reads them. Left: Raushan reads them once, and the lawyer or CA review below.
+- [ ] **Our story:** 2 to 3 real photos of Priya and the making, in place of the borrowed product photos.
+- [x] **Store contact email** (Settings → General) is weyarnbasket@gmail.com (Raushan, 2026-10-11); the automatic Privacy policy shows it.
+- [ ] **Changing the delivery fee or free-delivery amount:** also edit `docs/legal/shipping-policy.html` and save it to the store (check 25 compares them).
+- [x] **Terms of service:** saved 2026-10-11 (see the first line). Was: paste `docs/legal/terms-of-service.html` (Settings → Policies → Terms of service → `</>` code view → paste → Save). First confirm the assumptions it makes:
   - support hours Mon–Sat 10am–6pm
   - COD "may carry a small fee"
   - a photo before dispatch for custom pieces
   - prices include GST
   - reviews credited by first name
   - liability capped at the order amount
-- [ ] **Refund policy:** to be written to match the terms:
+- [x] **Refund policy:** to be written to match the terms:
   - no change-of-mind returns
   - damaged, wrong or missing items reported within 48h with an unboxing video
   - replacement or full refund, paid within 5–7 working days; COD refunds to UPI or bank
   - creased bouquet paper isn't damage
-- [ ] **Contact information policy** (marked "Required"):
+- [x] **Contact information policy** (marked "Required"):
   - Yarn Basket, sole proprietorship of Priya Singh
   - Piro, Bhojpur, Bihar 802207
   - weyarnbasket@gmail.com, +91 93219 79410
@@ -50,7 +54,7 @@ Things to finish in the Shopify admin (Raushan) before the store opens. Deferred
 - [ ] Sign in once on the preview link so the signed-in states can be checked
 
 ## Account page (docs/account-hub-plan.md, built 2026-10-03)
-- [ ] **Page "Your account"** (Online Store → Pages → Add page): title "Your account", handle `account`, content empty. The handle is what matters: the header menu, the drawer row and the Help links find it by handle, whatever template the admin shows.
+- [x] **Page "Your account"** (exists: read from the store 2026-10-11) (Online Store → Pages → Add page): title "Your account", handle `account`, content empty. The handle is what matters: the header menu, the drawer row and the Help links find it by handle, whatever template the admin shows.
 - [ ] **Customer account main menu** (Content → Menus): Orders, Profile, Saved (`/pages/saved`), Help (the Contact page; changed from `/pages/account#help` on 2026-10-08, when the account page's help panel was removed). Remove "Track an order": once signed in, the orders are right there. The Track page stays for guests (Help menu and the account page).
 - [ ] **Sign in once and look at the signed-in states:** the header menu (initial, latest order, Sign out), the account page's real orders (Track parcel / Buy again / Need help?), Your details, then Sign out → "You're signed out" on the page you were on. Signing in needs an email code, so this can't be scripted.
 - [ ] **Before launch:** delete `theme/templates/page.account-demo.json` with the other demo files (it shows made-up orders, and only while Demo content is on).
@@ -82,17 +86,21 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
   - [ ] Shop collection: set its sort order to manual or best selling, so "Featured" is an order someone chose
 - [ ] Bestsellers collection
 - [x] WhatsApp number, Instagram link and Contact email in Theme settings → Social: set 2026-10-06 in `theme/config/settings_data.json` (+91 93219 79410, instagram.com/yarnbasket.in, weyarnbasket@gmail.com). The live theme keeps its own settings: check they are there after publishing.
-- [ ] Help menu (Content → Menus → Help): add Shipping & delivery, Returns, FAQ and Our story as those pages are written
+- [x] Help lists in the main menu and the footer (Claude, `menuUpdate`, 2026-10-11): Track order, Shipping & delivery, Returns & refunds, FAQ, Contact us, Our story
 - [ ] Payment gateway, COD, shipping and checkout: see "Shipping, payments and checkout" below
 
 - [ ] **Contact page (docs/contact-plan.md, built 2026-10-08):**
-  - **Sender email:** Settings → Notifications → Sender email → weyarnbasket@gmail.com, then confirm the link Shopify sends there. Today it is singhraushan2410@gmail.com: contact form messages land there (Raushan's test, 2026-10-08) and customers see it on order emails. Then send one more message from `/pages/contact` to see it arrive in the business inbox
+  - **Sender email: done** (Raushan, 2026-10-11). Was: Settings → Notifications → Sender email → weyarnbasket@gmail.com, then confirm the link Shopify sends there. Today it is singhraushan2410@gmail.com: contact form messages land there (Raushan's test, 2026-10-08) and customers see it on order emails. Then send one more message from `/pages/contact` to see it arrive in the business inbox
   - the Contact page's template is `contact` (it is: Shopify's default for that page; read from the store 2026-10-08). Its SEO title and description were set the same day
   - after publishing, Theme settings → Social on the live theme has the Grievance officer
 
 ## Shipping, payments and checkout (docs/shipping-checkout-comparison.md, decided 2026-10-03)
 Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with Razorpay connected inside it, partial COD only (no full COD). Shopify's checkout with Razorpay stays as the fallback. Do them in this order:
-- [ ] **Razorpay account** (business KYC takes days, so start it first). Connect it in Shopify (Settings → Payments), so Shopify's checkout works as the fallback.
+- [ ] **Cashfree account, the main gateway** (docs/decisions.md 2026-10-11): applied by Raushan 2026-10-11, in review. Then connect it where Shiprocket's answer allows.
+- [ ] **Razorpay account** (started by Raushan 2026-10-11): sign up with weyarnbasket@gmail.com as Priya Singh's sole proprietorship; website `https://yarnbasket.in`. Its reviewer reads the holding site, not the store.
+- [ ] **While the holding site shows policies and prices:** after any change to `docs/legal/`, a Bestsellers price or name, or the Our story text, run `npm run build:coming-soon`, then commit and push `coming-soon/`. `node tools/coming-soon-build.mjs --check` says whether it is out of date.
+- [ ] **At launch:** the domain moves to Shopify and `coming-soon/`, its workflow and `tools/coming-soon-build.mjs` are deleted.
+- [ ] **Razorpay in Shopify** (business KYC takes days, so start it first). Connect it in Shopify (Settings → Payments), so Shopify's checkout works as the fallback.
 - [ ] **Shiprocket shipping account**, connected to Shopify as an app. Pickup address Piro. Check freight for our real box sizes in the rate calculator: couriers bill the higher of real weight and L × W × H ÷ 5000, and the ₹99 fee and free shipping from ₹999 must hold against that. At 200–300 parcels a month, price the ₹499 or ₹799 plan.
 - [ ] **Shiprocket Checkout quote.** Ask: is there a monthly minimum (ask for a percentage plan); does it need our own Razorpay account; can our own Checkout button open their pop-up; how refunds are made.
 - [ ] **Set up in Shiprocket Checkout:** shipping ₹99 below ₹999 and free from ₹999; the free keychain over ₹1,499 (automatic "Buy X get Y", Y free, 1 per order); partial COD rule (percentage upfront) and "Disable COD" for full COD; phone OTP on or off.

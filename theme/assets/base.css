@@ -208,6 +208,24 @@ h3, .h3 { font-size: var(--fs-h3); line-height: 1.15; }
 }
 .rte > * + * { margin-top: var(--space-4); }
 .rte a { text-decoration-color: var(--color-accent); text-underline-offset: 3px; }
+
+/* ---------- Policy pages (/policies/*) ----------
+   Shopify writes the markup and brings its own centred, padded box; ours is a reading column that starts at the
+   page's left edge like every other page (docs/help-pages-plan.md). */
+.policy { padding-block: var(--space-7) var(--section-space); }
+.policy .shopify-policy__container { max-width: 42rem; margin: 0; padding: 0; }
+.policy .shopify-policy__title { text-align: start; }
+.policy .shopify-policy__title h1 { font-size: var(--fs-h2); line-height: 1.05; margin-bottom: var(--space-5); }
+.policy .shopify-policy__body h2 { font-size: var(--fs-h3); line-height: 1.15; }
+/* The text arrives without our .rte wrapper, so its rhythm is set here. */
+.policy .shopify-policy__body :is(p, ul, ol, h2, h3, table) { margin-top: var(--space-4); }
+.policy .shopify-policy__body :is(h2, h3) { margin-top: var(--space-7); }
+.policy .shopify-policy__body > :first-child, .policy .shopify-policy__body > div > :first-child { margin-top: 0; }
+.policy .shopify-policy__body a { text-decoration-color: var(--color-accent); text-underline-offset: 3px; }
+.policy .shopify-policy__body :is(ul, ol) { padding-inline-start: 1.25em; }
+.policy .shopify-policy__body li + li { margin-top: var(--space-2); }
+.policy .shopify-policy__body a { overflow-wrap: anywhere; }
+.policy__more { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); max-width: 42rem; margin-top: var(--space-7); padding-top: var(--space-5); border-top: 1px solid var(--color-line-strong); }
 .visually-hidden {
   position: absolute !important;
   width: 1px; height: 1px;

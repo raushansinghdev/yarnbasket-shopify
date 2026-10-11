@@ -59,9 +59,9 @@
           assign pills = true
           assign all_link = true
         when 4
-          assign kt = 'Track order|Shipping & delivery|FAQ|Contact us|Our story'
-          assign kh = 'track-order|shipping|faq|contact|our-story'
-          assign ku = track_url | append: '|/pages/contact|' | append: routes.root_url | append: '|/pages/contact|' | append: routes.root_url
+          assign kt = 'Track order|Shipping & delivery|Returns & refunds|FAQ|Contact us|Our story'
+          assign kh = 'track-order|shipping|returns|faq|contact|our-story'
+          assign ku = track_url | append: '|/policies/shipping-policy|/policies/refund-policy|/pages/faq|/pages/contact|/pages/our-story'
           if request.path == '/pages/contact'
             assign here = true
           endif

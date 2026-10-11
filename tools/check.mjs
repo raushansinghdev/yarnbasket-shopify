@@ -1691,7 +1691,8 @@ if (want('18')) {
 // 19. The footer (docs/footer-plan.md): on a 360px phone the Shop and Help lists sit side by side, every list, the
 //     signature and the last lines share one left edge, it is at most 540px tall and every link is at least 32px
 //     tall; no sideways scroll and no link cut off down to 320. A desktop has the signature and the list headings
-//     on one line, at most 440px tall. Payment icons and Help lines beyond seven add their own height to the limits.
+//     on one line, at most 440px tall. Payment icons, Help lines beyond seven (beyond four on a phone, where "Say
+//     hello" sits under Help) and a second row of policy links add their own height to the limits.
 if (want('19')) {
   const measure = async (engine, viewport, phone = true) => {
     const { browser, page } = await open(engine, { viewport, deviceScaleFactor: 2, isMobile: phone, hasTouch: phone }, { reducedMotion: 'reduce' });
@@ -1713,7 +1714,10 @@ if (want('19')) {
         headsLevel: heads.length > 0 && Math.max(...heads) - Math.min(...heads) < 2,
         signBeside: lists.length > 0 && box('.footer__sign').right <= lists[0].left && box('.footer__sign').top < lists[0].bottom,
         cut: [...f.querySelectorAll('a, h2, p')].filter((el) => el.scrollWidth > el.clientWidth + 1).length,
-        extra: Math.round(f.querySelector('.footer__payments')?.getBoundingClientRect().height ?? 0) + 36 * Math.max(0, help - 7, shop - 7),
+        // On a phone "Say hello" sits under Help, so that column is as tall as Shop's seven lines at four Help lines;
+        // each line past that, and each further row of policy links, adds its own height (docs/help-pages-plan.md).
+        extra: Math.round(f.querySelector('.footer__payments')?.getBoundingClientRect().height ?? 0) + 36 * Math.max(0, help - (innerWidth < 750 ? 4 : 7), shop - 7)
+          + 32 * Math.max(0, new Set([...f.querySelectorAll('.footer__policies a')].map((a) => Math.round(a.getBoundingClientRect().top))).size - 1),
         sideways: document.documentElement.scrollWidth > innerWidth + 1,
       };
     });
@@ -2736,6 +2740,92 @@ if (want('23')) {
     record('Contact: works without JavaScript', !!n && n.fields === 4 && n.pills === 6 && /\/contact/.test(n.action) && n.method === 'post' && n.native, n ? `${n.fields} fields and ${n.pills} topic pills shown, posts to ${n.action}, browser's own checks: ${n.native}` : 'no form');
     await browser.close();
   }
+}
+
+// 25. Help pages (docs/help-pages-plan.md): every link in the header's and the footer's Help lists opens a real page
+//     with one heading; the footer names no page twice; the store has its four policies, each fits a 320px phone,
+//     passes axe and ends with the way on to Contact; the Shipping policy charges what Theme settings → Cart charge
+//     (it is plain text in the admin, so nothing else keeps the two together); dispatch is "1 to 2" days wherever it
+//     is said; the FAQ page is grouped under one h1 and writes one FAQPage for search engines.
+if (want('25')) {
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const phone = { ...devices['Pixel 7'], viewport: { width: 360, height: 800 } };
+  const axeRun = async (page) => {
+    await page.addScriptTag({ content: axe.source });
+    return page.evaluate(async () => (await window.axe.run(document.querySelector('main'), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+  };
+  const { browser, page } = await open(chromium, phone, { reducedMotion: 'reduce' });
+  const text = async (path) => { const r = await page.goto(site(path), { waitUntil: 'load' }); return r.status() === 200 ? page.evaluate(() => document.querySelector('main').innerText) : null; };
+
+  // The Help lists.
+  const lists = await page.evaluate(() => {
+    const paths = (els) => [...els].map((a) => new URL(a.href).pathname);
+    const help = [...document.querySelectorAll('.site-header__sub-list, .drawer__sub')].find((l) => /track/i.test(l.textContent));
+    return { menu: help ? paths(help.querySelectorAll('a')) : [], footer: paths(document.querySelectorAll('.footer__list--help a')), policies: paths(document.querySelectorAll('.footer__policies a')) };
+  });
+  const dead = [];
+  for (const path of new Set([...lists.menu, ...lists.footer, ...lists.policies])) {
+    const r = await page.goto(site(path), { waitUntil: 'load' });
+    const h1 = await page.locator('main h1').count();
+    if (r.status() !== 200 || new globalThis.URL(page.url()).pathname !== path || h1 !== 1) dead.push(`${path} (${r.status()}, ${h1} h1)`);
+  }
+  record('Help: every Help link opens a real page', lists.menu.length >= 2 && lists.footer.length >= 2 && dead.length === 0, `${lists.menu.length} in the menu, ${lists.footer.length} + ${lists.policies.length} in the footer; ${dead.join(', ') || 'none dead'}`);
+  const twice = [...lists.footer, ...lists.policies].filter((x, i, all) => all.indexOf(x) !== i);
+  record('Help: the footer names no page twice', twice.length === 0, twice.join(', ') || 'none');
+
+  // The policies.
+  const POLICIES = ['refund-policy', 'shipping-policy', 'terms-of-service', 'privacy-policy'];
+  const body = {};
+  for (const handle of POLICIES) {
+    body[handle] = await text(`/policies/${handle}`);
+    if (!body[handle]) { record(`Help: ${handle}`, false, 'the store has no such policy (Settings → Policies; text in docs/legal/)'); continue; }
+    const v = await axeRun(page);
+    const m = { h1: await page.locator('main h1').count(), on: await page.locator('.policy__more a[href*="contact"]').count() };
+    await page.setViewportSize({ width: 320, height: 640 });
+    m.sideways = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
+    await page.setViewportSize({ width: 360, height: 800 });
+    record(`Help: ${handle} fits, one heading, a way on (axe)`, m.h1 === 1 && m.on === 1 && !m.sideways && v.length === 0, `h1: ${m.h1}, Contact link: ${m.on}, sideways at 320: ${m.sideways}; ${v.join(', ') || '0 violations'}`);
+  }
+
+  // The FAQ page, and what the theme charges for delivery (its "Shipping and offers" answer is written from Theme settings).
+  const faq = await text('/pages/faq');
+  if (!faq) record('Help: FAQ page', false, 'no page at /pages/faq');
+  else {
+    const v = await axeRun(page);
+    const m = await page.evaluate(() => {
+      const data = [...document.querySelectorAll('script[type="application/ld+json"]')].map((s) => { try { return JSON.parse(s.textContent); } catch { return { '@type': 'broken' }; } }).filter((d) => d['@type'] === 'FAQPage' || d['@type'] === 'broken');
+      return { h1: document.querySelectorAll('main h1').length, groups: document.querySelectorAll('.faq__group h2').length, questions: document.querySelectorAll('.faq__item').length, data: data.length, named: data[0]?.mainEntity?.length || 0,
+        offers: [...document.querySelectorAll('.faq__answer')].map((a) => a.textContent).find((t) => /free on orders/i.test(t)) || '' };
+    });
+    record('Help: FAQ page is grouped, one heading, one FAQPage (axe)', m.h1 === 1 && m.groups >= 3 && m.questions >= 10 && m.data === 1 && m.named === m.questions && v.length === 0, `h1: ${m.h1}, ${m.groups} groups, ${m.questions} questions, ${m.data} FAQPage naming ${m.named}; ${v.join(', ') || '0 violations'}`);
+    const rupees = (t) => [...t.matchAll(/₹\s?([\d,]+)/g)].map((x) => +x[1].replace(/,/g, ''));
+    const [free, fee] = rupees(m.offers);
+    if (!free) console.log('SKIP  Help: Shipping policy amounts                      free delivery is off in Theme settings → Cart');
+    else if (body['shipping-policy']) {
+      const said = [...new Set(rupees(body['shipping-policy']))];
+      const wrong = said.filter((n) => n !== free && n !== fee);
+      record('Help: the Shipping policy charges what the cart charges', said.includes(free) && (!fee || said.includes(fee)) && wrong.length === 0, `Theme settings: free from ₹${free}, ₹${fee || 0} below; the policy names ₹${said.join(', ₹') || 'nothing'}`);
+    }
+  }
+
+  // Our story.
+  if (!(await text('/pages/our-story'))) record('Help: Our story page', false, 'no page at /pages/our-story');
+  else {
+    const v = await axeRun(page);
+    const m = await page.evaluate(() => ({ h1: document.querySelectorAll('main h1').length, chapters: document.querySelectorAll('.our-story__chapter').length, blanks: /to confirm|\[/i.test(document.querySelector('.our-story').innerText),
+      noAlt: [...document.querySelectorAll('.our-story img')].filter((i) => !i.hasAttribute('alt')).length, about: [...document.querySelectorAll('script[type="application/ld+json"]')].filter((s) => /"AboutPage"/.test(s.textContent)).length,
+      shop: document.querySelector('.our-story__actions .btn')?.getAttribute('href') || '' }));
+    await page.setViewportSize({ width: 320, height: 640 });
+    m.sideways = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
+    await page.setViewportSize({ width: 360, height: 800 });
+    record('Help: Our story fits, one heading, no blanks left (axe)', m.h1 === 1 && m.chapters >= 2 && !m.blanks && m.noAlt === 0 && m.about === 1 && /collections\//.test(m.shop) && !m.sideways && v.length === 0, `h1: ${m.h1}, ${m.chapters} chapters, unfinished text: ${m.blanks}, photos without alt: ${m.noAlt}, AboutPage: ${m.about}, shop button → ${m.shop}, sideways at 320: ${m.sideways}; ${v.join(', ') || '0 violations'}`);
+  }
+
+  // Dispatch time, wherever it is said.
+  const said = { FAQ: faq, 'Shipping policy': body['shipping-policy'], Terms: body['terms-of-service'], 'Refund policy': body['refund-policy'], Contact: await text('/pages/contact') };
+  const off = Object.entries(said).filter(([, t]) => t && (/1 to 3 (working )?days|made-to-order/i.test(t) || (/dispatch/i.test(t) && !/1 to 2 working days/.test(t)))).map(([k]) => k);
+  record('Help: dispatch is "1 to 2 working days" everywhere', off.length === 0, off.length ? `says otherwise, or doesn't say: ${off.join(', ')}` : Object.keys(said).filter((k) => said[k]).join(', '));
+  await browser.close();
 }
 
 // Money (tools/money-check.mjs, docs/decisions.md 2026-10-05): every price shown is the store's and follows the price

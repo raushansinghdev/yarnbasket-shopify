@@ -1,0 +1,118 @@
+{%- comment -%}
+  The Our story page (docs/help-pages-plan.md): a short opening, then chapters of one photo beside a few lines, then
+  the way back to the shop. A chapter with no photo is words only. Until a photo is picked, a chapter can borrow a
+  product's photo, so the page never shows an empty frame.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+
+<div class="section our-story scheme-{{ s.scheme }}">
+  <header class="our-story__open" data-arrive="lines">
+    {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    <h1 class="our-story__title">{{ s.heading | default: page.title }}</h1>
+    {%- if s.text != blank -%}<p class="lead our-story__lead">{{ s.text }}</p>{%- endif -%}
+  </header>
+
+  {%- for block in section.blocks -%}
+    {%- liquid
+      assign b = block.settings
+      assign photo = b.image | default: b.product.featured_image
+    -%}
+    <section class="our-story__chapter{% if photo == blank %} our-story__chapter--words{% endif %}" aria-labelledby="Chapter-{{ block.id }}" {{ block.shopify_attributes }}>
+      {%- if photo != blank -%}
+        <div class="media our-story__media" data-arrive="settle">
+          {%- comment -%} A borrowed product photo is decoration here: the product isn't what the lines beside it are about. {%- endcomment -%}
+          {%- if b.image != blank -%}
+            {%- render 'image', image: photo, sizes: '(min-width: 990px) 38vw, calc(100vw - 40px)', width: 1600 -%}
+          {%- else -%}
+            {%- render 'image', image: photo, sizes: '(min-width: 990px) 38vw, calc(100vw - 40px)', width: 1600, decorative: true -%}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+      <div class="our-story__copy" data-arrive="lines">
+        {%- if b.eyebrow != blank -%}<p class="eyebrow">{{ b.eyebrow }}</p>{%- endif -%}
+        <h2 class="h3 our-story__heading" id="Chapter-{{ block.id }}">{{ b.heading }}</h2>
+        <div class="rte">{{ b.text }}</div>
+      </div>
+    </section>
+  {%- endfor -%}
+
+  {%- if s.close_heading != blank -%}
+    <div class="our-story__close" data-arrive="lines">
+      <h2 class="h3">{{ s.close_heading }}</h2>
+      {%- if s.close_text != blank -%}<p>{{ s.close_text }}</p>{%- endif -%}
+      <div class="our-story__actions">
+        {%- if s.shop_label != blank and s.shop_url != blank -%}
+          <a class="btn" href="{{ s.shop_url }}">{{ s.shop_label }}</a>
+        {%- endif -%}
+        {%- if s.ask_label != blank -%}
+          <a class="btn btn--ghost" href="{{ pages.contact.url | default: '/pages/contact' }}?topic=custom#ContactForm">{{ s.ask_label }}</a>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .our-story { padding-block: var(--space-7) var(--section-space); }
+  .our-story__open { display: grid; gap: var(--space-3); max-width: 40rem; }
+  .our-story__title { font-size: var(--fs-h2); line-height: 1.05; }
+  .our-story__lead { color: var(--color-ink); }
+
+  .our-story__chapter { display: grid; gap: var(--space-5); margin-top: var(--space-8); }
+  .our-story__media { --ratio: 1 / 1; }
+  .our-story__copy { display: grid; gap: var(--space-3); align-content: start; max-width: 34rem; }
+
+  .our-story__close { display: grid; gap: var(--space-3); max-width: 34rem; margin-top: var(--space-9); padding-top: var(--space-7); border-top: 1px solid var(--color-line-strong); }
+  .our-story__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
+
+  @media (min-width: 750px) {
+    .our-story__chapter { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--space-8); align-items: center; margin-top: var(--space-9); }
+    /* The photo changes sides from one chapter to the next. */
+    .our-story__chapter:nth-of-type(even) .our-story__media { order: 2; }
+    /* Words only: the lines keep the text column of the chapters around them. */
+    .our-story__chapter--words .our-story__copy { grid-column: 2; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Our story",
+  "tag": "div",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Our story" },
+    { "type": "text", "id": "heading", "label": "Title", "info": "The page's main heading." },
+    { "type": "textarea", "id": "text", "label": "Opening lines" },
+    { "type": "header", "content": "The close" },
+    { "type": "text", "id": "close_heading", "label": "Heading" },
+    { "type": "text", "id": "close_text", "label": "Line" },
+    { "type": "text", "id": "shop_label", "label": "Shop button" },
+    { "type": "url", "id": "shop_url", "label": "Shop button link" },
+    { "type": "text", "id": "ask_label", "label": "Custom order button", "info": "Opens the Contact page on \"Custom or bulk order\"." },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "white", "label": "White" },
+        { "value": "soft", "label": "Soft blush" }
+      ],
+      "default": "white"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "chapter",
+      "name": "Chapter",
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Small label" },
+        { "type": "text", "id": "heading", "label": "Heading" },
+        { "type": "richtext", "id": "text", "label": "Text" },
+        { "type": "image_picker", "id": "image", "label": "Photo", "info": "A real photo of the making. Square works best. Write its alt text in Files." },
+        { "type": "product", "id": "product", "label": "Stand-in photo", "info": "Until a photo is picked, this product's photo is shown. Leave both empty for words only." }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Our story" }]
+}
+{% endschema %}

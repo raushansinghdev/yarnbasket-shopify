@@ -1,0 +1,195 @@
+{
+  "sections": {
+    "main": {
+      "type": "faq",
+      "blocks": {
+        "g1": {
+          "type": "group",
+          "settings": {
+            "title": "Orders & delivery"
+          }
+        },
+        "delivery": {
+          "type": "question",
+          "settings": {
+            "question": "How long does delivery take?",
+            "answer": "<p>We dispatch every order within 1 to 2 working days. After that, most parcels arrive in 3 to 7 days, depending on where you live. The <a href=\"/policies/shipping-policy\">Shipping policy</a> has the details.</p>"
+          }
+        },
+        "offers": {
+          "type": "offers",
+          "settings": {
+            "question": "What does delivery cost?",
+            "extra": ""
+          }
+        },
+        "where": {
+          "type": "question",
+          "settings": {
+            "question": "Where do you deliver?",
+            "answer": "<p>Anywhere in India that our couriers reach. We do not deliver outside India yet.</p>"
+          }
+        },
+        "track": {
+          "type": "question",
+          "settings": {
+            "question": "How do I track my order?",
+            "answer": "<p>We send you a tracking link by email, SMS or WhatsApp as soon as your parcel is with the courier. You can also follow it from <a href=\"/pages/track-order\">Track your order</a>.</p>"
+          }
+        },
+        "change": {
+          "type": "question",
+          "settings": {
+            "question": "Can I change or cancel my order?",
+            "answer": "<p>Yes, until it is dispatched, which is usually within 1 to 2 working days. Message us quickly with your order number from the <a href=\"/pages/contact\">Contact page</a>. Once a parcel is with the courier, its address can no longer be changed and it can no longer be cancelled.</p>"
+          }
+        },
+        "g2": {
+          "type": "group",
+          "settings": {
+            "title": "Returns & refunds"
+          }
+        },
+        "damaged": {
+          "type": "question",
+          "settings": {
+            "question": "My order arrived damaged, or something is wrong. What now?",
+            "answer": "<p>Tell us within 48 hours of delivery, with an unboxing video or clear photos of the parcel being opened. We will send a replacement or give you a full refund. WhatsApp is the quickest way, because it can carry photos and videos. The <a href=\"/policies/refund-policy\">Refund policy</a> has the details.</p>"
+          }
+        },
+        "mind": {
+          "type": "question",
+          "settings": {
+            "question": "Can I return a piece if I change my mind?",
+            "answer": "<p>No. Every piece is made by hand, and many are gifts, so we do not take returns or exchanges for a change of mind. If you are unsure about a size or colour, ask us before you order: we are glad to help.</p>"
+          }
+        },
+        "refund": {
+          "type": "question",
+          "settings": {
+            "question": "How and when are refunds paid?",
+            "answer": "<p>To your original payment method, within 5 to 7 working days of our approving it. Your bank may take a few more days to show it.</p>"
+          }
+        },
+        "g3": {
+          "type": "group",
+          "settings": {
+            "title": "Our pieces"
+          }
+        },
+        "handmade": {
+          "type": "question",
+          "settings": {
+            "question": "Is everything really handmade?",
+            "answer": "<p>Yes. Every bouquet, keychain, hair clip and bag charm is crocheted by hand in India, one stitch at a time.</p>"
+          }
+        },
+        "photo": {
+          "type": "question",
+          "settings": {
+            "question": "Will my piece look exactly like the photo?",
+            "answer": "<p>Very close, but not identical. Each piece is made individually, so small differences in size, shape, stitch and shade are natural. Colours can also look a little different from one screen to another.</p>"
+          }
+        },
+        "fade": {
+          "type": "question",
+          "settings": {
+            "question": "Will the colours fade?",
+            "answer": "<p>Crochet never wilts and needs no water. Keep your pieces out of strong direct sunlight and their colours stay bright for years.</p>"
+          }
+        },
+        "care": {
+          "type": "question",
+          "settings": {
+            "question": "How do I care for my crochet?",
+            "answer": "<p>Hand wash in cool water. Press gently, don't wring. Dry flat in the shade.</p>"
+          }
+        },
+        "children": {
+          "type": "question",
+          "settings": {
+            "question": "Are the pieces safe for small children?",
+            "answer": "<p>Our pieces are decorative and gift items, not toys. Some have small parts such as keyrings, clips, beads or wire stems, so please keep them away from children under 3.</p>"
+          }
+        },
+        "g4": {
+          "type": "group",
+          "settings": {
+            "title": "Gifts & custom orders"
+          }
+        },
+        "note": {
+          "type": "question",
+          "settings": {
+            "question": "Can I add a gift note?",
+            "answer": "<p>Yes. In your cart, choose \"Add a gift note\" and write your message. We include it with your order.</p>"
+          }
+        },
+        "custom": {
+          "type": "question",
+          "settings": {
+            "question": "Can you make a custom or bulk order?",
+            "answer": "<p>Yes, gladly: your choice of colours, sizes or designs, names and initials, and larger orders for weddings, parties and gifting. We agree the details, price and timeline with you first, and start once it has been paid for. <a href=\"/pages/contact?topic=custom#ContactForm\">Tell us what you have in mind</a>.</p>"
+          }
+        },
+        "g5": {
+          "type": "group",
+          "settings": {
+            "title": "Payment & account"
+          }
+        },
+        "pay": {
+          "type": "question",
+          "settings": {
+            "question": "How can I pay?",
+            "answer": "<p>With UPI, debit or credit cards, net banking and wallets, through our secure payment partner. We never see or store your card details. All prices include GST.</p>"
+          }
+        },
+        "account": {
+          "type": "question",
+          "settings": {
+            "question": "Do I need an account to order?",
+            "answer": "<p>No. You can check out as a guest. If you sign in with the email you ordered with, you will see all your orders and their tracking in one place. There is no password: we email you a one-time code.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "g1",
+        "delivery",
+        "offers",
+        "where",
+        "track",
+        "change",
+        "g2",
+        "damaged",
+        "mind",
+        "refund",
+        "g3",
+        "handmade",
+        "photo",
+        "fade",
+        "care",
+        "children",
+        "g4",
+        "note",
+        "custom",
+        "g5",
+        "pay",
+        "account"
+      ],
+      "settings": {
+        "as_page": true,
+        "eyebrow": "Help",
+        "heading": "Questions, answered",
+        "text": "The things people ask us most. If yours isn't here, we're a message away.",
+        "link_label": "Contact us",
+        "link_url": "shopify://pages/contact",
+        "compact": false,
+        "scheme": "white"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

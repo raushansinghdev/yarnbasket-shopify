@@ -11,7 +11,7 @@
           "type": "question",
           "settings": {
             "question": "How long does delivery take?",
-            "answer": "<p>Ready-made pieces are usually dispatched within 1 to 3 working days. Made-to-order pieces are made for you within 3 to 7 working days, and then dispatched. We share the tracking link as soon as your parcel is with the courier.</p>"
+            "answer": "<p>We dispatch every order within 1 to 2 working days. After that, most parcels arrive in 3 to 7 days, depending on where you live. We share the tracking link as soon as your parcel is with the courier.</p>"
           }
         },
         "offers": {
@@ -45,7 +45,8 @@
       "settings": {
         "eyebrow": "",
         "heading": "Quick answers",
-        "link_label": "",
+        "link_label": "All questions",
+        "link_url": "shopify://pages/faq",
         "compact": true,
         "scheme": "soft"
       }

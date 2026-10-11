@@ -1,0 +1,93 @@
+{
+  "sections": {
+    "main": {
+      "type": "our-story",
+      "blocks": {
+        "start": {
+          "type": "chapter",
+          "settings": {
+            "eyebrow": "How it started",
+            "heading": "It began with a video and a ball of yarn",
+            "text": "<p>Priya taught herself to crochet from YouTube videos, one stitch at a time. Her first flowers went to friends, who loved them and soon asked to buy more.</p><p>That is how Yarn Basket began. Today her bouquets, keychains and hair pieces travel all over India.</p>",
+            "product": "single-rose-crochet-bouquet"
+          }
+        },
+        "maker": {
+          "type": "chapter",
+          "settings": {
+            "eyebrow": "Who makes it",
+            "heading": "Priya",
+            "text": "<p>There is no factory and no machine. Priya crochets every piece herself, and packs every parcel by hand.</p><p>She cares about the small things: a petal that sits right, a colour that feels warm, a parcel that is a joy to open. When you message us, she is the one who answers.</p>"
+          }
+        },
+        "made": {
+          "type": "chapter",
+          "settings": {
+            "eyebrow": "How a piece is made",
+            "heading": "Petal by petal",
+            "text": "<p>Every piece starts as a ball of soft yarn. Each petal and leaf is crocheted by hand, then shaped and joined into a flower.</p><p>A keychain takes about half an hour and a bouquet about an hour, more for larger and more detailed pieces. That is why no two are exactly alike, and why they never wilt.</p>",
+            "product": "sunflower-crochet-bouquet"
+          }
+        }
+      },
+      "block_order": [
+        "start",
+        "maker",
+        "made"
+      ],
+      "settings": {
+        "eyebrow": "Our story",
+        "heading": "Made by hand, by Priya",
+        "text": "Yarn Basket is a small crochet studio in Piro, Bihar. Everything you see here is made at home by Priya, one stitch at a time.",
+        "close_heading": "Find something made for you",
+        "close_text": "Or tell us what you have in mind: colours, names, or a larger order for a wedding or a party.",
+        "shop_label": "Shop bestsellers",
+        "shop_url": "shopify://collections/bestsellers",
+        "ask_label": "Ask for a custom piece",
+        "scheme": "white"
+      }
+    },
+    "promise": {
+      "type": "promise",
+      "settings": {
+        "label": "Our promise",
+        "scheme": "soft"
+      },
+      "blocks": {
+        "p1": {
+          "type": "item",
+          "settings": {
+            "icon": "makers",
+            "title": "Handmade in India",
+            "text": "Every piece made by hand, never by machine."
+          }
+        },
+        "p2": {
+          "type": "item",
+          "settings": {
+            "icon": "bouquets",
+            "title": "Made to last",
+            "text": "No wilting, no fading. Made to be kept for years."
+          }
+        },
+        "p3": {
+          "type": "item",
+          "settings": {
+            "icon": "how-to-order",
+            "title": "Packed with love",
+            "text": "Wrapped with care so it arrives just right."
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3"
+      ]
+    }
+  },
+  "order": [
+    "main",
+    "promise"
+  ]
+}
