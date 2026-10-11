@@ -1769,6 +1769,23 @@ if (want('20')) {
   };
   const ROSE = 'products/red-rose-crochet-bouquet';
 
+  // Option pills with a photo (round 11): every one shows a square picked for that photo, or the whole photo on
+  // purpose ("swatch" in tools/catalog/catalog.json). "none" is a new choice nobody has looked at, or a square
+  // whose photo has been replaced: the page shows the whole photo, and this names it.
+  {
+    const all = await fetch(at('collections/all/products.json?limit=250')).then((r) => r.json()).then((d) => d.products, () => []);
+    const withPhotos = all.filter((p) => !/test-product/.test([].concat(p.tags).join(',')) && new Set(p.variants.filter((v) => v.featured_image).map((v) => v.featured_image.id)).size > 1);
+    const missing = [];
+    let pills = 0;
+    for (const p of withPhotos) {
+      const html = await fetch(at(`products/${p.handle}`)).then((r) => r.text(), () => '');
+      const states = [...html.matchAll(/data-swatch="(\w+)"/g)].map((m) => m[1]);
+      pills += states.length;
+      if (!states.length || states.includes('none')) missing.push(p.handle);
+    }
+    record('Product, option pills: every photo has its swatch', withPhotos.length > 0 && missing.length === 0, missing.length ? `add "swatch" in catalog.json, then \`catalog-upload.py swatches\`: ${missing.join(', ')}` : `${pills} pills on ${withPhotos.length} products`);
+  }
+
   // First screen, speed and layout.
   {
     const { browser, page, errors, sizes } = await visit(`${ROSE}?utm_source=ig`, PHONE, { throttle: true });
@@ -2733,6 +2750,15 @@ if (want('23')) {
 if (want('24')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const shop = '/collections/shop';
+  // The craft chips' photos (product page round 11, carried here): each shows a square picked for that cover, or the
+  // whole cover on purpose ("swatch" on the collection in tools/catalog/catalog.json). "none" is a craft nobody has
+  // looked at, or a square whose cover has been replaced: the chip shows the whole cover, and this names it.
+  {
+    const html = await fetch(site(shop)).then((r) => r.text(), () => '');
+    const chips = [...html.matchAll(/class="search-chip cf-craft" href="([^"?]+)[^>]*>\s*<img[^>]*data-swatch="(\w+)"/g)].map((m) => [m[1].split('/').pop(), m[2]]);
+    const missing = chips.filter((c) => c[1] === 'none').map((c) => c[0]);
+    record('Collection, craft chips: every photo has its swatch', chips.length > 0 && missing.length === 0, missing.length ? `add "swatch" to the collection in catalog.json, then \`catalog-upload.py swatches\`: ${missing.join(', ')}` : `${chips.length} chips`);
+  }
   const axeRun = async (page) => {
     await page.addScriptTag({ content: axe.source });
     // The floating pill always lies over some card as the list runs under it; a heart it covers is reached by scrolling, so that one is not a small target.

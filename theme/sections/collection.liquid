@@ -151,7 +151,26 @@
           <li>
             <a class="search-chip cf-craft" href="{{ craft.url }}{{ carry }}" {% if craft.handle == collection.handle %}aria-current="page"{% endif %}>
               {%- if craft.featured_image -%}
-                <img src="{{ craft.featured_image | image_url: width: 96, height: 96, crop: 'center' }}" alt="" width="32" height="32" loading="eager" decoding="async">
+                {%- liquid
+                  # The piece itself, as on the product page's option pills: custom.swatch_crop on the collection is
+                  # "x y size photo-id", a square of its cover in percent, used only on the cover it was picked for
+                  # (tools/catalog/catalog.json, "swatch"). Anything else is the whole photo, marked "none" for the check.
+                  assign chip_src = craft.featured_image | image_url: width: 96, height: 96, crop: 'center'
+                  assign chip_state = 'none'
+                  assign crop = craft.metafields.custom.swatch_crop.value | split: ' '
+                  assign cover_id = craft.image.id | append: ''
+                  if crop.first == 'whole'
+                    assign chip_state = 'whole'
+                  elsif crop.size == 4 and crop[3] == cover_id
+                    assign chip_state = 'crop'
+                    assign side = craft.image.width | times: crop[2] | divided_by: 100
+                    assign half = side | divided_by: 2
+                    assign left = craft.image.width | times: crop[0] | divided_by: 100 | minus: half | at_least: 0
+                    assign top = craft.image.height | times: crop[1] | divided_by: 100 | minus: half | at_least: 0
+                    assign chip_src = craft.image | image_url: width: 96, height: 96, crop: 'region', crop_left: left, crop_top: top, crop_width: side, crop_height: side
+                  endif
+                -%}
+                <img src="{{ chip_src }}" alt="" width="32" height="32" loading="eager" decoding="async" data-swatch="{{ chip_state }}">
               {%- endif -%}
               {{- craft.title | remove_first: 'Crochet ' -}}
             </a>

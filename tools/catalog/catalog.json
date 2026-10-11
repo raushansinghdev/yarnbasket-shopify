@@ -1,7 +1,7 @@
 {
  "source": "~/Desktop/SS Creation/crochet",
  "vendor": "Yarn Basket",
- "note": "Prices come from tools/catalog/costs.json: each variant lists its parts, and the rule is in tools/catalog_pricing.py (Raushan, 2026-10-04). A variant's typed price is used only while one of its parts has no cost yet.",
+ "note": "Prices come from tools/catalog/costs.json: each variant lists its parts, and the rule is in tools/catalog_pricing.py (Raushan, 2026-10-04). A variant's typed price is used only while one of its parts has no cost yet. A variant's \"swatch\" is the square of its photo shown on its option pill, as \"x y size\" in percent of the photo (centre across, centre down, side); \"whole\" where the whole photo is the right picture (a pack of 2 against a pack of 4). Every variant with a photo pill needs one or the other: the product page check fails on a pill with neither, or with a square picked for a photo that has since been replaced. A craft collection's \"swatch\" is the same for its cover photo on the collection page's chip row. `python3 tools/catalog-upload.py swatches` sends them (docs/product-page-plan.md, round 11).",
  "products": [
   {
    "handle": "sunflower-crochet-bouquet",
@@ -21,7 +21,8 @@
      "sku": "BQ_SF_1",
      "parts": {
       "sunflower": 1
-     }
+     },
+     "swatch": "50 30 50"
     },
     {
      "value": "2 sunflowers",
@@ -29,7 +30,8 @@
      "sku": "BQ_SF_2",
      "parts": {
       "sunflower": 2
-     }
+     },
+     "swatch": "52 45 52"
     },
     {
      "value": "3 sunflowers",
@@ -37,7 +39,8 @@
      "sku": "BQ_SF_3",
      "parts": {
       "sunflower": 3
-     }
+     },
+     "swatch": "52 40 56"
     }
    ],
    "description": "<p>A sunflower that stays in bloom. Each one is crocheted by hand, petal by petal, then wrapped in black and gold and tied with a ribbon, ready to give.</p><p>Choose one stem, a pair or a full trio. No water, no wilting.</p>",
@@ -170,7 +173,8 @@
      "sku": "BQ_RS_Red_1",
      "parts": {
       "rose": 1
-     }
+     },
+     "swatch": "50 23 46"
     },
     {
      "value": "Pink",
@@ -178,7 +182,8 @@
      "sku": "BQ_RS_Pink_1",
      "parts": {
       "rose": 1
-     }
+     },
+     "swatch": "47 30 44"
     },
     {
      "value": "Yellow",
@@ -186,7 +191,8 @@
      "sku": "BQ_RS_Yellow_1",
      "parts": {
       "rose": 1
-     }
+     },
+     "swatch": "50 32 44"
     }
    ],
    "description": "<p>One rose, made to be kept. The petals are crocheted by hand and shaped into a full bloom, with a leaf on the stem, black and gold wrap and a ribbon.</p><p>A small gift that says a lot, in red, pink or yellow.</p>",
@@ -269,7 +275,8 @@
      "sku": "BQ_RS_Red_3",
      "parts": {
       "rose": 3
-     }
+     },
+     "swatch": "55 30 48"
     },
     {
      "value": "Yellow",
@@ -277,7 +284,8 @@
      "sku": "BQ_RS_Yellow_3",
      "parts": {
       "rose": 3
-     }
+     },
+     "swatch": "52 32 48"
     },
     {
      "value": "Mixed",
@@ -285,7 +293,8 @@
      "sku": "BQ_RS_Mix_3",
      "parts": {
       "rose": 3
-     }
+     },
+     "swatch": "53 35 48"
     }
    ],
    "description": "<p>Three hand-crocheted roses in one bouquet, wrapped in black and gold and tied with a ribbon. Full, soft and made to last for years.</p><p>Choose classic red, sunny yellow, or one each of pink, yellow and red.</p>",
@@ -435,7 +444,8 @@
      "sku": "BQ_TLP_Pink_1",
      "parts": {
       "tulip": 1
-     }
+     },
+     "swatch": "52 30 44"
     },
     {
      "value": "Blue",
@@ -443,7 +453,8 @@
      "sku": "BQ_TLP_Blue_1",
      "parts": {
       "tulip": 1
-     }
+     },
+     "swatch": "50 30 44"
     },
     {
      "value": "Lavender",
@@ -451,7 +462,8 @@
      "sku": "BQ_TLP_Lvndr_1",
      "parts": {
       "tulip": 1
-     }
+     },
+     "swatch": "55 30 44"
     },
     {
      "value": "White",
@@ -459,7 +471,8 @@
      "sku": "BQ_TLP_White_1",
      "parts": {
       "tulip": 1
-     }
+     },
+     "swatch": "50 32 44"
     }
    ],
    "description": "<p>A single tulip with a long curved leaf, crocheted by hand and wrapped in black and gold with a ribbon.</p><p>Four colours: pink, blue, lavender and white. Lovely alone, and easy to pair.</p>",
@@ -585,7 +598,8 @@
      "parts": {
       "tulip": 2,
       "daisy": 1
-     }
+     },
+     "swatch": "57 35 48"
     },
     {
      "value": "White tulip",
@@ -593,7 +607,8 @@
      "sku": "BQ_TLP_Blue_2_White_1",
      "parts": {
       "tulip": 3
-     }
+     },
+     "swatch": "50 38 46"
     },
     {
      "value": "Yellow rose",
@@ -602,7 +617,8 @@
      "parts": {
       "tulip": 2,
       "rose": 1
-     }
+     },
+     "swatch": "57 36 46"
     },
     {
      "value": "Pink rose",
@@ -611,7 +627,8 @@
      "parts": {
       "tulip": 2,
       "rose": 1
-     }
+     },
+     "swatch": "58 36 46"
     }
    ],
    "description": "<p>Two blue tulips, one light and one deep, with a third flower of your choice: a daisy, a white tulip, a yellow rose or a pink rose. Every stem is crocheted by hand, then wrapped in black and gold.</p>",
@@ -925,7 +942,8 @@
      "sku": "KC_DSY_1",
      "parts": {
       "flower keychain": 1
-     }
+     },
+     "swatch": "55 60 48"
     },
     {
      "value": "Blue",
@@ -933,7 +951,8 @@
      "sku": "KC_DSY_Blue_1",
      "parts": {
       "flower keychain": 1
-     }
+     },
+     "swatch": "53 62 48"
     }
    ],
    "description": "<p>A soft daisy with a raised centre, crocheted by hand. Choose classic white and yellow, or blue.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -1465,7 +1484,8 @@
      "sku": "charm_pink_1",
      "parts": {
       "lily charm": 1
-     }
+     },
+     "swatch": "46 62 52"
     },
     {
      "value": "White",
@@ -1473,7 +1493,8 @@
      "sku": "charm_white_1",
      "parts": {
       "lily charm": 1
-     }
+     },
+     "swatch": "57 56 52"
     },
     {
      "value": "Pink + white pair",
@@ -1481,7 +1502,8 @@
      "sku": "lily_bag_charm_2",
      "parts": {
       "lily charm": 2
-     }
+     },
+     "swatch": "whole"
     }
    ],
    "description": "<p>Two little bell flowers hanging from a green bow, crocheted by hand. Tie it to a bag handle, or wear it in your hair over a ponytail.</p><p>Choose pink, white, or the pair.</p>",
@@ -1638,7 +1660,8 @@
      "sku": "POT_DAISY_01",
      "parts": {
       "flower pot": 1
-     }
+     },
+     "swatch": "50 30 50"
     },
     {
      "value": "Blue",
@@ -1646,7 +1669,8 @@
      "sku": "POT_BLUE_DAISY_01",
      "parts": {
       "flower pot": 1
-     }
+     },
+     "swatch": "50 30 50"
     },
     {
      "value": "Pink",
@@ -1654,7 +1678,8 @@
      "sku": "POT_DSY_Pink_1",
      "parts": {
       "flower pot": 1
-     }
+     },
+     "swatch": "50 30 50"
     }
    ],
    "description": "<p>A daisy in a pot, crocheted by hand from the petals down to the soil. Choose white, blue or pink.</p><p>It stands by itself on a desk, a shelf or a windowsill, and never needs water.</p>",
@@ -1738,7 +1763,8 @@
      "parts": {
       "headband": 1,
       "hair clips, pair": 1
-     }
+     },
+     "swatch": "whole"
     },
     {
      "value": "Headband",
@@ -1746,7 +1772,8 @@
      "sku": "HB_BLUE",
      "parts": {
       "headband": 1
-     }
+     },
+     "swatch": "whole"
     },
     {
      "value": "Clips, pair",
@@ -1754,7 +1781,8 @@
      "sku": "HC_BLUE",
      "parts": {
       "hair clips, pair": 1
-     }
+     },
+     "swatch": "55 45 55"
     },
     {
      "value": "Headband, clips + claw clip",
@@ -1764,7 +1792,8 @@
       "headband": 1,
       "hair clips, pair": 1,
       "claw clip": 1
-     }
+     },
+     "swatch": "whole"
     }
    ],
    "description": "<p>A row of cream daisies with blue centres, crocheted by hand into a tie-on headband, with clips to match. The headband ties at the back, so it fits every head.</p><p>Take the headband, the pair of clips, or a set.</p>",
@@ -1945,7 +1974,8 @@
      "parts": {
       "sunflower": 2,
       "daisy": 1
-     }
+     },
+     "swatch": "50 38 56"
     },
     {
      "value": "Red rose",
@@ -1954,7 +1984,8 @@
      "parts": {
       "sunflower": 2,
       "rose": 1
-     }
+     },
+     "swatch": "54 36 54"
     },
     {
      "value": "Bee",
@@ -1963,7 +1994,8 @@
      "parts": {
       "sunflower": 2,
       "bee": 1
-     }
+     },
+     "swatch": "50 45 56"
     }
    ],
    "description": "<p>Two sunflowers side by side, with a third piece of your choice in front: a white daisy, a red rose or a smiling little bee. Each one is crocheted by hand, then wrapped in black and gold and tied with a ribbon.</p>",
@@ -2294,7 +2326,8 @@
      "parts": {
       "chick keychain": 1,
       "flower keychain": 1
-     }
+     },
+     "swatch": "57 52 80"
     },
     {
      "value": "Sunflower",
@@ -2303,7 +2336,8 @@
      "parts": {
       "chick keychain": 1,
       "flower keychain": 1
-     }
+     },
+     "swatch": "58 52 78"
     }
    ],
    "description": "<p>The chick in its eggshell with a flower for company: a white daisy or a sunflower. Both keychains are crocheted by hand, and the chick is stuffed by hand too.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -2393,7 +2427,8 @@
      "parts": {
       "flower keychain": 1,
       "lily charm": 1
-     }
+     },
+     "swatch": "62 68 64"
     },
     {
      "value": "Pink + white pair",
@@ -2402,7 +2437,8 @@
      "parts": {
       "flower keychain": 1,
       "lily charm": 2
-     }
+     },
+     "swatch": "60 68 62"
     }
    ],
    "description": "<p>A sunflower keychain with a lily of the valley charm: two little bell flowers hanging from a green bow. Choose the white charm, or the pink and white pair. All of it is crocheted by hand.</p><p>The keychain comes on a metal ring and chain. Tie the charm to a bag handle.</p>",
@@ -2580,7 +2616,8 @@
      "sku": "CTie_SF_2",
      "parts": {
       "curtain tie-back": 2
-     }
+     },
+     "swatch": "whole"
     },
     {
      "value": "Pack of 4",
@@ -2588,7 +2625,8 @@
      "sku": "CTie_SF_4",
      "parts": {
       "curtain tie-back": 4
-     }
+     },
+     "swatch": "whole"
     }
    ],
    "description": "<p>Our sunflower curtain tie-back in sets, for a pair of curtains or a whole room. Each one is a hand-crocheted sunflower with two leaves hanging below it.</p><p>Choose a pack of two or a pack of four.</p>",
@@ -3037,7 +3075,8 @@
      "sku": "KC_OCTPS_Pink_2",
      "parts": {
       "octopus keychain": 2
-     }
+     },
+     "swatch": "46 62 52"
     },
     {
      "value": "Pink + blue",
@@ -3045,7 +3084,8 @@
      "sku": "KC_OCTPS_Pink_1_Blue_1",
      "parts": {
       "octopus keychain": 2
-     }
+     },
+     "swatch": "50 62 54"
     }
    ],
    "description": "<p>Two baby octopuses with frilly legs, crocheted and stuffed by hand. Choose two in pink, or one pink and one blue.</p><p>Clip it to keys, a bag or a zip. It comes on a metal ring and chain.</p>",
@@ -3087,6 +3127,7 @@
     ]
    ],
    "cover": "Bouquet/BQ_SF_3 3.png",
+   "swatch": "52 32 52",
    "description": "<p>Flowers that stay. Every bouquet is crocheted by hand, stem by stem, then wrapped and tied with a ribbon, ready to give.</p>",
    "seo": [
     "Handmade Crochet Flower Bouquets | Yarn Basket",
@@ -3103,6 +3144,7 @@
     ]
    ],
    "cover": "keychains/KC_SF_1_DSY_1 1.png",
+   "swatch": "54 52 64",
    "description": "<p>Small, soft and made by hand: flowers, an evil eye, a peacock feather and a few little characters, each on a metal ring.</p>",
    "seo": [
     "Handmade Crochet Keychains | Yarn Basket",
@@ -3119,6 +3161,7 @@
     ]
    ],
    "cover": "hair band/HC_BLUE 1.png",
+   "swatch": "50 45 50",
    "description": "<p>Headbands and clips topped with hand-crocheted flowers, light enough to wear all day.</p>",
    "seo": [
     "Handmade Crochet Hair Accessories | Yarn Basket",
@@ -3135,6 +3178,7 @@
     ]
    ],
    "cover": "Charm/charm_pink_1 1.png",
+   "swatch": "55 52 64",
    "description": "<p>Hand-crocheted charms to tie on a bag handle, a zip or a ponytail.</p>",
    "seo": [
     "Handmade Crochet Bag Charms | Yarn Basket",
@@ -3151,6 +3195,7 @@
     ]
    ],
    "cover": "pot flower/daisy 2.png",
+   "swatch": "50 32 60",
    "description": "<p>A flower in its own little pot, crocheted by hand from the petals to the soil. For desks, shelves and windowsills, with no watering.</p>",
    "seo": [
     "Handmade Crochet Flower Pots | Yarn Basket",

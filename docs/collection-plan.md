@@ -328,3 +328,8 @@ Raushan's suggestions after round 4, each answered with a recommendation he acce
   and desktop. By hand in WebKit and Firefox: two columns, five aligned rows for Flower & motif.
   Screenshots: `docs/mockups/collection-built-r5-*.png`.
 
+## Craft chips show the piece (2026-10-12)
+
+Each chip's 32px photo is a square cut from the collection's cover, on the piece itself, not the whole cover.
+The square is `"swatch"` on the collection in `tools/catalog/catalog.json`, tied to the cover it was picked for;
+how it works and what to do after changing a cover are in `docs/product-page-plan.md`, "Round 11". Check 24: 32.

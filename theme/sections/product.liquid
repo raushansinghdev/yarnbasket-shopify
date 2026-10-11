@@ -445,7 +445,8 @@
   .pdp__rating-count { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
   .pdp__rating .icon { width: 16px; height: 16px; fill: currentColor; }
   .pdp__rating-count { font-weight: 400; color: var(--color-muted); }
-  .pdp__price-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-top: var(--space-2); }
+  /* The tax note and the badge stand on the price's baseline (round 10), not at its middle. */
+  .pdp__price-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-3); margin-top: var(--space-2); }
   .pdp__price { display: flex; align-items: baseline; gap: var(--space-2); font-variant-numeric: tabular-nums; }
   .pdp__now { font-size: 1.625rem; line-height: 1.2; font-weight: 500; letter-spacing: .01em; color: var(--color-heading); }
   .pdp__was { font-size: 1rem; color: var(--color-muted); }
@@ -553,6 +554,11 @@
 
   /* The delivery terms and the WhatsApp line: one soft card. Hairlines are the card's own colour showing through 1px gaps. */
   .assure { display: grid; gap: 1px; overflow: hidden; border-radius: var(--radius-md); background: var(--color-line-strong); }
+  /* Round 10: no lines between the promises, so they read as three facts and not as three buttons; the one line
+     left is above the row that can be tapped. 14px, not the snippet's 13px. */
+  .assure .offer-terms { gap: 0; background: var(--color-surface); font-size: var(--fs-small); }
+  /* Three across: 4px at the sides, so "Free shipping over ₹499" is still two lines on a 320px phone. */
+  .assure .offer-terms:not(:has(li:nth-child(4))) li { padding-inline: var(--space-1); }
   .pdp__ask { background: var(--color-surface); }
   .pdp__ask a {
     display: flex;
@@ -561,13 +567,13 @@
     min-height: var(--tap);
     padding: var(--space-1) var(--space-3);
     color: var(--color-heading);
-    font-size: .8125rem;
+    font-size: var(--fs-small);
     font-weight: 500;
     text-decoration: none;
   }
   .pdp__ask a:focus-visible { outline-offset: -3px; border-radius: var(--radius-md); }
   .pdp__ask .icon { width: 20px; height: 20px; flex: none; }
-  .pdp__ask [data-ask-text] { flex: 1; min-width: 0; }
+  .pdp__ask [data-ask-text] { flex: 1; min-width: 0; line-height: 1.3; text-wrap: balance; }
   .pdp__ask .icon:last-child { width: 18px; height: 18px; rotate: -90deg; color: var(--color-muted); transition: translate var(--dur-state) ease; }
   @media (hover: hover) { .pdp__ask a:hover .icon:last-child { translate: 3px 0; } }
   .pdp__gift { display: grid; gap: var(--space-4); justify-items: start; }

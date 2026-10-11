@@ -8,6 +8,7 @@ Safe to rerun: a product or collection that already exists by handle is left alo
   python3 tools/catalog-upload.py prices        sets every variant's price, and the free gift's, from costs.json (photos and stock untouched)
   python3 tools/catalog-upload.py collections [--force]
   python3 tools/catalog-upload.py filters       writes each product's Occasion and Flower & motif (from its tags) for the collection page's filters
+  python3 tools/catalog-upload.py swatches [handle ...]   writes each variant's "swatch" (the part of its photo shown on its option pill; for a craft collection, of its cover on the chip row), nothing else; rerun after changing a variant's photo
   python3 tools/catalog-upload.py covers        replaces every collection's cover photo, nothing else (needs Pillow)
   python3 tools/catalog-upload.py tests         moves the test products to vendor "Yarn Basket Test"
   python3 tools/catalog-upload.py home          uploads the home page photos to Files, prints their names
@@ -184,6 +185,46 @@ def filters():
     print('set', len(fields), 'metafields on', len({f['ownerId'] for f in fields}), 'products')
 
 
+def swatches(handles=()):
+    """Each variant's swatch, from catalog.json: the square of its photo that its option pill shows
+    (snippets/product-options.liquid). Touches nothing else. The photo's id is stored with the square, so a square
+    picked for one photo is never used on the photo that replaces it: rerun this after changing a variant's photo."""
+    fields = []
+    for p in DATA['products']:
+        if (handles and p['handle'] not in handles) or not any(v.get('swatch') for v in p['variants']):
+            continue
+        d = gql('query($h: String!) { productByHandle(handle: $h) { variants(first: 30) { nodes { id sku media(first: 1) { nodes { id } } } } } }', {'h': p['handle']})['productByHandle']
+        if not d:
+            print('not in the store, skipped:', p['handle'])
+            continue
+        by_sku = {v['sku']: v for v in d['variants']['nodes']}
+        for v in p['variants']:
+            if not v.get('swatch'):
+                continue
+            node = by_sku[v['sku']]
+            value = v['swatch']
+            if value != 'whole':
+                if not node['media']['nodes']:
+                    print('no photo of its own, skipped:', p['handle'], v['value'])
+                    continue
+                value += ' ' + node['media']['nodes'][0]['id'].rsplit('/', 1)[1]
+            fields.append({'ownerId': node['id'], 'namespace': 'custom', 'key': 'swatch_crop', 'type': 'single_line_text_field', 'value': value})
+    # The craft collections' covers, for the chip row on the collection page (sections/collection.liquid).
+    for c in DATA['collections']:
+        if (handles and c['handle'] not in handles) or not c.get('swatch'):
+            continue
+        node = gql('query($h: String!) { collectionByHandle(handle: $h) { id image { id } } }', {'h': c['handle']})['collectionByHandle']
+        if not node or (c['swatch'] != 'whole' and not node['image']):
+            print('not in the store or no cover, skipped:', c['handle'])
+            continue
+        value = c['swatch'] if c['swatch'] == 'whole' else c['swatch'] + ' ' + node['image']['id'].rsplit('/', 1)[1]
+        fields.append({'ownerId': node['id'], 'namespace': 'custom', 'key': 'swatch_crop', 'type': 'single_line_text_field', 'value': value})
+    for i in range(0, len(fields), 25):
+        d = gql('mutation($m: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $m) { metafields { id } userErrors { field message code } } }', {'m': fields[i:i + 25]}, mutate=True)['metafieldsSet']
+        check(d['userErrors'], 'metafieldsSet')
+    print('set', len(fields), 'swatches')
+
+
 def prices():
     for p in DATA['products']:
         d = gql('query($h: String!) { productByHandle(handle: $h) { id variants(first: 30) { nodes { id sku price } } } }', {'h': p['handle']})['productByHandle']
@@ -318,14 +359,20 @@ if __name__ == '__main__':
         atexit.register(lambda: print('\nPrices or products may have changed: run `npm run check:money` (theme dev running) before anything else.'))
     if cmd == 'products':
         products(args[1:], force)
+        # A resent product has new photos (new ids) and productSet keeps only what it is given.
+        swatches(args[1:])
     elif cmd == 'prices':
         prices()
     elif cmd == 'collections':
         collections(force)
     elif cmd == 'filters':
         filters()
+    elif cmd == 'swatches':
+        swatches(args[1:])
     elif cmd == 'covers':
         covers()
+        # A new cover is a new photo with a new id: its square has to be sent again.
+        swatches([c['handle'] for c in DATA['collections']])
     elif cmd == 'names':
         names(args[1:])
     elif cmd == 'tests':

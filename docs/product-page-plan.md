@@ -502,6 +502,80 @@ Raushan, on the built page: does it look good, and is that the best place for th
 - Now: 141px from the top of the block to the pills at 360px (207px at the start of the round); pills end at 663px.
   Check 20: 104 pass (the one-line check now also wants the rating on the name's right edge); `check:money` 10 of 10.
 
+## Round 10 (2026-10-11, a calmer delivery card)
+
+Raushan, on the block from the collection label to the WhatsApp line: is it readable, intuitive and clean, and can
+it look better? The label, name, rating, price and option pills were looked at again and left as they are.
+
+- **No lines between the three promises.** Three equal cells with dividing lines and an icon over a label is the
+  shape of a tab bar, and nothing happens when they are tapped. Now they are three facts on one surface, and the
+  one line left in the card is above the WhatsApp row, the only part that can be tapped.
+- **14px in the card** (was 13px, the smallest text on the page, for the facts that decide a purchase). Three
+  across, the cells have 4px at the sides (was 8px), so "Free shipping over ₹499" is still two lines at 320px.
+  The card is 135px tall at 360px and 412px, as before; at 412 x 915 the promises end at 818px, above the buttons
+  (850px).
+- **The WhatsApp line** is 14px too; where it takes two lines (320px) they are set close and balanced, not
+  "Ask us" alone on a second line.
+- **"Incl. of all taxes" and the badge stand on the price's baseline.** They were centred on the 26px price, so
+  the note floated about 4px above the line the digits stand on.
+- How: all in `sections/product.liquid` (`.assure .offer-terms`, `.pdp__ask`, `.pdp__price-row`). The shared
+  `offer-terms` snippet is unchanged. Still to look at once cash on delivery is switched on: four promises, two
+  by two.
+- Not done, to decide separately: the 40px photos in the option pills. "Pink + pink" and "Pink + blue" look nearly
+  the same at that size because the photo is mostly hand and backdrop; a tighter crop per option would fix it.
+- Check 20: 104 pass. No prices or cart code touched.
+
+## Round 11 (2026-10-11, the option pills show the piece, not the whole photo)
+
+Raushan agreed to round 10's open point: at 40px "Pink + pink" and "Pink + blue" looked the same, because the
+photo is mostly hand and backdrop.
+
+- **Each choice's pill shows a square cut from its photo, on the piece itself.** One fixed zoom can't do it: the
+  bouquets' flowers are high in the photo, the octopuses and the bag charms low. So each variant has its own
+  square, `"swatch": "x y size"` in `tools/catalog/catalog.json`, in percent of the photo (centre across, centre
+  down, side). 34 variants on 13 products have one.
+- **Left whole on purpose, marked `"swatch": "whole"` (6):** where the choice is how much you get and the whole
+  photo shows it (curtain tie-backs pack of 2 or 4; three of the hair set's options; the lily charm pair, whose
+  two charms sit at opposite edges). The rose colour test product is a test product and has none.
+- How: `python3 tools/catalog-upload.py swatches [handle ...]` writes it to the variant as the metafield
+  `custom.swatch_crop` (nothing else is touched). `snippets/product-options` asks Shopify for that region at 120px
+  (`crop: 'region'`), so the file is as small as before.
+- Check 20: 105 pass. `check:money` run because the catalogue file changed (no price did).
+
+### Round 11, the two guards (2026-10-11)
+
+Raushan: can this break later, and is there a better way? Compared: whole photos again (the octopus pairs look
+the same), one fixed zoom (cuts the bouquets' flowers off), tighter variant photos (right in the long run, 43
+photos to redo, and that photo also opens the gallery), a separate swatch image per choice (the same hand work
+plus a file each). Kept the squares, with the one real risk closed: a square is a place on one photo, so a
+replaced photo would silently show the wrong part.
+
+- **A square is tied to its photo.** The metafield is `"x y size photo-id"`; the upload script adds the id of the
+  variant's photo. The pill uses the square only when the variant's photo still has that id. Otherwise it shows
+  the whole photo, as before round 11. `products --force` runs `swatches` for what it resent (new photos, new
+  ids).
+- **Nothing is silent.** Each photo pill says what it shows (`data-swatch`: `crop`, `whole` or `none`). Check 20
+  has "option pills: every photo has its swatch": it reads every catalogue product with photo pills and fails,
+  naming the product, on a `none` (a new choice nobody has looked at, or a square whose photo was replaced).
+  Tried: one octopus square given a wrong photo id; the check failed and named it; restored.
+- **After changing a variant's photo:** look at the pill, change `"swatch"` in the catalogue file if the piece
+  sits elsewhere, run `swatches <handle>`.
+- **For a new product with photo pills:** pick each square by eye (or `"whole"`), add `"swatch"` to each variant,
+  run `swatches`.
+- When the variant photos are one day shot tight on the piece, the squares can go: delete `"swatch"` and the
+  snippet's crop.
+
+### Round 11, carried to the collection page's craft chips (2026-10-12)
+
+Raushan: the same for the chip row on the Shop page (Bouquets, Keychains, …)? Yes: those photos are 32px, smaller
+still, and showed a whole hand or a whole bag.
+
+- The five craft collections have `"swatch"` beside `"cover"` in the catalogue file; `swatches` writes it to the
+  collection (`custom.swatch_crop`, with the cover's id), and `covers` reruns it, because a new cover is a new
+  photo. `sections/collection.liquid` cuts the chip's photo the same way, with the same fallback to the whole cover.
+- Check 24 has "craft chips: every photo has its swatch" (32 checks, all pass).
+- Not changed: the larger collection tiles (menu, home, collection list), where the whole cover is the right picture.
+
 ## Photo guide (for Raushan)
 
 Five square photos per product, at least 1200px, in this order:
