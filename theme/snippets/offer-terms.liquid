@@ -21,12 +21,12 @@
     <li>{%- render 'icon', icon: 'cash' -%}<span>{{ 'announcement.cod' | t }}</span></li>
   {%- endif -%}
   <li>{%- render 'icon', icon: 'package' -%}<span>{{ 'cart.ships' | t }}</span></li>
+  {%- comment -%} The link is the whole cell, icon included, so a thumb has more than a line of text to land on. {%- endcomment -%}
   <li>
-    {%- render 'icon', icon: 'replace' -%}
     {%- if shop.refund_policy -%}
-      <a href="{{ shop.refund_policy.url }}">{{ 'offers.replace' | t }}</a>
+      <a href="{{ shop.refund_policy.url }}">{%- render 'icon', icon: 'replace' -%}<span>{{ 'offers.replace' | t }}</span></a>
     {%- else -%}
-      <span>{{- 'offers.replace' | t -}}</span>
+      {%- render 'icon', icon: 'replace' -%}<span>{{- 'offers.replace' | t -}}</span>
     {%- endif -%}
   </li>
 </ul>
@@ -43,7 +43,8 @@
     line-height: 1.3;
     color: var(--color-ink);
   }
-  .offer-terms li {
+  .offer-terms li:has(> a) { display: block; padding: 0; background: var(--color-surface); }
+  .offer-terms li:not(:has(> a)), .offer-terms li > a {
     display: grid;
     align-content: start;
     justify-items: center;
@@ -54,8 +55,9 @@
     text-wrap: balance;
   }
   .offer-terms:has(li:nth-child(4)) { grid-template-columns: repeat(auto-fit, minmax(max(8.5rem, 34%), 1fr)); }
-  .offer-terms:has(li:nth-child(4)) li { grid-template-columns: auto 1fr; align-items: center; justify-items: start; gap: var(--space-2); padding-inline: var(--space-3); text-align: left; }
+  .offer-terms:has(li:nth-child(4)) li:not(:has(> a)), .offer-terms:has(li:nth-child(4)) li > a { grid-template-columns: auto 1fr; align-items: center; justify-items: start; gap: var(--space-2); padding-inline: var(--space-3); text-align: left; }
   .offer-terms .icon { width: 20px; height: 20px; flex: none; color: var(--color-heading); }
-  .offer-terms a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
-  @media (hover: hover) { .offer-terms a:hover { text-decoration-color: currentColor; } }
+  .offer-terms a { height: 100%; min-height: 44px; color: inherit; text-decoration: none; }
+  .offer-terms a span { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
+  @media (hover: hover) { .offer-terms a:hover span { text-decoration-color: currentColor; } }
 {% endstylesheet %}

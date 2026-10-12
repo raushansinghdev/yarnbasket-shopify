@@ -315,9 +315,12 @@
             {%- endif -%}
             {%- if s.replacement != blank -%}
               <p>
-                {{- s.replacement | escape }}
-                {% if shop.refund_policy %}<a href="{{ shop.refund_policy.url }}">{{ 'products.refund_policy' | t }}</a>{% endif -%}
+                {{- s.replacement | escape -}}
               </p>
+              {%- comment -%} On its own line, 44px tall: a link at the end of a sentence is one line of text to hit. {%- endcomment -%}
+              {%- if shop.refund_policy -%}
+                <a class="detail__more" href="{{ shop.refund_policy.url }}">{{ 'products.refund_policy' | t }}</a>
+              {%- endif -%}
             {%- endif -%}
           </div>
         </details>
@@ -558,7 +561,7 @@
      left is above the row that can be tapped. 14px, not the snippet's 13px. */
   .assure .offer-terms { gap: 0; background: var(--color-surface); font-size: var(--fs-small); }
   /* Three across: 4px at the sides, so "Free shipping over ₹499" is still two lines on a 320px phone. */
-  .assure .offer-terms:not(:has(li:nth-child(4))) li { padding-inline: var(--space-1); }
+  .assure .offer-terms:not(:has(li:nth-child(4))) li:not(:has(> a)), .assure .offer-terms:not(:has(li:nth-child(4))) li > a { padding-inline: var(--space-1); }
   .pdp__ask { background: var(--color-surface); }
   .pdp__ask a {
     display: flex;
@@ -598,6 +601,7 @@
   .detail[open] .detail__toggle { transform: rotate(45deg); background: var(--color-surface); }
   .detail__body { display: grid; gap: var(--space-3); max-width: 40rem; padding-bottom: var(--space-5); font-size: .9375rem; }
   .detail__body a { color: inherit; text-underline-offset: 3px; }
+  .detail__more { display: inline-flex; align-items: center; justify-self: start; min-height: 44px; margin-block: calc(var(--space-3) * -1); }
   .detail::details-content {
     block-size: 0;
     overflow-y: clip;

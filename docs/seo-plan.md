@@ -305,7 +305,9 @@ Sources for the rule changes: [Shopify changelog, agents.md / llms.txt templates
 - Our story (`AboutPage`) and Contact (`ContactPage`) point at the shared shop node. `Blog` and `Article` (author Priya) are ready for phase 8.
 - Check 25 gained "policy, FAQ and Google name the same days". Check 20 and the money check read both shapes of product data.
 
-**Found on the way, not part of this work**
-- The free gift's product description in the admin still says "free with orders over ₹1,499"; the gift now starts at ₹599. Its page is linked from nowhere and is now noindex, but the text should be corrected.
-- Check 20 fails two lines that come from the help-pages commit (225d80d), which made the Refund policy links appear on product pages: "Replacement if damaged" is 36px tall and "Read the refund policy" 22px (the rule is 44px), and one colour-contrast finding on desktop. Check 24's "a tap on Filter or Sort leaves the page where it is" also fails (13px of movement at the end of the list). None of the three files involved was touched here.
+**Found on the way, fixed the same day on Raushan's word**
+- The free gift's description said "free with orders over ₹1,499" (the gift starts at ₹599). It now names no amount ("once your order reaches the amount shown in your cart"), in the store and in `tools/gift-product.csv`, so it cannot go stale again.
+- Product page: "Replacement if damaged" (36px) and "Read the refund policy" (22px) were under the 44px rule since the help-pages commit made them links. The first link is now its whole cell of the delivery card, icon included (`snippets/offer-terms.liquid`; it looks the same); the second sits on its own line, 44px tall (`sections/product.liquid`). The desktop contrast finding went with them.
+- Check 24's "a tap on Filter or Sort leaves the page where it is" was the test, not the page: Playwright's `tap()` scrolls its target clear of the page's scroll padding first, and at the end of the list the pill sits near the top of the screen. The check now taps the screen where the pill is, as a finger does, and also fails if the sheet did not open.
+- Checks 20, 24 and 25: 148 of 148.
 - Not done: pasting one page of each type into Google's Rich Results Test. It needs a public address or a manual paste; the required fields are checked on all 78 pages by `check:seo` instead.

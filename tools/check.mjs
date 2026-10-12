@@ -2228,7 +2228,8 @@ if (want('20')) {
       const circle = (sel) => { const el = document.querySelector(sel); const i = parseFloat(getComputedStyle(el, '::before').inset) || 0; return Math.round(el.getBoundingClientRect().width - i * 2); };
       return {
         rating: !!document.querySelector('.pdp__rating'),
-        terms: [...document.querySelectorAll('.offer-terms li > :last-child')].map(lines),
+        // The words of each term: the last one is inside a link that fills its cell.
+        terms: [...document.querySelectorAll('.offer-terms li span')].map(lines),
         termRows: new Set([...document.querySelectorAll('.offer-terms li')].map((li) => Math.round(li.getBoundingClientRect().top))).size,
         termClip: [...document.querySelectorAll('.offer-terms li')].filter((li) => li.scrollWidth > li.clientWidth + 1).length,
         card: Math.round(document.querySelector('.assure').getBoundingClientRect().height),
@@ -3042,8 +3043,14 @@ if (want('24')) {
         await page.evaluate((top) => scrollTo({ top, behavior: 'instant' }), y);
         await page.waitForTimeout(300);
         const before = await page.evaluate(() => Math.round(scrollY));
-        await page.locator(`[data-sheet-open="${id}"]`).tap();
+        // A finger lands on the screen where the pill is. Playwright's own tap() first scrolls its target clear of
+        // the page's scroll padding, which a finger never does: at the end of the list the pill sits near the top
+        // of the screen, and that read as 13px of movement (2026-10-13).
+        const spot = await page.locator(`[data-sheet-open="${id}"]`).boundingBox();
+        await page.touchscreen.tap(spot.x + spot.width / 2, spot.y + spot.height / 2);
         await page.waitForTimeout(500);
+        const opened = await page.evaluate((sheet) => document.getElementById(sheet).open, id);
+        if (!opened) moved.push(`${id} at ${before}px: the tap did not open it`);
         const during = await page.evaluate(() => Math.round(scrollY));
         await page.keyboard.press('Escape');
         await page.waitForTimeout(500);
