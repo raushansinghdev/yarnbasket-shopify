@@ -1,6 +1,6 @@
 # Yarn Basket: the SEO plan, from scratch
 
-**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1 and 2 built 2026-10-13** (see "As built" at the end). `npm run check:seo` is at 19 of 27; the eight red lines belong to phases 3 (words), 4 (links), 7 (llms.txt) and the made-up ratings. Next: phase 3, on Raushan's go. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
+**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1, 2 and 3 built 2026-10-13** (see "As built" at the end). `npm run check:seo` is at 23 of 29; the six red lines belong to phase 4 (links: 4), phase 7 (llms.txt) and the made-up ratings. Next: Raushan's and Priya's read of the words (review page: https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf, sizes: `docs/size-sheet.md`), then phase 4 on Raushan's go. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
 
 ## Context
 
@@ -311,3 +311,31 @@ Sources for the rule changes: [Shopify changelog, agents.md / llms.txt templates
 - Check 24's "a tap on Filter or Sort leaves the page where it is" was the test, not the page: Playwright's `tap()` scrolls its target clear of the page's scroll padding first, and at the end of the list the pill sits near the top of the screen. The check now taps the screen where the pill is, as a finger does, and also fails if the sheet did not open.
 - Checks 20, 24 and 25: 148 of 148.
 - Not done: pasting one page of each type into Google's Rich Results Test. It needs a public address or a manual paste; the required fields are checked on all 78 pages by `check:seo` instead.
+
+### Phase 3: words (2026-10-13)
+
+`npm run check:seo`: 19 of 27 → **23 of 29** (two lines turned green, two new lines added green). Check 24 is 34 of 34 with two new lines; money check 10 of 10.
+
+**Answers from Raushan:** the yarn is mainly acrylic (cotton now and then, so cotton is claimed nowhere); sizes are Priya's to measure; Yarn Basket began in 2025.
+
+**Changed from the plan**
+- **The text lives in `tools/catalog/catalog.json`,** not a new `collections.json`: collections already kept their description there. Each collection gained `about` (paragraphs) and `questions` (pairs). The Shop collection, which the tool does not make, sits in `shop_words`.
+- **One collection field, not two:** `custom.good_to_know`, a JSON field holding both.
+- **Home page: no new line.** The page was made calm on purpose (`docs/home-calm-plan.md`), so two sentences that were already there were reworded (hero text, occasions text). The hero's own text is hidden while the festive campaign runs.
+- **No FAQ markup on collections:** Google ended FAQ results in May 2026.
+- **Sizes were not written.** `docs/size-sheet.md` lists the 46 pieces without one for Priya.
+
+**Built**
+- **50 product descriptions,** 80 to 120 words in three paragraphs: the piece, its options or what is in the set, who it suits and how it is made. Written from the catalogue and the photos; no two share a sentence. Materials: "Soft acrylic yarn, crocheted by hand." is the theme's default; bouquets, keychains and hair pieces name their wrap, ring or clip (`materials` in the catalogue).
+- **19 collections:** an intro of 40 to 60 words, and a "Good to know" block after the products (`snippets/collection-about.liquid`): two or three paragraphs, one price line, three or four questions as closed rows in the FAQ's look. Not shown on filtered views or page 2. On phones it comes after the intro; the floating Filter pill rests above both.
+- **No price is typed into any text.** The block's price line is built from the collection's own lowest and highest price, only where every piece is in reach (50 or fewer), and check 24 compares it with the store.
+- **Our story: "At a glance"** (who, where, since 2025, what, how, delivery days from Theme settings, custom orders).
+- `python3 tools/catalog-upload.py words [handles]` sends only text: description, Materials, Good to know. `seo` now also knows the Shop collection, which had no search description of its own.
+- Checks: `seo-check` gained "No two product descriptions share a sentence" and "Collection: Good to know, with 3 questions or more", and now reads collection words from the right field (it read 0 before). Check 24 gained two lines for the block; its Filter/Sort tap test now ends at the end of the list, where the pill rests.
+
+**To keep in mind**
+- A few sentences compare prices in words ("the pair costs less than two singles", heart pins "the more pairs, the less each costs", "most sets cost less"). They were checked against the store's prices on 2026-10-13. After a price change, reread: daisy keychain, sunflower and daisy set, bee and chick pair, daisy and evil eye set, sunflower, blue daisy and evil eye set, heart hair pins, Gift sets, Keychains.
+- Claims waiting for Priya's word are listed at the top of the review page (yarn of the scrunchies, "asked for most", washing a bouquet, how the tie-back fastens, custom orders).
+- Theme check shows five new warnings of a kind already present (the snippet uses the FAQ section's classes on purpose).
+- The intro on a desktop collection page is now four lines where it was one or two; the first row of products is still on the first screen at 1280 × 800.
+

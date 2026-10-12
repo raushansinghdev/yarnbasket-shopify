@@ -95,6 +95,8 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
   - after publishing, Theme settings → Social on the live theme has the Grievance officer
 
 ## SEO (docs/seo-plan.md, approved 2026-10-12)
+
+- [ ] Raushan and Priya read the new product and collection text (https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf; the questions for Priya are at its top); corrections go into `tools/catalog/catalog.json` and are sent with `python3 tools/catalog-upload.py words <handles>`
 - [ ] **Search Console, now, on the holding site:** search.google.com/search-console → Add property → Domain → `yarnbasket.in` → copy the TXT record → Spaceship → DNS → add it → Verify. Use the business Gmail. The record stays when the domain moves to Shopify.
 - [ ] **Bing Webmaster Tools:** bing.com/webmasters → sign in → "Import from Google Search Console".
 - [ ] **Keyword Planner:** ads.google.com with the business Gmail → skip the campaign ("Switch to Expert Mode", "Create an account without a campaign") → Tools → Keyword Planner → "Get search volume" → paste the main searches from `docs/seo-keyword-map.md`, location India → download the CSV and hand it to Claude.
@@ -147,7 +149,7 @@ Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with 
 - [x] **Shopify admin, to match the theme (done by Raushan 2026-10-12, money check 10 of 10):** Settings → Shipping and delivery → Domestic "Standard": ₹79, free from ₹299 (is ₹49, free from ₹499). Discounts → "Free sunflower keychain over ₹799": minimum purchase ₹599, and rename it. Then `npm run check:money` must pass 10 of 10.
 - [ ] After the first 15 days of ads: ad cost per order, average order value and share of orders under ₹299, then tune the lines (₹299 delivery, ₹599 gift, ₹50 off ₹999, ₹100 off ₹1,299) and the courier figure (docs/pricing-plan.md, "Measure for 15 days")
 - [ ] Decide the prepaid saving and partial COD before launch: 20 to 30% of COD parcels are refused and each costs ₹100 to ₹150
-- [ ] Add Size text for keychains, pots, charms, hair pieces and the larger bouquets
+- [ ] Add Size text for keychains, pots, charms, hair pieces and the larger bouquets: Priya fills `docs/size-sheet.md` (46 pieces), then Claude sends them
 - [ ] Clean photos (no stickers, no text, real piece) for the held-back products, then list them
 - [ ] Replace the starting stock of 100 per variant with real counts
 - [ ] Photos are 1254 px: shoot or export new ones at 2048 px or more when possible

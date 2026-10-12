@@ -4,7 +4,7 @@
       "type": "hero",
       "settings": {
         "heading": "Handmade crochet gifts, *stitched with love*",
-        "text": "Bouquets, keychains, clips and charms, crocheted by hand.",
+        "text": "Crochet flower bouquets, keychains, hair clips and bag charms, made by hand in India.",
         "button_label": "Shop all gifts",
         "scheme": "soft",
         "image": "shopify://shop_images/yarn-basket-sunflower-square-hero-2048.png",
@@ -109,7 +109,7 @@
       "settings": {
         "eyebrow": "Gifting",
         "heading": "A gift for every occasion",
-        "text": "Thoughtful handmade gifts that last, for the people you never forget.",
+        "text": "Handmade crochet gifts for birthdays, anniversaries and thank-yous, made to be kept.",
         "scheme": "white",
         "link_label": "All gifts"
       },

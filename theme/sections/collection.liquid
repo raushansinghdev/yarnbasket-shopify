@@ -182,6 +182,25 @@
 
   <p class="visually-hidden" role="status" data-collection-status></p>
 
+  {%- liquid
+    # The lowest and highest price, for the Good to know block. Only where every piece is in reach (a list holds 50):
+    # past that the line is left out, because a guessed price is a wrong price.
+    assign price_from = ''
+    assign price_to = ''
+    if collection.all_products_count <= 50
+      for piece in collection.products
+        if piece.tags contains 'free-gift' or piece.tags contains 'test-product' or piece.id == settings.gift_product.id
+          continue
+        endif
+        if price_from == '' or piece.price_min < price_from
+          assign price_from = piece.price_min
+        endif
+        if price_to == '' or piece.price_max > price_to
+          assign price_to = piece.price_max
+        endif
+      endfor
+    endif
+  -%}
   {%- paginate collection.products by 24 -%}
     {%- liquid
       assign shown = paginate.current_offset | plus: collection.products.size
@@ -319,6 +338,13 @@
       {%- endif -%}
     </div>
 
+    {%- comment -%} Always here, as the intro is: another craft brings its own, and a filtered view has none. {%- endcomment -%}
+    <div class="collection-page__about" data-region="about">
+      {%- if applied == 0 and paginate.current_page == 1 and collection.products.size > 0 -%}
+        {%- render 'collection-about', collection: collection, from: price_from, to: price_to -%}
+      {%- endif -%}
+    </div>
+
     <dialog class="cf-sheet" id="CollectionFilters" aria-labelledby="CollectionFiltersTitle" data-scroll-lock closedby="any" data-sheet data-filter-sheet>
       <div class="cf-sheet__top">
         <h2 class="cf-sheet__title" id="CollectionFiltersTitle">{{ 'collections.filter' | t }}</h2>
@@ -402,6 +428,7 @@
   .collection-page__count { flex: none; font-size: .9375rem; color: var(--color-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .collection-page__intro { max-width: 40rem; margin-bottom: var(--space-4); color: var(--color-muted); }
   .collection-page__intro:empty { display: none; }
+  .collection-page__about:empty { display: none; }
 
   /* Craft row: one line; it swipes while the page is narrower than the chips. */
   .cf-crafts { margin-bottom: var(--space-4); }
@@ -497,6 +524,7 @@
   .cf-float { display: none; }
   @media (max-width: 767px) {
     .collection-page__intro { order: 2; margin: var(--space-6) 0 0; }
+    .collection-page__about { order: 4; }
     .collection-page[data-js] .cf-float {
       order: 3;
       position: sticky;

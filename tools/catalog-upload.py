@@ -6,6 +6,7 @@ Safe to rerun: a product or collection that already exists by handle is left alo
   python3 tools/catalog-upload.py products [handle ...] [--force]
   python3 tools/catalog-upload.py names handle [handle ...]   sends only the name and SEO title (photos, stock, prices and the URL untouched)
   python3 tools/catalog-upload.py seo handle [handle ...]     sends only the SEO title and description of those products and collections, from the catalogue (docs/seo-plan.md)
+  python3 tools/catalog-upload.py words [handle ...]          sends only the text: a product's description and Materials, a collection's intro and Good to know block (docs/seo-plan.md, phase 3)
   python3 tools/catalog-upload.py prices        sets every variant's price, and the free gift's, from costs.json (photos and stock untouched)
   python3 tools/catalog-upload.py collections [--force]
   python3 tools/catalog-upload.py filters       writes each product's Occasion and Flower & motif (from its tags) for the collection page's filters
@@ -332,7 +333,7 @@ def seo(handles):
     if not handles:
         sys.exit('seo: give the handles to send')
     products_by = {p['handle']: p for p in DATA['products']}
-    collections_by = {c['handle']: c for c in DATA['collections']}
+    collections_by = {c['handle']: c for c in DATA['collections'] + [DATA['shop_words']]}
     for h in handles:
         if h in products_by:
             kind, mutation, words = 'product', 'productUpdate', {'title': products_by[h]['seo_title'], 'description': products_by[h]['seo_description']}
@@ -347,6 +348,40 @@ def seo(handles):
                 {'input': {'id': rid, 'seo': words}}, mutate=True)[mutation]
         check(d['userErrors'], h)
         print('seo:', h, '->', d[kind]['seo']['title'], '|', len(d[kind]['seo']['description']), 'characters')
+
+
+def words(handles):
+    """The text only (docs/seo-plan.md, phase 3): a product's description and its Materials line where it has its own,
+    a collection's intro and its Good to know block (snippets/collection-about.liquid). Photos, prices, stock, options,
+    rules and every other field stay as they are. The Shop collection is not made by this tool, so its words sit in
+    "shop_words"."""
+    things = [('product', p) for p in DATA['products']] + [('collection', c) for c in DATA['collections'] + [DATA['shop_words']]]
+    known = {t['handle'] for _, t in things}
+    for h in handles:
+        if h not in known:
+            sys.exit(f'words: {h} is not in the catalogue')
+    fields = []
+    for kind, t in things:
+        if handles and t['handle'] not in handles:
+            continue
+        rid = existing(kind, t['handle'])
+        if not rid:
+            print('not in the store, skipped:', t['handle'])
+            continue
+        mutation = kind + 'Update'
+        d = gql('mutation($input: %sInput!) { %s(input: $input) { %s { handle } userErrors { field message } } }' % (kind.capitalize(), mutation, kind),
+                {'input': {'id': rid, 'descriptionHtml': t['description']}}, mutate=True)[mutation]
+        check(d['userErrors'], t['handle'])
+        if kind == 'product' and t.get('materials'):
+            fields.append({'ownerId': rid, 'namespace': 'custom', 'key': 'materials', 'type': 'multi_line_text_field', 'value': t['materials']})
+        if kind == 'collection' and (t.get('about') or t.get('questions')):
+            fields.append({'ownerId': rid, 'namespace': 'custom', 'key': 'good_to_know', 'type': 'json',
+                           'value': json.dumps({'about': t.get('about', []), 'questions': t.get('questions', [])}, ensure_ascii=False)})
+        print('words:', t['handle'])
+    for i in range(0, len(fields), 25):
+        d = gql('mutation($m: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $m) { metafields { id } userErrors { field message code } } }', {'m': fields[i:i + 25]}, mutate=True)['metafieldsSet']
+        check(d['userErrors'], 'metafieldsSet')
+    print('set', len(fields), 'fields')
 
 
 def home():
@@ -398,6 +433,8 @@ if __name__ == '__main__':
         swatches([c['handle'] for c in DATA['collections']])
     elif cmd == 'seo':
         seo(args[1:])
+    elif cmd == 'words':
+        words(args[1:])
     elif cmd == 'names':
         names(args[1:])
     elif cmd == 'tests':

@@ -3038,7 +3038,10 @@ if (want('24')) {
     record('Collection: Load more adds the next page', two.length === Math.min(48, all) && new Set(two.map((c) => c.href)).size === two.length && focus === 24 && !/noindex/.test(robots), `${two.length} cards of ${all}, repeats: ${two.length - new Set(two.map((c) => c.href)).size}, focus on card ${focus + 1}, "${showing}"`);
     // A tap on Filter or Sort never moves the page (2026-10-10: page-wide scroll padding made Sort jump 350px).
     const moved = [];
-    for (const y of [0, 700, 1e6]) {
+    // The end is the end of the list, where the pill comes to rest: below it are the intro and Good to know, which the
+    // pill does not follow (2026-10-13).
+    const listEnd = await page.evaluate(() => Math.round(document.querySelector('[data-region="results"]').getBoundingClientRect().bottom + scrollY - innerHeight + 160));
+    for (const y of [0, 700, listEnd]) {
       for (const id of ['CollectionFilters', 'CollectionSort']) {
         await page.evaluate((top) => scrollTo({ top, behavior: 'instant' }), y);
         await page.waitForTimeout(300);
@@ -3152,6 +3155,44 @@ if (want('24')) {
     const js = await fetch(site('/collections/shop')).then((r) => r.text()).then((html) => html.match(/[^"']+collection\.js[^"']*/)?.[0]);
     const kb = js ? await fetch(js.startsWith('//') ? `https:${js}` : new globalThis.URL(js, URL).href).then((r) => r.arrayBuffer()).then(async (b) => (await new Response(new Blob([b]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer()).byteLength / 1024) : 99;
     record('Collection: script size', kb < 4.5, `collection.js ${kb.toFixed(1)} KB gzipped (budget 4.5 KB)`);
+  }
+
+  // "Good to know" after the products (docs/seo-plan.md, phase 3; snippets/collection-about). Its one price line is
+  // built from the collection's own prices and must equal the store's lowest and highest; a filtered view has no block;
+  // on a phone its rows are full tap targets and another craft brings its own block.
+  {
+    const wrong = [];
+    for (const handle of ['bouquets', 'keychains', 'shop', 'gifts-under-299']) {
+      const html = await fetch(site(`/collections/${handle}`)).then((r) => r.text(), () => '');
+      const line = html.match(/data-good-prices>([^<]*)/)?.[1];
+      if (!/data-good-question/.test(html)) wrong.push(`${handle}: no block`);
+      if (!line) continue; // left out where a list cannot hold every piece: allowed
+      const shown = [...line.matchAll(/₹\s?([\d,]+)/g)].map((m) => +m[1].replace(/,/g, ''));
+      const { products } = await fetch(site(`/collections/${handle}/products.json?limit=250`)).then((r) => r.json());
+      const prices = products.filter((p) => !p.tags.includes('test-product') && !p.tags.includes('free-gift')).flatMap((p) => p.variants.map((v) => +v.price));
+      const real = [Math.min(...prices), Math.max(...prices)];
+      if (shown[0] !== real[0] || (shown[1] ?? shown[0]) !== real[1]) wrong.push(`${handle}: says ${shown.join(' to ')}, the store has ${real.join(' to ')}`);
+    }
+    const filtered = await fetch(site('/collections/keychains?filter.v.price.lte=200')).then((r) => r.text(), () => '');
+    if (/data-good-question/.test(filtered)) wrong.push('a filtered view still shows the block');
+    record('Collection: Good to know is there, and its prices are the store\'s', wrong.length === 0, wrong.join('; ') || 'four collections; none on a filtered view');
+
+    const browser = await chromium.launch();
+    const page = await (await browser.newContext({ viewport: { width: 360, height: 780 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: 'reduce' })).newPage();
+    await page.goto(site('/collections/bouquets'), { waitUntil: 'load' });
+    const read = () => page.evaluate(() => ({
+      first: document.querySelector('.collection-about [data-good-question] summary')?.textContent.trim(),
+      rows: [...document.querySelectorAll('.collection-about summary')].map((s) => Math.round(s.getBoundingClientRect().height)),
+      below: document.querySelector('.collection-about')?.getBoundingClientRect().top > document.querySelector('[data-collection-grid]').getBoundingClientRect().bottom,
+      sideways: document.documentElement.scrollWidth > innerWidth,
+    }));
+    const before = await read();
+    await page.locator('.cf-craft[href*="/collections/keychains"]').click();
+    await page.waitForFunction((was) => { const now = document.querySelector('.collection-about [data-good-question] summary')?.textContent.trim(); return now && now !== was; }, before.first, { timeout: 15000 }).catch(() => {});
+    const after = await read();
+    record('Collection, phone: Good to know sits after the products, with full-size rows, and follows the craft', before.rows.length >= 3 && before.rows.every((h) => h >= 44) && before.below && !before.sideways && after.first && after.first !== before.first,
+      `rows ${before.rows.join(', ')}px; after the products: ${before.below}; "${before.first}" → "${after.first}"`);
+    await browser.close();
   }
 }
 

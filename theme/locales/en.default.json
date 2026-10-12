@@ -105,6 +105,9 @@
   },
   "collections": {
     "title": "Collections",
+    "good_to_know": "Good to know",
+    "prices_range": "Prices run from {{ from }} to {{ to }}.",
+    "prices_one": "Every piece here is {{ price }}.",
     "craft": "Craft",
     "any": "Any",
     "any_price": "Any price",
@@ -574,6 +577,15 @@
     "faq_gift": "Orders over {{ amount }} get a free {{ gift }}, one per order, while stocks last. If part of an order is refunded and it falls under {{ amount }}, the gift is yours to keep."
   },
   "story": {
+    "fact_maker": "Made by",
+    "fact_place": "Where",
+    "fact_since": "Since",
+    "fact_makes": "What we make",
+    "fact_how": "How",
+    "fact_delivery": "Delivery",
+    "fact_delivery_text": "Across India. Orders are sent within {{ from }} to {{ to }} working days.",
+    "fact_custom": "Custom orders",
+    "fact_custom_text": "Yes, and bulk orders too: on WhatsApp or through the Contact page.",
     "play": "Play video",
     "pause": "Pause video"
   },

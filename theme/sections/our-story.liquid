@@ -36,6 +36,25 @@
     </section>
   {%- endfor -%}
 
+  {%- comment -%}
+    The same story as plain facts, for a reader in a hurry and for search and AI engines (docs/seo-plan.md, phase 3).
+    The delivery days are Theme settings → Cart, as on every other page.
+  {%- endcomment -%}
+  {%- if s.facts_heading != blank -%}
+    <section class="our-story__facts" aria-labelledby="Facts-{{ section.id }}" data-arrive="lines">
+      <h2 class="eyebrow" id="Facts-{{ section.id }}">{{ s.facts_heading }}</h2>
+      <dl class="our-story__list">
+        {%- if s.fact_maker != blank -%}<div><dt>{{ 'story.fact_maker' | t }}</dt><dd>{{ s.fact_maker }}</dd></div>{%- endif -%}
+        {%- if s.fact_place != blank -%}<div><dt>{{ 'story.fact_place' | t }}</dt><dd>{{ s.fact_place }}</dd></div>{%- endif -%}
+        {%- if s.fact_since != blank -%}<div><dt>{{ 'story.fact_since' | t }}</dt><dd>{{ s.fact_since }}</dd></div>{%- endif -%}
+        {%- if s.fact_makes != blank -%}<div><dt>{{ 'story.fact_makes' | t }}</dt><dd>{{ s.fact_makes }}</dd></div>{%- endif -%}
+        {%- if s.fact_how != blank -%}<div><dt>{{ 'story.fact_how' | t }}</dt><dd>{{ s.fact_how }}</dd></div>{%- endif -%}
+        <div><dt>{{ 'story.fact_delivery' | t }}</dt><dd>{{ 'story.fact_delivery_text' | t: from: settings.dispatch_days_min, to: settings.dispatch_days_max }}</dd></div>
+        <div><dt>{{ 'story.fact_custom' | t }}</dt><dd>{{ 'story.fact_custom_text' | t }}</dd></div>
+      </dl>
+    </section>
+  {%- endif -%}
+
   {%- if s.close_heading != blank -%}
     <div class="our-story__close" data-arrive="lines">
       <h2 class="h3">{{ s.close_heading }}</h2>
@@ -62,6 +81,13 @@
   .our-story__media { --ratio: 1 / 1; }
   .our-story__copy { display: grid; gap: var(--space-3); align-content: start; max-width: 34rem; }
 
+  .our-story__facts { display: grid; gap: var(--space-4); max-width: 40rem; margin-top: var(--space-9); }
+  .our-story__list { display: grid; border-top: 1px solid var(--color-line-strong); }
+  .our-story__list > div { display: grid; gap: var(--space-1) var(--space-5); padding-block: var(--space-3); border-bottom: 1px solid var(--color-line-strong); }
+  .our-story__list dt { color: var(--color-muted); font-size: .9375rem; }
+  .our-story__list dd { margin: 0; color: var(--color-heading); }
+  @media (min-width: 560px) { .our-story__list > div { grid-template-columns: 9rem minmax(0, 1fr); } }
+
   .our-story__close { display: grid; gap: var(--space-3); max-width: 34rem; margin-top: var(--space-9); padding-top: var(--space-7); border-top: 1px solid var(--color-line-strong); }
   .our-story__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
 
@@ -83,6 +109,13 @@
     { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Our story" },
     { "type": "text", "id": "heading", "label": "Title", "info": "The page's main heading." },
     { "type": "textarea", "id": "text", "label": "Opening lines" },
+    { "type": "header", "content": "At a glance", "info": "The story as a short list of facts. Delivery and custom orders are added from Theme settings." },
+    { "type": "text", "id": "facts_heading", "label": "Heading", "default": "At a glance", "info": "Leave empty to hide the list." },
+    { "type": "text", "id": "fact_maker", "label": "Made by", "default": "Priya Singh" },
+    { "type": "text", "id": "fact_place", "label": "Where", "default": "Piro, Bihar, India" },
+    { "type": "text", "id": "fact_since", "label": "Since", "default": "2025" },
+    { "type": "text", "id": "fact_makes", "label": "What we make", "default": "Crochet flower bouquets, keychains, flower pots, bag charms and hair accessories" },
+    { "type": "text", "id": "fact_how", "label": "How", "default": "By hand, one piece at a time. No machines." },
     { "type": "header", "content": "The close" },
     { "type": "text", "id": "close_heading", "label": "Heading" },
     { "type": "text", "id": "close_text", "label": "Line" },

@@ -2,6 +2,17 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-13 (SEO phase 3: the words)
+
+Built to the plan Raushan approved; details in `docs/seo-plan.md`, "As built".
+
+- **Nothing made up.** Text comes from the catalogue, the photos, Our story and the FAQ. Sizes wait for Priya (`docs/size-sheet.md`); doubtful claims are questions on the review page.
+- **Yarn: "soft acrylic yarn"** (Raushan: mainly acrylic, sometimes cotton). Cotton is claimed nowhere.
+- **Yarn Basket began in 2025** (Raushan), shown in Our story's "At a glance".
+- **No price typed into text.** The collection block's price line is built from the store's prices and checked.
+- **Long collection text sits after the products,** as closed rows; filtered views have none.
+- **The home page gets no new line;** two existing sentences carry the searched words.
+
 ## 2026-10-13 (SEO phases 1 and 2: head tags and structured data)
 
 Built to the plan Raushan approved; details in `docs/seo-plan.md`, "As built".

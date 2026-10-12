@@ -1,0 +1,57 @@
+{%- comment -%}
+  "Good to know" after a collection's products (docs/seo-plan.md, phase 3): what is in the collection, in words, and
+  the questions shoppers ask about it, closed until asked for. The text is the collection's `custom.good_to_know`
+  field ({ "about": [paragraphs], "questions": [[question, answer]] }), written in tools/catalog/catalog.json and sent
+  with `catalog-upload.py words`. Prices are never typed into that text: the one price line is built here.
+  Accepts:
+  - collection: the collection
+  - from, to: its lowest and highest price in paise, or nothing when they cannot be known for sure
+  The rows are the FAQ section's (sections/faq.liquid).
+{%- endcomment -%}
+{%- liquid
+  assign know = collection.metafields.custom.good_to_know.value
+  assign about = know.about
+  assign questions = know.questions
+-%}
+{%- if about.size > 0 or questions.size > 0 -%}
+  <section class="collection-about faq--compact" aria-labelledby="CollectionAbout">
+    <h2 class="eyebrow" id="CollectionAbout">{{ 'collections.good_to_know' | t }}</h2>
+    <div class="collection-about__text">
+      {%- for line in about -%}
+        <p>{{ line | escape }}</p>
+      {%- endfor -%}
+      {%- if from != blank and to != blank -%}
+        <p data-good-prices>
+          {%- liquid
+            assign from_money = from | money_without_trailing_zeros
+            assign to_money = to | money_without_trailing_zeros
+            if from == to
+              echo 'collections.prices_one' | t: price: from_money
+            else
+              echo 'collections.prices_range' | t: from: from_money, to: to_money
+            endif
+          -%}
+        </p>
+      {%- endif -%}
+    </div>
+    {%- if questions.size > 0 -%}
+      <div class="faq__list">
+        {%- for pair in questions -%}
+          <details class="faq__item" data-good-question>
+            <summary>
+              <h3 class="collection-about__q">{{ pair[0] | escape }}</h3>
+              <span class="faq__toggle" aria-hidden="true">{%- render 'icon', icon: 'plus' -%}</span>
+            </summary>
+            <div class="faq__answer"><p>{{ pair[1] | escape }}</p></div>
+          </details>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </section>
+{%- endif -%}
+
+{% stylesheet %}
+  .collection-about { display: grid; gap: var(--space-3); max-width: 48rem; margin-top: var(--space-8); padding-block: 0; }
+  .collection-about__text { display: grid; gap: var(--space-3); max-width: 40rem; margin-bottom: var(--space-3); }
+  .collection-about__q { font: inherit; letter-spacing: 0; color: inherit; }
+{% endstylesheet %}

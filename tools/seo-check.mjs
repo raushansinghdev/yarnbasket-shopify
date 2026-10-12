@@ -79,6 +79,7 @@ const read = async (path) => {
   for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi)) {
     try { const d = JSON.parse(m[1]); page.data.push(...(d['@graph'] || [d])); } catch { page.badData += 1; }
   }
+  page.questions = (main.match(/data-good-question/g) || []).length;
   page.out = linksIn(main);
   page.nav = linksIn(body.replace(main, ''));
   return page;
@@ -136,9 +137,18 @@ record('Share image on every page', open.filter((p) => !p.share).map((p) => p.pa
 // 5. The page itself.
 record('One h1', open.filter((p) => p.h1 !== 1).map((p) => `${p.path} (${p.h1})`), 'exactly one on every page');
 record('Every image has alt text', live.filter((p) => p.noAlt).map((p) => `${p.path} (${p.noAlt})`), 'none missing');
-const copy = new Map([...products.map((p) => [`/products/${p.handle}`, words(p.body_html)]), ...collections.map((c) => [`/collections/${c.handle}`, words(c.body_html)])]);
+const copy = new Map([...products.map((p) => [`/products/${p.handle}`, words(p.body_html)]), ...collections.map((c) => [`/collections/${c.handle}`, words(c.body_html || c.description)])]);
 record(`Product description: ${LIMIT.productWords} words or more`, productPages.filter((p) => (copy.get(p.path) || 0) < LIMIT.productWords).map((p) => `${p.path} (${copy.get(p.path) || 0})`), 'every product says enough');
 record(`Collection intro: ${LIMIT.collectionWords} words or more`, collectionPages.filter((p) => (copy.get(p.path) || 0) < LIMIT.collectionWords).map((p) => `${p.path} (${copy.get(p.path) || 0})`), 'every collection has one');
+// A sentence used on two product pages is a page that was not written for its piece.
+const said = new Map();
+for (const p of products.filter((x) => !hidden.has(`/products/${x.handle}`))) {
+  for (const sentence of new Set(decode((p.body_html || '').replace(/<[^>]+>/g, ' ')).split(/(?<=[.!?])\s+/).map((t) => t.replace(/\s+/g, ' ').trim().toLowerCase()).filter((t) => t.split(' ').length > 3))) {
+    said.set(sentence, [...(said.get(sentence) || []), p.handle]);
+  }
+}
+record('No two product descriptions share a sentence', [...said].filter(([, at]) => at.length > 1).map(([sentence, at]) => `"${sentence}" (${at.join(', ')})`), 'each written for its own piece');
+record('Collection: Good to know, with 3 questions or more', collectionPages.filter((p) => p.questions < 3).map((p) => `${p.path} (${p.questions})`), 'what shoppers ask, answered on the page');
 const count = (p, re) => [...p.out].filter((to) => re.test(to) && to !== p.path).length;
 record(`Product page links to ${LIMIT.productLinks} products, ${LIMIT.collectionLinks} collections`, productPages.filter((p) => count(p, /^\/products\//) < LIMIT.productLinks || count(p, /^\/collections\//) < LIMIT.collectionLinks).map((p) => `${p.path} (${count(p, /^\/products\//)}, ${count(p, /^\/collections\//)})`), 'in the HTML, before any script');
 record('Collection page links to other collections', collectionPages.filter((p) => count(p, /^\/collections\/[^/?]+$/) < LIMIT.collectionLinks).map((p) => p.path), 'each leads on to others');
