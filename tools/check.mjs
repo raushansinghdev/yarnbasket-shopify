@@ -1830,8 +1830,9 @@ if (want('20')) {
     record('Product: no quantity field, nothing of the buy box in the page', !b.field && b.stepper === 0 && b.form === 0, `quantity field in the form: ${b.field}; stepper showing: ${b.stepper > 0}; form ${b.form}px tall in the page`);
     record('Product: second photo ready, viewer not loaded', first.second === true && !first.zoomLoaded, `second photo loaded: ${first.second}; product-zoom.js fetched: ${first.zoomLoaded}`);
     const graph = first.ld.flatMap((d) => (d ? d['@graph'] || [d] : [{ '@type': 'unparsable' }]));
-    const products = graph.filter((g) => g['@type'] === 'Product');
-    const prices = (products[0]?.offers || []).map((o) => String(o.price).replace(/\.0$/, ''));
+    // A piece with options is a ProductGroup holding one Product per option (docs/seo-plan.md, phase 2).
+    const products = graph.filter((g) => g['@type'] === 'Product' || g['@type'] === 'ProductGroup');
+    const prices = [].concat(products[0]?.offers || [], ...[].concat(products[0]?.hasVariant || []).map((v) => v.offers || [])).map((o) => String(o.price).replace(/\.0$/, ''));
     record('Product: one Product in the JSON-LD, price matches', products.length === 1 && prices.includes(first.shownPrice) && !graph.some((g) => /FAQPage|unparsable/.test(g['@type'])), `types: ${graph.map((g) => g['@type']).join(', ')}; offers ${prices.join(', ')}; page shows ${first.shownPrice}`);
 
     // Swiping the photos keeps the dots and the count in step.

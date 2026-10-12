@@ -1,8 +1,25 @@
 {
   "404": {
-    "title": "404",
-    "not_found": "Page not found.",
-    "back_to_shopping": "Back to shopping"
+    "title": "This page has wandered off",
+    "not_found": "The link may be old, or the piece may have sold out for good. Search for it, or pick up the thread below.",
+    "search_label": "Search the shop",
+    "crafts": "Shop by craft",
+    "back_to_shopping": "Shop all crochet"
+  },
+  "seo": {
+    "home_title": "Handmade Crochet Gifts: Bouquets & Keychains | Yarn Basket",
+    "home_description": "Crochet flower bouquets, keychains, flower pots and hair accessories, made by hand in India.",
+    "free_delivery": "Free delivery from {{ amount }}.",
+    "shop_title": "Shop All Handmade Crochet Gifts | Yarn Basket",
+    "shop_description": "Every Yarn Basket piece in one place: crochet bouquets, keychains, flower pots, hair accessories and bag charms, made by hand in India.",
+    "collections_description": "Browse Yarn Basket's handmade crochet by craft, flower and occasion: bouquets, keychains, flower pots, hair accessories and gifts.",
+    "policies": {
+      "refund-policy": "Yarn Basket's refund policy: a replacement or full refund if a piece arrives damaged, wrong or missing, and how to tell us within 48 hours.",
+      "shipping-policy": "Yarn Basket's shipping policy: dispatch within 1 to 2 working days, delivery across India in 3 to 7 days, and what delivery costs.",
+      "privacy-policy": "Yarn Basket's privacy policy: what we collect when you browse or order handmade crochet from us, why we need it, and your choices.",
+      "terms-of-service": "Yarn Basket's terms of service: ordering, prices, payment, delivery, custom pieces and the rules for using our handmade crochet shop.",
+      "contact-information": "Yarn Basket's contact information: the business behind the shop, its address in Bihar, email, GSTIN and grievance officer."
+    }
   },
   "blog": {
     "article_comments": "Comments",

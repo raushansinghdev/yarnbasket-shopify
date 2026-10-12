@@ -1,6 +1,8 @@
 {%- doc -%}
-  Head tags for SEO and link previews: title, description, canonical, Open Graph and Twitter.
-  Product and article structured data lives in the structured-data snippet.
+  Head tags for SEO and link previews: title, description, canonical, Open Graph and Twitter (docs/seo-plan.md, phase 1).
+  Structured data lives in the structured-data snippet.
+  Where the admin has no field, or the field is still empty, the theme supplies the words: the home page, the
+  policies and the Shop collection. Anything typed in the admin wins.
 {%- enddoc -%}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,10 +10,41 @@
 <meta name="color-scheme" content="light">
 
 {%- liquid
-  assign og_title = page_title | default: shop.name
+  assign seo_title = page_title | default: shop.name
+  assign seo_description = page_description
+  if request.page_type == 'index'
+    if seo_title == shop.name
+      assign seo_title = 'seo.home_title' | t
+    endif
+    if seo_description == blank
+      assign seo_description = 'seo.home_description' | t
+      if settings.free_shipping_threshold > 0
+        assign free_from = settings.free_shipping_threshold | prepend: '₹'
+        assign free_line = 'seo.free_delivery' | t: amount: free_from
+        assign seo_description = seo_description | append: ' ' | append: free_line
+      endif
+    endif
+  elsif request.page_type == 'policy' and seo_description == blank
+    assign policy_handle = request.path | split: '/' | last
+    assign known = 'refund-policy,shipping-policy,privacy-policy,terms-of-service,contact-information' | split: ','
+    if known contains policy_handle
+      assign seo_description = 'seo.policies.' | append: policy_handle | t
+    endif
+  elsif request.page_type == 'collection' and collection.handle == settings.shop_all_collection.handle
+    if seo_title == collection.title
+      assign seo_title = 'seo.shop_title' | t
+    endif
+    if seo_description == blank
+      assign seo_description = 'seo.shop_description' | t
+    endif
+  elsif request.page_type == 'list-collections' and seo_description == blank
+    assign seo_description = 'seo.collections_description' | t
+  endif
+
+  assign og_title = seo_title
   assign og_url = canonical_url | default: request.origin
   assign og_type = 'website'
-  assign og_description = page_description | default: shop.description | default: shop.name
+  assign og_description = seo_description | default: shop.description | default: shop.name
   assign og_image = page_image | default: settings.share_image
 
   if request.page_type == 'product'
@@ -23,27 +56,43 @@
   endif
 -%}
 
+{%- comment -%} One format everywhere: "Page name | Yarn Basket". A title that already ends that way is not given it twice. {%- endcomment -%}
+{%- assign brand_end = ' | ' | append: shop.name -%}
 <title>
-  {{- page_title -}}
-  {%- if current_tags %}{% assign joined_tags = current_tags | join: ', ' %} &ndash; {{ 'general.tagged' | t: tags: joined_tags }}{% endif -%}
-  {%- if current_page != 1 %} &ndash; {{ 'general.page' | t: page: current_page }}{% endif -%}
-  {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+  {{- seo_title | remove_last: brand_end | default: shop.name | escape_once -}}
+  {%- if current_tags %}{% assign joined_tags = current_tags | join: ', ' %} | {{ 'general.tagged' | t: tags: joined_tags }}{% endif -%}
+  {%- if current_page != 1 %} | {{ 'general.page' | t: page: current_page }}{% endif -%}
+  {%- unless seo_title == shop.name %}{{ brand_end }}{% endunless -%}
 </title>
-{%- if page_description %}
-  <meta name="description" content="{{ page_description | escape }}">
+{%- if seo_description != blank %}
+  <meta name="description" content="{{ seo_description | escape_once }}">
 {%- endif %}
 <link rel="canonical" href="{{ canonical_url }}">
 {%- comment -%}
   Search results are endless thin pages: keep them out of search engines (robots.txt also blocks /search). The Saved,
   Track and Account pages are personal (docs/account-plan.md, account-hub-plan.md), so they stay out too. So does a
-  test product's page (tag "test-product"), which is open only for the checks until it's deleted. A collection that
-  is filtered or sorted is the same products as the collection itself (its canonical), so it stays out as well
-  (docs/collection-plan.md).
+  test product's page (tag "test-product"), which is open only for the checks until it's deleted, and the free
+  gift's page (tag "free-gift"), which is not for sale. A collection that is filtered or sorted is the same products
+  as the collection itself (its canonical), so it stays out as well (docs/collection-plan.md). The cart is personal.
+  Empty pages stay out until they have something to show: a blog with no posts, a collection with no pieces, and
+  Shopify's starter "Home page" collection (docs/seo-plan.md).
 {%- endcomment -%}
 {%- liquid
   assign is_test = false
-  if request.page_type == 'product' and product.tags contains 'test-product'
-    assign is_test = true
+  if request.page_type == 'product'
+    if product.tags contains 'test-product' or product.tags contains 'free-gift'
+      assign is_test = true
+    endif
+  endif
+  assign is_empty = false
+  if request.page_type == 'cart'
+    assign is_empty = true
+  elsif request.page_type == 'blog' and blog.articles_count == 0
+    assign is_empty = true
+  elsif request.page_type == 'collection'
+    if collection.all_products_count == 0 or collection.handle == 'frontpage'
+      assign is_empty = true
+    endif
   endif
   assign is_narrowed = false
   if request.page_type == 'collection'
@@ -57,7 +106,7 @@
     endfor
   endif
 -%}
-{%- if is_test or is_narrowed or request.page_type == 'search' or template.suffix == 'saved' or template.suffix == 'track-order' or page.handle == 'saved' or page.handle == 'track-order' or template.suffix contains 'account' or page.handle == 'account' %}
+{%- if is_test or is_empty or is_narrowed or request.page_type == 'search' or template.suffix == 'saved' or template.suffix == 'track-order' or page.handle == 'saved' or page.handle == 'track-order' or template.suffix contains 'account' or page.handle == 'account' %}
   <meta name="robots" content="noindex, follow">
 {%- endif %}
 
@@ -68,25 +117,45 @@
   {%- comment -%} The brand kit basket icon, the same files the coming-soon page uses. {%- endcomment -%}
   <link rel="icon" type="image/svg+xml" href="{{ 'favicon.svg' | asset_url }}">
   <link rel="icon" type="image/png" sizes="64x64" href="{{ 'favicon-64.png' | asset_url }}">
+  <link rel="icon" type="image/png" sizes="96x96" href="{{ 'favicon-96.png' | asset_url }}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ 'favicon-192.png' | asset_url }}">
   <link rel="apple-touch-icon" href="{{ 'apple-touch-icon.png' | asset_url }}">
 {%- endif %}
 
 <meta property="og:site_name" content="{{ shop.name }}">
 <meta property="og:url" content="{{ og_url }}">
-<meta property="og:title" content="{{ og_title | escape }}">
+<meta property="og:title" content="{{ og_title | escape_once }}">
 <meta property="og:type" content="{{ og_type }}">
-<meta property="og:description" content="{{ og_description | escape }}">
+<meta property="og:description" content="{{ og_description | escape_once }}">
 <meta property="og:locale" content="en_IN">
 {%- if og_image %}
   <meta property="og:image" content="https:{{ og_image | image_url: width: 1200 }}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="{{ 1200 | divided_by: og_image.aspect_ratio | round }}">
   <meta property="og:image:alt" content="{{ og_image.alt | default: og_title | escape }}">
+  <meta name="twitter:image" content="https:{{ og_image | image_url: width: 1200 }}">
+{%- else %}
+  {%- comment -%} No photo of its own and none picked in Theme settings → Brand: the brand kit logo on Soft blush. {%- endcomment -%}
+  {%- liquid
+    # asset_url is "//the-domain/cdn/…" on the store and "/cdn/…" on a local server; link previews need the whole address.
+    assign share_fallback = 'share-1200x630.png' | asset_url
+    assign share_start = share_fallback | slice: 0, 2
+    if share_start == '//'
+      assign share_fallback = share_fallback | prepend: 'https:'
+    elsif share_start != 'ht'
+      assign share_fallback = share_fallback | prepend: shop.url
+    endif
+  -%}
+  <meta property="og:image" content="{{ share_fallback }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{{ shop.name }}: {{ 'general.tagline' | t }}">
+  <meta name="twitter:image" content="{{ share_fallback }}">
 {%- endif %}
 {%- if request.page_type == 'product' %}
   <meta property="og:price:amount" content="{{ product.price | divided_by: 100.0 | round: 2 }}">
   <meta property="og:price:currency" content="{{ cart.currency.iso_code }}">
 {%- endif %}
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ og_title | escape }}">
-<meta name="twitter:description" content="{{ og_description | escape }}">
+<meta name="twitter:title" content="{{ og_title | escape_once }}">
+<meta name="twitter:description" content="{{ og_description | escape_once }}">

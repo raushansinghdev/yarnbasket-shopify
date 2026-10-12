@@ -5,6 +5,7 @@ Uses the Shopify CLI's stored login (`shopify store execute`), so it runs as Rau
 Safe to rerun: a product or collection that already exists by handle is left alone unless --force.
   python3 tools/catalog-upload.py products [handle ...] [--force]
   python3 tools/catalog-upload.py names handle [handle ...]   sends only the name and SEO title (photos, stock, prices and the URL untouched)
+  python3 tools/catalog-upload.py seo handle [handle ...]     sends only the SEO title and description of those products and collections, from the catalogue (docs/seo-plan.md)
   python3 tools/catalog-upload.py prices        sets every variant's price, and the free gift's, from costs.json (photos and stock untouched)
   python3 tools/catalog-upload.py collections [--force]
   python3 tools/catalog-upload.py filters       writes each product's Occasion and Flower & motif (from its tags) for the collection page's filters
@@ -326,6 +327,28 @@ def names(handles):
         print('name:', d['product']['handle'], '->', d['product']['title'])
 
 
+def seo(handles):
+    """The search title and description only: nothing a shopper sees on the page, no photos, prices or stock."""
+    if not handles:
+        sys.exit('seo: give the handles to send')
+    products_by = {p['handle']: p for p in DATA['products']}
+    collections_by = {c['handle']: c for c in DATA['collections']}
+    for h in handles:
+        if h in products_by:
+            kind, mutation, words = 'product', 'productUpdate', {'title': products_by[h]['seo_title'], 'description': products_by[h]['seo_description']}
+        elif h in collections_by:
+            kind, mutation, words = 'collection', 'collectionUpdate', {'title': collections_by[h]['seo'][0], 'description': collections_by[h]['seo'][1]}
+        else:
+            sys.exit(f'seo: {h} is not in the catalogue')
+        rid = existing(kind, h)
+        if not rid:
+            sys.exit(f'seo: {h} is not in the store')
+        d = gql('mutation($input: %sInput!) { %s(input: $input) { %s { handle seo { title description } } userErrors { field message } } }' % (kind.capitalize(), mutation, kind),
+                {'input': {'id': rid, 'seo': words}}, mutate=True)[mutation]
+        check(d['userErrors'], h)
+        print('seo:', h, '->', d[kind]['seo']['title'], '|', len(d[kind]['seo']['description']), 'characters')
+
+
 def home():
     keys = [k for k in BUILT['home'] if not k.startswith('cover-')]
     alts = {f'hero{i}': h['alt'] for i, h in enumerate(DATA['home']['hero'])}
@@ -373,6 +396,8 @@ if __name__ == '__main__':
         covers()
         # A new cover is a new photo with a new id: its square has to be sent again.
         swatches([c['handle'] for c in DATA['collections']])
+    elif cmd == 'seo':
+        seo(args[1:])
     elif cmd == 'names':
         names(args[1:])
     elif cmd == 'tests':

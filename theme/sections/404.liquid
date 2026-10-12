@@ -1,19 +1,71 @@
-{% comment %}
-  This section is used in the 404 template to render page shown when customers
-  enter an invalid store URL.
+{%- comment -%}
+  Page not found (docs/seo-plan.md, phase 1). A dead link should still lead somewhere: one heading, one sentence,
+  the search field, the crafts from the main menu's first dropdown (the list the footer's Shop list follows), and
+  the way to everything. Shopify answers with status 404, so search engines drop the address.
+{%- endcomment -%}
+{%- liquid
+  assign crafts = ''
+  for link in linklists['main-menu'].links
+    if link.links.size > 0
+      assign crafts = link.links
+      break
+    endif
+  endfor
+  assign shop_url = settings.shop_all_collection.url | default: routes.all_products_collection_url
+-%}
+<div class="section not-found scheme-soft">
+  <div class="not-found__inner">
+    <h1 class="not-found__title">{{ '404.title' | t }}</h1>
+    <p class="not-found__text">{{ '404.not_found' | t }}</p>
 
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/404
-{% endcomment %}
+    <form action="{{ routes.search_url }}" method="get" role="search" class="not-found__search" aria-label="{{ 'search.form_label' | t }}">
+      <label for="NotFoundSearch" class="visually-hidden">{{ '404.search_label' | t }}</label>
+      {%- render 'search-field', id: 'NotFoundSearch' -%}
+      <input type="hidden" name="options[prefix]" value="last">
+    </form>
 
-<h1>{{ '404.title' | t }}</h1>
+    {%- if crafts != blank -%}
+      <nav class="not-found__crafts" aria-labelledby="NotFoundCrafts">
+        <h2 class="eyebrow" id="NotFoundCrafts">{{ '404.crafts' | t }}</h2>
+        <ul role="list">
+          {%- for link in crafts -%}
+            {%- liquid
+              # "Shop all" is the button under the list.
+              if link.url == shop_url
+                continue
+              endif
+              assign title = link.title
+              if link.type == 'collection_link' and link.object.handle == 'hair-accessories'
+                assign title = 'general.hair_accessories' | t
+              endif
+            -%}
+            <li><a class="not-found__craft" href="{{ link.url }}">{{ title }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
 
-<p>
-  {{ '404.not_found' | t }}
-</p>
+    <a class="btn" href="{{ shop_url }}">{{ '404.back_to_shopping' | t }}</a>
+  </div>
+</div>
 
-<a href="{{ routes.all_products_collection_url }}">
-  {{ '404.back_to_shopping' | t }}
-</a>
+{% stylesheet %}
+  .not-found__inner { display: grid; justify-items: center; gap: var(--space-4); max-width: 560px; margin-inline: auto; text-align: center; }
+  .not-found__text { color: var(--color-muted); }
+  .not-found__search { width: 100%; }
+  .not-found__crafts { display: grid; gap: var(--space-3); width: 100%; margin-block: var(--space-2); }
+  .not-found__crafts ul { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
+  .not-found__craft {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--space-4);
+    border: 1px solid var(--color-line-strong);
+    border-radius: 999px;
+    text-decoration: none;
+  }
+  .not-found__craft:hover { border-color: currentColor; }
+{% endstylesheet %}
 
 {% schema %}
 {

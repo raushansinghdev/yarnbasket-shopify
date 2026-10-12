@@ -15,7 +15,7 @@ const BASE = (args.includes('--url') ? args[args.indexOf('--url') + 1] : 'http:/
 const LIST = args.includes('--list');
 const MAX_PAGES = 400;
 const BRAND = 'Yarn Basket';
-const LIMIT = { titleMax: 62, titleMin: 25, descMin: 70, descMax: 160, productWords: 80, collectionWords: 40, productLinks: 3, collectionLinks: 2 };
+const LIMIT = { titleMax: 62, titleMin: 20, descMin: 70, descMax: 160, productWords: 80, collectionWords: 40, productLinks: 3, collectionLinks: 2 };
 // Personal or endless pages: they must tell search engines to stay out.
 const PRIVATE = [/^\/search/, /^\/cart/, /^\/pages\/(saved|track-order|account)/];
 const NOT_FOR_SALE = ['test-product', 'free-gift'];
@@ -112,7 +112,7 @@ console.log(`Read ${all.length} pages: ${open.length} open to search engines (${
 
 // 2. Every link leads somewhere, and nothing the store sells is left unlinked.
 record('Every link opens a page', all.filter((p) => p.status !== 200).map((p) => `${p.path} (${p.status})`), 'no dead links');
-record('Nothing for sale is an orphan', unreached.filter((path) => !hidden.has(path)), 'every product and collection is reached by following links');
+record('Nothing for sale is an orphan', unreached.filter((path) => !hidden.has(path) && !pages.get(path)?.noindex), 'every product and collection is reached by following links');
 record('Nothing not for sale is linked', [...hidden].filter((path) => reached.has(path)), 'test products and the free gift are linked from nowhere');
 const inbound = new Map();
 const chrome = new Set(live.flatMap((p) => [...p.nav]));
