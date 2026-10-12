@@ -94,10 +94,19 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
   - the Contact page's template is `contact` (it is: Shopify's default for that page; read from the store 2026-10-08). Its SEO title and description were set the same day
   - after publishing, Theme settings → Social on the live theme has the Grievance officer
 
+## SEO (docs/seo-plan.md, approved 2026-10-12)
+- [ ] **Search Console, now, on the holding site:** search.google.com/search-console → Add property → Domain → `yarnbasket.in` → copy the TXT record → Spaceship → DNS → add it → Verify. Use the business Gmail. The record stays when the domain moves to Shopify.
+- [ ] **Bing Webmaster Tools:** bing.com/webmasters → sign in → "Import from Google Search Console".
+- [ ] **Keyword Planner:** ads.google.com with the business Gmail → skip the campaign ("Switch to Expert Mode", "Create an account without a campaign") → Tools → Keyword Planner → "Get search volume" → paste the main searches from `docs/seo-keyword-map.md`, location India → download the CSV and hand it to Claude.
+- [ ] **Delete the made-up ratings on 25 real products** (also under "Product page" below): say yes in chat and Claude removes them.
+- [ ] **Pinterest:** a business account for Yarn Basket; claim `yarnbasket.in` once the store is on it (phase 5).
+- [ ] **At soft launch:** Google & YouTube channel and Merchant Center (phase 6), Judge.me (phase 9), Google Business Profile as a service-area business (phase 9), the sitemap submitted in Search Console and Bing (phase 11).
+- [ ] **Before the password comes off:** `npm run check:seo -- --url <the live theme's preview link>` passes every line.
+
 ## Shipping, payments and checkout (docs/shipping-checkout-comparison.md, decided 2026-10-03)
 Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with Razorpay connected inside it, partial COD only (no full COD). Shopify's checkout with Razorpay stays as the fallback. Do them in this order:
 - [ ] **Cashfree account, the main gateway** (docs/decisions.md 2026-10-11): applied by Raushan 2026-10-11, in review. Then connect it where Shiprocket's answer allows.
-- [ ] **Razorpay account** (started by Raushan 2026-10-11): sign up with weyarnbasket@gmail.com as Priya Singh's sole proprietorship; website `https://yarnbasket.in`. Its reviewer reads the holding site, not the store.
+- [ ] **Razorpay account** (applied by Raushan, reported 2026-10-12, awaiting approval): sign up with weyarnbasket@gmail.com as Priya Singh's sole proprietorship; website `https://yarnbasket.in`. Its reviewer reads the holding site, not the store.
 - [ ] **While the holding site shows policies and prices:** after any change to `docs/legal/`, a Bestsellers price or name, or the Our story text, run `npm run build:coming-soon`, then commit and push `coming-soon/`. `node tools/coming-soon-build.mjs --check` says whether it is out of date.
 - [ ] **At launch:** the domain moves to Shopify and `coming-soon/`, its workflow and `tools/coming-soon-build.mjs` are deleted.
 - [ ] **Razorpay in Shopify** (business KYC takes days, so start it first). Connect it in Shopify (Settings → Payments), so Shopify's checkout works as the fallback.

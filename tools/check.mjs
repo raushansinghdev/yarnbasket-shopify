@@ -3128,6 +3128,12 @@ if (want('24')) {
   }
 }
 
+// 26. SEO (docs/seo-plan.md): what a search engine reads on every page. Its own file, requests only: tools/seo-check.mjs.
+if (want('26')) {
+  const run = spawnSync(process.execPath, [fileURLToPath(new globalThis.URL('./seo-check.mjs', import.meta.url)), '--url', URL], { stdio: 'inherit' });
+  record('SEO check (tags, links, words, structured data)', run.status === 0, run.status === 0 ? 'see its lines above' : 'failed: see its lines above, or run npm run check:seo -- --list');
+}
+
 if (want('money')) {
   const run = spawnSync(process.execPath, [fileURLToPath(new globalThis.URL('./money-check.mjs', import.meta.url)), '--url', URL], { stdio: 'inherit' });
   record('Money check (prices, what is on sale, the cart)', run.status === 0, run.status === 0 ? 'see its lines above' : 'failed: see its lines above, or run npm run check:money');
