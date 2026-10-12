@@ -125,6 +125,35 @@
         "info": "Optional. Under the free-shipping amount the cart says \"Shipping ₹…\" instead of \"Shipping calculated at checkout\". From that amount, the price details strike it through beside \"Free\" and count it in \"You save\". Must match your paid rate in Settings → Shipping and delivery."
       },
       {
+        "type": "header",
+        "content": "Delivery times"
+      },
+      {
+        "type": "number",
+        "id": "dispatch_days_min",
+        "label": "Dispatch: working days, from",
+        "default": 1,
+        "info": "Told to Google with each product (docs/seo-plan.md). The Shipping policy and the FAQ say the same in words: change all three together; npm run check -- --only 25 compares them."
+      },
+      {
+        "type": "number",
+        "id": "dispatch_days_max",
+        "label": "Dispatch: working days, to",
+        "default": 2
+      },
+      {
+        "type": "number",
+        "id": "transit_days_min",
+        "label": "Delivery after dispatch: days, from",
+        "default": 3
+      },
+      {
+        "type": "number",
+        "id": "transit_days_max",
+        "label": "Delivery after dispatch: days, to",
+        "default": 7
+      },
+      {
         "type": "number",
         "id": "gift_threshold",
         "label": "Free gift from (₹)",

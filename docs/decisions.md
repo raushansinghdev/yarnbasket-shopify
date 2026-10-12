@@ -2,6 +2,17 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-13 (SEO phases 1 and 2: head tags and structured data)
+
+Built to the plan Raushan approved; details in `docs/seo-plan.md`, "As built".
+
+- **The theme supplies the home page's title and description, the share image and the logo** while the admin has none. They are in git, and a new or re-uploaded theme cannot lose them. The admin's fields still win when filled.
+- **No "Home ›" breadcrumb line on the page.** The product page's collection label already is that link (round 9 stays as it is); the full trail goes to Google in the data only.
+- **A piece with options is a `ProductGroup`.** Option names map to Google's three kinds: colour → color; size, pack, set → size; anything else → pattern.
+- **Dispatch and delivery days are four numbers in Theme settings → Cart** (1, 2, 3, 7). Google reads them with every product; the Shipping policy and the FAQ say them in words; check 25 fails if the three disagree. Changing the days means changing all three.
+- **Kept out of search engines:** the cart, the free gift's page, an empty blog, an empty collection, Shopify's starter "Home page" collection.
+- **Raushan, 2026-10-13: the made-up ratings, Search Console and Keyword Planner wait** until he comes back to them. The ratings line of `check:seo` stays red until then.
+
 ## 2026-10-12 (SEO: one plan for the whole site, docs/seo-plan.md)
 
 Raushan asked for the site's SEO to be designed from scratch, as a top priority, in phases, with no gaps. Approved the same day.

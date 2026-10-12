@@ -1,6 +1,6 @@
 # Yarn Basket: the SEO plan, from scratch
 
-**Status:** approved by Raushan 2026-10-12. Phase 0 built the same day (the check, the keyword map, the baseline). Phases 1 and 2 are next, on his go. Still open from phase 0: the Search Console and Bing verification and the Keyword Planner volumes (Raushan), and deleting the made-up ratings (needs his explicit yes in chat: the permission system stopped the admin call).
+**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1 and 2 built 2026-10-13** (see "As built" at the end). `npm run check:seo` is at 19 of 27; the eight red lines belong to phases 3 (words), 4 (links), 7 (llms.txt) and the made-up ratings. Next: phase 3, on Raushan's go. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
 
 ## Context
 
@@ -274,3 +274,38 @@ Phases 0 to 4, 7 and 10 need nothing from outside and can be finished this month
 - After launch: Search Console's Merchant listings, Product snippets and Core Web Vitals reports, and Merchant Center diagnostics, logged in `docs/seo-log.md`.
 
 Sources for the rule changes: [Shopify changelog, agents.md / llms.txt templates](https://shopify.dev/changelog/posts/customize-llmstxt-llms-fulltxt-and-agentsmd), [agents.md.liquid](https://shopify.dev/docs/storefronts/themes/architecture/templates/agents-md-liquid), [Google merchant listing data](https://developers.google.com/search/docs/appearance/structured-data/merchant-listing), [Google return policy data](https://developers.google.com/search/docs/appearance/structured-data/return-policy), [Google Organization data](https://developers.google.com/search/docs/appearance/structured-data/organization), [Google product variants](https://developers.google.com/search/blog/2024/02/product-variants?hl=en), [FAQ rich results ended](https://www.techwyse.com/news/ai-search/google-faq-rich-results-deprecated-2026).
+
+
+---
+
+## As built
+
+### Phases 1 and 2 (2026-10-13)
+
+`npm run check:seo`: 9 → 14 after phase 1 → **19 of 27** after phase 2. Money check 10 of 10; check 25 is 11 of 11 with its new line.
+
+**Changed from the plan**
+- **No visible breadcrumb line was added.** The product page's label above the name is already the link to its collection and the logo is Home; Google gets Home › collection › piece from the data. A shopper sees no change in these phases except the 404 page.
+- **Nothing was set in the admin for the home page, share image or logo.** The theme supplies them while the admin has none (the way the favicon already worked), so they are in git and cannot go missing on a new theme. Anything set in Online Store → Preferences or Theme settings → Brand wins.
+- **Home title** is "Handmade Crochet Gifts: Bouquets & Keychains | Yarn Basket" (58 characters; the first wording was 64, over the limit).
+- **No GSTIN in the shop's data** yet: it is on the Contact information policy; ask Raushan before publishing it in a second place.
+- **"All collections" in the footer** moves to phase 4 with the other links (the footer's lists are menus in the admin).
+
+**Phase 1**
+- `snippets/meta-tags.liquid`: one title format ("Page | Yarn Basket", "| Page 2" on later pages); words from the theme for the home page, the five policies, the Shop collection and `/collections` when the admin has none (`seo.*` in the locale file); a share image on every page (`assets/share-1200x630.png` when a page has no photo), with `twitter:image`; `noindex, follow` on `/cart`, the free gift's page, a blog with no posts, a collection with no pieces and the starter `frontpage` collection.
+- New assets from the brand kit: `share-1200x630.png`, `logo-512.png`, `favicon-96.png`, `favicon-192.png`.
+- `sections/404.liquid`: one heading, a sentence, the search field, the crafts from the main menu, "Shop all crochet". Axe clean at 360 and 1280.
+- `tools/catalog-upload.py seo <handles>`: sends only the search title and description of products or collections. Used for the octopus keychain pair and the heart hair pins (their descriptions were falling back to 181 characters of page text) and the Sunflowers collection (title was 69 characters).
+
+**Phase 2**
+- `snippets/structured-data.liquid`: one graph per page. Every page names the shop (`OnlineStore`: logo, founder Priya Singh linked to Our story, Piro/Bihar/IN, customer-service email, Instagram and Meesho, the Refund policy as `merchantReturnLink`) and the `WebSite`.
+- Products: a piece with options is a `ProductGroup` with one `Product` per option (its own name, photo, SKU, Offer). The option's kind is told in Google's words: "Colour" is `color`; "Size", "Pack" and "Set" are `size`; anything else ("With", "Design", "Charm") is `pattern`. A piece without options stays a `Product`.
+- `snippets/structured-offer.liquid`: every Offer carries the delivery fee and, now, the delivery time: dispatch 1 to 2 days and transit 3 to 7, from four new numbers in Theme settings → Cart → "Delivery times".
+- Collections: `CollectionPage` with the pieces on that page of results as an `ItemList` (page 2 starts at 25) and a breadcrumb; nothing on filtered or sorted views.
+- Our story (`AboutPage`) and Contact (`ContactPage`) point at the shared shop node. `Blog` and `Article` (author Priya) are ready for phase 8.
+- Check 25 gained "policy, FAQ and Google name the same days". Check 20 and the money check read both shapes of product data.
+
+**Found on the way, not part of this work**
+- The free gift's product description in the admin still says "free with orders over ₹1,499"; the gift now starts at ₹599. Its page is linked from nowhere and is now noindex, but the text should be corrected.
+- Check 20 fails two lines that come from the help-pages commit (225d80d), which made the Refund policy links appear on product pages: "Replacement if damaged" is 36px tall and "Read the refund policy" 22px (the rule is 44px), and one colour-contrast finding on desktop. Check 24's "a tap on Filter or Sort leaves the page where it is" also fails (13px of movement at the end of the list). None of the three files involved was touched here.
+- Not done: pasting one page of each type into Google's Rich Results Test. It needs a public address or a manual paste; the required fields are checked on all 78 pages by `check:seo` instead.

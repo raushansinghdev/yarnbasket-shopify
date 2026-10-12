@@ -26,10 +26,18 @@
     endif
   elsif request.page_type == 'policy' and seo_description == blank
     assign policy_handle = request.path | split: '/' | last
-    assign known = 'refund-policy,shipping-policy,privacy-policy,terms-of-service,contact-information' | split: ','
-    if known contains policy_handle
-      assign seo_description = 'seo.policies.' | append: policy_handle | t
-    endif
+    case policy_handle
+      when 'refund-policy'
+        assign seo_description = 'seo.policies.refund-policy' | t
+      when 'shipping-policy'
+        assign seo_description = 'seo.policies.shipping-policy' | t
+      when 'privacy-policy'
+        assign seo_description = 'seo.policies.privacy-policy' | t
+      when 'terms-of-service'
+        assign seo_description = 'seo.policies.terms-of-service' | t
+      when 'contact-information'
+        assign seo_description = 'seo.policies.contact-information' | t
+    endcase
   elsif request.page_type == 'collection' and collection.handle == settings.shop_all_collection.handle
     if seo_title == collection.title
       assign seo_title = 'seo.shop_title' | t

@@ -2809,6 +2809,25 @@ if (want('25')) {
     }
   }
 
+  // Dispatch and delivery days: Theme settings → Cart tell Google with every product (snippets/structured-offer);
+  // the Shipping policy and the FAQ say them in words. All three must name the same days (docs/seo-plan.md).
+  {
+    const piece = (await (await fetch(site('/products.json?limit=50'))).json()).products.find((p) => !p.tags.some((t) => t === 'test-product' || t === 'free-gift'));
+    const html = await (await fetch(site(`/products/${piece.handle}`))).text();
+    const offers = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].flatMap((m) => { try { const j = JSON.parse(m[1]); return [].concat(j['@graph'] || j); } catch { return []; } })
+      .flatMap((g) => [].concat(g.offers || [], ...[].concat(g.hasVariant || []).map((v) => v.offers || [])));
+    const time = offers[0]?.shippingDetails?.deliveryTime;
+    if (!time) record('Help: dispatch and delivery days are told to Google', false, `no deliveryTime in the product data of ${piece.handle}`);
+    else {
+      const dispatch = `${time.handlingTime.minValue} to ${time.handlingTime.maxValue}`;
+      const transit = `${time.transitTime.minValue} to ${time.transitTime.maxValue}`;
+      const says = (t) => !!t && t.includes(`${dispatch} working days`) && t.includes(`${transit} days`);
+      // The FAQ's answers are closed until tapped, so its words are read from the HTML, not from what is showing.
+      const faqWords = (await (await fetch(site('/pages/faq'))).text()).replace(/<[^>]+>/g, ' ');
+      record('Help: policy, FAQ and Google name the same days', says(body['shipping-policy']) && says(faqWords), `Theme settings: dispatch ${dispatch} working days, delivery ${transit} days; Shipping policy agrees: ${says(body['shipping-policy'])}; FAQ agrees: ${says(faqWords)}`);
+    }
+  }
+
   // Our story.
   if (!(await text('/pages/our-story'))) record('Help: Our story page', false, 'no page at /pages/our-story');
   else {

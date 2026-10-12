@@ -1,0 +1,40 @@
+{%- doc -%}
+  One Offer for the structured data (snippets/structured-data): price, stock, and delivery as Google requires it
+  for a shop listing: the fee, where we deliver, and how long dispatch and the courier take. The fee and the days
+  come from Theme settings → Cart, the same numbers the cart and the Shipping policy use.
+
+  @param {variant} variant - The variant on offer
+  @param {string} product_url - The product's full address
+{%- enddoc -%}
+{%- liquid
+  assign ship_from = settings.free_shipping_threshold | default: 0 | times: 100
+  assign ship_fee = settings.shipping_fee | default: 0 | times: 100
+-%}
+{
+  "@type": "Offer",
+  "url": {{ product_url | append: '?variant=' | append: variant.id | json }},
+  {%- if variant.sku != blank %}
+  "sku": {{ variant.sku | json }},
+  {%- endif %}
+  "price": {{ variant.price | divided_by: 100.0 | json }},
+  "priceCurrency": {{ cart.currency.iso_code | json }},
+  "availability": "https://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}",
+  "itemCondition": "https://schema.org/NewCondition",
+  {%- if ship_from > 0 or ship_fee > 0 %}
+  "shippingDetails": {
+    "@type": "OfferShippingDetails",
+    "shippingRate": {
+      "@type": "MonetaryAmount",
+      "value": {% if ship_from > 0 and variant.price >= ship_from %}0{% else %}{{ ship_fee | divided_by: 100.0 | json }}{% endif %},
+      "currency": {{ cart.currency.iso_code | json }}
+    },
+    "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "IN" },
+    "deliveryTime": {
+      "@type": "ShippingDeliveryTime",
+      "handlingTime": { "@type": "QuantitativeValue", "minValue": {{ settings.dispatch_days_min | default: 1 }}, "maxValue": {{ settings.dispatch_days_max | default: 2 }}, "unitCode": "DAY" },
+      "transitTime": { "@type": "QuantitativeValue", "minValue": {{ settings.transit_days_min | default: 3 }}, "maxValue": {{ settings.transit_days_max | default: 7 }}, "unitCode": "DAY" }
+    }
+  },
+  {%- endif %}
+  "seller": { "@id": {{ shop.url | append: '/#organization' | json }} }
+}

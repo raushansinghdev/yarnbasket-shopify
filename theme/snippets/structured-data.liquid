@@ -1,99 +1,140 @@
 {%- doc -%}
-  JSON-LD for search engines and AI answer engines.
-  Home: Organization and WebSite (with site search). Contact page: ContactPage with how to reach us. Our story: AboutPage. Product: our own Product data with one Offer per variant, shipping and a breadcrumb
-  (docs/product-page-plan.md).
-  The home page FAQ section outputs its own FAQPage data.
+  JSON-LD for search engines and AI answer engines (docs/seo-plan.md, phase 2): one graph per page, its parts
+  pointing at each other by @id.
+  Every page: the shop (OnlineStore, with who makes it, where, how to reach us and the Refund policy) and the WebSite.
+  Product: a Product, or a ProductGroup with one Product per option; each Offer comes from snippets/structured-offer.
+  Collection: its pieces as a list. Our story: AboutPage. Contact: ContactPage. Blog and article: Blog, Article.
+  A breadcrumb wherever a page sits under another.
+  The FAQ section writes its own FAQPage. Prices here are compared with the store by npm run check:money.
 {%- enddoc -%}
-{%- if request.page_type == 'index' -%}
-  {%- liquid
-    assign same_as = ''
-    if settings.social_instagram != blank
-      assign same_as = same_as | append: settings.social_instagram | append: '|'
+{%- liquid
+  assign org_id = shop.url | append: '/#organization'
+  assign site_id = shop.url | append: '/#website'
+  assign founder_id = shop.url | append: '/#priya'
+  assign story_url = pages['our-story'].url
+
+  assign same_as = ''
+  if settings.social_instagram != blank
+    assign same_as = same_as | append: settings.social_instagram | append: '|'
+  endif
+  if settings.social_meesho != blank
+    assign same_as = same_as | append: settings.social_meesho | append: '|'
+  endif
+  assign same_as = same_as | split: '|'
+
+  # The logo: Theme settings → Brand, else the brand kit mark in the theme. asset_url is "//the-domain/cdn/…" on the store.
+  if settings.logo
+    assign logo_url = settings.logo | image_url: width: 600 | prepend: 'https:'
+  else
+    assign logo_url = 'logo-512.png' | asset_url
+    assign logo_start = logo_url | slice: 0, 2
+    if logo_start == '//'
+      assign logo_url = logo_url | prepend: 'https:'
+    elsif logo_start != 'ht'
+      assign logo_url = logo_url | prepend: shop.url
     endif
-    if settings.social_meesho != blank
-      assign same_as = same_as | append: settings.social_meesho | append: '|'
-    endif
-    assign same_as = same_as | split: '|'
-  -%}
-  {%- capture search_template -%}{{ shop.url }}{{ routes.search_url }}?q={search_term_string}{%- endcapture -%}
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "Organization",
-          "@id": {{ shop.url | append: '/#organization' | json }},
-          "name": {{ shop.name | json }},
-          "url": {{ shop.url | json }},
-          {%- if settings.logo %}
-          "logo": {{ settings.logo | image_url: width: 600 | prepend: 'https:' | json }},
+  endif
+  assign shop_about = shop.description
+  if shop_about == blank
+    assign shop_about = 'seo.home_description' | t
+  endif
+-%}
+{%- capture search_template -%}{{ shop.url }}{{ routes.search_url }}?q={search_term_string}{%- endcapture -%}
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "OnlineStore",
+        "@id": {{ org_id | json }},
+        "name": {{ shop.name | json }},
+        "url": {{ shop.url | json }},
+        "logo": {{ logo_url | json }},
+        "description": {{ shop_about | json }},
+        "slogan": {{ 'general.tagline' | t | json }},
+        "founder": {
+          "@type": "Person",
+          "@id": {{ founder_id | json }},
+          "name": "Priya Singh"
+          {%- if story_url != blank -%}
+          , "url": {{ shop.url | append: story_url | json }}
           {%- endif %}
-          {%- if shop.description != blank %}
-          "description": {{ shop.description | json }},
-          {%- endif %}
-          "slogan": "Handmade with love",
-          "sameAs": {{ same_as | json }}
         },
-        {
-          "@type": "WebSite",
-          "@id": {{ shop.url | append: '/#website' | json }},
-          "name": {{ shop.name | json }},
-          "url": {{ shop.url | json }},
-          "inLanguage": "en-IN",
-          "publisher": { "@id": {{ shop.url | append: '/#organization' | json }} },
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": {
-              "@type": "EntryPoint",
-              "urlTemplate": {{ search_template | json }}
-            },
-            "query-input": "required name=search_term_string"
-          }
+        "address": { "@type": "PostalAddress", "addressLocality": "Piro", "addressRegion": "Bihar", "addressCountry": "IN" },
+        "areaServed": { "@type": "Country", "name": "India" },
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          {%- if settings.social_email != blank %}
+          "email": {{ settings.social_email | strip | json }},
+          {%- endif %}
+          "areaServed": "IN",
+          "availableLanguage": ["English", "Hindi"]
+        },
+        {%- comment -%}
+          Our rule (a replacement or refund if a piece arrives damaged, wrong or missing; no change-of-mind returns)
+          fits none of Google's return categories, so the policy itself is named and says it exactly.
+        {%- endcomment -%}
+        {%- if shop.refund_policy %}
+        "hasMerchantReturnPolicy": {
+          "@type": "MerchantReturnPolicy",
+          "merchantReturnLink": {{ shop.url | append: shop.refund_policy.url | json }}
+        },
+        {%- endif %}
+        "sameAs": {{ same_as | json }}
+      },
+      {
+        "@type": "WebSite",
+        "@id": {{ site_id | json }},
+        "name": {{ shop.name | json }},
+        "url": {{ shop.url | json }},
+        "inLanguage": "en-IN",
+        "publisher": { "@id": {{ org_id | json }} },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": { "@type": "EntryPoint", "urlTemplate": {{ search_template | json }} },
+          "query-input": "required name=search_term_string"
         }
-      ]
-    }
-  </script>
-{%- elsif request.page_type == 'product' -%}
-  {%- comment -%}
-    Our own Product data (docs/product-page-plan.md "SEO"): one Offer per variant in rupees, the shipping fee from
-    Theme settings → Cart, a breadcrumb, and ratings only when real ones exist. No return policy here yet: the rule
-    is replacement if damaged with no change-of-mind returns, and the exact markup is settled in the SEO phase.
-  {%- endcomment -%}
-  {%- liquid
-    assign product_url = shop.url | append: product.url
-    assign ship_from = settings.free_shipping_threshold | default: 0 | times: 100
-    assign ship_fee = settings.shipping_fee | default: 0 | times: 100
-    assign rating_count = product.metafields.reviews.rating_count.value | default: 0
-    assign crumb = collection
-    if crumb == blank
-      assign craft_handle = product.type | handleize
-      assign craft = collections[craft_handle]
-      if craft.id
-        assign crumb = craft
-      endif
-    endif
-    if crumb == blank
-      assign skip = 'frontpage,all,shop,bestsellers' | split: ','
-      for c in product.collections
-        if skip contains c.handle or c.id == settings.shop_all_collection.id
-          continue
-        endif
-        assign crumb = c
-        break
-      endfor
-    endif
-  -%}
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "Product",
+      }
+
+      {%- if request.page_type == 'product' -%}
+        {%- comment -%}
+          docs/product-page-plan.md "SEO". A piece with options is a ProductGroup holding one Product per option, each
+          with its own name, photo and Offer. Ratings only when real ones exist.
+        {%- endcomment -%}
+        {%- liquid
+          assign product_url = shop.url | append: product.url
+          assign rating_count = product.metafields.reviews.rating_count.value | default: 0
+          assign materials = product.metafields.custom.materials.value | strip_newlines | strip
+          # Paragraphs keep a space between them once the tags are gone.
+          assign about = product.description | replace: '</p>', ' </p>' | replace: '<br', ' <br' | strip_html | strip_newlines | split: ' ' | join: ' ' | truncate: 5000
+
+          assign crumb = collection
+          if crumb == blank
+            assign craft_handle = product.type | handleize
+            assign craft = collections[craft_handle]
+            if craft.id
+              assign crumb = craft
+            endif
+          endif
+          if crumb == blank
+            assign skip = 'frontpage,all,shop,bestsellers' | split: ','
+            for c in product.collections
+              if skip contains c.handle or c.id == settings.shop_all_collection.id
+                continue
+              endif
+              assign crumb = c
+              break
+            endfor
+          endif
+        -%}
+        ,{
+          "@type": {% if product.has_only_default_variant %}"Product"{% else %}"ProductGroup"{% endif %},
           "@id": {{ product_url | append: '#product' | json }},
           "name": {{ product.title | json }},
           "url": {{ product_url | json }},
-          {%- if product.description != blank %}
-          "description": {{ product.description | strip_html | strip_newlines | truncate: 5000 | json }},
+          {%- if about != blank %}
+          "description": {{ about | json }},
           {%- endif %}
           {%- if product.media.size > 0 %}
           "image": [
@@ -105,6 +146,9 @@
           {%- if product.type != blank %}
           "category": {{ product.type | json }},
           {%- endif %}
+          {%- if materials != blank %}
+          "material": {{ materials | json }},
+          {%- endif %}
           "brand": { "@type": "Brand", "name": {{ shop.name | json }} },
           {%- if rating_count > 0 %}
           "aggregateRating": {
@@ -114,39 +158,57 @@
             "ratingCount": {{ rating_count }}
           },
           {%- endif %}
-          "offers": [
+          {%- if product.has_only_default_variant %}
+          "offers": {% render 'structured-offer', variant: product.selected_or_first_available_variant, product_url: product_url %}
+          {%- else %}
+          {%- liquid
+            # What the options are, in the words Google knows: a colour is a colour, a count or a size is a size,
+            # and any other choice (a design, what it comes with) is a pattern.
+            assign kinds = ''
+            for option in product.options
+              assign name = option | downcase
+              if name contains 'colour' or name contains 'color'
+                assign kinds = kinds | append: 'color|'
+              elsif name contains 'size' or name contains 'pack' or name contains 'set'
+                assign kinds = kinds | append: 'size|'
+              else
+                assign kinds = kinds | append: 'pattern|'
+              endif
+            endfor
+            assign kinds = kinds | split: '|'
+            assign kinds_once = kinds | uniq
+          -%}
+          "productGroupID": {{ product.handle | json }},
+          "variesBy": [{% for kind in kinds_once %}"https://schema.org/{{ kind }}"{% unless forloop.last %}, {% endunless %}{% endfor %}],
+          "hasVariant": [
             {%- for variant in product.variants -%}
+              {%- assign variant_photo = variant.featured_media.preview_image | default: product.featured_media.preview_image -%}
               {
-                "@type": "Offer",
-                "url": {{ product_url | append: '?variant=' | append: variant.id | json }},
-                {%- unless product.has_only_default_variant %}
-                "name": {{ variant.title | json }},
-                {%- endunless %}
+                "@type": "Product",
+                "name": {{ product.title | append: ', ' | append: variant.title | json }},
                 {%- if variant.sku != blank %}
                 "sku": {{ variant.sku | json }},
                 {%- endif %}
-                "price": {{ variant.price | divided_by: 100.0 | json }},
-                "priceCurrency": {{ cart.currency.iso_code | json }},
-                "availability": "https://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}",
-                "itemCondition": "https://schema.org/NewCondition",
-                {%- if ship_from > 0 or ship_fee > 0 %}
-                "shippingDetails": {
-                  "@type": "OfferShippingDetails",
-                  "shippingRate": {
-                    "@type": "MonetaryAmount",
-                    "value": {% if ship_from > 0 and variant.price >= ship_from %}0{% else %}{{ ship_fee | divided_by: 100.0 | json }}{% endif %},
-                    "currency": {{ cart.currency.iso_code | json }}
-                  },
-                  "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "IN" }
-                },
+                {%- if variant_photo %}
+                "image": {{ variant_photo | image_url: width: 1200 | prepend: 'https:' | json }},
                 {%- endif %}
-                "seller": { "@id": {{ shop.url | append: '/#organization' | json }} }
+                {%- assign said = '' -%}
+                {%- for value in variant.options %}
+                {%- assign kind = kinds[forloop.index0] -%}
+                {%- unless said contains kind %}
+                {{ kind | json }}: {{ value | json }},
+                {%- endunless %}
+                {%- assign said = said | append: kind | append: '|' -%}
+                {%- endfor %}
+                "offers": {% render 'structured-offer', variant: variant, product_url: product_url %}
               }{% unless forloop.last %},{% endunless %}
             {%- endfor -%}
           ]
+          {%- endif %}
         },
         {
           "@type": "BreadcrumbList",
+          "@id": {{ product_url | append: '#breadcrumb' | json }},
           "itemListElement": [
             { "@type": "ListItem", "position": 1, "name": {{ shop.name | json }}, "item": {{ shop.url | json }} },
             {%- if crumb != blank %}
@@ -157,54 +219,130 @@
             {%- endif %}
           ]
         }
-      ]
-    }
-  </script>
-{%- elsif request.page_type == 'page' and page.handle == 'our-story' -%}
-  {%- comment -%} Who we are (docs/help-pages-plan.md): the page is about the shop itself. {%- endcomment -%}
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "AboutPage",
-      "@id": {{ shop.url | append: page.url | append: '#aboutpage' | json }},
-      "url": {{ shop.url | append: page.url | json }},
-      "name": {{ page.title | json }},
-      "inLanguage": "en-IN",
-      "mainEntity": {
-        "@type": "Organization",
-        "@id": {{ shop.url | append: '/#organization' | json }},
-        "name": {{ shop.name | json }},
-        "url": {{ shop.url | json }},
-        "founder": { "@type": "Person", "name": "Priya Singh" },
-        "address": { "@type": "PostalAddress", "addressLocality": "Piro", "addressRegion": "Bihar", "addressCountry": "IN" }
-      }
-    }
-  </script>
-{%- elsif request.page_type == 'page' and page.handle == 'contact' -%}
-  {%- comment -%} How to reach us (docs/contact-plan.md): the contact email from Theme settings → Social. No number: the page doesn't ask for calls. {%- endcomment -%}
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "ContactPage",
-      "@id": {{ shop.url | append: page.url | append: '#contactpage' | json }},
-      "url": {{ shop.url | append: page.url | json }},
-      "name": {{ page.title | json }},
-      "inLanguage": "en-IN",
-      "mainEntity": {
-        "@type": "Organization",
-        "@id": {{ shop.url | append: '/#organization' | json }},
-        "name": {{ shop.name | json }},
-        "url": {{ shop.url | json }},
-        "contactPoint": {
-          "@type": "ContactPoint",
-          "contactType": "customer service",
-          {%- if settings.social_email != blank %}
-          "email": {{ settings.social_email | strip | json }},
-          {%- endif %}
-          "areaServed": "IN",
-          "availableLanguage": ["English", "Hindi"]
+
+      {%- elsif request.page_type == 'collection' -%}
+        {%- comment -%}
+          The pieces on this page of the collection, in the order shown. Not when it is filtered or sorted: that
+          view is noindex (snippets/meta-tags) and its list is one shopper's choice.
+        {%- endcomment -%}
+        {%- liquid
+          assign narrowed = false
+          if collection.sort_by != blank
+            assign narrowed = true
+          endif
+          for filter in collection.filters
+            if filter.active_values.size > 0 or filter.min_value.value != nil or filter.max_value.value != nil
+              assign narrowed = true
+            endif
+          endfor
+          assign collection_url = shop.url | append: collection.url
+        -%}
+        {%- unless narrowed -%}
+          {%- paginate collection.products by 24 -%}
+            {%- capture items -%}
+              {%- assign position = paginate.current_offset -%}
+              {%- for item in collection.products -%}
+                {%- if item.tags contains 'test-product' or item.tags contains 'free-gift' -%}{%- continue -%}{%- endif -%}
+                {%- assign position = position | plus: 1 -%}
+                { "@type": "ListItem", "position": {{ position }}, "url": {{ shop.url | append: item.url | json }}, "name": {{ item.title | json }}{% if item.featured_media %}, "image": {{ item.featured_media.preview_image | image_url: width: 800 | prepend: 'https:' | json }}{% endif %} }§
+              {%- endfor -%}
+            {%- endcapture -%}
+            {%- assign items = items | strip | split: '§' | join: ',' -%}
+            {%- if items != blank -%}
+            ,{
+              "@type": "CollectionPage",
+              "@id": {{ collection_url | append: '#collection' | json }},
+              "url": {{ canonical_url | json }},
+              "name": {{ collection.title | json }},
+              {%- if collection.description != blank %}
+              "description": {{ collection.description | strip_html | strip_newlines | truncate: 500 | json }},
+              {%- endif %}
+              "inLanguage": "en-IN",
+              "isPartOf": { "@id": {{ site_id | json }} },
+              "breadcrumb": { "@id": {{ collection_url | append: '#breadcrumb' | json }} },
+              "mainEntity": {
+                "@type": "ItemList",
+                "numberOfItems": {{ collection.products_count }},
+                "itemListElement": [{{ items }}]
+              }
+            },
+            {
+              "@type": "BreadcrumbList",
+              "@id": {{ collection_url | append: '#breadcrumb' | json }},
+              "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": {{ shop.name | json }}, "item": {{ shop.url | json }} },
+                { "@type": "ListItem", "position": 2, "name": {{ collection.title | json }} }
+              ]
+            }
+            {%- endif -%}
+          {%- endpaginate -%}
+        {%- endunless -%}
+
+      {%- elsif request.page_type == 'page' and page.handle == 'our-story' -%}
+        {%- comment -%} Who we are (docs/help-pages-plan.md): the page is about the shop and the person who makes every piece. {%- endcomment -%}
+        ,{
+          "@type": "AboutPage",
+          "@id": {{ shop.url | append: page.url | append: '#aboutpage' | json }},
+          "url": {{ shop.url | append: page.url | json }},
+          "name": {{ page.title | json }},
+          "inLanguage": "en-IN",
+          "isPartOf": { "@id": {{ site_id | json }} },
+          "about": { "@id": {{ founder_id | json }} },
+          "mainEntity": { "@id": {{ org_id | json }} }
         }
-      }
-    }
-  </script>
-{%- endif -%}
+
+      {%- elsif request.page_type == 'page' and page.handle == 'contact' -%}
+        {%- comment -%} How to reach us (docs/contact-plan.md): the shop's contact point carries the email. No number: the page doesn't ask for calls. {%- endcomment -%}
+        ,{
+          "@type": "ContactPage",
+          "@id": {{ shop.url | append: page.url | append: '#contactpage' | json }},
+          "url": {{ shop.url | append: page.url | json }},
+          "name": {{ page.title | json }},
+          "inLanguage": "en-IN",
+          "isPartOf": { "@id": {{ site_id | json }} },
+          "mainEntity": { "@id": {{ org_id | json }} }
+        }
+
+      {%- elsif request.page_type == 'blog' -%}
+        ,{
+          "@type": "Blog",
+          "@id": {{ shop.url | append: blog.url | append: '#blog' | json }},
+          "url": {{ shop.url | append: blog.url | json }},
+          "name": {{ blog.title | json }},
+          "inLanguage": "en-IN",
+          "publisher": { "@id": {{ org_id | json }} }
+        }
+
+      {%- elsif request.page_type == 'article' -%}
+        {%- comment -%} Every guide is written from what Priya knows as the maker, so she is its author. {%- endcomment -%}
+        {%- assign article_url = shop.url | append: article.url -%}
+        ,{
+          "@type": "Article",
+          "@id": {{ article_url | append: '#article' | json }},
+          "mainEntityOfPage": {{ article_url | json }},
+          "headline": {{ article.title | truncate: 110 | json }},
+          {%- if article.excerpt_or_content != blank %}
+          "description": {{ article.excerpt_or_content | strip_html | strip_newlines | truncate: 300 | json }},
+          {%- endif %}
+          {%- if article.image %}
+          "image": {{ article.image | image_url: width: 1200 | prepend: 'https:' | json }},
+          {%- endif %}
+          "datePublished": {{ article.published_at | date: '%Y-%m-%dT%H:%M:%S%:z' | json }},
+          "dateModified": {{ article.updated_at | default: article.published_at | date: '%Y-%m-%dT%H:%M:%S%:z' | json }},
+          "inLanguage": "en-IN",
+          "author": { "@id": {{ founder_id | json }} },
+          "publisher": { "@id": {{ org_id | json }} }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": {{ article_url | append: '#breadcrumb' | json }},
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": {{ shop.name | json }}, "item": {{ shop.url | json }} },
+            { "@type": "ListItem", "position": 2, "name": {{ blog.title | json }}, "item": {{ shop.url | append: blog.url | json }} },
+            { "@type": "ListItem", "position": 3, "name": {{ article.title | json }} }
+          ]
+        }
+      {%- endif %}
+    ]
+  }
+</script>
