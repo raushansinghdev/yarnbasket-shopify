@@ -236,6 +236,20 @@ record('No list links to a test product or the free gift', offLinks.length === 0
   record('Test products and the gift give no card; test pages are noindex', leaks.length === 0, leaks.length ? few(leaks) : `${offSale.length} products`);
 }
 
+// The file AI engines read (written by tools/agents-build.mjs) is cached widely: a stale price there is a wrong price.
+{
+  const full = await text('/llms-full.txt');
+  const listed = new Map([...full.matchAll(/^### \[[^\]]*\]\([^)]*\/products\/([a-z0-9-]+)\)\n+- Price: (.*)$/gm)].map((m) => [m[1], (m[2].match(/₹[\d,]+(?:\.\d+)?/g) || []).map((n) => rupees(n.replace(/[₹,]/g, '')))]));
+  const faults = real.flatMap((p) => {
+    const shown = listed.get(p.handle);
+    if (!shown) return [`${p.handle}: not in the file`];
+    const prices = p.variants.map((v) => rupees(v.price));
+    return prices.every((x) => shown.includes(x)) && shown.every((x) => prices.includes(x)) ? [] : [`${p.handle}: file says ${shown.map((x) => x / 100).join(', ')}`];
+  });
+  for (const handle of listed.keys()) if (!realHandles.has(handle)) faults.push(`${handle}: in the file, not for sale`);
+  record('The AI file gives the store\'s price, every variant', faults.length === 0 && listed.size > 0, faults.length ? `${few(faults)} (npm run build:agents)` : `${listed.size} products in /llms-full.txt`);
+}
+
 /* ---------- 4. The cart charges the store's price ---------- */
 {
   const variants = real.flatMap((p) => p.variants.filter((v) => v.available).map((v) => ({ ...v, handle: p.handle })));

@@ -9,6 +9,7 @@
     "check:money": "node tools/money-check.mjs",
     "check:seo": "node tools/seo-check.mjs",
     "build:coming-soon": "node tools/coming-soon-build.mjs",
+    "build:agents": "node tools/agents-build.mjs",
     "audit": "node tools/audit.mjs",
     "stress": "node tools/stress.mjs",
     "edge-cases": "node tools/edge-cases.mjs"

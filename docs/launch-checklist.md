@@ -105,6 +105,8 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
 - [ ] **Pinterest:** a business account for Yarn Basket; claim `yarnbasket.in` once the store is on it (phase 5).
 - [ ] **At soft launch:** Google & YouTube channel and Merchant Center (phase 6), Judge.me (phase 9), Google Business Profile as a service-area business (phase 9), the sitemap submitted in Search Console and Bing (phase 11).
 - [ ] **Before the password comes off:** `npm run check:seo -- --url <the live theme's preview link>` passes every line.
+- [ ] **AI files, before the password comes off and after any price, product, collection, policy or FAQ change:** `npm run build:agents`, then commit `theme/templates/llms.txt.liquid` and `llms-full.txt.liquid`. `npm run build:agents -- --check` says whether they are out of date. At launch, open `/llms.txt` on the live address and see our name at the top.
+- [ ] **From launch, once a month:** ask the five questions in `docs/seo-log.md` and log whether we are cited.
 
 ## Shipping, payments and checkout (docs/shipping-checkout-comparison.md, decided 2026-10-03)
 Decided: Shiprocket ships the parcels, Shiprocket Checkout is the checkout with Razorpay connected inside it, partial COD only (no full COD). Shopify's checkout with Razorpay stays as the fallback. Do them in this order:

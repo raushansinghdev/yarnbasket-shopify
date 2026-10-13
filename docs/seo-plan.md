@@ -1,6 +1,6 @@
 # Yarn Basket: the SEO plan, from scratch
 
-**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1 to 4 built 2026-10-13** (see "As built" at the end). `npm run check:seo` is at 28 of 30; the two red lines are the made-up ratings and `llms.txt` (phase 7). Raushan confirmed the phase 3 claims on 2026-10-13; sizes come later (`docs/size-sheet.md`). The new pages' piece lists stay as built on Raushan's word (review page for reference: https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf). Next: phase 10 (speed) or 7 (AI files) on Raushan's go. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
+**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1 to 4 built 2026-10-13** (see "As built" at the end). **Phase 7 (AI files) built 2026-10-13.** `npm run check:seo` is at 30 of 31; the one red line is the made-up ratings. Raushan confirmed the phase 3 claims on 2026-10-13; sizes come later (`docs/size-sheet.md`). The new pages' piece lists stay as built on Raushan's word (review page for reference: https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf). Next: phase 10 (speed) on Raushan's go; it needs the storefront password and his OK to upload to the unpublished theme. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
 
 ## Context
 
@@ -368,3 +368,31 @@ Sources for the rule changes: [Shopify changelog, agents.md / llms.txt templates
 - Raushan, 2026-10-13: the occasion pages' piece lists and "Names and initials" on the Custom orders page stay as built (Claude's recommendation; the FAQ already promises names and initials).
 - The evil eye collection counts 8 in the admin: one is an archived product (the old pair), not shown anywhere.
 - A new piece needs its tags (`flower`, `gift-…`) in the catalogue to appear on these pages.
+
+### Phase 7: what AI engines read (2026-10-13)
+
+Done before phase 10 on Raushan's word: it needed nothing from him. `npm run check:seo`: 28 of 30 → **30 of 31** ("llms.txt says who we are" turned green; one new line, "AI files give the store's price for every product", added green). Money check: 10 → 11 lines, all green.
+
+**Changed from the plan**
+- **`/agents.md` is left to Shopify; `/llms.txt` and `/llms-full.txt` are ours.** The plan replaced `agents.md` and put our section under Shopify's text. But that text is Shopify's instructions for agents that check out with its tools, and Shopify rewrites it as the tools change; a copy in our theme would go stale without anyone noticing. `/llms.txt` is where AI engines look for what a site is, so that is the one we own. Its last line sends shopping agents to `/agents.md`.
+- **The rewards (₹50 and ₹100 off), the free gift and cash on delivery are not in the files.** They change more often than the files are rebuilt, and a stale offer in a cached file is a wrong price.
+
+**Built**
+- **`tools/agents-build.mjs`** (`npm run build:agents`) writes `theme/templates/llms.txt.liquid` (12 KB) and `theme/templates/llms-full.txt.liquid` (71 KB). Shopify gives these templates only the `agents` object, so every fact is written in by the script, each from where it already lives: products, prices, stock, size, materials, collections and menus from the store (read-only); delivery fee, free-delivery amount and days from Theme settings; who we are from Our story's "At a glance"; the return rule from `docs/legal/refund-policy.html`; custom orders and questions from their page templates. Nothing is typed twice.
+- **`/llms.txt`:** who we are, what we sell with a price range per craft, delivery, returns, custom orders, every collection in the All collections page's groups, the main pages.
+- **`/llms-full.txt`:** the same, then all 50 products by craft (link, price of every option, size where we have it, materials, description) and every question and answer from the FAQ, the Custom orders page and each collection's Good to know.
+- Links are written as `{{ agents.store_url }}/…`, so they are right on the myshopify address now and on `yarnbasket.in` after the move, with no rebuild.
+- The script refuses to write an email address, a phone number or a WhatsApp link (Shopify: the file is cached widely), and leaves out the free gift, test products and drafts. No rating appears.
+- **`npm run build:agents -- --check`** fails when a fresh build would differ, and prints the first changed line. Tried with one price changed in a copy: it failed on that line.
+- The date line ("Prices and stock as of …") only moves when something else in the file did.
+- `theme/.theme-check.yml`: theme check does not know the `agents` object yet, so `UndefinedObject` is off for these two files only.
+- `docs/seo-log.md`: the five fixed questions to ask ChatGPT, Perplexity and Google each month, from launch.
+
+**Found on the way**
+- The local server does serve both templates, and `/agents.md` is unchanged (5,833 bytes, Shopify's text).
+- The store says prices include tax, so the files say so too, in the cart's own words.
+
+**To keep in mind**
+- **Run `npm run build:agents` after any price, product, collection, policy, delivery-setting or FAQ change,** then commit the two files. The money check's new line fails while they are stale.
+- Only 4 of 50 pieces have a size; the rest appear in the long file once the sizes are in the store and the build is run.
+- No AI engine can read anything while the store is behind its password. The files are ready for launch day.

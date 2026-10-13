@@ -171,6 +171,25 @@ record('Return policy is declared once, on the shop', open.filter((p) => p.path 
 // 7. What AI engines read about us.
 const agents = await fetch(`${BASE}/llms.txt`).then((r) => (r.status === 200 ? r.text() : ''));
 record('llms.txt says who we are', /crochet/i.test(agents) && /Priya|handmade|made by hand/i.test(agents) ? [] : ['/llms.txt'], 'our own words, not only Shopify\'s');
+// The long file is written by tools/agents-build.mjs and cached widely: every price in it must be the store's.
+{
+  const full = await fetch(`${BASE}/llms-full.txt`).then((r) => (r.status === 200 ? r.text() : ''));
+  const listed = new Map([...full.matchAll(/^### \[[^\]]*\]\([^)]*\/products\/([a-z0-9-]+)\)\n+- Price: (.*)$/gm)].map((m) => [m[1], (m[2].match(/₹[\d,]+(?:\.\d+)?/g) || []).map((n) => +n.replace(/[₹,]/g, ''))]));
+  const forSale = products.filter((p) => !p.tags.some((t) => NOT_FOR_SALE.includes(t)));
+  const bad = forSale.flatMap((p) => {
+    const shown = listed.get(p.handle);
+    if (!shown) return [`${p.handle}: not in the file`];
+    const wrong = p.variants.map((v) => +v.price).filter((price) => !shown.includes(price));
+    const extra = shown.filter((price) => !p.variants.some((v) => +v.price === price));
+    return wrong.length || extra.length ? [`${p.handle}: file says ₹${shown.join(', ₹')}`] : [];
+  });
+  for (const handle of listed.keys()) if (!forSale.some((p) => p.handle === handle)) bad.push(`${handle}: in the file, not for sale`);
+  for (const [name, body] of [['/llms.txt', agents], ['/llms-full.txt', full]]) {
+    const personal = body.match(/[\w.+-]+@[\w-]+\.[\w.]+|(?:\+91[\s-]?)?\b[6-9]\d{4}[\s-]?\d{5}\b|wa\.me/);
+    if (personal) bad.push(`${name}: "${personal[0]}"`);
+  }
+  record('AI files give the store\'s price for every product', bad, `${listed.size} products in /llms-full.txt; no email or phone number (npm run build:agents)`);
+}
 
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} SEO checks passed${failed.length ? `; failing: ${failed.map((f) => f.name).join('; ')}` : ''}`);

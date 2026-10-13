@@ -1,1 +1,6 @@
 extends: theme-check:recommended
+# The two AI files (tools/agents-build.mjs) read Shopify's `agents` object, which theme check does not know yet.
+UndefinedObject:
+  ignore:
+    - templates/llms.txt.liquid
+    - templates/llms-full.txt.liquid

@@ -1203,3 +1203,9 @@ Raushan accepted every recommendation in search-plan §13.
 - **The ad cost is measured, not assumed:** 15 days of ads, then tune the lines before the prices. An ad cost of ₹150 an order was considered and dropped as a pricing input: it was a guess, and a higher price raises it.
 - **Considered and not chosen:** free delivery on everything with delivery inside every price (₹89 keychain → ₹139); a "multiplier + fixed amount" rule for every price (wait for real ad data).
 
+## 2026-10-13: SEO phase 7, what AI engines read (docs/seo-plan.md)
+- **Phase 7 before phase 10** (Raushan): speed waits on the storefront password and on `base.css` being free; the AI files needed nothing.
+- **`/llms.txt` and `/llms-full.txt` are ours; `/agents.md` stays Shopify's.** Shopify keeps its agent-checkout instructions current only while the theme does not replace them.
+- **The files are generated, never typed:** `npm run build:agents` reads the store, Theme settings, `docs/legal` and the page templates. `--check`, the SEO check and the money check all fail when a price in them is not the store's.
+- **Not in the files:** email, phone, WhatsApp number (cached widely), ratings (made up), the rewards, the free gift and cash on delivery (change too often).
+
