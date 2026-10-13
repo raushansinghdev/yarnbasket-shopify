@@ -27,7 +27,7 @@
 
   assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
   assign has_hello = false
-  if whatsapp != blank or settings.social_instagram != blank or settings.social_email != blank
+  if whatsapp != blank or settings.social_instagram != blank or settings.social_pinterest != blank or settings.social_email != blank
     assign has_hello = true
   endif
 -%}
@@ -106,6 +106,13 @@
               <li>
                 <a class="icon-btn" href="{{ settings.social_instagram }}" rel="noopener" target="_blank">
                   {%- render 'icon', icon: 'instagram' -%}<span class="visually-hidden">Instagram ({{ 'accessibility.new_window' | t }})</span>
+                </a>
+              </li>
+            {%- endif -%}
+            {%- if settings.social_pinterest != blank -%}
+              <li>
+                <a class="icon-btn" href="{{ settings.social_pinterest }}" rel="noopener" target="_blank">
+                  {%- render 'icon', icon: 'pinterest' -%}<span class="visually-hidden">Pinterest ({{ 'accessibility.new_window' | t }})</span>
                 </a>
               </li>
             {%- endif -%}

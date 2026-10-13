@@ -51,6 +51,18 @@
         "label": "Meesho store"
       },
       {
+        "type": "url",
+        "id": "social_pinterest",
+        "label": "Pinterest profile",
+        "info": "Adds a Pinterest button to the footer and tells search engines the profile is ours. Steps: docs/pinterest.md."
+      },
+      {
+        "type": "text",
+        "id": "pinterest_verify",
+        "label": "Pinterest claim code",
+        "info": "From Pinterest: Settings, Claimed accounts, Websites, Add HTML tag. Paste only the code from inside content."
+      },
+      {
         "type": "text",
         "id": "social_whatsapp",
         "label": "WhatsApp number",

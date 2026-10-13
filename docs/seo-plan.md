@@ -1,6 +1,6 @@
 # Yarn Basket: the SEO plan, from scratch
 
-**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1 to 4 built 2026-10-13** (see "As built" at the end). **Phase 7 (AI files) built 2026-10-13.** `npm run check:seo` is at 30 of 31; the one red line is the made-up ratings. Raushan confirmed the phase 3 claims on 2026-10-13; sizes come later (`docs/size-sheet.md`). The new pages' piece lists stay as built on Raushan's word (review page for reference: https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf). Next: phase 10 (speed) on Raushan's go; it needs the storefront password and his OK to upload to the unpublished theme. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
+**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1 to 4 built 2026-10-13** (see "As built" at the end). **Phase 7 (AI files) and phase 5 (pictures) built 2026-10-13.** `npm run check:seo` is at 32 of 33; the one red line is the made-up ratings. Raushan confirmed the phase 3 claims on 2026-10-13; sizes come later (`docs/size-sheet.md`). The new pages' piece lists stay as built on Raushan's word (review page for reference: https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf). Next: phase 10 (speed) on Raushan's go; it needs the storefront password and his OK to upload to the unpublished theme. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
 
 ## Context
 
@@ -396,3 +396,34 @@ Done before phase 10 on Raushan's word: it needed nothing from him. `npm run che
 - **Run `npm run build:agents` after any price, product, collection, policy, delivery-setting or FAQ change,** then commit the two files. The money check's new line fails while they are stale.
 - Only 4 of 50 pieces have a size; the rest appear in the long file once the sizes are in the store and the build is run.
 - No AI engine can read anything while the store is behind its password. The files are ready for launch day.
+
+### Phase 5: pictures (2026-10-13)
+
+Done before phase 10 (speed) on Raushan's "go with your choice": phase 10 waits on the storefront password, his OK to upload, and another session's uncommitted work in `base.css`.
+
+**Found** (store read, 50 products, 247 photos)
+- The first photo of every product is clean: the piece alone, no text, no sticker. Nothing changed.
+- 142 of 247 alt texts ended in ", view 2", ", view 3"…; a few were wrong (a charm "on a black bag" that lies on a palm). All 27 collection covers said only the collection's name.
+- No page allowed large previews. Product data listed photos as bare links.
+- Every photo and every original is 1254 px.
+
+**Built**
+- **Alt text for every photo, written after looking at each one** (`tools/catalog/catalog.json`, `photos[].alt`): what the piece is, colour and count, then what this photo shows that the others do not. Under 125 characters, no "view 2", no keyword lists, no price or size. The rule is in `docs/catalog-plan.md`.
+- **`python3 tools/catalog-upload.py alts [handles] [--dry-run]`** sends only the alt text of photos already in the store (`fileUpdate`), matched by position and file name; it refuses a product whose photos are not the catalogue's one to one. Sent: 230 photos and 27 covers. Read back: nothing left to send.
+- **A cover's alt is the alt of the product photo it was cut from** (`cover_alt()` in the upload script), so it is written once. `products`, `collections` and `covers` now send the catalogue's alt too.
+- **Large previews:** pages open to search carry `<meta name="robots" content="max-image-preview:large, max-snippet:-1">` (`snippets/meta-tags.liquid`); noindex pages keep their own line.
+- **Photo credit:** a product's first photo is an `ImageObject` with its size, its alt as caption, and Yarn Basket as creator, credit and copyright (`snippets/structured-data.liquid`). No licence fields.
+- **Pinterest, ready but off:** Theme settings → Social has "Pinterest profile" (footer button, `sameAs`) and "Pinterest claim code" (`p:domain_verify`, also printed on the holding site by `tools/coming-soon-build.mjs`). Both empty, so nothing shows. Raushan's steps and the boards to paste are in `docs/pinterest.md`.
+- **Check:** two new lines, "Photos are described in words" and "Google may show our photos large". 32 of 33; red is the made-up ratings.
+- For the read: `../catalog/alt-review.html` shows every photo beside its sentence.
+
+**Changed from the plan**
+- **No 2048 px photos.** We have none, and enlarging by software invents detail. The rule for new photos stays in `docs/launch-checklist.md`.
+- **A cover's alt does not name the collection** ("…, from the Bouquets collection"): the page's heading already does, and alt text should say what the picture shows.
+- **No Pinterest button or script on product pages:** it costs speed, and people pin from Pinterest's own app or browser button.
+
+**To keep in mind**
+- The holding site prints the Bestsellers' alt text: after an alt change run `npm run build:coming-soon` (its `--check` fails otherwise). Done for this change.
+- A new or replaced photo needs its alt written by looking at it; `build.json` in `../catalog` still holds the old words and is no longer read for alt text.
+- The product page's thumbnails repeat each photo's alt (the image snippet falls back to the photo's own alt when given an empty one). Not changed here; worth a look with the gallery's owner.
+

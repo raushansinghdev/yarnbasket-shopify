@@ -14,6 +14,7 @@ Safe to rerun: a product or collection that already exists by handle is left alo
   python3 tools/catalog-upload.py filters       writes each product's Occasion and Flower & motif (from its tags) for the collection page's filters
   python3 tools/catalog-upload.py swatches [handle ...]   writes each variant's "swatch" (the part of its photo shown on its option pill; for a craft collection, of its cover on the chip row), nothing else; rerun after changing a variant's photo
   python3 tools/catalog-upload.py covers        replaces every collection's cover photo, nothing else (needs Pillow)
+  python3 tools/catalog-upload.py alts [handle ...] [--dry-run]   sends only the alt text of the photos already in the store (products and collection covers), from the catalogue; no photo is uploaded, moved or removed (docs/seo-plan.md, phase 5)
   python3 tools/catalog-upload.py tests         moves the test products to vendor "Yarn Basket Test"
   python3 tools/catalog-upload.py home          uploads the home page photos to Files, prints their names
   python3 tools/catalog-upload.py publish       puts every catalogue product and collection on the Online Store
@@ -113,6 +114,11 @@ def cover_path(c):
     sys.exit(f"no cover for {c['handle']}: run tools/catalog-build.py")
 
 
+def cover_alt(c):
+    """A cover is one of the product photos, so its alt text is that photo's: it says what the picture shows."""
+    return next((ph['alt'] for p in DATA['products'] for ph in p['photos'] if ph['src'] == c['cover']), c['title'])
+
+
 def existing(kind, handle):
     d = gql('query($h: String!) { p: productByHandle(handle: $h) { id } c: collectionByHandle(handle: $h) { id } }', {'h': handle})
     node = d['p' if kind == 'product' else 'c']
@@ -145,7 +151,8 @@ def products(handles, force):
             continue
         photos = BUILT['products'][p['handle']]
         urls = stage([photo(f['file']) for f in photos])
-        files = [{'originalSource': u, 'alt': f['alt'], 'contentType': 'IMAGE'} for u, f in zip(urls, photos)]
+        # The alt text is the catalogue's (build.json keeps the one from the last build).
+        files = [{'originalSource': u, 'alt': ph['alt'], 'contentType': 'IMAGE'} for u, ph in zip(urls, p['photos'])]
         option = p['option'] or 'Title'
         variants = []
         for v in p['variants']:
@@ -275,7 +282,7 @@ def collections(force):
             continue
         cover = stage([cover_path(c)])[0]
         inp = {'handle': c['handle'], 'title': c['title'], 'descriptionHtml': c['description'],
-               'seo': {'title': c['seo'][0], 'description': c['seo'][1]}, 'image': {'src': cover, 'altText': c['title']}}
+               'seo': {'title': c['seo'][0], 'description': c['seo'][1]}, 'image': {'src': cover, 'altText': cover_alt(c)}}
         if 'manual' in c:
             inp['sortOrder'] = 'MANUAL'
             inp['products'] = [existing('product', h) for h in c['manual']]
@@ -313,9 +320,49 @@ def covers():
                 print('cover unchanged:', c['handle'])
                 continue
         d = gql('mutation($input: CollectionInput!) { collectionUpdate(input: $input) { collection { handle } userErrors { field message } } }',
-                {'input': {'id': node['id'], 'image': {'src': stage([path])[0], 'altText': c['title']}}}, mutate=True)['collectionUpdate']
+                {'input': {'id': node['id'], 'image': {'src': stage([path])[0], 'altText': cover_alt(c)}}}, mutate=True)['collectionUpdate']
         check(d['userErrors'], c['handle'])
         print('cover:', d['collection']['handle'])
+
+
+def alts(handles, dry):
+    """Sends the catalogue's alt text to the photos already in the store, and nothing else. A product whose photos in
+    the store are not the catalogue's, one to one and in the same order, is refused whole."""
+    import re
+    name = lambda path: re.sub(r'_[0-9a-f]{8}-[0-9a-f-]{27}$', '', os.path.splitext(os.path.basename(path.split('?')[0]))[0])
+    sent = 0
+    for p in DATA['products']:
+        if handles and p['handle'] not in handles:
+            continue
+        node = gql('query($h: String!) { productByHandle(handle: $h) { media(first: 100) { nodes { id alt ... on MediaImage { image { url } } } } } }', {'h': p['handle']})['productByHandle']
+        if not node:
+            continue
+        live, built = node['media']['nodes'], BUILT['products'][p['handle']]
+        if len(live) != len(p['photos']) or any(name(m['image']['url']) != name(b['file']) for m, b in zip(live, built)):
+            sys.exit(f"{p['handle']}: the store's photos are not the catalogue's ({len(live)} against {len(p['photos'])}, or in another order); nothing sent for it")
+        files = [{'id': m['id'], 'alt': ph['alt']} for m, ph in zip(live, p['photos']) if m['alt'] != ph['alt']]
+        for m, ph in zip(live, p['photos']):
+            if m['alt'] != ph['alt']:
+                print(f"{p['handle']}  {name(m['image']['url'])}\n   was: {m['alt']}\n   now: {ph['alt']}")
+        sent += len(files)
+        if files and not dry:
+            d = gql('mutation($files: [FileUpdateInput!]!) { fileUpdate(files: $files) { files { id } userErrors { field message } } }', {'files': files}, mutate=True)['fileUpdate']
+            check(d['userErrors'], p['handle'])
+    covers_sent = 0
+    for c in DATA['collections']:
+        if handles and c['handle'] not in handles:
+            continue
+        node = gql('query($h: String!) { collectionByHandle(handle: $h) { id image { id altText } } }', {'h': c['handle']})['collectionByHandle']
+        alt = cover_alt(c)
+        if not node or not node['image'] or node['image']['altText'] == alt:
+            continue
+        print(f"cover of {c['handle']}\n   was: {node['image']['altText']}\n   now: {alt}")
+        covers_sent += 1
+        if not dry:
+            d = gql('mutation($input: CollectionInput!) { collectionUpdate(input: $input) { collection { handle } userErrors { field message } } }',
+                    {'input': {'id': node['id'], 'image': {'id': node['image']['id'], 'altText': alt}}}, mutate=True)['collectionUpdate']
+            check(d['userErrors'], c['handle'])
+    print(('would send' if dry else 'sent'), sent, 'photo alt texts and', covers_sent, 'cover alt texts')
 
 
 def tests():
@@ -507,6 +554,8 @@ if __name__ == '__main__':
         covers()
         # A new cover is a new photo with a new id: its square has to be sent again.
         swatches([c['handle'] for c in DATA['collections']])
+    elif cmd == 'alts':
+        alts(args[1:], '--dry-run' in sys.argv)
     elif cmd == 'tags':
         tags(args[1:])
     elif cmd == 'menus':

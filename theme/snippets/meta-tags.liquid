@@ -116,6 +116,12 @@
 -%}
 {%- if is_test or is_empty or is_narrowed or request.page_type == 'search' or template.suffix == 'saved' or template.suffix == 'track-order' or page.handle == 'saved' or page.handle == 'track-order' or template.suffix contains 'account' or page.handle == 'account' %}
   <meta name="robots" content="noindex, follow">
+{%- else %}
+  {%- comment -%} Pages open to search: Google may show our photos large (Images, Discover) and quote as much text as it likes. {%- endcomment -%}
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1">
+{%- endif %}
+{%- if settings.pinterest_verify != blank %}
+  <meta name="p:domain_verify" content="{{ settings.pinterest_verify | strip | escape }}">
 {%- endif %}
 
 {%- if settings.favicon %}

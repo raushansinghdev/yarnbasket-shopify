@@ -20,6 +20,9 @@
   if settings.social_meesho != blank
     assign same_as = same_as | append: settings.social_meesho | append: '|'
   endif
+  if settings.social_pinterest != blank
+    assign same_as = same_as | append: settings.social_pinterest | append: '|'
+  endif
   assign same_as = same_as | split: '|'
 
   # The logo: Theme settings → Brand, else the brand kit mark in the theme. asset_url is "//the-domain/cdn/…" on the store.
@@ -138,8 +141,31 @@
           {%- endif %}
           {%- if product.media.size > 0 %}
           "image": [
+            {%- comment -%} The first photo carries who made it: Google Images shows the credit beside the picture. {%- endcomment -%}
             {%- for media in product.media limit: 8 -%}
-              {{ media.preview_image | image_url: width: 1200 | prepend: 'https:' | json }}{% unless forloop.last %},{% endunless %}
+              {%- assign photo = media.preview_image -%}
+              {%- if forloop.first -%}
+                {%- liquid
+                  assign photo_width = photo.width | at_most: 1200
+                  assign photo_height = photo_width | divided_by: photo.aspect_ratio | round
+                -%}
+                {
+                  "@type": "ImageObject",
+                  "contentUrl": {{ photo | image_url: width: 1200 | prepend: 'https:' | json }},
+                  "url": {{ photo | image_url: width: 1200 | prepend: 'https:' | json }},
+                  "width": {{ photo_width }},
+                  "height": {{ photo_height }},
+                  {%- if photo.alt != blank %}
+                  "caption": {{ photo.alt | json }},
+                  {%- endif %}
+                  "creator": { "@id": {{ org_id | json }} },
+                  "creditText": {{ shop.name | json }},
+                  "copyrightNotice": {{ shop.name | json }}
+                }
+              {%- else -%}
+                {{ photo | image_url: width: 1200 | prepend: 'https:' | json }}
+              {%- endif -%}
+              {%- unless forloop.last %},{% endunless %}
             {%- endfor -%}
           ],
           {%- endif %}

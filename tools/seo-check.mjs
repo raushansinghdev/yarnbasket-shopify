@@ -74,6 +74,8 @@ const read = async (path) => {
   page.share = meta('og:image');
   page.h1 = (body.match(/<h1[\s>]/gi) || []).length;
   page.noAlt = (body.match(/<img\s[^>]+>/gi) || []).filter((t) => attr(t, 'alt') === undefined).length;
+  page.photos = (main.match(/<img\s[^>]+>/gi) || []).map((t) => [attr(t, 'src') || '', decode(attr(t, 'alt') || '')]);
+  page.large = /max-image-preview:large/.test(meta('robots'));
   page.data = [];
   page.badData = 0;
   for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi)) {
@@ -137,6 +139,28 @@ record('Share image on every page', open.filter((p) => !p.share).map((p) => p.pa
 // 5. The page itself.
 record('One h1', open.filter((p) => p.h1 !== 1).map((p) => `${p.path} (${p.h1})`), 'exactly one on every page');
 record('Every image has alt text', live.filter((p) => p.noAlt).map((p) => `${p.path} (${p.noAlt})`), 'none missing');
+// Pictures (docs/seo-plan.md, phase 5): each photo of a piece says in words what it shows, and Google may show it large.
+const fileOf = (src) => (src.split('?')[0].split('/').pop() || '');
+const altFaults = (page) => {
+  const product = products.find((p) => `/products/${p.handle}` === page.path);
+  if (!product) return [];
+  const own = new Set(product.images.map((i) => fileOf(i.src)));
+  // A photo is on the page more than once (gallery, thumbnail, the bar's small copy with an empty alt): its words are the gallery's.
+  const alts = [...new Map(page.photos.filter(([src, alt]) => alt && own.has(fileOf(src))).reverse().map(([src, alt]) => [fileOf(src), alt])).values()];
+  const faults = [];
+  if (alts.length < own.size) faults.push(`${own.size - alts.length} photos not on the page`);
+  if (alts.some((a) => /\bview \d+$/i.test(a))) faults.push('"view 2"');
+  if (new Set(alts).size < alts.length) faults.push('the same words twice');
+  if (alts.some((a) => a.length > 125)) faults.push('over 125 characters');
+  if (alts.some((a) => !a || a.toLowerCase() === product.title.toLowerCase())) faults.push('only the name');
+  return faults;
+};
+const coverFaults = collections.filter((c) => c.image && (!c.image.alt || c.image.alt.toLowerCase() === c.title.toLowerCase())).map((c) => `/collections/${c.handle} (cover says only its name)`);
+record('Photos are described in words', [...productPages.map((p) => [p.path, altFaults(p)]).filter(([, f]) => f.length).map(([path, f]) => `${path} (${f.join(', ')})`), ...coverFaults], 'what each one shows, no two the same on a product');
+const firstPhoto = (p) => [p.data.find((x) => /^Product(Group)?$/.test(x['@type']))?.image].flat()[0];
+const small = products.filter((p) => p.images[0] && p.images[0].width < 1200).map((p) => `/products/${p.handle} (${p.images[0].width}px)`);
+record('Google may show our photos large', [...open.filter((p) => !p.large).map((p) => `${p.path} (no max-image-preview)`), ...productPages.filter((p) => firstPhoto(p)?.['@type'] !== 'ImageObject' || !firstPhoto(p).creditText).map((p) => `${p.path} (no photo credit)`), ...small], 'large previews allowed, first photo 1200px or more, credited to us');
+
 const copy = new Map([...products.map((p) => [`/products/${p.handle}`, words(p.body_html)]), ...collections.map((c) => [`/collections/${c.handle}`, words(c.body_html || c.description)])]);
 record(`Product description: ${LIMIT.productWords} words or more`, productPages.filter((p) => (copy.get(p.path) || 0) < LIMIT.productWords).map((p) => `${p.path} (${copy.get(p.path) || 0})`), 'every product says enough');
 record(`Collection intro: ${LIMIT.collectionWords} words or more`, collectionPages.filter((p) => (copy.get(p.path) || 0) < LIMIT.collectionWords).map((p) => `${p.path} (${copy.get(p.path) || 0})`), 'every collection has one');

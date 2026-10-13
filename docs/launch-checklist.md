@@ -106,6 +106,7 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
 - [ ] **At soft launch:** Google & YouTube channel and Merchant Center (phase 6), Judge.me (phase 9), Google Business Profile as a service-area business (phase 9), the sitemap submitted in Search Console and Bing (phase 11).
 - [ ] **Before the password comes off:** `npm run check:seo -- --url <the live theme's preview link>` passes every line.
 - [ ] **AI files, before the password comes off and after any price, product, collection, policy or FAQ change:** `npm run build:agents`, then commit `theme/templates/llms.txt.liquid` and `llms-full.txt.liquid`. `npm run build:agents -- --check` says whether they are out of date. At launch, open `/llms.txt` on the live address and see our name at the top.
+- [ ] **Pinterest (Raushan), steps in `docs/pinterest.md`:** business account; claim code into Theme settings → Social (then `npm run build:coming-soon` so the holding site carries it); at launch connect the catalogue and make the boards.
 - [ ] **From launch, once a month:** ask the five questions in `docs/seo-log.md` and log whether we are cited.
 
 ## Shipping, payments and checkout (docs/shipping-checkout-comparison.md, decided 2026-10-03)

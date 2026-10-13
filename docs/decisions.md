@@ -1209,3 +1209,9 @@ Raushan accepted every recommendation in search-plan §13.
 - **The files are generated, never typed:** `npm run build:agents` reads the store, Theme settings, `docs/legal` and the page templates. `--check`, the SEO check and the money check all fail when a price in them is not the store's.
 - **Not in the files:** email, phone, WhatsApp number (cached widely), ratings (made up), the rewards, the free gift and cash on delivery (change too often).
 
+## 2026-10-13: SEO phase 5, pictures (docs/seo-plan.md)
+- **Done before phase 10** on Raushan's "go with your choice": speed waits on the storefront password, his OK to upload and a free `base.css`.
+- **Every photo's alt text says what that photo shows,** written after looking at all 247. Sent with a new alt-only step (`catalog-upload.py alts`), which touches no photo, price or other field.
+- **Photos are not enlarged by software** to reach 2048 px: it invents detail in hand-made stitches. New photos are exported large instead.
+- **Google may show our photos large** (`max-image-preview:large`) and the first photo of a product carries a Yarn Basket credit.
+- **Pinterest is prepared, not switched on:** two Theme settings and `docs/pinterest.md`. No Pinterest script on the pages.

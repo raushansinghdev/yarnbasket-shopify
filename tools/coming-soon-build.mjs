@@ -50,6 +50,8 @@ const data = storeQuery(`{
 const settings = JSON.parse(read('theme/config/settings_data.json')).current;
 const whatsapp = settings.social_whatsapp.replace(/[^\d]/g, '');
 const email = settings.social_email;
+// Pinterest's claim tag (Theme settings → Social): the holding site carries it too, so the domain can be claimed before launch.
+const pinterest = settings.pinterest_verify ? `\n<meta name="p:domain_verify" content="${String(settings.pinterest_verify).trim().replace(/[^\w-]/g, '')}">` : '';
 
 // ---------- Shared shell ----------
 
@@ -86,7 +88,7 @@ const shell = ({ path, title, description, body }) => `<!doctype html>
 <meta property="og:site_name" content="Yarn Basket">
 <meta property="og:title" content="${esc(title)} · Yarn Basket">
 <meta property="og:url" content="${SITE}${path}">
-<meta property="og:image" content="${SITE}/og-image.png">
+<meta property="og:image" content="${SITE}/og-image.png">${pinterest}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=Jost:wght@400;500&display=swap">

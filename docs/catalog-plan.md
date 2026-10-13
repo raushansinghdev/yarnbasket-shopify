@@ -32,6 +32,13 @@ Left out:
 Every photo is 1254 px square: fine on phones, a little soft in desktop zoom, too small for a
 landscape campaign banner.
 
+### Alt text (2026-10-13, docs/seo-plan.md phase 5)
+- One plain sentence per photo, written after looking at it: what the piece is, its colour and count, then what this photo shows that the product's other photos do not (on an open palm, hanging from its ring, lying on white cloth, seen from behind, worn in hair).
+- Under 125 characters. Never "view 2", never "image of", never a list of search words, no price, no size.
+- No two photos of one product share a sentence. `npm run check:seo` fails on any of these.
+- Send with `python3 tools/catalog-upload.py alts [handles]` (`--dry-run` first: it prints was/now for every photo). It changes words only.
+- A collection's cover takes the alt of the product photo it was cut from.
+
 ## The range: 29 products, 52 variants
 
 Singles, with colours as one product, plus the best sets (Raushan, 2026-10-04).
