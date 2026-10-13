@@ -345,6 +345,11 @@
       {%- endif -%}
     </div>
 
+    {%- comment -%} On to the other collections (phase 4 of docs/seo-plan.md); filtered views keep it, it is navigation. {%- endcomment -%}
+    <div class="collection-page__more" data-region="more">
+      {%- render 'collection-links', current: collection.handle -%}
+    </div>
+
     <dialog class="cf-sheet" id="CollectionFilters" aria-labelledby="CollectionFiltersTitle" data-scroll-lock closedby="any" data-sheet data-filter-sheet>
       <div class="cf-sheet__top">
         <h2 class="cf-sheet__title" id="CollectionFiltersTitle">{{ 'collections.filter' | t }}</h2>
@@ -429,6 +434,7 @@
   .collection-page__intro { max-width: 40rem; margin-bottom: var(--space-4); color: var(--color-muted); }
   .collection-page__intro:empty { display: none; }
   .collection-page__about:empty { display: none; }
+  .collection-page__more:empty { display: none; }
 
   /* Craft row: one line; it swipes while the page is narrower than the chips. */
   .cf-crafts { margin-bottom: var(--space-4); }
@@ -525,6 +531,7 @@
   @media (max-width: 767px) {
     .collection-page__intro { order: 2; margin: var(--space-6) 0 0; }
     .collection-page__about { order: 4; }
+    .collection-page__more { order: 5; }
     .collection-page[data-js] .cf-float {
       order: 3;
       position: sticky;

@@ -11,7 +11,10 @@
     "sunflower",
     "occasion-birthday",
     "occasion-thank-you",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-teacher",
+    "gift-friend"
    ],
    "option": "Size",
    "variants": [
@@ -164,7 +167,10 @@
     "rose",
     "occasion-anniversary",
     "occasion-for-her",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "flower",
+    "gift-teacher",
+    "gift-valentine"
    ],
    "option": "Colour",
    "variants": [
@@ -267,7 +273,9 @@
     "rose",
     "occasion-anniversary",
     "occasion-for-her",
-    "occasion-birthday"
+    "occasion-birthday",
+    "flower",
+    "gift-valentine"
    ],
    "option": "Colour",
    "variants": [
@@ -384,7 +392,9 @@
    "tags": [
     "rose",
     "occasion-anniversary",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-valentine"
    ],
    "option": null,
    "variants": [
@@ -438,7 +448,12 @@
     "tulip",
     "occasion-birthday",
     "occasion-thank-you",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-teacher",
+    "gift-friend",
+    "gift-valentine",
+    "gift-rakhi"
    ],
    "option": "Colour",
    "variants": [
@@ -549,7 +564,11 @@
    "tags": [
     "daisy",
     "occasion-birthday",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "flower",
+    "gift-teacher",
+    "gift-friend",
+    "gift-rakhi"
    ],
    "option": null,
    "variants": [
@@ -593,7 +612,9 @@
     "tulip",
     "set",
     "occasion-birthday",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-valentine"
    ],
    "option": "With",
    "variants": [
@@ -710,7 +731,8 @@
     "set",
     "occasion-birthday",
     "occasion-thank-you",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower"
    ],
    "option": null,
    "variants": [
@@ -761,7 +783,9 @@
     "set",
     "occasion-for-her",
     "occasion-birthday",
-    "occasion-anniversary"
+    "occasion-anniversary",
+    "flower",
+    "gift-valentine"
    ],
    "option": null,
    "variants": [
@@ -811,7 +835,8 @@
     "daisy",
     "set",
     "occasion-birthday",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "flower"
    ],
    "option": null,
    "variants": [
@@ -859,7 +884,9 @@
     "set",
     "occasion-anniversary",
     "occasion-birthday",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-valentine"
    ],
    "option": null,
    "variants": [
@@ -907,7 +934,11 @@
    "type": "Keychains",
    "tags": [
     "sunflower",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "flower",
+    "gift-return",
+    "gift-teacher",
+    "gift-rakhi"
    ],
    "option": null,
    "variants": [
@@ -945,7 +976,12 @@
    "tags": [
     "daisy",
     "occasion-thank-you",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-return",
+    "gift-teacher",
+    "gift-friend",
+    "gift-rakhi"
    ],
    "option": "Colour",
    "variants": [
@@ -1023,7 +1059,11 @@
     "evil-eye",
     "occasion-thank-you",
     "occasion-for-her",
-    "occasion-for-him"
+    "occasion-for-him",
+    "gift-return",
+    "gift-teacher",
+    "gift-friend",
+    "gift-valentine"
    ],
    "option": "Pack",
    "variants": [
@@ -1087,7 +1127,9 @@
     "peacock",
     "occasion-thank-you",
     "occasion-for-her",
-    "occasion-for-him"
+    "occasion-for-him",
+    "gift-return",
+    "gift-teacher"
    ],
    "option": null,
    "variants": [
@@ -1130,7 +1172,9 @@
    "tags": [
     "bee",
     "occasion-birthday",
-    "occasion-for-him"
+    "occasion-for-him",
+    "gift-return",
+    "gift-friend"
    ],
    "option": "Pack",
    "variants": [
@@ -1198,7 +1242,9 @@
    "tags": [
     "chick",
     "occasion-birthday",
-    "occasion-for-him"
+    "occasion-for-him",
+    "gift-return",
+    "gift-friend"
    ],
    "option": "Pack",
    "variants": [
@@ -1278,7 +1324,10 @@
     "daisy",
     "set",
     "occasion-thank-you",
-    "occasion-birthday"
+    "occasion-birthday",
+    "flower",
+    "gift-return",
+    "gift-friend"
    ],
    "option": null,
    "variants": [
@@ -1332,7 +1381,8 @@
     "sunflower",
     "evil-eye",
     "set",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "flower"
    ],
    "option": null,
    "variants": [
@@ -1373,7 +1423,8 @@
     "chick",
     "set",
     "occasion-birthday",
-    "occasion-for-him"
+    "occasion-for-him",
+    "gift-friend"
    ],
    "option": null,
    "variants": [
@@ -1425,7 +1476,8 @@
     "evil-eye",
     "set",
     "occasion-thank-you",
-    "occasion-birthday"
+    "occasion-birthday",
+    "flower"
    ],
    "option": null,
    "variants": [
@@ -1522,7 +1574,8 @@
     "peacock",
     "set",
     "occasion-for-her",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "flower"
    ],
    "option": null,
    "variants": [
@@ -1567,7 +1620,11 @@
     "lily",
     "occasion-for-her",
     "occasion-birthday",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "flower",
+    "gift-return",
+    "gift-teacher",
+    "gift-rakhi"
    ],
    "option": "Colour",
    "variants": [
@@ -1680,7 +1737,9 @@
     "sunflower",
     "occasion-thank-you",
     "occasion-birthday",
-    "home-decor"
+    "home-decor",
+    "flower",
+    "gift-teacher"
    ],
    "option": null,
    "variants": [
@@ -1744,7 +1803,10 @@
     "occasion-thank-you",
     "occasion-birthday",
     "occasion-for-her",
-    "home-decor"
+    "home-decor",
+    "flower",
+    "gift-teacher",
+    "gift-rakhi"
    ],
    "option": "Colour",
    "variants": [
@@ -1846,7 +1908,10 @@
     "daisy",
     "set",
     "occasion-for-her",
-    "occasion-birthday"
+    "occasion-birthday",
+    "flower",
+    "gift-return",
+    "gift-rakhi"
    ],
    "option": "Set",
    "variants": [
@@ -1955,7 +2020,10 @@
    "tags": [
     "daisy",
     "sunflower",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-return",
+    "gift-rakhi"
    ],
    "option": "Design",
    "variants": [
@@ -2017,7 +2085,8 @@
    "tags": [
     "sunflower",
     "occasion-thank-you",
-    "home-decor"
+    "home-decor",
+    "flower"
    ],
    "option": "Pack",
    "variants": [
@@ -2098,7 +2167,8 @@
     "set",
     "occasion-birthday",
     "occasion-thank-you",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower"
    ],
    "option": "With",
    "variants": [
@@ -2202,7 +2272,9 @@
     "set",
     "occasion-birthday",
     "occasion-anniversary",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-valentine"
    ],
    "option": null,
    "variants": [
@@ -2246,7 +2318,9 @@
     "set",
     "occasion-birthday",
     "occasion-anniversary",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-valentine"
    ],
    "option": null,
    "variants": [
@@ -2290,7 +2364,9 @@
     "set",
     "occasion-birthday",
     "occasion-thank-you",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-valentine"
    ],
    "option": null,
    "variants": [
@@ -2336,7 +2412,8 @@
     "daisy",
     "evil-eye",
     "set",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "flower"
    ],
    "option": null,
    "variants": [
@@ -2377,7 +2454,8 @@
     "peacock",
     "set",
     "occasion-for-her",
-    "occasion-thank-you"
+    "occasion-thank-you",
+    "flower"
    ],
    "option": null,
    "variants": [
@@ -2418,7 +2496,9 @@
     "daisy",
     "sunflower",
     "set",
-    "occasion-birthday"
+    "occasion-birthday",
+    "flower",
+    "gift-friend"
    ],
    "option": "With",
    "variants": [
@@ -2480,7 +2560,9 @@
     "daisy",
     "set",
     "occasion-birthday",
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-friend"
    ],
    "option": null,
    "variants": [
@@ -2521,7 +2603,9 @@
     "lily",
     "set",
     "occasion-for-her",
-    "occasion-birthday"
+    "occasion-birthday",
+    "flower",
+    "gift-rakhi"
    ],
    "option": "Charm",
    "variants": [
@@ -2583,7 +2667,9 @@
     "daisy",
     "set",
     "occasion-thank-you",
-    "occasion-birthday"
+    "occasion-birthday",
+    "flower",
+    "gift-friend"
    ],
    "option": null,
    "variants": [
@@ -2629,7 +2715,8 @@
     "evil-eye",
     "set",
     "occasion-thank-you",
-    "occasion-birthday"
+    "occasion-birthday",
+    "flower"
    ],
    "option": null,
    "variants": [
@@ -2670,7 +2757,8 @@
     "evil-eye",
     "octopus",
     "set",
-    "occasion-birthday"
+    "occasion-birthday",
+    "flower"
    ],
    "option": null,
    "variants": [
@@ -2714,7 +2802,9 @@
    "type": "Hair accessories",
    "tags": [
     "occasion-for-her",
-    "set"
+    "set",
+    "flower",
+    "gift-rakhi"
    ],
    "option": null,
    "variants": [
@@ -2748,7 +2838,9 @@
     "sunflower",
     "daisy",
     "occasion-for-her",
-    "set"
+    "set",
+    "flower",
+    "gift-rakhi"
    ],
    "option": null,
    "variants": [
@@ -2784,7 +2876,9 @@
    "title": "Tricolour Crochet Hair Clips, Pair",
    "type": "Hair accessories",
    "tags": [
-    "set"
+    "set",
+    "flower",
+    "gift-return"
    ],
    "option": null,
    "variants": [
@@ -2815,7 +2909,9 @@
    "title": "White & Lavender Flower Hair Clips, Pair",
    "type": "Hair accessories",
    "tags": [
-    "occasion-for-her"
+    "occasion-for-her",
+    "flower",
+    "gift-return"
    ],
    "option": null,
    "variants": [
@@ -2852,7 +2948,11 @@
    "type": "Hair accessories",
    "tags": [
     "occasion-for-her",
-    "set"
+    "set",
+    "gift-return",
+    "gift-friend",
+    "gift-valentine",
+    "gift-rakhi"
    ],
    "option": "Pack",
    "variants": [
@@ -2906,7 +3006,9 @@
    "tags": [
     "sunflower",
     "occasion-for-her",
-    "set"
+    "set",
+    "flower",
+    "gift-rakhi"
    ],
    "option": null,
    "variants": [
@@ -2943,7 +3045,10 @@
    "type": "Hair accessories",
    "tags": [
     "occasion-for-her",
-    "set"
+    "set",
+    "gift-return",
+    "gift-friend",
+    "gift-rakhi"
    ],
    "option": null,
    "variants": [
@@ -2983,7 +3088,9 @@
     "sunflower",
     "occasion-for-her",
     "occasion-birthday",
-    "set"
+    "set",
+    "flower",
+    "gift-rakhi"
    ],
    "option": null,
    "variants": [
@@ -3021,7 +3128,9 @@
     "set",
     "occasion-birthday",
     "occasion-for-her",
-    "occasion-for-him"
+    "occasion-for-him",
+    "gift-friend",
+    "gift-valentine"
    ],
    "option": "Colours",
    "variants": [
@@ -3719,6 +3828,341 @@
      "Yes, anywhere in India that our couriers reach. Our Shipping policy gives the delivery times."
     ]
    ]
+  },
+  {
+   "handle": "crochet-flowers",
+   "title": "Crochet Flowers",
+   "rules": [
+    [
+     "tag",
+     "flower"
+    ]
+   ],
+   "cover": "Bouquet/BQ_SF_1_Rose_1_TLP_1 1.png",
+   "description": "<p>Crochet flowers, made by hand in India, that never wilt and need no water. Choose by flower: <a href=\"/collections/sunflowers\">sunflowers</a>, <a href=\"/collections/roses\">roses</a>, <a href=\"/collections/tulips\">tulips</a> and <a href=\"/collections/daisies\">daisies</a>. Or go straight to the <a href=\"/collections/bouquets\">bouquets</a>. Every woolen flower here is crocheted from soft yarn, petal by petal, as a bouquet, in a pot, on a keychain or on a hair clip.</p>",
+   "seo": [
+    "Crochet Flowers, Handmade in India | Yarn Basket",
+    "Crochet flowers that never wilt: sunflowers, roses, tulips and daisies as bouquets, pots, keychains and hair clips. Made by hand in India."
+   ],
+   "about": [
+    "Some people search for woolen flowers, some for yarn flowers and some for forever flowers. They all mean the same thing: flowers made of yarn with a crochet hook, by hand. Priya makes ours one at a time at home in Piro, Bihar.",
+    "The four flowers we make most are the sunflower, the rose, the tulip and the daisy, and there is a lily of the valley too. Each of the four has its own page. On this page you see all of them together, in every form: wrapped bouquets, flowers in a pot, keychains, bag charms, hair clips and headbands.",
+    "A crochet flower is a gift that stays. It can stand on a desk, hang from a bag or sit in a vase for years, which is why people give them for birthdays, anniversaries and thank-yous in place of fresh flowers."
+   ],
+   "questions": [
+    [
+     "Do crochet flowers last?",
+     "Yes, for years. They do not wilt, dry out or drop petals, and they need no water. Keep them out of strong direct sunlight and the colours stay bright."
+    ],
+    [
+     "Are crochet flowers made by hand or by machine?",
+     "By hand. Crochet is done with a hook, one stitch at a time, and every flower here is made by Priya."
+    ],
+    [
+     "Which crochet flower should I give?",
+     "Each flower's own page says what it stands for. As a quick guide: a sunflower for warmth, a rose for love, and a mixed bouquet when you cannot decide."
+    ],
+    [
+     "Can I ask for a flower you do not show?",
+     "Ask us. Message us on WhatsApp or through the Custom orders page with what you have in mind, and Priya will tell you what she can make."
+    ]
+   ]
+  },
+  {
+   "handle": "evil-eye",
+   "title": "Evil Eye Crochet Keychains",
+   "rules": [
+    [
+     "tag",
+     "evil-eye"
+    ]
+   ],
+   "cover": "keychains/KC_SF_1_Evil_1 2.png",
+   "description": "<p>Evil eye crochet keychains, made by hand in India. The nazar charm in rings of deep blue, white and sky blue, on a metal ring and chain for car keys, bike keys or a bag. Choose it alone, as a pair, or in a set with a sunflower, a daisy or a baby octopus.</p>",
+   "seo": [
+    "Evil Eye Crochet Keychains, Handmade | Yarn Basket",
+    "Evil eye crochet keychains made by hand in India: the nazar charm alone, as a pair, or in sets with a sunflower, a daisy or an octopus."
+   ],
+   "about": [
+    "In India the evil eye, or nazar, is given to keep bad luck and jealous looks away. People hang it in a new car, on the keys of a new bike, on a school bag or by the door of a new home. Ours is crocheted by Priya by hand from soft yarn, ring by ring.",
+    "The single evil eye is the simplest gift. The pair is made to share: one to keep and one to give. The sets put the evil eye beside a flower or an octopus, so one gift can be split between two or three people.",
+    "It suits men and women alike, which makes it one of the easiest pieces to give: to a brother, to a friend starting a new job, or to someone who has just bought their first vehicle."
+   ],
+   "questions": [
+    [
+     "What does an evil eye keychain mean as a gift?",
+     "It is a wish for protection and good luck. Giving one says you want the person kept safe, which is why people choose it for new vehicles, new homes and new beginnings."
+    ],
+    [
+     "Can I use it for my car or my bike?",
+     "Yes. It hangs on a metal ring and chain, so it goes on car keys, bike keys, a bag or a zip."
+    ],
+    [
+     "Is the evil eye keychain for men or for women?",
+     "Both. The blue and white suits anyone, which is why you will also find it on our Gifts for Him page."
+    ]
+   ]
+  },
+  {
+   "handle": "return-gifts",
+   "title": "Return Gifts",
+   "rules": [
+    [
+     "tag",
+     "gift-return"
+    ]
+   ],
+   "cover": "keychains/KC_BEE_1 1.png",
+   "description": "<p>Crochet return gifts, made by hand in India. Small pieces to hand to every guest at a birthday party, a wedding, a baby shower or a housewarming: keychains, hair clips, hair pins and bag charms, each crocheted from soft yarn. For a large number, tell us the count and the date and we will plan it with you.</p>",
+   "seo": [
+    "Crochet Return Gifts for Birthdays & Weddings | Yarn Basket",
+    "Handmade crochet return gifts: keychains, hair clips and bag charms for birthdays, weddings and baby showers. Larger orders on WhatsApp."
+   ],
+   "about": [
+    "A return gift is a thank you for coming, so it should be something a guest keeps. A crochet keychain goes on keys or a school bag. A pair of flower clips suits children and adults. Each one is useful, and each one was made by hand.",
+    "Every piece on this page is small and light, and made by Priya one at a time. Because of that, a large order needs time: the more pieces you need, the earlier you should ask.",
+    "The cart takes a limited number of one piece per order. For more, or for one colour for every guest, message us on WhatsApp or use the Custom orders page. We agree the pieces, the price and the date with you before Priya starts."
+   ],
+   "questions": [
+    [
+     "How many return gifts can I order?",
+     "As many as you need, with enough notice. The cart limits how many of one piece you can add, so for a larger number message us on WhatsApp or through the Custom orders page with the count and your date."
+    ],
+    [
+     "How early should I order return gifts for a wedding or a party?",
+     "As early as you can. Each piece is crocheted by hand, so a big order takes time to make, depending on the piece and the number. Tell us your date first and Priya will say whether she can meet it."
+    ],
+    [
+     "Which crochet return gift suits children?",
+     "The bee and the chick keychains, and the flower hair clips. They are small, soft and bright."
+    ],
+    [
+     "Can every guest get the same colour?",
+     "Usually, yes. Tell us the colour when you message us and Priya will confirm before she starts."
+    ]
+   ]
+  },
+  {
+   "handle": "teachers-day-gifts",
+   "title": "Teacher's Day Gifts",
+   "rules": [
+    [
+     "tag",
+     "gift-teacher"
+    ]
+   ],
+   "cover": "Bouquet/BQ_SF_1 1.png",
+   "description": "<p>Crochet gifts for teachers, made by hand in India. A single flower that never wilts, a flower pot for the desk, or a keychain for the staffroom keys: small gifts a student can give on Teacher's Day, at the end of term or at a farewell. Each one is crocheted from soft yarn.</p>",
+   "seo": [
+    "Crochet Gifts for Teachers, Handmade | Yarn Basket",
+    "Handmade crochet gifts for teachers: a single flower that never wilts, a pot for the desk or a keychain. Made by hand in India for Teacher's Day."
+   ],
+   "about": [
+    "Teachers are given many things on Teacher's Day, and most are gone in a week. A crochet flower stays on the desk for years and still looks as it did on the day it was given.",
+    "The single sunflower, rose, tulip and daisy come wrapped in black and gold with a ribbon, like a small bouquet. The sunflower pot and the daisy pot are made for a desk or a shelf. The keychains and the lily of the valley bag charm are the smallest gifts here.",
+    "If a whole class is giving together, one larger bouquet from everyone works well. If each student gives their own, the small pieces keep it easy for every family."
+   ],
+   "questions": [
+    [
+     "Which flower is right for a teacher?",
+     "A sunflower is a safe choice: it stands for warmth and gratitude. A daisy or a tulip suits just as well."
+    ],
+    [
+     "Can a whole class order together?",
+     "Yes. For one gift from the class, choose a larger bouquet. For one small piece for each student or each teacher, message us on WhatsApp or through the Custom orders page with the number and the date."
+    ],
+    [
+     "Will it reach us before Teacher's Day?",
+     "Order early. Each piece is made by hand and then travels by courier. The delivery times are on every product page, so check them before you order."
+    ],
+    [
+     "Is a keychain too small a gift for a teacher?",
+     "No. It is used every day and it was made by hand, and that is what a teacher remembers."
+    ]
+   ]
+  },
+  {
+   "handle": "friendship-day-gifts",
+   "title": "Friendship Day Gifts",
+   "rules": [
+    [
+     "tag",
+     "gift-friend"
+    ]
+   ],
+   "cover": "keychains/dolphin/ChatGPT Image Jul 6, 2026, 04_37_16 PM.png",
+   "description": "<p>Crochet gifts for a best friend, made by hand in India. Keychain pairs to split, one for you and one for them, plus hair pieces and single flowers that stay. For Friendship Day, a birthday, or the day one of you moves away. Each piece is crocheted from soft yarn, one at a time.</p>",
+   "seo": [
+    "Crochet Gifts for Best Friends & Friendship Day | Yarn Basket",
+    "Crochet gifts for a best friend: matching keychain pairs to split, hair pieces and single flowers. Handmade in India for Friendship Day and birthdays."
+   ],
+   "about": [
+    "The best gift between friends is one you both have. That is why this page has so many pairs: two octopuses, a bee and a chick, a pair of evil eyes. You keep one on your keys and your friend keeps the other.",
+    "For a group of friends, the sets of two and three keychains can be shared out, and the heart hair pins come several pairs to a pack, enough for everyone.",
+    "A single sunflower, tulip or daisy says the same thing with a flower. Unlike a fresh one, your friend still has it next year."
+   ],
+   "questions": [
+    [
+     "What is a good crochet gift for a best friend?",
+     "A matching pair of keychains, so each of you carries one. The octopus pair and the bee and chick pair are both made to be split."
+    ],
+    [
+     "Is there a gift for a whole group of friends?",
+     "Yes. A set of three keychains gives one each to three friends, and a pack of heart hair pins has enough pairs to share around."
+    ],
+    [
+     "Is there a Friendship Day gift for a boy?",
+     "Yes. The evil eye, the bee and the octopus keychains suit anyone."
+    ]
+   ]
+  },
+  {
+   "handle": "valentines-day-gifts",
+   "title": "Valentine's Day Gifts",
+   "rules": [
+    [
+     "tag",
+     "gift-valentine"
+    ]
+   ],
+   "cover": "rose/2 rose bouquet 1.png",
+   "description": "<p>Crochet Valentine's gifts, made by hand in India. Roses and tulips that never wilt, in bouquets of one, two or three, wrapped in black and gold with a ribbon. There are heart hair pins for her and keychains for him too. A flower bouquet for a boyfriend or a girlfriend that will still be there next February.</p>",
+   "seo": [
+    "Crochet Valentine's Day Gifts, Handmade | Yarn Basket",
+    "Crochet Valentine's gifts made by hand in India: rose and tulip bouquets that never wilt, heart hair pins, and keychains for him."
+   ],
+   "about": [
+    "A fresh rose lasts a week. A crochet rose is made by hand, petal by petal, and stays as it is for years, which says something a bought flower cannot.",
+    "The single rose is the simplest gift. The red rose pair and the rose trio say more, and the mixed bouquets put roses with sunflowers, tulips and daisies. The tulips come in softer colours, for someone who prefers them to red.",
+    "For him, a crochet flower is a fine gift, and so is something he will carry: the evil eye keychain, or the octopus pair, one for each of you."
+   ],
+   "questions": [
+    [
+     "Can I give crochet flowers to my boyfriend?",
+     "Yes. Flowers that last are a gift for anyone. If he would rather carry something, choose a keychain pair and keep the other one yourself."
+    ],
+    [
+     "Will my order come before Valentine's Day?",
+     "Order well ahead: every piece is made by hand and then sent by courier. Each product page shows the delivery times."
+    ],
+    [
+     "Is the bouquet ready to give when it arrives?",
+     "Yes. Every bouquet is wrapped in black and gold and tied with a ribbon before it is packed."
+    ],
+    [
+     "Is a crochet rose better than a real one?",
+     "It is different. A real rose has a scent and lasts a few days. A crochet rose has no scent, was made by hand, and lasts for years."
+    ]
+   ]
+  },
+  {
+   "handle": "rakhi-gifts",
+   "title": "Rakhi Gifts",
+   "rules": [
+    [
+     "tag",
+     "gift-rakhi"
+    ]
+   ],
+   "cover": "hair band/HB+HC_BLUE 2.png",
+   "description": "<p>Crochet Rakhi gifts for a sister, made by hand in India. Hair clips, headbands, scrunchies, a bag charm, flower keychains and small bouquets: gifts a brother can give in return on Raksha Bandhan. We do not make rakhis. Every piece is crocheted from soft yarn and made to be kept.</p>",
+   "seo": [
+    "Crochet Rakhi Gifts for Sister, Handmade | Yarn Basket",
+    "Handmade crochet gifts for your sister this Raksha Bandhan: hair clips, headbands, bag charms, keychains and small bouquets, made in India."
+   ],
+   "about": [
+    "On Raksha Bandhan the sister ties the rakhi and the brother gives a gift. This page is for that gift. Everything here is something a sister wears, carries or keeps on her desk, so she has it long after the day.",
+    "The hair pieces are the easiest choice: flower clips, claw clips, headbands and scrunchies, most of them in pairs or sets. The lily of the valley charm ties onto her bag. A single tulip or a daisy bouquet comes wrapped and ready to give.",
+    "Sisters give gifts too. For a brother, look at the evil eye keychain on our Gifts for Him page."
+   ],
+   "questions": [
+    [
+     "Do you make crochet rakhis?",
+     "No, not at present. This page is for gifts to give with a rakhi, or in return for one."
+    ],
+    [
+     "What is a good Rakhi gift for a younger sister?",
+     "The flower hair clips, the heart hair pins or a headband: small, bright and easy to wear."
+    ],
+    [
+     "What is a good Rakhi gift for an elder sister?",
+     "The lily of the valley bag charm, a pair of claw clips, or a single flower bouquet she can keep on her desk."
+    ],
+    [
+     "Is there a Rakhi gift for a brother?",
+     "Yes. The evil eye keychain suits a brother, for his bike or car keys. It is on the Gifts for Him page."
+    ]
+   ]
+  },
+  {
+   "handle": "gifts-under-99",
+   "title": "Gifts under ₹99",
+   "rules": [
+    [
+     "price_lt",
+     "100"
+    ]
+   ],
+   "cover": "hair clip/HC_White_Lvndr_2 2.png",
+   "description": "<p>Handmade crochet gifts under ₹100, made in India. The smallest pieces we make: flower hair clips, heart hair pins, a sunflower or daisy keychain and the lily of the valley bag charm. Each is crocheted by hand from soft yarn. Small enough for pocket money, and still made one at a time.</p>",
+   "seo": [
+    "Crochet Gifts under ₹100: Keychains & Clips | Yarn Basket",
+    "Handmade crochet gifts under ₹100: flower keychains, hair clips, heart pins and a bag charm. Small pieces made by hand in India."
+   ],
+   "about": [
+    "These are the pieces that take Priya the least time and yarn, which is the only reason they cost less. They are made by the same hands and with the same stitches as the bouquets.",
+    "People buy them as a first try from Yarn Basket, as a small extra beside a bigger gift, and several at a time for classmates, cousins and party guests. A few of the pieces have bigger packs or other options that cost more; this page counts the smallest.",
+    "Delivery is free once your order reaches the amount shown in your cart, so a few small pieces together often travel free."
+   ],
+   "questions": [
+    [
+     "Is there a crochet keychain under ₹100?",
+     "Yes: the single sunflower keychain and the single daisy keychain. Their prices are on the cards above."
+    ],
+    [
+     "Why do these cost so little?",
+     "They are small, so they take less time and yarn. Nothing else is different: every one is crocheted by hand."
+    ],
+    [
+     "Can I buy just one small piece?",
+     "Yes. There is no minimum order. A small delivery fee applies below the free delivery amount shown in your cart."
+    ]
+   ]
+  },
+  {
+   "handle": "gifts-under-199",
+   "title": "Gifts under ₹199",
+   "rules": [
+    [
+     "price_lt",
+     "200"
+    ]
+   ],
+   "cover": "Bouquet/BQ_TLP_Pink_1 1.png",
+   "description": "<p>Handmade crochet gifts under ₹200, made in India. Single flower bouquets in their wrap, keychains and keychain sets, hair clips, claw clips and scrunchies, each crocheted by hand from soft yarn. A real handmade gift for a friend, a teacher or a classmate, without spending much.</p>",
+   "seo": [
+    "Crochet Gifts under ₹200, Handmade in India | Yarn Basket",
+    "Handmade crochet gifts under ₹200: single-flower bouquets, keychains and sets, hair clips and scrunchies, all made by hand in India."
+   ],
+   "about": [
+    "At this price you can give a whole wrapped flower: a single sunflower, rose, tulip or daisy, in black and gold with a ribbon, ready to hand over.",
+    "There are also keychains alone and in sets of two, the lily of the valley bag charm, and hair pieces in pairs. Where a piece has bigger options, this page counts its smallest.",
+    "Add a second small piece and your order may reach free delivery. The amount is shown in your cart."
+   ],
+   "questions": [
+    [
+     "Is there a crochet flower bouquet under ₹200?",
+     "Yes, the single flower bouquets: one sunflower, rose, tulip or daisy, wrapped and tied with a ribbon."
+    ],
+    [
+     "What can I give for a friend's birthday on a small budget?",
+     "A single flower bouquet, or a set of two keychains to share between you."
+    ],
+    [
+     "Do the smaller bouquets come wrapped too?",
+     "Yes. Every bouquet, single flowers included, is wrapped in black and gold and tied with a ribbon."
+    ]
+   ]
   }
  ],
  "collection_order": {
@@ -3909,5 +4353,56 @@
    "Shop All Handmade Crochet Gifts | Yarn Basket",
    "Every Yarn Basket piece in one place: crochet bouquets, keychains, flower pots, hair accessories and bag charms, made by hand in India."
   ]
- }
+ },
+ "menus": [
+  {
+   "handle": "flowers",
+   "title": "Shop by flower",
+   "collections": [
+    "crochet-flowers",
+    "sunflowers",
+    "roses",
+    "tulips",
+    "daisies",
+    "evil-eye"
+   ]
+  },
+  {
+   "handle": "occasions",
+   "title": "Shop by occasion",
+   "collections": [
+    "birthday-gifts",
+    "anniversary-gifts",
+    "thank-you-gifts",
+    "gifts-for-her",
+    "gifts-for-him",
+    "gift-sets",
+    "return-gifts",
+    "teachers-day-gifts",
+    "friendship-day-gifts",
+    "valentines-day-gifts",
+    "rakhi-gifts"
+   ]
+  },
+  {
+   "handle": "prices",
+   "title": "Shop by price",
+   "collections": [
+    "gifts-under-99",
+    "gifts-under-199",
+    "gifts-under-299"
+   ]
+  }
+ ],
+ "pages": [
+  {
+   "handle": "custom-orders",
+   "title": "Custom orders",
+   "template": "custom-orders",
+   "seo": [
+    "Custom Crochet Bouquets & Bulk Orders | Yarn Basket",
+    "Custom crochet bouquets, keychains and return gifts, made to order by hand in India. Choose colours and designs, or order in bulk for a wedding or party."
+   ]
+  }
+ ]
 }

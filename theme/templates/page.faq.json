@@ -129,7 +129,7 @@
           "type": "question",
           "settings": {
             "question": "Can you make a custom or bulk order?",
-            "answer": "<p>Yes, gladly: your choice of colours, sizes or designs, names and initials, and larger orders for weddings, parties and gifting. We agree the details, price and timeline with you first, and start once it has been paid for. <a href=\"/pages/contact?topic=custom#ContactForm\">Tell us what you have in mind</a>.</p>"
+            "answer": "<p>Yes, gladly: your choice of colours, sizes or designs, names and initials, and larger orders for weddings, parties and gifting. We agree the details, price and timeline with you first, and start once it has been paid for. <a href=\"/pages/custom-orders\">See how custom orders work</a>, or <a href=\"/pages/contact?topic=custom#ContactForm\">tell us what you have in mind</a>.</p>"
           }
         },
         "g5": {

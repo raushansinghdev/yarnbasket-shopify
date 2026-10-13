@@ -1,0 +1,90 @@
+{%- comment -%}
+  Links from one page on to the collections beside it (docs/seo-plan.md, phase 4), so every collection can be
+  reached by a plain link. The lists are three menus in the admin (Online Store → Navigation): "flowers",
+  "occasions" and "prices", made by `catalog-upload.py menus`; a menu's name is its row's heading.
+  Two shapes:
+  - a collection page ("Keep looking"): each menu as a row of links, the page itself left out;
+  - a product page ("More like this", pass product): one row, only the collections this piece is in.
+  A link to an empty collection is never shown. No menus, no block.
+  Accepts:
+  - current: handle of the collection the page is, or the product's own craft (never linked)
+  - product: the product, for the product page's row
+  - limit: at most this many links on the product page (default 4)
+{%- endcomment -%}
+{%- liquid
+  assign menu_handles = 'flowers,occasions,prices' | split: ','
+  assign max = limit | default: 4
+  assign shown = 0
+  if product
+    assign own = ','
+    for c in product.collections
+      assign own = own | append: c.handle | append: ','
+    endfor
+  endif
+-%}
+{%- capture rows -%}
+  {%- for menu_handle in menu_handles -%}
+    {%- assign menu = linklists[menu_handle] -%}
+    {%- capture items -%}
+      {%- for link in menu.links -%}
+        {%- liquid
+          if link.type != 'collection_link' or link.object.handle == current or link.object.products_count == 0
+            continue
+          endif
+          if product
+            assign key = link.object.handle | prepend: ',' | append: ','
+            unless own contains key
+              continue
+            endunless
+            if shown >= max
+              break
+            endif
+          endif
+          assign shown = shown | plus: 1
+        -%}
+        <li><a class="search-chip" href="{{ link.url }}">{{ link.title }}</a></li>
+      {%- endfor -%}
+    {%- endcapture -%}
+    {%- if product -%}
+      {{- items -}}
+    {%- elsif items != blank -%}
+      <div class="more-links__row">
+        <h3 class="more-links__name">{{ menu.title }}</h3>
+        <ul class="more-links__list" role="list">{{ items }}</ul>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- if product -%}
+  <nav class="more-links more-links--product" aria-labelledby="MoreLikeThis">
+    <h2 class="eyebrow" id="MoreLikeThis">{{ 'products.more_like_this' | t }}</h2>
+    <ul class="more-links__list" role="list">
+      {{- rows -}}
+      {%- if shown == 0 -%}
+        <li><a class="search-chip" href="{{ settings.shop_all_collection.url | default: routes.all_products_collection_url }}">{{ 'header.shop_all' | t }}</a></li>
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- elsif shown > 0 -%}
+  <nav class="more-links" aria-labelledby="KeepLooking">
+    <h2 class="eyebrow" id="KeepLooking">{{ 'collections.keep_looking' | t }}</h2>
+    {{- rows -}}
+  </nav>
+{%- endif -%}
+
+{% stylesheet %}
+  .more-links { display: grid; gap: var(--space-4); margin-top: var(--space-8); }
+  .more-links--product { gap: var(--space-3); margin-top: 0; }
+  .more-links__row { display: grid; gap: var(--space-2); }
+  .more-links__name { font: 500 .9375rem var(--font-sans); letter-spacing: 0; color: var(--color-muted); }
+  /* 44px links 8px apart: full-size tap targets. */
+  .more-links__list { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .more-links .search-chip { min-height: 44px; }
+  /* Phones, on a collection page: each list is one line that swipes, as the craft row at the top of the page does
+     (the next link is cut off by the screen's edge), so eleven occasions do not become six rows. */
+  @media (max-width: 767px) {
+    .more-links__row .more-links__list { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding: 4px var(--gutter); margin-block: -4px; }
+    .more-links__row .more-links__list::-webkit-scrollbar { display: none; }
+    .more-links__row .more-links__list > li { flex: none; }
+  }
+{% endstylesheet %}

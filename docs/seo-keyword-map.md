@@ -26,8 +26,8 @@ Intent: **Buy** (ready to purchase), **Choose** (comparing), **Learn** (a questi
 |---|---|---|---|
 | `/` | handmade crochet gifts | crochet gifts india, crochet products online india, crochet shop online india, Yarn Basket | Choose |
 | `/collections/shop` | crochet items buy online | handmade crochet items for sale online, crochet items online shopping | Choose |
-| `/collections/crochet-flowers` (new hub) | crochet flowers | crochet flowers buy online india, woolen flowers, yarn flowers, forever flowers | Choose |
-| `/pages/custom-orders` (new) | custom crochet bouquet | personalised crochet bouquet, custom crochet gifts, crochet gifts wholesale, bulk return gifts | Buy |
+| `/collections/crochet-flowers` (hub, built 2026-10-13) | crochet flowers | crochet flowers buy online india, woolen flowers, yarn flowers, forever flowers | Choose |
+| `/pages/custom-orders` (built 2026-10-13) | custom crochet bouquet | personalised crochet bouquet, custom crochet gifts, crochet gifts wholesale, bulk return gifts | Buy |
 
 ### Crafts
 
@@ -50,8 +50,8 @@ Intent: **Buy** (ready to purchase), **Choose** (comparing), **Learn** (a questi
 | `/collections/roses` | crochet rose | crochet rose flower, crochet rose price, forever rose | Buy |
 | `/collections/tulips` | crochet tulip | crochet tulip flower, crochet tulip flower price | Buy |
 | `/collections/daisies` | crochet daisy | crochet daisy flower | Buy |
-| `/collections/evil-eye` (new) | evil eye crochet keychain | evil eye keychain for car, evil eye crochet keychain price, nazar keychain | Buy |
-| `/collections/bees` (new, if 6 pieces fit) | crochet bee keychain | crochet bee, amigurumi bee keychain | Buy |
+| `/collections/evil-eye` (built 2026-10-13) | evil eye crochet keychain | evil eye keychain for car, evil eye crochet keychain price, nazar keychain | Buy |
+| `/collections/bees` (not built: 3 pieces) | crochet bee keychain | crochet bee, amigurumi bee keychain | Buy |
 
 The flower-and-craft pair ("crochet sunflower bouquet", "crochet tulip keychain", "crochet sunflower pot", "crochet rose bouquet", "crochet daisy keychain", "crochet lily of the valley keychain") belongs to the **product page** of that piece, not a collection: we have one or two products for each, and the product is the best answer.
 
@@ -64,20 +64,20 @@ The flower-and-craft pair ("crochet sunflower bouquet", "crochet tulip keychain"
 | `/collections/birthday-gifts` | crochet birthday gift | crochet flower bouquet for birthday, crochet birthday gift for best friend | Choose |
 | `/collections/anniversary-gifts` | crochet anniversary gift | crochet rose bouquet for anniversary, forever roses | Choose |
 | `/collections/thank-you-gifts` | crochet thank you gift | crochet gift for teacher, crochet gift for doctor (until Teacher's Day has its own page) | Choose |
-| `/collections/teachers-day-gifts` (new) | crochet gift for teacher | crochet gift for teachers day, handmade gifts for teachers from students | Choose |
-| `/collections/friendship-day-gifts` (new) | crochet gift for best friend | crochet gift for friendship day, crochet gifts for friends | Choose |
-| `/collections/valentines-day-gifts` (new) | crochet valentines gifts | crochet valentines gifts for him, crochet flower bouquet for boyfriend | Choose |
-| `/collections/rakhi-gifts` (new) | crochet rakhi gift for sister | handmade rakhi gift (not the rakhi itself, which we do not make) | Choose |
-| `/collections/return-gifts` (new) | crochet return gifts | crochet return gifts for kids, crochet wedding return gifts, crochet birthday return gifts, baby shower return gifts | Buy |
+| `/collections/teachers-day-gifts` (built 2026-10-13) | crochet gift for teacher | crochet gift for teachers day, handmade gifts for teachers from students | Choose |
+| `/collections/friendship-day-gifts` (built 2026-10-13) | crochet gift for best friend | crochet gift for friendship day, crochet gifts for friends | Choose |
+| `/collections/valentines-day-gifts` (built 2026-10-13) | crochet valentines gifts | crochet valentines gifts for him, crochet flower bouquet for boyfriend | Choose |
+| `/collections/rakhi-gifts` (built 2026-10-13) | crochet rakhi gift for sister | handmade rakhi gift (not the rakhi itself, which we do not make) | Choose |
+| `/collections/return-gifts` (built 2026-10-13) | crochet return gifts | crochet return gifts for kids, crochet wedding return gifts, crochet birthday return gifts, baby shower return gifts | Buy |
 
 ### Price
 
 | Page | Main search | Also | Intent |
 |---|---|---|---|
-| `/collections/gifts-under-99` (new, if 6 fit) | crochet keychain under 100 | evil eye crochet keychain under 100, woolen flower bouquet under 100 | Buy |
-| `/collections/gifts-under-199` (new) | crochet flower bouquet under 200 | handmade gifts under 200 | Buy |
+| `/collections/gifts-under-99` (built 2026-10-13, 8 pieces) | crochet keychain under 100 | evil eye crochet keychain under 100, woolen flower bouquet under 100 | Buy |
+| `/collections/gifts-under-199` (built 2026-10-13) | crochet flower bouquet under 200 | handmade gifts under 200 | Buy |
 | `/collections/gifts-under-299` | handmade gifts under 300 | crochet gifts under 300 | Buy |
-| `/collections/gifts-under-499` (new) | handmade gifts under 500 | crochet bouquet under 500 | Buy |
+| `/collections/gifts-under-499` (not built: every piece is under ₹500, so it would repeat Shop) | handmade gifts under 500 | crochet bouquet under 500 | Buy |
 
 ### Guides (Journal)
 

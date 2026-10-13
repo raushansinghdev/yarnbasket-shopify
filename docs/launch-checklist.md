@@ -96,6 +96,7 @@ The theme side is built. Everything stays hidden until these are done, and `npm 
 
 ## SEO (docs/seo-plan.md, approved 2026-10-12)
 
+- [ ] Raushan and Priya read the nine new collection pages, the piece list of each, and the Custom orders page (same review page, "New pages"); corrections are sent with `python3 tools/catalog-upload.py tags|words|seo <handles>`
 - [ ] Raushan and Priya read the new product and collection text (https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf; the questions for Priya are at its top); corrections go into `tools/catalog/catalog.json` and are sent with `python3 tools/catalog-upload.py words <handles>`
 - [ ] **Search Console, now, on the holding site:** search.google.com/search-console → Add property → Domain → `yarnbasket.in` → copy the TXT record → Spaceship → DNS → add it → Verify. Use the business Gmail. The record stays when the domain moves to Shopify.
 - [ ] **Bing Webmaster Tools:** bing.com/webmasters → sign in → "Import from Google Search Console".

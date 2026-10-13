@@ -1,0 +1,42 @@
+{
+  "sections": {
+    "main": {
+      "type": "custom-orders",
+      "blocks": {
+        "colours": { "type": "kind", "settings": { "title": "Your colours", "text": "A bouquet, a keychain or a hair piece from the shop, in the colours you choose." } },
+        "bouquet": { "type": "kind", "settings": { "title": "A custom crochet bouquet", "text": "Your own mix of flowers, or a bigger bouquet than the ones we show." } },
+        "names": { "type": "kind", "settings": { "title": "Names and initials", "text": "A name or initials worked into the gift. Ask us which pieces it suits." } },
+        "bulk": { "type": "kind", "settings": { "title": "Bulk orders and return gifts", "text": "Many of one piece for a wedding, a birthday party, a baby shower, a class or an office." } },
+        "tell": { "type": "step", "settings": { "title": "Tell us what you have in mind", "text": "Message us on WhatsApp or write to us: the piece, the colours, how many, and the date you need them by. A photo helps." } },
+        "agree": { "type": "step", "settings": { "title": "We agree the details with you", "text": "Priya tells you what she can make, what it will cost and how long it will take. Nothing starts until you are happy with all three." } },
+        "made": { "type": "step", "settings": { "title": "Made by hand, then sent", "text": "Once the order is paid for, Priya crochets it by hand and we send it by courier with tracking, anywhere in India." } }
+      },
+      "block_order": ["colours", "bouquet", "names", "bulk", "tell", "agree", "made"],
+      "settings": {
+        "eyebrow": "Made to order",
+        "heading": "Custom and bulk orders",
+        "text": "Want a crochet bouquet in your own colours, or the same keychain for every guest? Everything at Yarn Basket is made by hand, one piece at a time, so we can make yours the way you want it.",
+        "scheme": "white"
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "early": { "type": "question", "settings": { "question": "How early should I ask?", "answer": "<p>As early as you can. Each piece is crocheted by hand, so the bigger the order, the longer it takes. Tell us your date first, and Priya will say plainly whether she can meet it.</p>" } },
+        "cost": { "type": "question", "settings": { "question": "What does a custom order cost?", "answer": "<p>It depends on the piece, the size and the number. We give you the price before anything is made, and you decide then.</p>" } },
+        "pay": { "type": "question", "settings": { "question": "When do I pay?", "answer": "<p>Before Priya starts. A custom piece is made only for you, so we begin once it has been paid for.</p>" } },
+        "returns": { "type": "question", "settings": { "question": "Can a custom order be returned or cancelled?", "answer": "<p>If it arrives damaged or is not what we agreed, yes: tell us within 48 hours of delivery with an unboxing video or clear photos, and we replace it or refund you. Otherwise a piece made only for you cannot be returned, exchanged or, once Priya has started it, cancelled. Our <a href=\"/policies/refund-policy\">refund policy</a> has the details.</p>" } }
+      },
+      "block_order": ["early", "cost", "pay", "returns"],
+      "settings": {
+        "eyebrow": "",
+        "heading": "Questions about custom orders",
+        "link_label": "All questions",
+        "link_url": "shopify://pages/faq",
+        "compact": true,
+        "scheme": "soft"
+      }
+    }
+  },
+  "order": ["main", "faq"]
+}

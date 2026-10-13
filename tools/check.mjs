@@ -2463,6 +2463,27 @@ if (want('20')) {
   }
 }
 
+// 20 (continued). "You may also like" is written into the product page (docs/seo-plan.md, phase 4;
+// sections/product-recommendations): real links without any script. Three or more pieces even where the craft has one
+// (Bag charms), never the piece itself, the free gift, a test product or the same piece twice; and under them
+// "More like this" with a collection or more.
+if (want('20')) {
+  const site = (path) => new globalThis.URL(path, URL).href;
+  const { products } = await fetch(site('/products.json?limit=250')).then((r) => r.json());
+  const hidden = new Set(products.filter((p) => p.tags.includes('free-gift') || p.tags.includes('test-product')).map((p) => p.handle));
+  const wrong = [];
+  for (const handle of ['lily-of-the-valley-crochet-bag-charm', 'sunflower-crochet-flower-pot', 'sunflower-curtain-tie-back', 'sunflower-crochet-bouquet', 'heart-crochet-hair-pins']) {
+    const html = await fetch(site(`/products/${handle}`)).then((r) => r.text(), () => '');
+    const at = html.indexOf('data-recs-written');
+    const row = at < 0 ? '' : html.slice(at, html.indexOf('</nav>', at));
+    const cards = [...row.matchAll(/class="card__link"[^>]*href="\/products\/([^"?]+)|href="\/products\/([^"?]+)[^"]*"[^>]*class="card__link"/g)].map((m) => m[1] || m[2]);
+    const links = [...row.matchAll(/class="search-chip" href="\/collections\/([^"]+)"/g)].map((m) => m[1]);
+    const bad = cards.filter((h) => h === handle || hidden.has(h));
+    if (cards.length < 3 || bad.length || new Set(cards).size !== cards.length || links.length < 1) wrong.push(`${handle}: ${cards.length} pieces (${bad.join(', ') || 'none barred'}; ${cards.length - new Set(cards).size} twice), ${links.length} collections`);
+  }
+  record('Product: You may also like and More like this are in the page, before any script', wrong.length === 0, wrong.join('; ') || 'five pieces: 3 or more others each, never itself, the gift or a test piece');
+}
+
 // 21. Phone menu (docs/nav-plan.md, "As built", 2026-10-04): Shop is the one open photo grid with "Shop all" in its
 //     heading row; a later list of collections (Gifts) folds into a row with an arrow. Every link fits one
 //     390 x 844 screen, a 360 x 740 phone scrolls a little, and no group links to the same place twice.
@@ -3192,6 +3213,40 @@ if (want('24')) {
     const after = await read();
     record('Collection, phone: Good to know sits after the products, with full-size rows, and follows the craft', before.rows.length >= 3 && before.rows.every((h) => h >= 44) && before.below && !before.sideways && after.first && after.first !== before.first,
       `rows ${before.rows.join(', ')}px; after the products: ${before.below}; "${before.first}" → "${after.first}"`);
+
+    // "Keep looking" (docs/seo-plan.md, phase 4; snippets/collection-links): the way on to the other collections.
+    // Full-size links, never the page itself, each list one line that swipes on a phone, and nothing wider than the screen.
+    await page.goto(site('/collections/sunflowers'), { waitUntil: 'load' });
+    const more = await page.evaluate(() => {
+      const links = [...document.querySelectorAll('.collection-page__more .search-chip')];
+      return {
+        count: links.length,
+        small: links.filter((a) => a.getBoundingClientRect().height < 44).length,
+        self: links.filter((a) => new URL(a.href).pathname === location.pathname).length,
+        rows: document.querySelectorAll('.collection-page__more .more-links__row').length,
+        wrapped: [...document.querySelectorAll('.collection-page__more .more-links__list')].filter((l) => new Set([...l.children].map((li) => Math.round(li.getBoundingClientRect().top))).size > 1).length,
+        after: document.querySelector('.collection-page__more')?.getBoundingClientRect().top >= document.querySelector('.collection-about')?.getBoundingClientRect().bottom,
+        sideways: document.documentElement.scrollWidth > innerWidth,
+      };
+    });
+    record('Collection, phone: Keep looking leads on to the other collections', more.count >= 10 && more.small === 0 && more.self === 0 && more.rows === 3 && more.wrapped === 0 && more.after && !more.sideways,
+      `${more.count} links in ${more.rows} lists; under 44px: ${more.small}; to itself: ${more.self}; lists on two lines: ${more.wrapped}; after Good to know: ${more.after}; page wider than the screen: ${more.sideways}`);
+
+    // The two pages phase 4 added: All collections and Custom orders. Axe, phone and desktop; every tile has its photo.
+    const found = [];
+    for (const [width, height] of [[360, 780], [1280, 800]]) {
+      await page.setViewportSize({ width, height });
+      for (const path of ['/collections', '/pages/custom-orders']) {
+        await page.goto(site(path), { waitUntil: 'load' });
+        await page.addScriptTag({ content: axe.source });
+        const bad = await page.evaluate(async () => (await window.axe.run(document.querySelector('main'), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((x) => `${x.id} (${x.nodes.length})`));
+        const wide = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+        if (bad.length || wide) found.push(`${path} at ${width}: ${[...bad, wide ? 'wider than the screen' : ''].filter(Boolean).join(', ')}`);
+      }
+    }
+    await page.goto(site('/collections'), { waitUntil: 'load' });
+    const tiles = await page.evaluate(() => ({ all: document.querySelectorAll('.all-collections .menu-tile').length, bare: document.querySelectorAll('.all-collections .menu-tile:not(:has(img))').length, groups: document.querySelectorAll('.all-collections__group').length }));
+    record('All collections and Custom orders: accessible, every collection tile has a photo', found.length === 0 && tiles.all >= 20 && tiles.bare === 0 && tiles.groups >= 4, `${tiles.all} tiles in ${tiles.groups} groups, ${tiles.bare} without a photo; ${found.join('; ') || 'axe clean at 360 and 1280'}`);
     await browser.close();
   }
 }

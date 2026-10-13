@@ -73,6 +73,8 @@
               -%}
               <li><a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ title }}</a></li>
             {%- endfor -%}
+            {%- comment -%} In the theme, not the menu: the one link that leads to every collection (docs/seo-plan.md, phase 4). {%- endcomment -%}
+            <li><a href="{{ routes.collections_url }}"{% if request.page_type == 'list-collections' %} aria-current="page"{% endif %}>{{ 'collections.all' | t }}</a></li>
           </ul>
         </nav>
       {%- endif -%}

@@ -106,6 +106,11 @@
   "collections": {
     "title": "Collections",
     "good_to_know": "Good to know",
+    "keep_looking": "Keep looking",
+    "by_craft": "By craft",
+    "more": "More",
+    "all": "All collections",
+    "all_intro": "Everything we make, sorted four ways: by craft, by flower, by occasion and by price.",
     "prices_range": "Prices run from {{ from }} to {{ to }}.",
     "prices_one": "Every piece here is {{ price }}.",
     "craft": "Craft",
@@ -279,6 +284,7 @@
     "menu_whatsapp_message": "Hi Yarn Basket! I'd like to ask about a custom or bulk order."
   },
   "products": {
+    "more_like_this": "More like this",
     "sold_out": "Sold out",
     "bestseller": "Bestseller",
     "new": "New",
@@ -585,6 +591,7 @@
     "fact_delivery": "Delivery",
     "fact_delivery_text": "Across India. Orders are sent within {{ from }} to {{ to }} working days.",
     "fact_custom": "Custom orders",
+    "fact_custom_link": "How custom orders work",
     "fact_custom_text": "Yes, and bulk orders too: on WhatsApp or through the Contact page.",
     "play": "Play video",
     "pause": "Pause video"

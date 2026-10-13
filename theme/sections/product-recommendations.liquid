@@ -2,10 +2,13 @@
   A row of other pieces on the product page (docs/product-page-plan.md, PP7). Used twice in templates/product.json:
   - "Pairs well with": the pieces picked for this product in the Search & Discovery app (complementary). Hidden
     when there are no picks.
-  - "You may also like": Shopify's related products. Once the store has orders these come from what is bought
-    together; until Shopify has any, the Bestsellers stand in.
-  The page ships an empty marker; product-rows.js asks Shopify for this section when the marker is near the screen,
-  so the row costs nothing on first load. Sold-out pieces and the free gift are left out (snippets/product-row).
+  - "You may also like": written into the page (docs/seo-plan.md, phase 4), so the links are there without any
+    script: pieces of the same craft, then of the same flower, then the Bestsellers (Bag charms has one piece).
+    Under the cards, "More like this" links the collections this piece is in (snippets/collection-links).
+    Shopify's own related picks are not used: with no orders yet they put hair clips beside a bouquet. They can
+    come back once there are orders to learn from (the `recommendations` branch below still answers).
+  "Pairs well with" ships an empty marker; product-rows.js asks Shopify for it when the marker is near the screen.
+  Sold-out pieces, the free gift and test products are left out (snippets/product-row, snippets/gift-skip).
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -23,6 +26,41 @@
   <div class="page-grid recs" data-recs-ready>
     {%- render 'product-row', title: s.heading, id: heading_id, products: picks, exclude: gift_skip, limit: s.limit -%}
   </div>
+{%- elsif product != blank and s.intent == 'related' -%}
+  {%- liquid
+    assign craft_handle = product.type | handleize
+    assign picks = collections[craft_handle].products
+    assign flower = blank
+    for link in linklists['flowers'].links
+      # The first link is every flower; the piece's own flower comes after it.
+      if forloop.first or link.type != 'collection_link'
+        continue
+      endif
+      for c in product.collections
+        if c.handle == link.object.handle
+          assign flower = link.object
+          break
+        endif
+      endfor
+      if flower != blank
+        break
+      endif
+    endfor
+    assign best = collections['bestsellers'].products
+    capture gift_skip
+      render 'gift-skip', products: picks
+      render 'gift-skip', products: flower.products
+      render 'gift-skip', products: best
+    endcapture
+    assign gift_skip = gift_skip | strip | append: product.id | append: ','
+  -%}
+  <div class="page-grid recs" data-recs-written{% if product.available == false %} data-recs-lift{% endif %}>
+    <div class="recs__stack">
+      {%- render 'product-row', title: s.heading, id: heading_id, products: picks, more: flower.products, last: best, exclude: gift_skip, limit: s.limit -%}
+      {%- render 'collection-links', product: product, current: craft_handle -%}
+    </div>
+  </div>
+  <script src="{{ 'product-rows.js' | asset_url }}" type="module"></script>
 {%- elsif product != blank -%}
   <div
     data-recs
@@ -33,6 +71,10 @@
   ></div>
   <script src="{{ 'product-rows.js' | asset_url }}" type="module"></script>
 {%- endif -%}
+
+{% stylesheet %}
+  .recs__stack { display: grid; gap: var(--space-5); }
+{% endstylesheet %}
 
 {% schema %}
 {

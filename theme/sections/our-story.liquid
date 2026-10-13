@@ -50,7 +50,7 @@
         {%- if s.fact_makes != blank -%}<div><dt>{{ 'story.fact_makes' | t }}</dt><dd>{{ s.fact_makes }}</dd></div>{%- endif -%}
         {%- if s.fact_how != blank -%}<div><dt>{{ 'story.fact_how' | t }}</dt><dd>{{ s.fact_how }}</dd></div>{%- endif -%}
         <div><dt>{{ 'story.fact_delivery' | t }}</dt><dd>{{ 'story.fact_delivery_text' | t: from: settings.dispatch_days_min, to: settings.dispatch_days_max }}</dd></div>
-        <div><dt>{{ 'story.fact_custom' | t }}</dt><dd>{{ 'story.fact_custom_text' | t }}</dd></div>
+        <div><dt>{{ 'story.fact_custom' | t }}</dt><dd>{{ 'story.fact_custom_text' | t }}{% if pages['custom-orders'].url != blank %} <a class="link" href="{{ pages['custom-orders'].url }}">{{ 'story.fact_custom_link' | t }}</a>{% endif %}</dd></div>
       </dl>
     </section>
   {%- endif -%}

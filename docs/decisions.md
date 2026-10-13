@@ -2,6 +2,16 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-13 (SEO phase 4: new pages and links)
+
+Built to the plan Raushan approved; details in `docs/seo-plan.md`, "As built".
+
+- **A new page only when 6 or more pieces fit, and only for a search in the keyword map.** Nine collections and a Custom orders page were built; Bees, Octopus, under ₹499/₹999, Diwali and Mother's Day were not.
+- **Price pages are named like "under ₹299"** (₹99, ₹199); their search titles use the round number people type (₹100, ₹200).
+- **The header menu stays as designed.** New pages are reached from "Keep looking" on collection pages, "More like this" on product pages, the All collections page and the footer.
+- **"You may also like" is our own list** (same craft, same flower, Bestsellers), written into the page. Shopify's picks were poor with no orders and are off until there are some.
+- **One source for the link lists:** three menus in the admin (`flowers`, `occasions`, `prices`), made from the catalogue.
+
 ## 2026-10-13 (SEO phase 3: the words)
 
 Built to the plan Raushan approved; details in `docs/seo-plan.md`, "As built".

@@ -1,83 +1,101 @@
-{% comment %}
-  This section is used in the list-collections template to render a list of
-  collections.
+{%- comment -%}
+  All collections (/collections; docs/seo-plan.md, phase 4): every collection the shop has, each one tap away, in
+  four groups: by craft (the main menu's first dropdown, the list the footer's Shop list follows), then by flower,
+  by occasion and by price (the three "Shop by" menus that snippets/collection-links reads). A collection that is in
+  none of them is listed under "More", so nothing can be left out. Empty collections and Shopify's starter one are
+  not shown. The footer's "All collections" leads here.
+{%- endcomment -%}
+{%- liquid
+  assign shop_all = settings.shop_all_collection
+  assign tile_sizes = '(min-width: 990px) 170px, (min-width: 600px) 22vw, 44vw'
+  assign listed = ',frontpage,'
+-%}
+<div class="section all-collections">
+  <header class="all-collections__head">
+    <h1 class="all-collections__title">{{ 'collections.all' | t }}</h1>
+    <p class="all-collections__intro">{{ 'collections.all_intro' | t }}</p>
+  </header>
 
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
-{% endcomment %}
+  {%- for n in (0..3) -%}
+    {%- liquid
+      assign links = ''
+      case n
+        when 0
+          assign heading = 'collections.by_craft' | t
+          for link in linklists['main-menu'].links
+            if link.links.size > 0
+              assign links = link.links
+              break
+            endif
+          endfor
+        when 1
+          assign heading = linklists['flowers'].title
+          assign links = linklists['flowers'].links
+        when 2
+          assign heading = linklists['occasions'].title
+          assign links = linklists['occasions'].links
+        when 3
+          assign heading = linklists['prices'].title
+          assign links = linklists['prices'].links
+      endcase
+    -%}
+    {%- capture tiles -%}
+      {%- for link in links -%}
+        {%- liquid
+          assign key = link.object.handle | prepend: ',' | append: ','
+          if link.type != 'collection_link' or link.object.products_count == 0 or listed contains key
+            continue
+          endif
+          # "Shop all" is everything, not a craft: it goes under "More".
+          if n == 0 and link.object.handle == shop_all.handle
+            continue
+          endif
+          assign listed = listed | append: link.object.handle | append: ','
+        -%}
+        <li>{%- render 'menu-tile', title: link.object.title, url: link.url, handle: link.object.handle, collection: link.object, sizes: tile_sizes -%}</li>
+      {%- endfor -%}
+    {%- endcapture -%}
+    {%- if tiles != blank -%}
+      <section class="all-collections__group" aria-labelledby="AllCollections-{{ n }}">
+        <h2 class="eyebrow" id="AllCollections-{{ n }}">{{ heading }}</h2>
+        <ul class="all-collections__list" role="list">{{ tiles }}</ul>
+      </section>
+    {%- endif -%}
+  {%- endfor -%}
 
-<h1>{{ 'collections.title' | t }}</h1>
-
-<div
-  class="collections {{ section.settings.grid_item_width }}"
-  style="--grid-gap: {{ section.settings.grid_gap }}px"
->
-  {% for collection in collections %}
-    <a class="collection-card" href="{{ collection.url }}">
-      {% if collection.featured_image %}
-        {% render 'image',
-          class: 'collection-card__image',
-          image: collection.featured_image,
-          width: 600,
-          height: 600,
-          crop: 'center'
-        %}
-      {% endif %}
-
-      <div class="collection-card__content">
-        <p>{{ collection.title }}</p>
-
-        {% if collection.description %}
-          <p>{{ collection.description | strip_html | truncatewords: 15 }}</p>
-        {% endif %}
-      </div>
-    </a>
-  {% endfor %}
+  {%- capture tiles -%}
+    {%- for c in collections -%}
+      {%- liquid
+        assign key = c.handle | prepend: ',' | append: ','
+        if c.products_count == 0 or listed contains key
+          continue
+        endif
+      -%}
+      <li>{%- render 'menu-tile', title: c.title, url: c.url, handle: c.handle, collection: c, sizes: tile_sizes -%}</li>
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- if tiles != blank -%}
+    <section class="all-collections__group" aria-labelledby="AllCollections-more">
+      <h2 class="eyebrow" id="AllCollections-more">{{ 'collections.more' | t }}</h2>
+      <ul class="all-collections__list" role="list">{{ tiles }}</ul>
+    </section>
+  {%- endif -%}
 </div>
 
 {% stylesheet %}
-  .collections {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(var(--collection-card-size), 100%), 1fr));
-    gap: var(--grid-gap);
-  }
-  .collections--compact {
-    --collection-card-size: 160px;
-  }
-  .collections--full {
-    --collection-card-size: 280px;
-  }
-  .collection-card {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
+  .all-collections { padding-top: clamp(var(--space-5), 1rem + 1.5vw, var(--space-7)); }
+  .all-collections__head { display: grid; gap: var(--space-2); margin-bottom: var(--space-6); }
+  .all-collections__title { font-size: var(--fs-h2); line-height: 1.05; }
+  .all-collections__intro { max-width: 40rem; color: var(--color-muted); }
+  .all-collections__group { display: grid; gap: var(--space-3); margin-bottom: var(--space-7); }
+  .all-collections__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5) var(--space-3); }
+  @media (min-width: 600px) { .all-collections__list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-5) var(--space-4); } }
+  @media (min-width: 990px) { .all-collections__list { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-6) var(--space-5); } }
 {% endstylesheet %}
 
 {% schema %}
 {
-  "name": "t:general.collections_grid",
-  "settings": [
-    {
-      "type": "select",
-      "id": "grid_item_width",
-      "label": "t:labels.grid_item_width",
-      "options": [
-        { "value": "collections--compact", "label": "t:options.size.small" },
-        { "value": "collections--full", "label": "t:options.size.large" }
-      ],
-      "default": "collections--full"
-    },
-    {
-      "type": "range",
-      "id": "grid_gap",
-      "label": "t:labels.grid_gap",
-      "min": 0,
-      "max": 50,
-      "step": 5,
-      "unit": "px",
-      "default": 10
-    }
-  ],
-  "presets": [{ "name": "t:general.collections_grid" }]
+  "name": "All collections",
+  "settings": []
 }
 {% endschema %}

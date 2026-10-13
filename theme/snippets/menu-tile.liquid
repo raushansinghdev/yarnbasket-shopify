@@ -37,7 +37,7 @@
 <a href="{{ url }}" class="menu-tile {{ class }}" {% if current %}aria-current="page"{% endif %}>
   <span class="media menu-tile__media">
     {%- if img -%}
-      {%- render 'image', image: img, sizes: sizes, alt: '', width: 480, class: 'menu-tile__img' -%}
+      {%- render 'image', image: img, sizes: sizes, decorative: true, width: 480, class: 'menu-tile__img' -%}
     {%- elsif demo != blank -%}
       {%- render 'demo-image', name: demo, sizes: sizes, class: 'menu-tile__img' -%}
     {%- else -%}

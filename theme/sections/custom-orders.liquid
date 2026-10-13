@@ -1,0 +1,121 @@
+{%- comment -%}
+  The Custom orders page (docs/seo-plan.md, phase 4): what Priya can make to order, how it goes, and the two ways to
+  ask: WhatsApp (Theme settings → Social) and the Contact form with "Custom or bulk order" already chosen. No price
+  and no number of days is written here: both are agreed order by order. The FAQ section sits under it in the
+  template (templates/page.custom-orders.json).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
+  assign contact_url = pages.contact.url | default: '/pages/contact' | append: '?topic=custom#ContactForm'
+-%}
+<div class="section custom-orders scheme-{{ s.scheme }}">
+  <header class="custom-orders__open" data-arrive="lines">
+    {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    <h1 class="custom-orders__title">{{ s.heading | default: page.title }}</h1>
+    {%- if s.text != blank -%}<p class="lead custom-orders__lead">{{ s.text }}</p>{%- endif -%}
+    <div class="custom-orders__actions">
+      {%- if whatsapp != blank -%}
+        <a class="btn" href="https://wa.me/{{ whatsapp }}?text={{ 'header.menu_whatsapp_message' | t | replace: '&#39;', "'" | url_encode }}" rel="noopener" target="_blank">
+          {%- render 'icon', icon: 'whatsapp' -%}
+          {{- s.whatsapp_label -}}
+        </a>
+        <a class="btn btn--ghost" href="{{ contact_url }}">{{ s.form_label }}</a>
+      {%- else -%}
+        <a class="btn" href="{{ contact_url }}">{{ s.form_label }}</a>
+      {%- endif -%}
+    </div>
+  </header>
+
+  {%- assign kinds = section.blocks | where: 'type', 'kind' -%}
+  {%- if kinds.size > 0 -%}
+    <section class="custom-orders__part" aria-labelledby="CustomKinds-{{ section.id }}" data-arrive="lines">
+      <h2 class="eyebrow" id="CustomKinds-{{ section.id }}">{{ s.kinds_heading }}</h2>
+      <dl class="custom-orders__list">
+        {%- for block in kinds -%}
+          <div {{ block.shopify_attributes }}><dt>{{ block.settings.title }}</dt><dd>{{ block.settings.text }}</dd></div>
+        {%- endfor -%}
+      </dl>
+    </section>
+  {%- endif -%}
+
+  {%- assign steps = section.blocks | where: 'type', 'step' -%}
+  {%- if steps.size > 0 -%}
+    <section class="custom-orders__part" aria-labelledby="CustomSteps-{{ section.id }}" data-arrive="lines">
+      <h2 class="eyebrow" id="CustomSteps-{{ section.id }}">{{ s.steps_heading }}</h2>
+      <ol class="custom-orders__steps" role="list">
+        {%- for block in steps -%}
+          <li {{ block.shopify_attributes }}>
+            <span class="custom-orders__n" aria-hidden="true">{{ forloop.index }}</span>
+            <div>
+              <h3 class="custom-orders__step">{{ block.settings.title }}</h3>
+              <p>{{ block.settings.text }}</p>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ol>
+    </section>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .custom-orders { padding-top: clamp(var(--space-6), 1rem + 3vw, var(--space-9)); }
+  .custom-orders__open { display: grid; gap: var(--space-3); max-width: 40rem; }
+  .custom-orders__title { font-size: var(--fs-h2); line-height: 1.05; }
+  .custom-orders__lead { color: var(--color-ink); }
+  .custom-orders__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
+  .custom-orders__actions .btn .icon { width: 20px; height: 20px; }
+  .custom-orders__part { display: grid; gap: var(--space-4); max-width: 40rem; margin-top: var(--space-8); }
+  .custom-orders__list { display: grid; border-top: 1px solid var(--color-line-strong); }
+  .custom-orders__list > div { display: grid; gap: var(--space-1) var(--space-5); padding-block: var(--space-3); border-bottom: 1px solid var(--color-line-strong); }
+  .custom-orders__list dt { color: var(--color-heading); font-weight: 500; }
+  .custom-orders__list dd { margin: 0; }
+  @media (min-width: 560px) { .custom-orders__list > div { grid-template-columns: 11rem minmax(0, 1fr); } }
+  .custom-orders__steps { display: grid; gap: var(--space-4); }
+  .custom-orders__steps > li { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: var(--space-3); align-items: start; }
+  .custom-orders__n { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--blush); color: var(--color-heading); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .custom-orders__step { font: 500 1rem/1.4 var(--font-sans); letter-spacing: 0; color: var(--color-heading); margin-bottom: 2px; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Custom orders",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "Made to order" },
+    { "type": "text", "id": "heading", "label": "Heading", "info": "Leave empty to use the page's name." },
+    { "type": "textarea", "id": "text", "label": "Opening lines" },
+    { "type": "text", "id": "whatsapp_label", "label": "WhatsApp button", "default": "Ask on WhatsApp" },
+    { "type": "text", "id": "form_label", "label": "Form button", "default": "Write to us" },
+    { "type": "text", "id": "kinds_heading", "label": "Heading above what can be made", "default": "What we can make for you" },
+    { "type": "text", "id": "steps_heading", "label": "Heading above the steps", "default": "How it works" },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Background",
+      "options": [
+        { "value": "white", "label": "White" },
+        { "value": "soft", "label": "Soft" }
+      ],
+      "default": "white"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "kind",
+      "name": "Made to order",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Name" },
+        { "type": "textarea", "id": "text", "label": "Text" }
+      ]
+    },
+    {
+      "type": "step",
+      "name": "Step",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Name" },
+        { "type": "textarea", "id": "text", "label": "Text" }
+      ]
+    }
+  ]
+}
+{% endschema %}

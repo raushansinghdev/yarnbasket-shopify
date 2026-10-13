@@ -43,6 +43,11 @@ document.querySelectorAll('[data-recs]').forEach((box) => {
   lift ? load() : near(box, load);
 });
 
+// "You may also like" is written into the page (sections/product-recommendations). A sold-out piece on a phone:
+// it moves up under the buy box.
+const written = document.querySelector('[data-recs-written][data-recs-lift]');
+if (written && matchMedia('(max-width: 989px)').matches) document.querySelector('.pdp__details')?.before(written);
+
 /* ---------- Recently viewed ---------- */
 const recent = document.querySelector('[data-recent]');
 if (recent) {

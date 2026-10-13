@@ -153,6 +153,10 @@ const count = (p, re) => [...p.out].filter((to) => re.test(to) && to !== p.path)
 record(`Product page links to ${LIMIT.productLinks} products, ${LIMIT.collectionLinks} collections`, productPages.filter((p) => count(p, /^\/products\//) < LIMIT.productLinks || count(p, /^\/collections\//) < LIMIT.collectionLinks).map((p) => `${p.path} (${count(p, /^\/products\//)}, ${count(p, /^\/collections\//)})`), 'in the HTML, before any script');
 record('Collection page links to other collections', collectionPages.filter((p) => count(p, /^\/collections\/[^/?]+$/) < LIMIT.collectionLinks).map((p) => p.path), 'each leads on to others');
 
+// The one page that leads to every collection (the footer's "All collections").
+const listed = pages.get('/collections')?.out || new Set();
+record('All collections lists every collection', collectionPages.filter((p) => !listed.has(p.path)).map((p) => p.path), 'each one a tap from the footer');
+
 // 6. Structured data.
 record('Structured data parses', live.filter((p) => p.badData).map((p) => p.path), 'valid JSON on every page');
 record('Every page names the shop (OnlineStore, WebSite)', open.filter((p) => !typesOf(p).includes('OnlineStore') || !typesOf(p).includes('WebSite')).map((p) => p.path), 'one shop, named everywhere');

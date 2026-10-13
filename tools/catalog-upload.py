@@ -7,6 +7,8 @@ Safe to rerun: a product or collection that already exists by handle is left alo
   python3 tools/catalog-upload.py names handle [handle ...]   sends only the name and SEO title (photos, stock, prices and the URL untouched)
   python3 tools/catalog-upload.py seo handle [handle ...]     sends only the SEO title and description of those products and collections, from the catalogue (docs/seo-plan.md)
   python3 tools/catalog-upload.py words [handle ...]          sends only the text: a product's description and Materials, a collection's intro and Good to know block (docs/seo-plan.md, phase 3)
+  python3 tools/catalog-upload.py tags [handle ...]           sends only the tags (which collections a piece is in), from the catalogue (docs/seo-plan.md, phase 4)
+  python3 tools/catalog-upload.py menus         makes the "Shop by" menus the theme's link lists read, creates the catalogue's pages and adds them to the footer's Help list
   python3 tools/catalog-upload.py prices        sets every variant's price, and the free gift's, from costs.json (photos and stock untouched)
   python3 tools/catalog-upload.py collections [--force]
   python3 tools/catalog-upload.py filters       writes each product's Occasion and Flower & motif (from its tags) for the collection page's filters
@@ -96,6 +98,19 @@ def stage(paths, resource='IMAGE'):
 def photo(rel):
     studio = os.path.join(STUDIO, rel)
     return studio if os.path.exists(studio) else os.path.join(OUT, rel)
+
+
+def cover_path(c):
+    """A collection's cover: the file catalog-build.py made, or (a collection added since the last build) the built
+    photo of the product it was picked from."""
+    built = BUILT['home'].get('cover-' + c['handle'])
+    if built:
+        return os.path.join(OUT, built)
+    for p in DATA['products']:
+        for ph, made in zip(p['photos'], BUILT['products'].get(p['handle'], [])):
+            if ph['src'] == c['cover']:
+                return photo(made['file'])
+    sys.exit(f"no cover for {c['handle']}: run tools/catalog-build.py")
 
 
 def existing(kind, handle):
@@ -258,7 +273,7 @@ def collections(force):
         if cid and not force:
             print('exists, skipped:', c['handle'])
             continue
-        cover = stage([os.path.join(OUT, BUILT['home']['cover-' + c['handle']])])[0]
+        cover = stage([cover_path(c)])[0]
         inp = {'handle': c['handle'], 'title': c['title'], 'descriptionHtml': c['description'],
                'seo': {'title': c['seo'][0], 'description': c['seo'][1]}, 'image': {'src': cover, 'altText': c['title']}}
         if 'manual' in c:
@@ -288,7 +303,7 @@ def covers():
     import io
     from PIL import Image, ImageChops
     for c in DATA['collections']:
-        path = os.path.join(OUT, BUILT['home']['cover-' + c['handle']])
+        path = cover_path(c)
         node = gql('query($h: String!) { collectionByHandle(handle: $h) { id image { url } } }', {'h': c['handle']})['collectionByHandle']
         # Shopify refuses a cover identical to the current one ("Error updating collection with this image"), so those are skipped.
         if node['image']:
@@ -326,6 +341,67 @@ def names(handles):
                 {'input': {'id': pid, 'title': p['title'], 'seo': {'title': p['seo_title']}}}, mutate=True)['productUpdate']
         check(d['userErrors'], h)
         print('name:', d['product']['handle'], '->', d['product']['title'])
+
+
+def tags(handles):
+    """Only the tags, which decide the automated collections a piece is in (docs/seo-plan.md, phase 4). The store's
+    tags become the catalogue's; photos, prices, stock and every field stay. Run `filters` too if an occasion or
+    motif tag changed."""
+    for p in DATA['products']:
+        if handles and p['handle'] not in handles:
+            continue
+        pid = existing('product', p['handle'])
+        if not pid:
+            print('not in the store, skipped:', p['handle'])
+            continue
+        d = gql('mutation($input: ProductInput!) { productUpdate(input: $input) { product { handle tags } userErrors { field message } } }',
+                {'input': {'id': pid, 'tags': p['tags']}}, mutate=True)['productUpdate']
+        check(d['userErrors'], p['handle'])
+        print('tags:', d['product']['handle'], len(d['product']['tags']))
+
+
+def menus():
+    """The "Shop by" lists (docs/seo-plan.md, phase 4): one menu each, read by snippets/collection-links.liquid, the
+    product page's "More like this" and the All collections page. Also the catalogue's pages (made once, never
+    overwritten), each added to the footer's Help list. Safe to rerun; the header's menu is not touched."""
+    have = {m['handle']: m for m in gql('{ menus(first: 50) { nodes { id handle title items { title type url resourceId } } } }')['menus']['nodes']}
+    titles_of = {c['handle']: c['title'] for c in DATA['collections']}
+    for m in DATA['menus']:
+        items = []
+        for h in m['collections']:
+            cid = existing('collection', h)
+            if not cid:
+                sys.exit(f'menus: collection {h} is not in the store')
+            items.append({'title': titles_of[h], 'type': 'COLLECTION', 'resourceId': cid})
+        if m['handle'] in have:
+            d = gql('mutation($id: ID!, $title: String!, $handle: String!, $items: [MenuItemUpdateInput!]!) { menuUpdate(id: $id, title: $title, handle: $handle, items: $items) { menu { handle } userErrors { field message } } }',
+                    {'id': have[m['handle']]['id'], 'title': m['title'], 'handle': m['handle'], 'items': items}, mutate=True)['menuUpdate']
+        else:
+            d = gql('mutation($title: String!, $handle: String!, $items: [MenuItemCreateInput!]!) { menuCreate(title: $title, handle: $handle, items: $items) { menu { handle } userErrors { field message } } }',
+                    {'title': m['title'], 'handle': m['handle'], 'items': items}, mutate=True)['menuCreate']
+        check(d['userErrors'], m['handle'])
+        print('menu:', d['menu']['handle'], len(items), 'links')
+    footer = have['footer']
+    items = [{k: v for k, v in i.items() if v is not None} for i in footer['items']]
+    for pg in DATA.get('pages', []):
+        found = gql('query($q: String!) { pages(first: 1, query: $q) { nodes { id handle } } }', {'q': 'handle:' + pg['handle']})['pages']['nodes']
+        node = next((n for n in found if n['handle'] == pg['handle']), None)
+        if not node:
+            d = gql('mutation($page: PageCreateInput!) { pageCreate(page: $page) { page { id handle } userErrors { field message } } }',
+                    {'page': {'title': pg['title'], 'handle': pg['handle'], 'templateSuffix': pg['template'], 'isPublished': True, 'body': ''}}, mutate=True)['pageCreate']
+            check(d['userErrors'], pg['handle'])
+            node = d['page']
+            meta = [{'ownerId': node['id'], 'namespace': 'global', 'key': k, 'type': 'single_line_text_field', 'value': v} for k, v in zip(('title_tag', 'description_tag'), pg['seo'])]
+            d = gql('mutation($m: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $m) { metafields { id } userErrors { field message code } } }', {'m': meta}, mutate=True)['metafieldsSet']
+            check(d['userErrors'], 'page seo')
+            print('page created:', node['handle'])
+        if not any(i.get('resourceId') == node['id'] for i in items):
+            items.append({'title': pg['title'], 'type': 'PAGE', 'resourceId': node['id']})
+    if len(items) != len(footer['items']):
+        d = gql('mutation($id: ID!, $title: String!, $handle: String!, $items: [MenuItemUpdateInput!]!) { menuUpdate(id: $id, title: $title, handle: $handle, items: $items) { menu { handle items { title } } userErrors { field message } } }',
+                {'id': footer['id'], 'title': footer['title'], 'handle': 'footer', 'items': items}, mutate=True)['menuUpdate']
+        check(d['userErrors'], 'footer')
+        print('footer:', ', '.join(i['title'] for i in d['menu']['items']))
 
 
 def seo(handles):
@@ -431,6 +507,10 @@ if __name__ == '__main__':
         covers()
         # A new cover is a new photo with a new id: its square has to be sent again.
         swatches([c['handle'] for c in DATA['collections']])
+    elif cmd == 'tags':
+        tags(args[1:])
+    elif cmd == 'menus':
+        menus()
     elif cmd == 'seo':
         seo(args[1:])
     elif cmd == 'words':

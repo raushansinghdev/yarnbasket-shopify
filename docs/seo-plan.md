@@ -1,6 +1,6 @@
 # Yarn Basket: the SEO plan, from scratch
 
-**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1, 2 and 3 built 2026-10-13** (see "As built" at the end). `npm run check:seo` is at 23 of 29; the six red lines belong to phase 4 (links: 4), phase 7 (llms.txt) and the made-up ratings. Next: Raushan's and Priya's read of the words (review page: https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf, sizes: `docs/size-sheet.md`), then phase 4 on Raushan's go. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
+**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1 to 4 built 2026-10-13** (see "As built" at the end). `npm run check:seo` is at 28 of 30; the two red lines are the made-up ratings and `llms.txt` (phase 7). Raushan confirmed the phase 3 claims on 2026-10-13; sizes come later (`docs/size-sheet.md`). Waiting on his and Priya's read of the new pages and their piece lists (review page: https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf, "New pages"). Next: phase 10 (speed) or 7 (AI files) on Raushan's go. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
 
 ## Context
 
@@ -339,3 +339,32 @@ Sources for the rule changes: [Shopify changelog, agents.md / llms.txt templates
 - Theme check shows five new warnings of a kind already present (the snippet uses the FAQ section's classes on purpose).
 - The intro on a desktop collection page is now four lines where it was one or two; the first row of products is still on the first screen at 1280 × 800.
 
+### Phase 4: new pages and links (2026-10-13)
+
+`npm run check:seo`: 23 of 29 → **28 of 30** (the four link lines turned green; one new line, "All collections lists every collection", added green). 89 pages open to search engines (50 products, 28 collections).
+
+**Changed from the plan**
+- **Pages not built:** Bees (3 pieces) and Octopus (4) are under the rule of 6. Under ₹499 and under ₹999 would hold all 50 pieces (the dearest is ₹499) and repeat Shop. Diwali, Mother's Day, wedding, bridesmaid and kids have no search in the keyword map; each is one catalogue entry later.
+- **Shopify's related picks are not used in "You may also like".** The plan was to write the row into the page and let the script swap in Shopify's picks. Looked at on the store: with no orders, Shopify put an octopus keychain and hair clips beside a sunflower bouquet. The row is now the same craft, then the same flower, then Bestsellers, and nothing swaps. Worth another look once there are orders.
+- **Phones: each "Keep looking" list is one line that swipes,** like the craft row at the top of the page. Wrapped, eleven occasions were six rows.
+- **The header menu is unchanged.** The new pages are reached from collection pages, product pages, the All collections page and the footer.
+
+**Built**
+- **Nine collections:** Crochet Flowers (the hub, new tag `flower`, 41 pieces), Evil Eye Crochet Keychains (7), Return Gifts (14), Teacher's Day Gifts (11), Friendship Day Gifts (15), Valentine's Day Gifts (13), Rakhi Gifts (15), Gifts under ₹99 (8), Gifts under ₹199 (28). Each has an intro, a Good to know block, a search title and description, and a cover. Which piece is on which occasion page is Claude's judgement, kept as tags in the catalogue (`gift-return`, `gift-teacher`, `gift-friend`, `gift-valentine`, `gift-rakhi`; not `occasion-…`, so the Occasion filter is unchanged).
+- **Custom orders page** (`/pages/custom-orders`; `sections/custom-orders.liquid`, `templates/page.custom-orders.json`): what can be made, three steps, WhatsApp and the Contact form, four questions. No price, no number of days. Linked from the footer's Help list, the FAQ, the Contact page and Our story.
+- **Three menus in the admin** (`flowers`, `occasions`, `prices`), the one source for every "Shop by" list. Edit them in Online Store → Navigation, or in the catalogue's `menus` and resend.
+- **Collection pages:** "Keep looking" after Good to know (`snippets/collection-links.liquid`): the three menus, the page itself left out.
+- **Product pages:** "You may also like" is in the HTML (up to 6 pieces), with "More like this" under it: up to 4 of the collections the piece is in.
+- **All collections** (`/collections`, `sections/collections.liquid`, rebuilt): photo tiles in groups: by craft, by flower, by occasion, by price, and "More" for anything in no menu. The footer's Shop list ends with "All collections".
+- `tools/catalog-upload.py`: `tags [handles]` (only the tags) and `menus` (the three menus, the catalogue's pages, the footer's Help list). A collection added since the last photo build takes its cover from the product photo it names.
+- Checks: section 20 gained "You may also like and More like this are in the page, before any script"; section 24 gained "Keep looking leads on to the other collections" and "All collections and Custom orders: accessible, every tile has a photo".
+
+**Found on the way**
+- Photo tiles in the Shop menu (`snippets/menu-tile.liquid`) repeated the collection's name as the photo's alt text beside the same name as the link. The photo is now decorative (empty alt), as the snippet always meant.
+- The checks read port 9292 unless given `--url`; this session's server is on 9393. Final numbers below are from 9393: SEO 28 of 30, money 10 of 10, sections 19, 20, 22, 24, 25 all green (178 lines), section 21 green.
+
+**To keep in mind**
+- Two answers name pieces by price ("Is there a crochet keychain under ₹100?", "Is there a crochet flower bouquet under ₹200?"). Reread Gifts under ₹99 and Gifts under ₹199 after a price change.
+- "Names and initials" on the Custom orders page comes from the FAQ's wording; asked again on the review page.
+- The evil eye collection counts 8 in the admin: one is an archived product (the old pair), not shown anywhere.
+- A new piece needs its tags (`flower`, `gift-…`) in the catalogue to appear on these pages.
