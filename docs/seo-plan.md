@@ -1,6 +1,6 @@
 # Yarn Basket: the SEO plan, from scratch
 
-**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1 to 4 built 2026-10-13** (see "As built" at the end). `npm run check:seo` is at 28 of 30; the two red lines are the made-up ratings and `llms.txt` (phase 7). Raushan confirmed the phase 3 claims on 2026-10-13; sizes come later (`docs/size-sheet.md`). Waiting on his and Priya's read of the new pages and their piece lists (review page: https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf, "New pages"). Next: phase 10 (speed) or 7 (AI files) on Raushan's go. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
+**Status:** approved by Raushan 2026-10-12. Phase 0 built that day; **phases 1 to 4 built 2026-10-13** (see "As built" at the end). `npm run check:seo` is at 28 of 30; the two red lines are the made-up ratings and `llms.txt` (phase 7). Raushan confirmed the phase 3 claims on 2026-10-13; sizes come later (`docs/size-sheet.md`). The new pages' piece lists stay as built on Raushan's word (review page for reference: https://claude.ai/artifact/9nMdJrJwefL5XVRpLpwkbf). Next: phase 10 (speed) or 7 (AI files) on Raushan's go. Left for later by Raushan (2026-10-13): deleting the made-up ratings, Search Console and Bing, Keyword Planner volumes.
 
 ## Context
 
@@ -365,6 +365,6 @@ Sources for the rule changes: [Shopify changelog, agents.md / llms.txt templates
 
 **To keep in mind**
 - Two answers name pieces by price ("Is there a crochet keychain under ₹100?", "Is there a crochet flower bouquet under ₹200?"). Reread Gifts under ₹99 and Gifts under ₹199 after a price change.
-- "Names and initials" on the Custom orders page comes from the FAQ's wording; asked again on the review page.
+- Raushan, 2026-10-13: the occasion pages' piece lists and "Names and initials" on the Custom orders page stay as built (Claude's recommendation; the FAQ already promises names and initials).
 - The evil eye collection counts 8 in the admin: one is an archived product (the old pair), not shown anywhere.
 - A new piece needs its tags (`flower`, `gift-…`) in the catalogue to appear on these pages.
