@@ -10,6 +10,8 @@ Safe to rerun: a product or collection that already exists by handle is left alo
   python3 tools/catalog-upload.py tags [handle ...]           sends only the tags (which collections a piece is in), from the catalogue (docs/seo-plan.md, phase 4)
   python3 tools/catalog-upload.py menus         makes the "Shop by" menus the theme's link lists read, creates the catalogue's pages and adds them to the footer's Help list
   python3 tools/catalog-upload.py prices        sets every variant's price, and the free gift's, from costs.json (photos and stock untouched)
+  python3 tools/catalog-upload.py weights [--dry-run]   sets every variant's weight (its pieces plus its box) from costs.json "parcel"; nothing else
+  python3 tools/catalog-upload.py hsn [--dry-run]       sets every variant's HSN code and country of origin (India) from costs.json "parcel"; nothing else
   python3 tools/catalog-upload.py collections [--force]
   python3 tools/catalog-upload.py filters       writes each product's Occasion and Flower & motif (from its tags) for the collection page's filters
   python3 tools/catalog-upload.py swatches [handle ...]   writes each variant's "swatch" (the part of its photo shown on its option pill; for a craft collection, of its cover on the chip row), nothing else; rerun after changing a variant's photo
@@ -22,7 +24,7 @@ Safe to rerun: a product or collection that already exists by handle is left alo
 import json, mimetypes, os, subprocess, sys, tempfile, urllib.request, uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from catalog_pricing import COSTS, price_of
+from catalog_pricing import COSTS, grams_of, price_of
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.normpath(os.path.join(ROOT, '..', 'catalog'))
@@ -271,6 +273,40 @@ def prices():
                 {'id': d['id'], 'variants': changes}, mutate=True)['productVariantsBulkUpdate']
         check(r['userErrors'], gift['handle'])
         print('prices:', gift['handle'], price)
+
+
+def parcel(what, dry):
+    """Weight or HSN code of every variant, and the free gift's (it ships as the piece it copies, with no box of its
+    own). Only what differs from the store is sent."""
+    hsn = COSTS['parcel']['hsn']
+    gift = COSTS['gift']
+    gift_grams = next(COSTS['parcel']['grams'][name] for p in DATA['products'] for v in p['variants'] if v['sku'] == gift['same_price_as'] for name in v['parts'])
+    todo = [(p['handle'], {v['sku']: grams_of(p, v) for v in p['variants']}) for p in DATA['products']] + [(gift['handle'], None)]
+    sent = 0
+    for handle, grams in todo:
+        d = gql('query($h: String!) { productByHandle(handle: $h) { id variants(first: 30) { nodes { id sku inventoryItem { harmonizedSystemCode countryCodeOfOrigin measurement { weight { value unit } } } } } } }', {'h': handle})['productByHandle']
+        changes = []
+        for v in d['variants']['nodes']:
+            item = v['inventoryItem']
+            if what == 'weights':
+                want = gift_grams if grams is None else grams[v['sku']]
+                has = item['measurement']['weight']
+                has = round(has['value'] * {'GRAMS': 1, 'KILOGRAMS': 1000}.get(has['unit'], 0)) if has else 0
+                if has != want:
+                    changes.append({'id': v['id'], 'inventoryItem': {'measurement': {'weight': {'value': want, 'unit': 'GRAMS'}}}})
+            elif item['harmonizedSystemCode'] != hsn or item['countryCodeOfOrigin'] != 'IN':
+                changes.append({'id': v['id'], 'inventoryItem': {'harmonizedSystemCode': hsn, 'countryCodeOfOrigin': 'IN'}})
+        if not changes:
+            continue
+        sent += len(changes)
+        if dry:
+            print(f'{what}: would change', handle, len(changes), 'variants')
+            continue
+        r = gql('mutation($id: ID!, $variants: [ProductVariantsBulkInput!]!) { productVariantsBulkUpdate(productId: $id, variants: $variants) { userErrors { field message } } }',
+                {'id': d['id'], 'variants': changes}, mutate=True)['productVariantsBulkUpdate']
+        check(r['userErrors'], handle)
+        print(f'{what}:', handle, len(changes), 'variants')
+    print(f"{what}: {sent} variants {'to change' if dry else 'changed'}")
 
 
 def collections(force):
@@ -544,6 +580,8 @@ if __name__ == '__main__':
         swatches(args[1:])
     elif cmd == 'prices':
         prices()
+    elif cmd in ('weights', 'hsn'):
+        parcel(cmd, '--dry-run' in sys.argv)
     elif cmd == 'collections':
         collections(force)
     elif cmd == 'filters':

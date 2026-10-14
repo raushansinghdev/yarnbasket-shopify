@@ -31,6 +31,81 @@
   "scrunchie": null,
   "hair tie": null
  },
+ "parcel": {
+  "note": "PLACEHOLDERS (2026-10-13): what a parcel weighs and which box it goes in, for Shopify's weight and Shiprocket's catalogue. grams are Claude's estimates per piece until Raushan weighs them; the bouquet and keychain boxes are Raushan's (inches: length, width, height), the 'pot' box and the use of the keychain box for hair accessories, charms and tie-backs are assumptions. hsn and gst_percent are generic for crochet until the Meesho listings are read: 630790 is 'other made-up textile articles', 5% up to Rs 2,500 a piece; bouquets may belong under 6702 (artificial flowers, 18%). A variant weighs its parts plus its box. After editing: python3 tools/catalog-build.py && python3 tools/catalog-upload.py weights (and hsn).",
+  "hsn": "630790",
+  "gst_percent": 5,
+  "grams": {
+   "sunflower": 80,
+   "rose": 80,
+   "daisy": 80,
+   "tulip": 80,
+   "bee": 40,
+   "flower keychain": 40,
+   "evil eye keychain": 40,
+   "peacock feather keychain": 40,
+   "octopus keychain": 40,
+   "chick keychain": 40,
+   "lily charm": 40,
+   "flower pot": 150,
+   "headband": 40,
+   "claw clip": 30,
+   "hair clips, pair": 20,
+   "curtain tie-back": 40,
+   "flower headband": 40,
+   "tricolour hair clips, pair": 20,
+   "heart hair pins, pair": 10,
+   "scrunchie": 20,
+   "hair tie": 10
+  },
+  "boxes": {
+   "small": {
+    "inches": [
+     5,
+     4,
+     3
+    ],
+    "grams": 30
+   },
+   "bouquet 1": {
+    "inches": [
+     12,
+     4,
+     3
+    ],
+    "grams": 80
+   },
+   "bouquet 2": {
+    "inches": [
+     12,
+     6,
+     3
+    ],
+    "grams": 100
+   },
+   "bouquet 3": {
+    "inches": [
+     12,
+     8,
+     3
+    ],
+    "grams": 120
+   },
+   "pot": {
+    "inches": [
+     6,
+     4,
+     4
+    ],
+    "grams": 40
+   }
+  },
+  "box_by_type": {
+   "Bouquets": "bouquet",
+   "Flower pots": "pot",
+   "default": "small"
+  }
+ },
  "gift": {
   "handle": "sunflower-keychain-free-gift",
   "same_price_as": "KC_SF_1"

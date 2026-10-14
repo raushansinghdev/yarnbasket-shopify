@@ -17,7 +17,7 @@ import csv, html, json, os, re, shutil, sys
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from catalog_pricing import cost_of, packaging_of, price_of
+from catalog_pricing import cost_of, packaging_of, parcel_sheet, price_of
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(ROOT, 'tools/catalog/catalog.json')
@@ -176,6 +176,8 @@ def review(data, built):
                 cost = cost_of(v)
                 w.writerow([p['type'], p['title'], v['value'] or '', v['sku'], ' + '.join(f'{n} {k}' for k, n in v['parts'].items()),
                             '' if cost is None else cost, packaging_of(data, p), price_of(data, p, v), '' if cost is not None else 'placeholder: a part has no cost yet'])
+    # Every SKU's weight and box, in the units Shiprocket's product catalogue takes; rewritten on every run too.
+    parcel_sheet(data, os.path.join(ROOT, 'tools/catalog/parcels.csv'))
 
 
 if __name__ == '__main__':

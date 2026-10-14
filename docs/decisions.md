@@ -2,6 +2,20 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-13 (Razorpay connected in Shopify; first test order through the backup checkout)
+
+- **Razorpay is in Shopify's checkout** as "01 Cards, UPI, NB, Wallets by Razorpay" (Settings → Payments → More ways to pay), capture Automatic, test mode on while the store is on the Development plan. Inside Shiprocket Checkout it waits on Shiprocket's team: Raushan found no place to enter the keys and sent them the details (not the keys).
+- **Plan for the two gateways:** Razorpay goes into both checkouts now; when Cashfree is approved it replaces Razorpay inside Shiprocket Checkout (most of the money, and its 0% offer), and Razorpay stays in Shopify's checkout.
+- **Test order #1001 (₹965, 5 pieces and the gift) paid and came back.** The money agreed everywhere. What it showed, with the fixes listed in launch-checklist.md "Test order #1001":
+  - Checkout opened on "2 items are no longer available": the cart only blocks a sold-out variant, not a piece taken off sale. To be fixed in the cart, with a check, once reproduced.
+  - Phone is optional at checkout, so Shiprocket had no contact number.
+  - Every real variant weighs 0, so Shiprocket had no weight.
+  - Checkout's delivery line ("3 to 5 business days") and tax line (18%) don't match what we say and charge.
+- **Shopify's page said "No transaction fee" for this gateway.** Read it again on the paid plan: the 2% on outside gateways was one reason for choosing Shiprocket Checkout.
+- **What Claude can change in the store, as found on 2026-10-13:** the catalogue script (`tools/catalog-upload.py`) runs and did upload weights and HSN codes. One-off admin commands (archiving a test product, three tries) and writing Claude's own permission file were blocked, even after Raushan said to go ahead. So product data goes through the script; one-off admin changes are Raushan's clicks.
+- **Parcel data is generic for now** (Raushan: "use generic data", 5% GST for all crochet). `tools/catalog/costs.json` "parcel" holds estimated grams per piece, his box sizes, HSN 630790 and 5%. A variant weighs its pieces plus its box. `tools/catalog/parcels.csv` lists every SKU with weight, box in cm and billed weight for Shiprocket's catalogue, since Shopify has no box size on a product. The box decides the courier's bill (crochet is light), so estimated grams are safe until the pieces are weighed.
+- **The Shiprocket wallet is recharged close to launch,** not now: the first-recharge cashback lasts 30 days (Raushan).
+
 ## 2026-10-13 (SEO phase 4: new pages and links)
 
 Built to the plan Raushan approved; details in `docs/seo-plan.md`, "As built".

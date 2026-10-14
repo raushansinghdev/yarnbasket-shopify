@@ -104,6 +104,20 @@ print(json.dumps({p['handle']: {v['sku']: price_of(d, p, v) for v in p['variants
   record('Store price = the price rule, every variant', wrong.length === 0, wrong.length ? few(wrong) : `${count} variants of ${real.length} products`);
 }
 
+/* ---------- 1b. Every parcel has a weight: the catalogue's (costs.json "parcel") ---------- */
+// A variant that weighs nothing reaches Shiprocket as "Info missing" and cannot be shipped (test order #1001).
+{
+  const grams = JSON.parse(execFileSync('python3', ['-B', '-c', `
+import json, sys
+sys.path.insert(0, 'tools')
+from catalog_pricing import grams_of
+d = json.load(open('tools/catalog/catalog.json'))
+print(json.dumps({v['sku']: grams_of(p, v) for p in d['products'] for v in p['variants']}))
+`], { cwd: ROOT, encoding: 'utf8' }));
+  const wrong = real.flatMap((p) => p.variants.filter((v) => grams[v.sku] !== undefined && v.grams !== grams[v.sku]).map((v) => `${p.handle} ${v.sku}: store ${v.grams} g, catalogue ${grams[v.sku]} g`));
+  record('Every variant for sale weighs what the catalogue says', wrong.length === 0, wrong.length ? `${few(wrong)} (python3 tools/catalog-upload.py weights)` : `${Object.keys(grams).length} variants`);
+}
+
 /* ---------- 5. One name, one product ---------- */
 {
   const names = new Map();

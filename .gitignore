@@ -4,3 +4,4 @@ node_modules/
 .env
 .stress-shots/
 __pycache__/
+.claude/settings.local.json

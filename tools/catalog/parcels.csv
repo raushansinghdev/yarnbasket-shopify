@@ -1,0 +1,87 @@
+SKU,Product,Variant,Weight (kg),Length (cm),Breadth (cm),Height (cm),Box,Billed weight (kg),HSN,GST %
+BQ_SF_1,Sunflower Crochet Bouquet,1 sunflower,0.16,30.5,10.2,7.6,bouquet 1,0.47,630790,5
+BQ_SF_2,Sunflower Crochet Bouquet,2 sunflowers,0.26,30.5,15.2,7.6,bouquet 2,0.71,630790,5
+BQ_SF_3,Sunflower Crochet Bouquet,3 sunflowers,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_RS_Red_1,Single Rose Crochet Bouquet,Red,0.16,30.5,10.2,7.6,bouquet 1,0.47,630790,5
+BQ_RS_Pink_1,Single Rose Crochet Bouquet,Pink,0.16,30.5,10.2,7.6,bouquet 1,0.47,630790,5
+BQ_RS_Yellow_1,Single Rose Crochet Bouquet,Yellow,0.16,30.5,10.2,7.6,bouquet 1,0.47,630790,5
+BQ_RS_Red_3,Rose Trio Crochet Bouquet,Red,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_RS_Yellow_3,Rose Trio Crochet Bouquet,Yellow,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_RS_Mix_3,Rose Trio Crochet Bouquet,Mixed,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_RS_Red_2,Red Rose Duo Crochet Bouquet,,0.26,30.5,15.2,7.6,bouquet 2,0.71,630790,5
+BQ_TLP_Pink_1,Single Tulip Crochet Bouquet,Pink,0.16,30.5,10.2,7.6,bouquet 1,0.47,630790,5
+BQ_TLP_Blue_1,Single Tulip Crochet Bouquet,Blue,0.16,30.5,10.2,7.6,bouquet 1,0.47,630790,5
+BQ_TLP_Lvndr_1,Single Tulip Crochet Bouquet,Lavender,0.16,30.5,10.2,7.6,bouquet 1,0.47,630790,5
+BQ_TLP_White_1,Single Tulip Crochet Bouquet,White,0.16,30.5,10.2,7.6,bouquet 1,0.47,630790,5
+BQ_DSY_1,Single Daisy Crochet Bouquet,,0.16,30.5,10.2,7.6,bouquet 1,0.47,630790,5
+BQ_TLP_Blue_2_DSY_1,Blue Tulip Crochet Bouquet,Daisy,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_TLP_Blue_2_White_1,Blue Tulip Crochet Bouquet,White tulip,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_TLP_Blue_2_RS_Yellow_1,Blue Tulip Crochet Bouquet,Yellow rose,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_TLP_Blue_2_RS_Pink_1,Blue Tulip Crochet Bouquet,Pink rose,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_TLP_Pink_2_DSY_1,Pink Tulips & Daisy Crochet Bouquet,,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_TLP_Pink_2_Lvndr_1,Pastel Tulip Trio Crochet Bouquet,,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_SF_1_DSY_1_BEE_1,"Sunflower, Daisy & Bee Crochet Bouquet",,0.32,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_SF_1_RS_Red_1_Yellow_1,Sunflower & Roses Crochet Bouquet,,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+KC_SF_1,Sunflower Crochet Keychain,,0.07,12.7,10.2,7.6,small,0.2,630790,5
+KC_DSY_1,Daisy Flower Crochet Keychain,White,0.07,12.7,10.2,7.6,small,0.2,630790,5
+KC_DSY_Blue_1,Daisy Flower Crochet Keychain,Blue,0.07,12.7,10.2,7.6,small,0.2,630790,5
+KC_DSY_1_DSY_Blue_1,Daisy Flower Crochet Keychain,White + blue pair,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_Evil_1,Evil Eye Crochet Keychain,Single,0.07,12.7,10.2,7.6,small,0.2,630790,5
+KC_Evil_2,Evil Eye Crochet Keychain,Pair,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_Mor_1,Peacock Feather Crochet Keychain,,0.07,12.7,10.2,7.6,small,0.2,630790,5
+KC_BEE_1,Bumble Bee Crochet Keychain,Single,0.07,12.7,10.2,7.6,small,0.2,630790,5
+KC_BEE_2,Bumble Bee Crochet Keychain,Pair,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_CHK_1,Baby Chick Crochet Keychain,Single,0.07,12.7,10.2,7.6,small,0.2,630790,5
+KC_CHK_2,Baby Chick Crochet Keychain,Pair,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_SF_1_DSY_1,Sunflower & Daisy Keychain Set,,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_SF_1_Evil_1,Sunflower & Evil Eye Keychain Set,,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_Chick_1_Bee_1,Bee & Chick Keychain Pair,,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_SF_1_DSY_1_Evil_1,"Sunflower, Daisy & Evil Eye Keychain Set",,0.15,12.7,10.2,7.6,small,0.2,630790,5
+KC_OCTPS_2_Evil_1,Octopus Pair & Evil Eye Keychain Set,,0.15,12.7,10.2,7.6,small,0.2,630790,5
+KC_SF_1_Mor_1,Sunflower & Peacock Feather Keychain Set,,0.11,12.7,10.2,7.6,small,0.2,630790,5
+charm_pink_1,Lily of the Valley Crochet Bag Charm,Pink,0.07,12.7,10.2,7.6,small,0.2,630790,5
+charm_white_1,Lily of the Valley Crochet Bag Charm,White,0.07,12.7,10.2,7.6,small,0.2,630790,5
+lily_bag_charm_2,Lily of the Valley Crochet Bag Charm,Pink + white pair,0.11,12.7,10.2,7.6,small,0.2,630790,5
+POT_SF_1,Sunflower Crochet Flower Pot,,0.19,15.2,10.2,10.2,pot,0.31,630790,5
+POT_DAISY_01,Daisy Crochet Flower Pot,White,0.19,15.2,10.2,10.2,pot,0.31,630790,5
+POT_BLUE_DAISY_01,Daisy Crochet Flower Pot,Blue,0.19,15.2,10.2,10.2,pot,0.31,630790,5
+POT_DSY_Pink_1,Daisy Crochet Flower Pot,Pink,0.19,15.2,10.2,10.2,pot,0.31,630790,5
+HB+HC_BLUE_02,Blue Daisy Crochet Hair Set,Headband + clips,0.09,12.7,10.2,7.6,small,0.2,630790,5
+HB_BLUE,Blue Daisy Crochet Hair Set,Headband,0.07,12.7,10.2,7.6,small,0.2,630790,5
+HC_BLUE,Blue Daisy Crochet Hair Set,"Clips, pair",0.05,12.7,10.2,7.6,small,0.2,630790,5
+HB+CLIP+CLUTCHER_BLUE,Blue Daisy Crochet Hair Set,"Headband, clips + claw clip",0.12,12.7,10.2,7.6,small,0.2,630790,5
+HC_BLUE_02,"Crochet Flower Hair Clips, Pair",Blue,0.05,12.7,10.2,7.6,small,0.2,630790,5
+HC_PINK_02,"Crochet Flower Hair Clips, Pair",Pink,0.05,12.7,10.2,7.6,small,0.2,630790,5
+HC_WHITE_02,"Crochet Flower Hair Clips, Pair",White,0.05,12.7,10.2,7.6,small,0.2,630790,5
+HC_SF_02,"Crochet Flower Hair Clips, Pair",Sunflower,0.05,12.7,10.2,7.6,small,0.2,630790,5
+CTie_SF,Sunflower Crochet Curtain Tie-back,Single,0.07,12.7,10.2,7.6,small,0.2,630790,5
+CTie_SF_2,Sunflower Crochet Curtain Tie-back,Pack of 2,0.11,12.7,10.2,7.6,small,0.2,630790,5
+CTie_SF_4,Sunflower Crochet Curtain Tie-back,Pack of 4,0.19,12.7,10.2,7.6,small,0.2,630790,5
+BQ_SF_2_DSY_1,Sunflower Duo Crochet Bouquet,Daisy,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_SF_2_RS_Red_1,Sunflower Duo Crochet Bouquet,Red rose,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_SF_2_BEE_1,Sunflower Duo Crochet Bouquet,Bee,0.32,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_SF_1_DSY_1_RS_Red_1,"Sunflower, Daisy & Rose Crochet Bouquet",,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_SF_1_Rose_1_TLP_1,"Sunflower, Rose & Tulip Crochet Bouquet",,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+BQ_TLP_Blue_1_RS_Yellow_1_DSY_1,"Blue Tulip, Yellow Rose & Daisy Crochet Bouquet",,0.36,30.5,20.3,7.6,bouquet 3,0.94,630790,5
+KC_DSY_1_Evil_1,Daisy & Evil Eye Keychain Set,,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_DSY_1_Mor_1,Daisy & Peacock Feather Keychain Set,,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_Chick_1_DSY_1,Chick & Flower Keychain Pair,Daisy,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_SF_1_Chick_1,Chick & Flower Keychain Pair,Sunflower,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_OCTPS_Pink_1_DSY_Blue_1,Pink Octopus & Blue Daisy Keychain Pair,,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_SF_1_Charm_White_1,Sunflower Keychain & Lily Charm Set,White,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_SF_1_Charm_Pink_1_White_1,Sunflower Keychain & Lily Charm Set,Pink + white pair,0.15,12.7,10.2,7.6,small,0.2,630790,5
+KC_SF_1_DSY_1_DSY_Blue_1,Sunflower & Two Daisies Keychain Set,,0.15,12.7,10.2,7.6,small,0.2,630790,5
+KC_SF_1_DSY_Blue_1_Evil_1,"Sunflower, Blue Daisy & Evil Eye Keychain Set",,0.15,12.7,10.2,7.6,small,0.2,630790,5
+KC_SF_1_Evil_1_Octps_Pink_1,"Sunflower, Evil Eye & Octopus Keychain Set",,0.15,12.7,10.2,7.6,small,0.2,630790,5
+CLAW_ORANGE_WHITE_2,"Flower Crochet Claw Clips, Pair",,0.09,12.7,10.2,7.6,small,0.2,630790,5
+HB_SF_WHITE_2,"Flower Chain Crochet Headbands, Pair",,0.11,12.7,10.2,7.6,small,0.2,630790,5
+HC_TRICOLOUR_2,"Tricolour Crochet Hair Clips, Pair",,0.05,12.7,10.2,7.6,small,0.2,630790,5
+HC_White_Lvndr_2,"White & Lavender Flower Hair Clips, Pair",,0.05,12.7,10.2,7.6,small,0.2,630790,5
+HairPin_Mix_03,Little Heart Crochet Hair Pins,3 pairs,0.06,12.7,10.2,7.6,small,0.2,630790,5
+HairPin_Mix_05,Little Heart Crochet Hair Pins,5 pairs,0.08,12.7,10.2,7.6,small,0.2,630790,5
+HairPin_Mix_10,Little Heart Crochet Hair Pins,10 pairs,0.13,12.7,10.2,7.6,small,0.2,630790,5
+CLAW_SF_2,"Sunflower Crochet Claw Clips, Pair",,0.09,12.7,10.2,7.6,small,0.2,630790,5
+SCRUNCHY_CREAM_2,"Cream Crochet Scrunchies, Pair",,0.07,12.7,10.2,7.6,small,0.2,630790,5
+SF_SET_4,Sunflower Accessory Set,,0.14,12.7,10.2,7.6,small,0.2,630790,5
+KC_OCTPS_Pink_2,Octopus Crochet Keychain Pair,Pink + pink,0.11,12.7,10.2,7.6,small,0.2,630790,5
+KC_OCTPS_Pink_1_Blue_1,Octopus Crochet Keychain Pair,Pink + blue,0.11,12.7,10.2,7.6,small,0.2,630790,5
