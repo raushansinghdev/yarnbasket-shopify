@@ -1,0 +1,89 @@
+{%- doc -%}
+  One order's own page (docs/account-orders-plan.md, round 5): the account page with ?view=account-order, and the
+  order's name after the # (…#Order-1001). Liquid can't read which order the address asks for, so the shopper's
+  latest 20 orders are all here and CSS shows the one the address names (:target); it works without JavaScript.
+  With none named, or an order that isn't among the 20, a short note leads back to the account.
+  account-page.js names the browser tab after the order and moves focus to its heading.
+  Demo (the account-order-demo template with Demo content on): four made-up orders, the same as the demo account
+  page's cards. Remove with the other demo files before launch.
+
+  @param {boolean} [demo] - Show the made-up orders
+  @param {string} order_base - This page's address, without the order
+  @param {string} back_url - The account page's orders
+  @param {string} [help_base] - "https://wa.me/<number>?text=", when a WhatsApp number is set
+{%- enddoc -%}
+<div
+  class="section account account--order scheme-soft"
+  data-account-page
+  data-t-added-one="{{ 'account.added_one' | t }}"
+  data-t-added-other="{{ 'account.added_other' | t: count: 99 }}"
+  data-t-skipped-one="{{ 'account.skipped_one' | t }}"
+  data-t-skipped-other="{{ 'account.skipped_other' | t: count: 99 }}"
+  data-t-adding="{{ 'account.adding' | t }}"
+  data-t-view-cart="{{ 'account.view_cart' | t }}"
+  {% if demo %}data-demo{% endif %}
+>
+  <div class="order-views">
+    {%- if demo -%}
+      {%- capture demo_help -%}{%- if help_base -%}{{ help_base }}{{ 'account.help_message' | t: name: '#1050' | url_encode }}{%- else -%}/pages/contact{%- endif -%}{%- endcapture -%}
+      {%- capture demo_main -%}
+        <ul class="order-more__items" role="list">
+          <li class="order-more__item">
+            <span class="order-more__media media" aria-hidden="true"><img src="{{ 'demo-p1-a-600.webp' | asset_url }}" alt="" width="56" height="56" loading="lazy"></span>
+            <span class="order-more__name">Sunflower bouquet<span class="order-more__option">{{ 'account.quantity' | t: count: 1 }}</span></span>
+            <span class="order-more__price">{{ 49900 | money }}</span>
+          </li>
+          <li class="order-more__item">
+            <span class="order-more__media media" aria-hidden="true"><img src="{{ 'demo-p2-a-600.webp' | asset_url }}" alt="" width="56" height="56" loading="lazy"></span>
+            <span class="order-more__name">Bunny keychain<span class="order-more__option">Pink</span><span class="order-more__option">{{ 'account.quantity' | t: count: 2 }}</span></span>
+            <span class="order-more__price">{{ 'account.free' | t }}</span>
+          </li>
+        </ul>
+        <dl class="order-more__sums">
+          <div><dt>{{ 'account.subtotal' | t }}</dt><dd>{{ 49900 | money }}</dd></div>
+          <div><dt>{{ 'account.delivery' | t }}</dt><dd>{{ 'account.free' | t }}</dd></div>
+          <div class="order-more__total"><dt>{{ 'account.total' | t }}</dt><dd>{{ 49900 | money }}</dd></div>
+        </dl>
+      {%- endcapture -%}
+      {%- capture demo_side -%}
+        <div class="order-more__block">
+          <h2 class="order-more__label">{{ 'account.payment' | t }}</h2>
+          <p>{{ 'account.pay_paid' | t }}</p>
+        </div>
+        <div class="order-more__block">
+          <h2 class="order-more__label">{{ 'account.delivering_to' | t }}</h2>
+          <p>Sneha Sharma<br>12 Boring Road, Flat 3B<br>Patna 800001, Bihar<br>+91 98765 43210</p>
+        </div>
+      {%- endcapture -%}
+      {%- capture demo_tracked -%}
+        {{ demo_side }}
+        <div class="order-more__block">
+          <h2 class="order-more__label">{{ 'account.tracking' | t }}</h2>
+          <ul class="order-more__parcels" role="list"><li>Delhivery · <a href="https://www.delhivery.com/" rel="noopener" target="_blank">1234567890123<span class="visually-hidden"> ({{ 'accessibility.new_window' | t }})</span></a></li></ul>
+        </div>
+      {%- endcapture -%}
+      {%- assign demo_note = 'account.status_confirmed_note' | t -%}
+      {%- render 'account-order-view', name: '#1050', date: '2 Oct 2026', state: 'confirmed', note: demo_note, main: demo_main, side: demo_side, back_url: back_url, help_url: demo_help, help_new_tab: help_base -%}
+      {%- capture demo_note -%}{{ 'account.shipped_on' | t: date: '1 Oct' }} · Delhivery{%- endcapture -%}
+      {%- render 'account-order-view', name: '#1042', date: '30 Sep 2026', state: 'shipped', note: demo_note, track_url: 'https://www.delhivery.com/', main: demo_main, side: demo_tracked, back_url: back_url, help_url: demo_help, help_new_tab: help_base -%}
+      {%- capture demo_note -%}{{ 'account.shipped_on' | t: date: '13 Sep' }} · Blue Dart{%- endcapture -%}
+      {%- render 'account-order-view', name: '#1031', date: '12 Sep 2026', state: 'shipped', note: demo_note, buy: 'demo:1', main: demo_main, side: demo_tracked, back_url: back_url, help_url: demo_help, help_new_tab: help_base -%}
+      {%- capture demo_note -%}{{ 'account.shipped_on' | t: date: '2 Aug' }} · Delhivery{%- endcapture -%}
+      {%- render 'account-order-view', name: '#1012', date: '1 Aug 2026', state: 'shipped', note: demo_note, buy: 'demo:1', main: demo_main, side: demo_tracked, back_url: back_url, help_url: demo_help, help_new_tab: help_base -%}
+    {%- else -%}
+      {%- assign now = 'now' | date: '%s' | plus: 0 -%}
+      {%- for order in customer.orders limit: 20 -%}
+        {%- render 'account-order', order: order, as: 'page', now: now, order_base: order_base, back_url: back_url, help_base: help_base -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    <div class="order-none" data-order-none>
+      <a class="account__quiet-link account__back" href="{{ back_url }}">{%- render 'icon', icon: 'back' -%}{{ 'account.back_orders' | t }}</a>
+      <h1 class="account__title" tabindex="-1">{{ 'account.order_missing_title' | t }}</h1>
+      <p class="order-none__text">{{ 'account.order_missing_text' | t }}</p>
+      <a class="btn" href="{{ back_url }}">{{ 'account.back_orders' | t }}</a>
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'account-page.js' | asset_url }}" type="module"></script>

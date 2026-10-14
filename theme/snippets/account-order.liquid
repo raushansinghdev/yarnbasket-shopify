@@ -1,0 +1,131 @@
+{%- doc -%}
+  One real order, as a card on the account page or as its own page (docs/account-orders-plan.md, round 5). What the
+  order's state is, which shipment is the latest, whether its parcel can still be tracked and what can be bought
+  again are worked out here, once, so the card and the page can never disagree. The markup is in
+  snippets/account-order-card and account-order-view, which take plain values (the demo uses them too).
+  Liquid can't see deliveries, so neither ever claims "Delivered".
+
+  @param {object} order - The order
+  @param {string} as - 'card' or 'page'
+  @param {number} now - The time now, in seconds
+  @param {string} order_base - The order page's address, without the order ("/pages/account?view=account-order")
+  @param {string} [back_url] - The account page's orders (the page's way back)
+  @param {string} [help_base] - "https://wa.me/<number>?text=", when a WhatsApp number is set
+{%- enddoc -%}
+{%- liquid
+  assign first = order.line_items.first
+  assign image = blank
+  if first.image
+    assign image = first.image | image_url: width: 160, height: 160, crop: 'center'
+  endif
+  if order.line_items.size > 1
+    assign more = order.line_items.size | minus: 1
+    assign items = 'account.items_more' | t: title: first.title, count: more
+  else
+    assign items = first.title
+  endif
+
+  if order.cancelled
+    assign state = 'cancelled'
+  elsif order.financial_status == 'refunded'
+    assign state = 'refunded'
+  elsif order.fulfillment_status == 'fulfilled'
+    assign state = 'shipped'
+  elsif order.fulfillment_status == 'partial'
+    assign state = 'partial'
+  elsif order.financial_status == 'pending'
+    assign state = 'cod'
+  else
+    assign state = 'confirmed'
+  endif
+
+  # The latest shipment: its date, courier and tracking link (a link only for the first 14 days).
+  assign note = blank
+  assign track = blank
+  assign shipped_at = 0
+  for li in order.line_items
+    assign f = li.fulfillment
+    if f
+      assign at = f.created_at | date: '%s' | plus: 0
+      if at > shipped_at
+        assign shipped_at = at
+        assign company = f.tracking_company
+        assign track = f.tracking_url
+        assign shipped_on = f.created_at | date: '%-d %b'
+      endif
+    endif
+  endfor
+  if shipped_at > 0
+    assign note = 'account.shipped_on' | t: date: shipped_on
+    if company != blank
+      assign note = note | append: ' · ' | append: company
+    endif
+    assign age = now | minus: shipped_at
+    if age > 1209600
+      assign track = blank
+    endif
+  elsif state == 'confirmed' or state == 'cod'
+    assign note = 'account.status_confirmed_note' | t
+  endif
+
+  # Buy again: what's still for sale (never the free gift), once the order is done with.
+  assign buy = ''
+  assign skipped = 0
+  if track == blank and state != 'confirmed' and state != 'cod'
+    for li in order.line_items
+      if li.variant == blank or li.product == blank
+        continue
+      endif
+      if li.product.tags contains 'free-gift' or li.product.id == settings.gift_product.id
+        continue
+      endif
+      if li.variant.available
+        assign buy = buy | append: ',' | append: li.variant.id | append: ':' | append: li.quantity
+      else
+        assign skipped = skipped | plus: 1
+      endif
+    endfor
+    assign buy = buy | remove_first: ','
+  endif
+
+  if help_base
+    assign help_url = 'account.help_message' | t: name: order.name | url_encode | prepend: help_base
+  else
+    assign help_url = order.name | remove: '#' | url_encode | prepend: '/pages/contact?topic=order&order=' | append: '#ContactForm'
+  endif
+  assign ordered_on = order.created_at | date: '%-d %b %Y'
+  assign order_url = order.name | handleize | prepend: '#Order-' | prepend: order_base
+-%}
+{%- if as == 'page' -%}
+  {%- capture main -%}{%- render 'account-order-details', order: order, part: 'main' -%}{%- endcapture -%}
+  {%- capture side -%}{%- render 'account-order-details', order: order, part: 'side' -%}{%- endcapture -%}
+  {%- render 'account-order-view',
+    name: order.name,
+    date: ordered_on,
+    state: state,
+    note: note,
+    track_url: track,
+    buy: buy,
+    skipped: skipped,
+    main: main,
+    side: side,
+    back_url: back_url,
+    help_url: help_url,
+    help_new_tab: help_base
+  -%}
+{%- else -%}
+  {%- render 'account-order-card',
+    name: order.name,
+    date: ordered_on,
+    state: state,
+    note: note,
+    image: image,
+    items: items,
+    track_url: track,
+    buy: buy,
+    skipped: skipped,
+    details_url: order_url,
+    help_url: help_url,
+    help_new_tab: help_base
+  -%}
+{%- endif -%}

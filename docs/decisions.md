@@ -2,6 +2,26 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-14 (an order has its own page; "Edit your details" may move to our theme, docs/account-orders-plan.md round 5)
+
+- **An order's details are a page of their own** (`/pages/account?view=account-order#Order-1001`), not a row that opens on the card (Raushan: there is a lot to show: pieces, payment, address, tracking). This replaces "Order details opens on the order card" in the entry below. The card gets "View order".
+- **One template holds the latest 20 orders and shows the one the address names.** Liquid can't read `?order=` from an address, and this works without JavaScript.
+- **The card and the page get an order's state from one snippet** (`account-order`), so they can't disagree.
+- **Correction:** our own profile editing does not have to mean a hosted app and a server, as the entry below says. Shopify's Customer Account API accepts a browser-only "public" client. It is unproven on our store, so it starts with a proof (plan, B0) that needs the free Headless channel set up by Raushan. If the proof fails, "Edit your details" keeps opening Shopify's page.
+
+## 2026-10-13 (orders live on our own account page, docs/account-orders-plan.md)
+
+Raushan landed on Shopify's Orders and Profile pages and called the different address, layout and feel a serious issue.
+
+- **Orders are shown in full in our theme.** "Order details" opens on the order card (pieces, amounts, address, tracking), and earlier orders open on the same page. This replaces "Details opens Shopify's order page" and "All orders" from 2026-10-02 and 2026-10-03.
+- **Still Shopify's, because no theme can host them:** the sign-in code page, "Edit your details" (Profile), and the order link in emails and on the Thank-you page (the only order page a guest can open). Their fix is the look and, at launch, `account.yarnbasket.in`.
+- **Not chosen:** styling only (the links would still leave); our own profile editing (a separate hosted app on the Customer Account API: weeks of work and a server to secure).
+- **Sign-in links use `routes.storefront_login_url`,** which returns the shopper to the page they were on instead of Shopify's Orders page.
+- **Past 20 orders, one link goes to Shopify's list.** Paging can't be tested without a real sign-in, and that many orders is rare.
+- **Amounts in Order details are the order's own figures,** never recalculated.
+- **Admin change (Claude, Admin API, 2026-10-13):** `customer-account-main-menu` is now Your account (`/pages/account`), Profile, Saved, Help. Orders was removed. Read back from the store.
+- **Check 13** fails if a link on the signed-in page, other than "Edit your details", goes to Shopify's account pages.
+
 ## 2026-10-13 (Razorpay connected in Shopify; first test order through the backup checkout)
 
 - **Razorpay is in Shopify's checkout** as "01 Cards, UPI, NB, Wallets by Razorpay" (Settings → Payments → More ways to pay), capture Automatic, test mode on while the store is on the Development plan. Inside Shiprocket Checkout it waits on Shiprocket's team: Raushan found no place to enter the keys and sent them the details (not the keys).

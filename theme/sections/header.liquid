@@ -241,7 +241,7 @@
         <li style="--i: {{ i }}">
           {%- assign account_page = pages['account'].url -%}
           <a
-            {% if customer %}href="{{ account_page | default: routes.account_url }}"{% if account_page and request.path == account_page %} aria-current="page"{% endif %}{% else %}href="{{ routes.account_url }}" data-account-open{% endif %}
+            {% if customer %}href="{{ account_page | default: routes.account_url }}"{% if account_page and request.path == account_page %} aria-current="page"{% endif %}{% else %}href="{{ routes.storefront_login_url | default: routes.account_url }}" data-account-open{% endif %}
             class="drawer__account"
           >
             {%- if customer -%}

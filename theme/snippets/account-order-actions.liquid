@@ -1,0 +1,43 @@
+{%- doc -%}
+  An order's buttons, on its card and on its own page (docs/account-hub-plan.md §4.2), at most two, by its state:
+  - on its way, with a courier link: Track parcel + Need help?
+  - shipped earlier, cancelled or refunded: Buy again (when something in it is still for sale) + Need help?
+  - confirmed, not shipped yet: Need help?
+  Buy again is a real form (/cart/add); account-page.js adds without leaving the page and says so in the line below.
+
+  @param {string} name - "#1042"
+  @param {string} [track_url] - The courier's tracking page, while it's on its way
+  @param {string} [buy] - The pieces still for sale, as "variant_id:qty,variant_id:qty"
+  @param {number} [skipped] - How many pieces are sold out (left out of Buy again)
+  @param {string} help_url - WhatsApp (prefilled with the order number) or the contact page
+  @param {boolean} [help_new_tab] - true when help_url is WhatsApp
+{%- enddoc -%}
+<div class="order-card__actions">
+  {%- if track_url != blank -%}
+    <a class="btn order-card__btn" href="{{ track_url }}" rel="noopener" target="_blank">
+      {%- render 'icon', icon: 'truck' -%}
+      {{- 'account.track_parcel' | t -}}
+      <span class="visually-hidden">, {{ 'account.for_order' | t: name: name }} ({{ 'accessibility.new_window' | t }})</span>
+    </a>
+  {%- elsif buy != blank -%}
+    {%- assign pairs = buy | split: ',' -%}
+    <form class="order-card__form" action="{{ routes.cart_add_url }}" method="post" data-buy-again data-skipped="{{ skipped | default: 0 }}">
+      {%- for pair in pairs -%}
+        {%- assign bits = pair | split: ':' -%}
+        <input type="hidden" name="items[][id]" value="{{ bits[0] }}">
+        <input type="hidden" name="items[][quantity]" value="{{ bits[1] }}">
+      {%- endfor -%}
+      <button type="submit" class="btn order-card__btn">
+        {%- render 'icon', icon: 'replace' -%}
+        <span data-buy-label>{{ 'account.buy_again' | t }}</span>
+        <span class="visually-hidden">, {{ 'account.for_order' | t: name: name }}</span>
+      </button>
+    </form>
+  {%- endif -%}
+  <a class="btn btn--ghost order-card__btn" href="{{ help_url }}" {% if help_new_tab %}rel="noopener" target="_blank"{% endif %}>
+    {%- render 'icon', icon: 'whatsapp' -%}
+    {{- 'account.need_help' | t -}}
+    <span class="visually-hidden"> {{ 'account.for_order' | t: name: name }}{% if help_new_tab %} ({{ 'accessibility.new_window' | t }}){% endif %}</span>
+  </a>
+</div>
+<p class="order-card__added" data-buy-note role="status"></p>

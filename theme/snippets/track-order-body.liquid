@@ -6,6 +6,13 @@
 {%- liquid
   assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
   assign last = customer.last_order
+  # Orders are in our own theme: the list on the account page, each order on its own page (snippets/account-order-page).
+  assign orders_url = pages['account'].url | append: '#orders'
+  assign last_url = last.name | handleize | prepend: '?view=account-order#Order-' | prepend: pages['account'].url
+  if pages['account'].url == blank
+    assign orders_url = routes.account_url
+    assign last_url = last.customer_url | default: routes.account_url
+  endif
 -%}
 <div class="section track scheme-soft">
   <div class="track__inner">
@@ -16,7 +23,7 @@
       <p class="track__lead">{{ 'track.lead_in' | t }}</p>
       {%- if last -%}
         {%- assign first_item = last.line_items.first -%}
-        <a class="track-order" href="{{ last.customer_url | default: routes.account_url }}">
+        <a class="track-order" href="{{ last_url }}">
           <span class="track-order__media media">
             {%- if first_item.image -%}
               {{ first_item.image | image_url: width: 160 | image_tag: loading: 'lazy', alt: '' }}
@@ -32,10 +39,10 @@
           <span class="track-order__go">{{ 'track.track' | t }}{%- render 'icon', icon: 'arrow' -%}</span>
         </a>
       {%- endif -%}
-      <a class="btn track__btn" href="{{ routes.account_url }}">{{ 'track.see_orders' | t }}</a>
+      <a class="btn track__btn" href="{{ orders_url }}">{{ 'track.see_orders' | t }}</a>
     {%- else -%}
       <p class="track__lead">{{ 'track.lead_out' | t }}</p>
-      <a class="btn track__btn" href="{{ routes.account_login_url }}">{{ 'track.sign_in' | t }}</a>
+      <a class="btn track__btn" href="{{ routes.storefront_login_url | default: routes.account_login_url }}">{{ 'track.sign_in' | t }}</a>
       <p class="track__aside">{{ 'track.or_email' | t }}</p>
     {%- endif -%}
 

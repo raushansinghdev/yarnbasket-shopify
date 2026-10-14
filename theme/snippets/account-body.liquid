@@ -1,8 +1,10 @@
 {%- doc -%}
   "Your account" (docs/account-hub-plan.md §4), on a page using the "account" template (or any page with the handle
-  "account"). One scrolling page in the store's own look; Shopify's hosted pages are only for editing details and an
-  order's full page.
-  Signed in: greeting, shortcuts (phones), the latest 3 orders, Saved and Recently viewed (filled by account-page.js
+  "account"). One scrolling page in the store's own look; Shopify's hosted pages are only for editing details.
+  Orders stay in our theme (docs/account-orders-plan.md): the latest 3 cards, the earlier ones behind "N earlier
+  orders" (20 in all; past that, one quiet link to Shopify's list). "View order" opens the order's own page: this
+  page with ?view=account-order#Order-1001 (snippets/account-order-page).
+  Signed in: greeting, shortcuts (phones), the orders, Saved and Recently viewed (filled by account-page.js
   from this browser; Recently viewed can be cleared), Your details, Sign out, and
   "Download or delete my data". Help isn't repeated here (docs/decisions.md, 2026-10-08): the phones' Help shortcut
   goes to the Contact page, and each order card has its own "Need help?".
@@ -14,7 +16,7 @@
   the layout can be judged and tested without a real sign-in. Remove with the other demo files before launch.
 
   @param {boolean} [demo] - Show the signed-in page with demo data when nobody is signed in
-  @param {string} [view] - 'details' for the Your details page (signed in only; otherwise the account page)
+  @param {string} [view] - 'details' for the Your details page, 'order' for one order's page (signed in only; otherwise the account page)
 {%- enddoc -%}
 {%- liquid
   assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
@@ -67,9 +69,16 @@
   if signed_in and view == 'details'
     assign show_details = true
   endif
+  # An order's own page is this page with another template too; the address's #Order-1001 says which order.
+  assign show_order = false
+  if signed_in and view == 'order'
+    assign show_order = true
+  endif
+  assign order_base = pages['account'].url | default: request.path | append: '?view=account-order'
   if is_demo
     assign home_url = request.path | append: '?view=account-demo'
     assign details_page = request.path | append: '?view=account-details-demo'
+    assign order_base = request.path | append: '?view=account-order-demo'
   else
     assign home_url = pages['account'].url
     assign details_page = home_url | default: request.path | append: '?view=account-details'
@@ -112,6 +121,9 @@
     {{ out_block }}
   </div>
 </div>
+{%- elsif show_order -%}
+  {%- assign orders_url = home_url | append: '#orders' -%}
+  {%- render 'account-order-page', demo: is_demo, order_base: order_base, back_url: orders_url, help_base: help_base -%}
 {%- else -%}
 <div
   class="section account scheme-soft{% unless signed_in %} account--out{% endunless %}"
@@ -154,7 +166,7 @@
         <h1 class="account__title" tabindex="-1" data-account-title>{{ 'account.title_out' | t }}</h1>
         <p class="account__lead">{{ 'account.lead_out' | t }}</p>
         <p class="account__signin">
-          <a class="btn" href="{{ routes.account_login_url }}" data-account-open>{{ 'account.sign_in' | t }}</a>
+          <a class="btn" href="{{ routes.storefront_login_url | default: routes.account_login_url }}" data-account-open>{{ 'account.sign_in' | t }}</a>
           <span class="account__signin-links">
             {%- if track_url -%}
               <a class="account__quiet-link" href="{{ track_url }}">{{ 'account.track_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
@@ -170,128 +182,66 @@
         <section class="account__block" id="orders" aria-labelledby="AccountOrders" tabindex="-1" data-arrive>
           <div class="account__head">
             <h2 class="account__h2" id="AccountOrders">{{ 'account.orders_title' | t }}</h2>
-            {%- if order_count > 0 -%}
-              <a class="account__see-all" href="{{ routes.account_url }}">{{ 'account.all_orders' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
-            {%- endif -%}
           </div>
 
           {%- if is_demo -%}
             <div class="account__orders">
               {%- capture demo_help -%}{%- if help_base -%}{{ help_base }}{{ 'account.help_message' | t: name: '#1050' | url_encode }}{%- else -%}/pages/contact{%- endif -%}{%- endcapture -%}
+              {%- liquid
+                assign demo_1050 = order_base | append: '#Order-1050'
+                assign demo_1042 = order_base | append: '#Order-1042'
+                assign demo_1031 = order_base | append: '#Order-1031'
+                assign demo_1012 = order_base | append: '#Order-1012'
+              -%}
               {%- assign demo_note = 'account.status_confirmed_note' | t -%}
               {%- assign demo_image = 'demo-p3-a-600.webp' | asset_url -%}
-              {%- render 'account-order-card', name: '#1050', date: '2 Oct 2026', state: 'confirmed', note: demo_note, image: demo_image, items: 'Lavender bunch', details_url: '#orders', help_url: demo_help, help_new_tab: help_base -%}
+              {%- render 'account-order-card', name: '#1050', date: '2 Oct 2026', state: 'confirmed', note: demo_note, image: demo_image, items: 'Lavender bunch', details_url: demo_1050, help_url: demo_help, help_new_tab: help_base -%}
               {%- capture demo_note -%}{{ 'account.shipped_on' | t: date: '1 Oct' }} · Delhivery{%- endcapture -%}
               {%- assign demo_image = 'demo-p1-a-600.webp' | asset_url -%}
-              {%- render 'account-order-card', name: '#1042', date: '30 Sep 2026', state: 'shipped', note: demo_note, image: demo_image, items: 'Sunflower bouquet + 1 more', track_url: 'https://www.delhivery.com/', details_url: '#orders', help_url: demo_help, help_new_tab: help_base -%}
+              {%- render 'account-order-card', name: '#1042', date: '30 Sep 2026', state: 'shipped', note: demo_note, image: demo_image, items: 'Sunflower bouquet + 1 more', track_url: 'https://www.delhivery.com/', details_url: demo_1042, help_url: demo_help, help_new_tab: help_base -%}
               {%- capture demo_note -%}{{ 'account.shipped_on' | t: date: '13 Sep' }} · Blue Dart{%- endcapture -%}
               {%- assign demo_image = 'demo-p2-a-600.webp' | asset_url -%}
-              {%- render 'account-order-card', name: '#1031', date: '12 Sep 2026', state: 'shipped', note: demo_note, image: demo_image, items: 'Bunny keychain', buy: 'demo:1', details_url: '#orders', help_url: demo_help, help_new_tab: help_base -%}
+              {%- render 'account-order-card', name: '#1031', date: '12 Sep 2026', state: 'shipped', note: demo_note, image: demo_image, items: 'Bunny keychain', buy: 'demo:1', details_url: demo_1031, help_url: demo_help, help_new_tab: help_base -%}
             </div>
+            <details class="account__earlier" data-earlier>
+              <summary>{{ 'account.earlier_orders' | t: count: 1 }}{%- render 'icon', icon: 'chevron' -%}</summary>
+              <div class="account__orders">
+                {%- capture demo_note -%}{{ 'account.shipped_on' | t: date: '2 Aug' }} · Delhivery{%- endcapture -%}
+                {%- render 'account-order-card', name: '#1012', date: '1 Aug 2026', state: 'shipped', note: demo_note, image: demo_image, items: 'Bunny keychain', buy: 'demo:1', details_url: demo_1012, help_url: demo_help, help_new_tab: help_base -%}
+              </div>
+            </details>
           {%- elsif customer.orders.size > 0 -%}
-            <div class="account__orders">
-              {%- assign now = 'now' | date: '%s' | plus: 0 -%}
-              {%- for order in customer.orders limit: 3 -%}
-                {%- liquid
-                  assign first = order.line_items.first
-                  assign image = blank
-                  if first.image
-                    assign image = first.image | image_url: width: 160, height: 160, crop: 'center'
-                  endif
-                  if order.line_items.size > 1
-                    assign more = order.line_items.size | minus: 1
-                    assign items = 'account.items_more' | t: title: first.title, count: more
-                  else
-                    assign items = first.title
-                  endif
-
-                  if order.cancelled
-                    assign state = 'cancelled'
-                  elsif order.financial_status == 'refunded'
-                    assign state = 'refunded'
-                  elsif order.fulfillment_status == 'fulfilled'
-                    assign state = 'shipped'
-                  elsif order.fulfillment_status == 'partial'
-                    assign state = 'partial'
-                  elsif order.financial_status == 'pending'
-                    assign state = 'cod'
-                  else
-                    assign state = 'confirmed'
-                  endif
-
-                  # The latest shipment: its date, courier and tracking link (a link only for the first 14 days).
-                  assign note = blank
-                  assign track = blank
-                  assign shipped_at = 0
-                  for li in order.line_items
-                    assign f = li.fulfillment
-                    if f
-                      assign at = f.created_at | date: '%s' | plus: 0
-                      if at > shipped_at
-                        assign shipped_at = at
-                        assign company = f.tracking_company
-                        assign track = f.tracking_url
-                        assign shipped_on = f.created_at | date: '%-d %b'
-                      endif
-                    endif
-                  endfor
-                  if shipped_at > 0
-                    assign note = 'account.shipped_on' | t: date: shipped_on
-                    if company != blank
-                      assign note = note | append: ' · ' | append: company
-                    endif
-                    assign age = now | minus: shipped_at
-                    if age > 1209600
-                      assign track = blank
-                    endif
-                  elsif state == 'confirmed' or state == 'cod'
-                    assign note = 'account.status_confirmed_note' | t
-                  endif
-
-                  # Buy again: what's still for sale (never the free gift), once the order is done with.
-                  assign buy = ''
-                  assign skipped = 0
-                  if track == blank and state != 'confirmed' and state != 'cod'
-                    for li in order.line_items
-                      if li.variant == blank or li.product == blank
-                        continue
-                      endif
-                      if li.product.tags contains 'free-gift' or li.product.id == settings.gift_product.id
-                        continue
-                      endif
-                      if li.variant.available
-                        assign buy = buy | append: ',' | append: li.variant.id | append: ':' | append: li.quantity
-                      else
-                        assign skipped = skipped | plus: 1
-                      endif
-                    endfor
-                    assign buy = buy | remove_first: ','
-                  endif
-
-                  if help_base
-                    assign help_url = 'account.help_message' | t: name: order.name | url_encode | prepend: help_base
-                  else
-                    assign help_url = order.name | remove: '#' | url_encode | prepend: '/pages/contact?topic=order&order=' | append: '#ContactForm'
-                  endif
-                  assign ordered_on = order.created_at | date: '%-d %b %Y'
-                  assign order_url = order.customer_url | default: routes.account_url
-                -%}
-                {%- render 'account-order-card',
-                  name: order.name,
-                  date: ordered_on,
-                  state: state,
-                  note: note,
-                  image: image,
-                  items: items,
-                  track_url: track,
-                  buy: buy,
-                  skipped: skipped,
-                  details_url: order_url,
-                  help_url: help_url,
-                  help_new_tab: help_base
-                -%}
-              {%- endfor -%}
-            </div>
+            {%- comment -%} The latest 3 show; orders 4 to 20 wait behind "Show earlier orders". {%- endcomment -%}
+            {%- liquid
+              assign shown = customer.orders.size | at_most: 20
+              assign earlier = shown | minus: 3
+            -%}
+            {%- liquid
+              assign now = 'now' | date: '%s' | plus: 0
+              assign latest_cards = ''
+              assign earlier_cards = ''
+            -%}
+            {%- for order in customer.orders limit: 20 -%}
+              {%- capture card -%}{%- render 'account-order', order: order, as: 'card', now: now, order_base: order_base, help_base: help_base -%}{%- endcapture -%}
+              {%- liquid
+                if forloop.index <= 3
+                  assign latest_cards = latest_cards | append: card
+                else
+                  assign earlier_cards = earlier_cards | append: card
+                endif
+              -%}
+            {%- endfor -%}
+            <div class="account__orders">{{ latest_cards }}</div>
+            {%- if earlier > 0 -%}
+              <details class="account__earlier" data-earlier>
+                <summary>{{ 'account.earlier_orders' | t: count: earlier }}{%- render 'icon', icon: 'chevron' -%}</summary>
+                <div class="account__orders">{{ earlier_cards }}</div>
+              </details>
+            {%- endif -%}
+            {%- comment -%} Past 20 orders the rest are on Shopify's own list: rare, and better than hiding them. {%- endcomment -%}
+            {%- if order_count > 20 -%}
+              <a class="account__quiet-link account__older" href="{{ routes.account_url }}">{{ 'account.older_orders' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
+            {%- endif -%}
           {%- else -%}
             {%- liquid
               assign picks = collections['bestsellers'].products | where: 'available'
@@ -469,7 +419,10 @@
 
   .account__orders { display: grid; gap: var(--space-4); }
   .order-card { display: grid; gap: var(--space-4); padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--white); }
-  .order-card__top { display: grid; grid-template-columns: 80px minmax(0, 1fr) auto; gap: var(--space-4); align-items: start; }
+  /* "View order" sits in the corner beside the order's name; only the name makes room for it, so the lines under
+     it keep the card's full width on a phone. */
+  .order-card__top { position: relative; display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: var(--space-4); align-items: start; }
+  .order-card__name { padding-right: 7.25rem; }
   .order-card__media { --ratio: 1; border-radius: var(--radius-sm); background: var(--oat); }
   .order-card__text { display: grid; gap: 2px; min-width: 0; }
   .order-card__name { font-family: var(--font-sans); font-style: normal; font-size: 1rem; font-weight: 500; line-height: 1.4; color: var(--color-heading); }
@@ -498,6 +451,9 @@
   .order-card__btn { min-height: var(--tap); padding-inline: var(--space-4); font-size: .9375rem; }
   .order-card__btn[aria-busy="true"] { opacity: .7; }
   .order-card__details {
+    position: absolute;
+    top: 0;
+    right: 0;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -513,12 +469,35 @@
   }
   .order-card__details .icon { width: 16px; height: 16px; transition: transform var(--dur-panel) var(--ease-out); }
   @media (hover: hover) { .order-card__details:hover .icon { transform: translateX(3px); } }
+  /* "N earlier orders": a quiet pill that opens the rest in place; the arrow turns when open. */
+  .account__earlier { margin-top: var(--space-4); }
+  .account__earlier > summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    min-height: var(--tap);
+    padding-inline: var(--space-4);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--white);
+    color: var(--color-heading);
+    font-size: var(--fs-small);
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+  }
+  .account__earlier > summary::-webkit-details-marker { display: none; }
+  .account__earlier > summary .icon { width: 20px; height: 20px; transition: rotate var(--dur-panel) var(--ease-out); }
+  .account__earlier[open] > summary .icon { rotate: 180deg; }
+  .account__earlier[open] > summary { margin-bottom: var(--space-4); }
+  .account__older { margin-top: var(--space-2); }
   .order-card__added { font-size: var(--fs-small); color: var(--color-heading); }
   .order-card__added:empty { display: none; }
   .order-card__added a { color: inherit; text-decoration-color: var(--rose); text-underline-offset: 3px; }
   /* Phones: the buttons share the row equally, so every card lines up the same way. */
   @media (max-width: 599px) {
-    .order-card__top { grid-template-columns: 64px minmax(0, 1fr) auto; gap: var(--space-3); }
+    .order-card__top { grid-template-columns: 64px minmax(0, 1fr); gap: var(--space-3); }
     .order-card__actions .order-card__btn { flex: 1 1 0; padding-inline: var(--space-3); }
   }
 

@@ -73,7 +73,7 @@
 
   {%- unless customer -%}
     <p class="saved__signin" data-saved-signin hidden>
-      <a class="saved__signin-link" href="{{ routes.account_url }}" data-account-open>
+      <a class="saved__signin-link" href="{{ routes.storefront_login_url | default: routes.account_url }}" data-account-open>
         {%- render 'icon', icon: 'account' -%}<span>{{ 'saved.sign_in_hint' | t }}</span>{%- render 'icon', icon: 'arrow' -%}
       </a>
     </p>

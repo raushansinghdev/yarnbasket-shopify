@@ -1,0 +1,102 @@
+{%- doc -%}
+  One order as its own page (docs/account-orders-plan.md, round 5): its name, date and state, the same buttons as its
+  card, then what's in it and what it cost, how it was paid, where it's going and its tracking.
+  snippets/account-order-page renders one of these per order and shows only the one the address names (#Order-1001).
+  Takes plain values and ready HTML, so the demo uses it too.
+
+  @param {string} name - "#1042"
+  @param {string} date - The order date, already formatted
+  @param {string} state - confirmed, cod, shipped, partial, cancelled or refunded
+  @param {string} [note] - A second line under the state ("Shipped 3 Oct · Delhivery")
+  @param {string} [track_url] - The courier's tracking page, while it's on its way
+  @param {string} [buy] - The pieces still for sale, as "variant_id:qty,variant_id:qty"
+  @param {number} [skipped] - How many pieces are sold out (left out of Buy again)
+  @param {string} main - The pieces and the amounts, as HTML (snippets/account-order-details, part 'main')
+  @param {string} [side] - Payment, address and tracking, as HTML (part 'side')
+  @param {string} back_url - The account page's orders
+  @param {string} help_url - WhatsApp (prefilled with the order number) or the contact page
+  @param {boolean} [help_new_tab] - true when help_url is WhatsApp
+{%- enddoc -%}
+{%- liquid
+  assign label_key = 'account.status_' | append: state
+  assign tone = 'wait'
+  case state
+    when 'shipped', 'partial'
+      assign tone = 'go'
+    when 'cancelled', 'refunded'
+      assign tone = 'stop'
+  endcase
+  assign id = name | handleize | prepend: 'Order-'
+  assign title = 'account.order' | t: name: name
+-%}
+<article class="order-view" id="{{ id }}" aria-labelledby="{{ id }}-name" data-order-view data-title="{{ title | escape }}">
+  <a class="account__quiet-link account__back" href="{{ back_url }}">{%- render 'icon', icon: 'back' -%}{{ 'account.back_orders' | t }}</a>
+  <header class="order-view__head">
+    <h1 class="account__title" id="{{ id }}-name" tabindex="-1">{{ title }}</h1>
+    <p class="order-view__date">{{ 'account.ordered_on' | t: date: date }}</p>
+    <p class="order-card__state order-card__state--{{ tone }}">
+      {%- case tone -%}
+        {%- when 'go' -%}{%- render 'icon', icon: 'truck' -%}
+        {%- when 'stop' -%}{%- render 'icon', icon: 'close' -%}
+        {%- else -%}{%- render 'icon', icon: 'check' -%}
+      {%- endcase -%}
+      {{- label_key | t -}}
+    </p>
+    {%- if note != blank -%}<p class="order-card__note">{{ note }}</p>{%- endif -%}
+  </header>
+  <div class="order-view__actions">
+    {%- render 'account-order-actions', name: name, track_url: track_url, buy: buy, skipped: skipped, help_url: help_url, help_new_tab: help_new_tab -%}
+  </div>
+  <div class="order-view__grid">
+    <section class="order-view__box order-more" aria-labelledby="{{ id }}-in">
+      <h2 class="order-view__h2" id="{{ id }}-in">{{ 'account.in_order' | t }}</h2>
+      {{ main }}
+    </section>
+    {%- if side != blank -%}
+      <div class="order-view__box order-view__side order-more">{{ side }}</div>
+    {%- endif -%}
+  </div>
+</article>
+
+{% stylesheet %}
+  /* Only the order the address names is shown; with none named (or one we don't have), the "couldn't find" note. */
+  .order-view { display: none; gap: var(--space-5); }
+  .order-view:target { display: grid; }
+  .order-views:has(.order-view:target) .order-none { display: none; }
+  .order-views { display: grid; max-width: 62rem; }
+  .order-none { display: grid; justify-items: start; gap: var(--space-3); max-width: 34rem; }
+  .order-none__text { color: var(--color-ink); font-size: var(--fs-lead); line-height: 1.5; }
+
+  .order-view .account__back { justify-self: start; margin-bottom: calc(var(--space-4) * -1); }
+  .order-view__head { display: grid; justify-items: start; gap: var(--space-1); }
+  .order-view__head .account__title:focus { outline: none; }
+  .order-view__date { color: var(--color-muted); font-size: var(--fs-small); }
+  .order-view__head .order-card__state { margin-top: var(--space-2); }
+  .order-view__actions { display: grid; gap: var(--space-2); }
+  .order-view__grid { display: grid; gap: var(--space-4); align-items: start; }
+  @media (min-width: 900px) { .order-view__grid { grid-template-columns: minmax(0, 1fr) minmax(17rem, 21rem); gap: var(--space-5); } }
+  .order-view__box { padding: var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--white); }
+  @media (max-width: 599px) { .order-view__box { padding: var(--space-4); } }
+  .order-view__h2 { font-size: var(--fs-h3); }
+  .order-view__side { gap: var(--space-5); }
+
+  .order-more { display: grid; gap: var(--space-4); font-size: .9375rem; color: var(--color-ink); }
+  .order-more__items { display: grid; gap: var(--space-3); }
+  .order-more__item { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; }
+  .order-more__media { --ratio: 1; border-radius: var(--radius-sm); background: var(--oat); }
+  .order-more__name { display: grid; gap: 1px; min-width: 0; overflow-wrap: anywhere; color: var(--color-heading); font-weight: 500; }
+  .order-more__name a { color: inherit; text-decoration-color: var(--rose); text-underline-offset: 3px; }
+  .order-more__option { color: var(--color-muted); font-size: var(--fs-small); font-weight: 400; }
+  .order-more__price { text-align: right; white-space: nowrap; color: var(--color-heading); }
+  .order-more__price s { margin-right: 4px; color: var(--color-muted); }
+  .order-more__sums { display: grid; gap: var(--space-2); padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
+  .order-more__sums > div { display: flex; justify-content: space-between; gap: var(--space-4); }
+  .order-more__sums dt { color: var(--color-muted); }
+  .order-more__sums dd { margin: 0; text-align: right; color: var(--color-heading); }
+  .order-more__total { margin-top: var(--space-2); padding-top: var(--space-3); border-top: 1px solid var(--color-line); font-size: 1.0625rem; font-weight: 500; }
+  .order-more .order-more__total dt { color: var(--color-heading); }
+  .order-more__block { display: grid; gap: 2px; }
+  .order-more__label { font-family: var(--font-sans); font-style: normal; font-size: var(--fs-small); font-weight: 500; line-height: 1.4; color: var(--color-muted); }
+  .order-more__block p, .order-more__parcels { color: var(--color-heading); overflow-wrap: anywhere; }
+  .order-more__parcels a { color: inherit; text-decoration-color: var(--rose); text-underline-offset: 3px; }
+{% endstylesheet %}

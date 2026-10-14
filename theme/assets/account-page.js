@@ -1,7 +1,7 @@
 /*
   Yarn Basket · account-page.js (docs/account-hub-plan.md §4)
   The account page: the Saved and Recently viewed rows (this browser's lists, kept by saved.js; Recently viewed can be
-  cleared), and Buy again on an order card (adds what's still for sale through cart.js's queue, then says so in the
+  cleared), an order's own page (the tab's name and focus), and Buy again on an order card or page (adds what's still for sale through cart.js's queue, then says so in the
   card). Without it the rows stay hidden and Buy again is a plain /cart/add form.
 */
 
@@ -60,6 +60,20 @@ if (page) {
     });
   }
 
+  /* ---------- An order's own page: the address names the order (#Order-1001) and CSS shows it (:target) ----------
+     Here the browser tab is named after it. If the address changes to another order without a page load, focus goes
+     to the new heading (a fresh page starts at the top by itself). */
+  if (page.querySelector('[data-order-view], [data-order-none]')) {
+    const site = document.title;
+    const shown = () => (/^#Order-[\w-]+$/.test(location.hash) ? page.querySelector(`${location.hash}[data-order-view]`) : null);
+    const name = () => (document.title = shown() ? `${shown().dataset.title} · ${site}` : site);
+    name();
+    window.addEventListener('hashchange', () => {
+      name();
+      (shown() || page.querySelector('[data-order-none]')).querySelector('h1').focus();
+    });
+  }
+
   /* ---------- Buy again ----------
      Capture phase, so this runs before cart.js's own Add to cart (which only knows one-item product forms). */
   document.addEventListener(
@@ -70,7 +84,7 @@ if (page) {
       event.preventDefault();
       const button = form.querySelector('[type="submit"]');
       const label = form.querySelector('[data-buy-label]');
-      const note = form.closest('.order-card').querySelector('[data-buy-note]');
+      const note = form.closest('[data-order-card], [data-order-view]').querySelector('[data-buy-note]');
       if (button.getAttribute('aria-busy') === 'true') return;
 
       if ('demo' in text) {

@@ -1284,6 +1284,10 @@ if (want('12')) {
 //     one h1, the details, Edit, Sign out, a way back); desktop keeps the card and the greeting is plain. Recently
 //     viewed on the account page can be cleared. Help isn't repeated on the page (docs/decisions.md, 2026-10-08):
 //     no help panel, the phones' Help shortcut and the signed-out link both go to the Contact page.
+//     Orders stay in our theme (docs/account-orders-plan.md): the earlier orders open in place, "View order" opens
+//     the order's own page (…?view=account-order#Order-1042: that order alone, axe, a way back, the tab named after
+//     it; an unknown order gets a note), and the only link that leaves for Shopify's account pages is "Edit your
+//     details".
 if (want('13')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const acct = (await fetch(site('/pages/account'))).ok ? site('/pages/account') : site('/pages/contact?view=account');
@@ -1332,6 +1336,50 @@ if (want('13')) {
         return { panel: !!document.querySelector('.account #help'), dead: document.querySelectorAll('.account a[href="#help"]').length, shown: !!tile?.offsetParent, to: tile?.getAttribute('href') || '', cards: document.querySelectorAll('.order-card a[href*="wa.me"], .order-card a[href*="/pages/contact"]').length };
       });
       record(`Account page, ${label}: no help panel; Help ${label === 'phone' ? 'shortcut goes to the Contact page' : 'is the header\'s'}; order cards keep theirs`, !help.panel && help.dead === 0 && help.to === '/pages/contact' && help.shown === (label === 'phone') && help.cards >= 3, `help panel: ${help.panel}, links to #help: ${help.dead}, Help shortcut shown: ${help.shown}, to ${help.to}, order cards with "Need help?": ${help.cards}`);
+
+      // Orders stay in our theme: cards here, each order on its own page. The demo's fourth order is an earlier one.
+      const gone = (root) => [...document.querySelectorAll(`${root} a[href]`)].filter((a) => /(^|\/\/[^/]*)\/account(\/|\?|$)|shopify\.com/.test(a.getAttribute('href')) && !a.matches('.account__edit, [data-sign-out]')).map((a) => a.getAttribute('href'));
+      const list = await page.evaluate((src) => {
+        const away = new Function(`return ${src}`)()('.account');
+        const links = [...document.querySelectorAll('.order-card__details')];
+        return { away, links: links.length, to: links[1]?.getAttribute('href') || '', tall: Math.round(links[0]?.getBoundingClientRect().height || 0), all: document.querySelectorAll('.account__see-all[href*="account"]').length, earlier: document.querySelectorAll('[data-earlier] .order-card').length, wide: document.documentElement.scrollWidth > innerWidth };
+      }, gone.toString());
+      record(`Account page, ${label}: orders don't leave for Shopify's pages`, list.away.length === 0 && list.all === 0 && list.earlier >= 1 && list.links >= 4 && list.to.includes('view=account-order') && list.to.endsWith('#Order-1042') && list.tall >= 44 && !list.wide, `links to Shopify's account pages besides Edit: ${list.away.join(', ') || 'none'}; "All orders" link: ${list.all}; earlier orders on the page: ${list.earlier}; "View order" links: ${list.links} (${list.tall}px tall), the second to ${list.to}; scrolls sideways: ${list.wide}`);
+
+      await page.goto(site(list.to), { waitUntil: 'load' });
+      await page.waitForTimeout(800);
+      const v5 = await axeOn();
+      const one = await page.evaluate((src) => {
+        const shown = [...document.querySelectorAll('[data-order-view]')].filter((el) => el.offsetParent);
+        const view = shown[0];
+        const back = view?.querySelector('.account__back');
+        return {
+          shown: shown.length,
+          name: view?.querySelector('h1')?.textContent.trim() || '',
+          h1: [...document.querySelectorAll('h1')].filter((el) => el.offsetParent).length,
+          tab: document.title,
+          rows: view?.querySelectorAll('.order-more__item').length || 0,
+          total: view?.querySelector('.order-more__total dd')?.textContent.trim() || '',
+          blocks: view?.querySelectorAll('.order-more__block').length || 0,
+          buttons: view?.querySelectorAll('.order-card__btn').length || 0,
+          back: back?.getAttribute('href') || '',
+          backTall: Math.round(back?.getBoundingClientRect().height || 0),
+          none: !!document.querySelector('[data-order-none]')?.offsetParent,
+          away: new Function(`return ${src}`)()('.account'),
+          wide: document.documentElement.scrollWidth > innerWidth,
+        };
+      }, gone.toString());
+      record(`Order page, ${label}: one order, on its own page (axe)`, v5.length === 0 && one.shown === 1 && one.name.includes('#1042') && one.h1 === 1 && one.tab.includes('#1042') && one.rows >= 1 && /\d/.test(one.total) && one.blocks >= 3 && one.buttons === 2 && one.back.endsWith('#orders') && one.backTall >= 44 && !one.none && one.away.length === 0 && !one.wide, `${v5.join(', ') || '0 violations'}; orders shown: ${one.shown} ("${one.name}"), h1: ${one.h1}, tab "${one.tab}", pieces: ${one.rows}, total "${one.total}", payment/address/tracking blocks: ${one.blocks}, buttons: ${one.buttons}, back to ${one.back} (${one.backTall}px tall), "couldn't find" shown: ${one.none}, links to Shopify's pages: ${one.away.join(', ') || 'none'}, scrolls sideways: ${one.wide}`);
+      if (label === 'phone') {
+        await page.goto(site(list.to.replace(/#.*/, '#Order-9999')), { waitUntil: 'load' });
+        await page.reload({ waitUntil: 'load' });
+        await page.waitForTimeout(600);
+        const v6 = await axeOn();
+        const lost = await page.evaluate(() => ({ shown: [...document.querySelectorAll('[data-order-view]')].filter((el) => el.offsetParent).length, none: !!document.querySelector('[data-order-none]')?.offsetParent, back: document.querySelector('[data-order-none] .btn')?.getAttribute('href') || '', h1: [...document.querySelectorAll('h1')].filter((el) => el.offsetParent).length }));
+        record('Order page: an order we don\'t have gets a note and a way back (axe)', v6.length === 0 && lost.shown === 0 && lost.none && lost.back.endsWith('#orders') && lost.h1 === 1, `${v6.join(', ') || '0 violations'}; orders shown: ${lost.shown}, note shown: ${lost.none}, back to ${lost.back}, h1: ${lost.h1}`);
+      }
+      await page.goto(demoUrl, { waitUntil: 'load' });
+      await page.waitForTimeout(600);
 
       if (seen.length && label === 'phone') {
         await page.evaluate((list) => localStorage.setItem('yb-recent-products', JSON.stringify(list)), seen);
