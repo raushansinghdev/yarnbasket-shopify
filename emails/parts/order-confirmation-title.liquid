@@ -1,0 +1,3 @@
+{% capture email_title %}
+  {%- if customer.first_name != blank -%}Thank you, {{ customer.first_name }}!{%- else -%}Thank you for your order!{%- endif -%}
+{% endcapture %}

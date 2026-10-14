@@ -1,0 +1,144 @@
+<!doctype html>
+<!-- Design mock of emails/order-confirmation.liquid (docs/emails.md), in Shopify's own markup and class names with our
+     style (emails/parts/style.liquid). Edge cases on purpose: a long name, a discount, the free gift, 10 pieces.
+     Fonts fall back to Georgia and Arial, as in Gmail. Not sent anywhere. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Thank you, Myra!</title>
+<style>table{border-collapse:collapse;width:100%} td{vertical-align:top} body{margin:0} .order-list__price-cell{text-align:right} img{display:block} p{margin:0}</style>
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <style>
+    /* Yarn Basket (docs/emails.md): the website's colours and type. Shopify writes its own styles onto each element
+       when sending, so the rules that must win carry !important. Gmail ignores web fonts: Georgia and Arial are
+       the real faces there. */
+    :root { color-scheme: light; supported-color-schemes: light; }
+    body, .body { background: #FFFFFF !important; }
+    body, .body, td, p, span, a, li, dt, dd, strong, b { font-family: Jost, "Helvetica Neue", Helvetica, Arial, sans-serif !important; }
+    /* 560px of content, no side padding outside it: a frame narrower than 592px (Shopify's preview) used to cut the
+       right edge. Phones get their gutter from the 92% width below. */
+    .container { width: 560px !important; max-width: 100% !important; }
+
+    /* Header: the logo on the site's blush band, the order number on the right. */
+    .header { background: #FBF1EE !important; }
+    .header__cell { padding: 22px 0 !important; }
+    /* The logo file has its own blush background (docs/branding/logo-email-blush.png), so dark-mode mail apps that
+       darken this band can't hide the brown lettering. */
+    .shop-name__cell img { width: 150px !important; height: auto !important; border-radius: 8px !important; }
+    .order-number__text, .po-number__text { font-size: 13px !important; letter-spacing: .06em !important; text-transform: uppercase !important; color: #705B52 !important; }
+
+    /* Status: the thank-you, one line of what happens next, one button. */
+    .content__cell { padding: 30px 0 6px !important; }
+    h2 { margin: 0 0 8px !important; font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif !important; font-style: italic !important; font-weight: 500 !important; font-size: 30px !important; line-height: 1.15 !important; color: #4E3A31 !important; }
+    .content__cell p { margin: 0 0 8px !important; font-size: 16px !important; line-height: 1.5 !important; color: #6B4F43 !important; }
+    .content__cell p b, .content__cell p strong { color: #4E3A31 !important; }
+    h3 { margin: 0 0 12px !important; font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif !important; font-style: italic !important; font-weight: 500 !important; font-size: 23px !important; line-height: 1.2 !important; color: #4E3A31 !important; }
+    .actions__cell { padding-top: 14px !important; }
+    .actions .empty-line { display: none !important; height: 0 !important; line-height: 0 !important; font-size: 0 !important; }
+    /* The padding is on the link only (Shopify's own cell padding added to it made the button twice as tall). */
+    .button__cell, .actions-buttons .button__cell--primary { background: #4E3A31 !important; border-radius: 999px !important; padding: 0 !important; }
+    .button__text { display: block !important; padding: 13px 26px !important; color: #FBF6EF !important; font-size: 15px !important; font-weight: 600 !important; line-height: 20px !important; text-decoration: none !important; }
+    .link__cell { font-size: 14px !important; color: #705B52 !important; }
+    a, a:hover, a:active, a:visited { color: #4E3A31 !important; }
+    .button__text, .button__text:visited { color: #FBF6EF !important; }
+
+    /* Order summary and Delivery & payment: Shopify's own lines, in the site's type. */
+    .section__cell { padding: 24px 0 !important; border-top: 1px solid #F0DBD4 !important; }
+    .order-list__item__cell, .order-list__item { padding: 10px 0 !important; }
+    .order-list__product-image { width: 60px !important; height: 60px !important; border: 0 !important; border-radius: 10px !important; }
+    .order-list__product-description-cell { padding-left: 14px !important; }
+    .order-list__item-title { font-size: 15px !important; font-weight: 600 !important; line-height: 1.35 !important; color: #4E3A31 !important; }
+    .order-list__item-variant, .order-list__item-property, .order-list__unit-price, .order-list__item-refunded { font-size: 13px !important; line-height: 1.5 !important; color: #705B52 !important; }
+    .order-list__item-discount-allocation, .order-list__item-discount-allocation span { font-size: 13px !important; color: #705B52 !important; }
+    /* The price sits level with the piece's name. */
+    .order-list__product-description-cell { vertical-align: top !important; padding-top: 2px !important; }
+    .order-list__price-cell, .order-list__parent_price-cell { white-space: nowrap !important; vertical-align: top !important; padding-top: 2px !important; }
+    .order-list__item-price { margin: 0 !important; }
+    .order-list__item-price { font-size: 15px !important; color: #4E3A31 !important; text-align: right !important; }
+    .order-list__item-original-price { font-size: 13px !important; color: #705B52 !important; }
+    .subtotal-table { border-top: 1px solid #F0DBD4 !important; margin-top: 10px !important; padding-top: 10px !important; }
+    .subtotal-line__title, .subtotal-line__title p, .subtotal-line__title span { font-size: 15px !important; color: #705B52 !important; }
+    .subtotal-line__value, .subtotal-line__value strong { font-size: 15px !important; color: #4E3A31 !important; }
+    .subtotal-table--total .subtotal-line__title span { font-size: 17px !important; font-weight: 600 !important; color: #4E3A31 !important; }
+    .subtotal-table--total .subtotal-line__value strong { font-size: 19px !important; font-weight: 700 !important; color: #4E3A31 !important; }
+    .total-discount, .total-discount--amount { font-size: 14px !important; color: #4E3A31 !important; }
+    .subtotal-table__line { border-bottom: 1px solid #F0DBD4 !important; }
+    .customer-info__item { padding: 0 12px 16px 0 !important; vertical-align: top !important; font-size: 15px !important; line-height: 1.5 !important; color: #4E3A31 !important; }
+    .customer-info__item p, .customer-info__item-content { font-size: 15px !important; line-height: 1.5 !important; color: #4E3A31 !important; }
+    h4 { margin: 0 0 4px !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; color: #705B52 !important; }
+
+    /* Help and footer. */
+    .yb-help__cell { padding: 8px 0 24px !important; }
+    .yb-help__box { padding: 16px 20px !important; background: #F2D4CC !important; border-radius: 14px !important; font-size: 15px !important; line-height: 1.5 !important; color: #4E3A31 !important; }
+    .yb-help__box a { font-weight: 600 !important; text-decoration: underline !important; }
+    .footer { background: #FBF1EE !important; }
+    .footer__cell { padding: 22px 0 30px !important; text-align: center !important; }
+    .yb-foot__made { margin: 0 0 6px !important; font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif !important; font-style: italic !important; font-size: 17px !important; color: #4E3A31 !important; }
+    .disclaimer__subtext { margin: 0 0 4px !important; font-size: 13px !important; line-height: 1.7 !important; color: #705B52 !important; }
+    .disclaimer__subtext a { color: #705B52 !important; text-decoration: underline !important; }
+
+    @media (max-width: 600px) {
+      .container { width: 92% !important; }
+      h2 { font-size: 27px !important; }
+      .customer-info__item { display: block !important; width: 100% !important; padding-right: 0 !important; }
+      .button__cell { display: block !important; text-align: center !important; }
+    }
+  </style>
+
+</head><body><table class="body"><tr><td>
+<table class="header row"><tr><td class="header__cell"><center><table class="container"><tr><td><table class="row"><tr>
+<td class="shop-name__cell"><img src="../../docs/branding/logo-name-640.png" alt="Yarn Basket" width="140"></td>
+<td style="text-align:right;vertical-align:middle"><span class="order-number__text">Order #1001</span></td></tr></table></td></tr></table></center></td></tr></table>
+<table class="row content"><tr><td class="content__cell"><center><table class="container"><tr><td>
+<h2>Thank you, Myra!</h2>
+<p>We're getting it ready. It ships within 1–2 days, and we'll email you the tracking link.</p>
+<p>Estimated delivery <b>Fri, 17 Oct – Mon, 20 Oct</b></p>
+<table class="row actions"><tr><td class="actions__cell"><table style="width:auto"><tr><td class="button__cell"><a class="button__text" href="#">View your order</a></td>
+<td class="link__cell" style="padding-left:15px;vertical-align:middle">or <a href="#">Visit our store</a></td></tr></table></td></tr></table>
+</td></tr></table></center></td></tr></table>
+<table class="row section"><tr><td class="section__cell"><center><table class="container"><tr><td><h3>Order summary</h3>
+<table class="row"><tr class="order-list__item"><td><table><tr><td class="order-list__image-cell" width="60"><img class="order-list__product-image" src="../../theme/assets/demo-hero-sunflowers-600.webp" width="60" height="60"></td>
+<td class="order-list__product-description-cell"><span class="order-list__item-title">Sunflower Crochet Bouquet&nbsp;&times;&nbsp;1</span><br><span class="order-list__item-variant">3 stems</span><br></td>
+<td class="order-list__price-cell"><p class="order-list__item-price">₹469</p></td></tr></table></td></tr>
+<tr class="order-list__item"><td><table><tr><td class="order-list__image-cell" width="60"><img class="order-list__product-image" src="../../theme/assets/demo-cat-bouquets-600.webp" width="60" height="60"></td>
+<td class="order-list__product-description-cell"><span class="order-list__item-title">Pink Tulips & Daisy Crochet Bouquet with Handmade Wrapping, Large&nbsp;&times;&nbsp;1</span><br><span class="order-list__item-variant">Pink</span><br><p><span class="order-list__item-discount-allocation">Combo: a quarter off (−₹117)</span></p></td>
+<td class="order-list__price-cell"><del class="order-list__item-original-price">₹469</del><p class="order-list__item-price">₹352</p></td></tr></table></td></tr>
+<tr class="order-list__item"><td><table><tr><td class="order-list__image-cell" width="60"><img class="order-list__product-image" src="../../theme/assets/demo-gift-sunflower-keychain-1200.webp" width="60" height="60"></td>
+<td class="order-list__product-description-cell"><span class="order-list__item-title">Sunflower Keychain&nbsp;&times;&nbsp;1</span><br><p><span class="order-list__item-discount-allocation">Free gift (−₹99)</span></p></td>
+<td class="order-list__price-cell"><p class="order-list__item-price">Free</p></td></tr></table></td></tr>
+<tr class="order-list__item"><td><table><tr><td class="order-list__image-cell" width="60"><img class="order-list__product-image" src="../../theme/assets/demo-cat-keychains-600.webp" width="60" height="60"></td>
+<td class="order-list__product-description-cell"><span class="order-list__item-title">Evil Eye Crochet Keychain 1&nbsp;&times;&nbsp;1</span><br><span class="order-list__item-variant">Blue</span><br></td>
+<td class="order-list__price-cell"><p class="order-list__item-price">₹89</p></td></tr></table></td></tr>
+<tr class="order-list__item"><td><table><tr><td class="order-list__image-cell" width="60"><img class="order-list__product-image" src="../../theme/assets/demo-cat-keychains-600.webp" width="60" height="60"></td>
+<td class="order-list__product-description-cell"><span class="order-list__item-title">Evil Eye Crochet Keychain 2&nbsp;&times;&nbsp;1</span><br><span class="order-list__item-variant">Blue</span><br></td>
+<td class="order-list__price-cell"><p class="order-list__item-price">₹89</p></td></tr></table></td></tr>
+<tr class="order-list__item"><td><table><tr><td class="order-list__image-cell" width="60"><img class="order-list__product-image" src="../../theme/assets/demo-cat-keychains-600.webp" width="60" height="60"></td>
+<td class="order-list__product-description-cell"><span class="order-list__item-title">Evil Eye Crochet Keychain 3&nbsp;&times;&nbsp;1</span><br><span class="order-list__item-variant">Blue</span><br></td>
+<td class="order-list__price-cell"><p class="order-list__item-price">₹89</p></td></tr></table></td></tr>
+<tr class="order-list__item"><td><table><tr><td class="order-list__image-cell" width="60"><img class="order-list__product-image" src="../../theme/assets/demo-cat-keychains-600.webp" width="60" height="60"></td>
+<td class="order-list__product-description-cell"><span class="order-list__item-title">Evil Eye Crochet Keychain 4&nbsp;&times;&nbsp;1</span><br><span class="order-list__item-variant">Blue</span><br></td>
+<td class="order-list__price-cell"><p class="order-list__item-price">₹89</p></td></tr></table></td></tr>
+<tr class="order-list__item"><td><table><tr><td class="order-list__image-cell" width="60"><img class="order-list__product-image" src="../../theme/assets/demo-cat-keychains-600.webp" width="60" height="60"></td>
+<td class="order-list__product-description-cell"><span class="order-list__item-title">Evil Eye Crochet Keychain 5&nbsp;&times;&nbsp;1</span><br><span class="order-list__item-variant">Blue</span><br></td>
+<td class="order-list__price-cell"><p class="order-list__item-price">₹89</p></td></tr></table></td></tr>
+<tr class="order-list__item"><td><table><tr><td class="order-list__image-cell" width="60"><img class="order-list__product-image" src="../../theme/assets/demo-cat-keychains-600.webp" width="60" height="60"></td>
+<td class="order-list__product-description-cell"><span class="order-list__item-title">Evil Eye Crochet Keychain 6&nbsp;&times;&nbsp;1</span><br><span class="order-list__item-variant">Blue</span><br></td>
+<td class="order-list__price-cell"><p class="order-list__item-price">₹89</p></td></tr></table></td></tr>
+<tr class="order-list__item"><td><table><tr><td class="order-list__image-cell" width="60"><img class="order-list__product-image" src="../../theme/assets/demo-cat-keychains-600.webp" width="60" height="60"></td>
+<td class="order-list__product-description-cell"><span class="order-list__item-title">Evil Eye Crochet Keychain 7&nbsp;&times;&nbsp;1</span><br><span class="order-list__item-variant">Blue</span><br></td>
+<td class="order-list__price-cell"><p class="order-list__item-price">₹89</p></td></tr></table></td></tr>
+</table>
+<table class="row subtotal-table"><tr class="subtotal-line"><td class="subtotal-line__title"><p><span>Subtotal</span></p></td><td class="subtotal-line__value" style="text-align:right"><strong>₹1,444.00</strong></td></tr>
+<tr class="subtotal-line"><td class="subtotal-line__title"><p><span>Order discount</span> <span class="order-list__item-variant">Spend ₹999: ₹50 off (−₹50.00)</span></p></td><td class="subtotal-line__value" style="text-align:right"><strong>−₹50.00</strong></td></tr>
+<tr class="subtotal-line"><td class="subtotal-line__title"><p><span>Shipping</span></p></td><td class="subtotal-line__value" style="text-align:right"><strong>Free</strong></td></tr></table>
+<table class="row subtotal-table subtotal-table--total"><tr class="subtotal-line"><td class="subtotal-line__title"><p><span>Total</span></p></td><td class="subtotal-line__value" style="text-align:right"><strong>₹1,394.00 INR</strong></td></tr>
+<tr class="subtotal-line"><td></td><td class="subtotal-line__value total-discount" style="text-align:right">You saved <span class="total-discount--amount">₹266.00</span></td></tr></table>
+</td></tr></table></center></td></tr></table>
+<table class="row section"><tr><td class="section__cell"><center><table class="container"><tr><td><h3>Delivery &amp; payment</h3>
+<table class="row"><tr><td class="customer-info__item" width="50%"><h4>Delivering to</h4>Myra Bins<br>Netaji Subhash Marg, Lal Qila<br>New Delhi 110006 DL<br>India</td>
+<td class="customer-info__item" width="50%"><h4>Payment</h4><p class="customer-info__item-content">UPI — ₹1,394.00</p></td></tr>
+<tr><td class="customer-info__item"><h4>Delivery method</h4><p>Standard</p></td></tr></table>
+</td></tr></table></center></td></tr></table>
+<table class="row yb-help"><tr><td class="yb-help__cell"><center><table class="container"><tr><td class="yb-help__box">Questions about this order? <a href="#">WhatsApp us</a> or reply to this email.</td></tr></table></center></td></tr></table>
+<table class="row footer"><tr><td class="footer__cell"><center><table class="container"><tr><td><p class="yb-foot__made">Handmade with love in India</p>
+<p class="disclaimer__subtext"><a href="#">Shop</a> &nbsp;·&nbsp; <a href="#">Instagram</a> &nbsp;·&nbsp; <a href="#">weyarnbasket@gmail.com</a></p>
+<p class="disclaimer__subtext"><a href="#">Shipping</a> &nbsp;·&nbsp; <a href="#">Returns &amp; refunds</a> &nbsp;·&nbsp; <a href="#">Privacy</a></p></td></tr></table></center></td></tr></table>
+</td></tr></table></body></html>

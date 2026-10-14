@@ -1,0 +1,28 @@
+            <table class="row actions">
+              <tr>
+                <td class="actions__cell">
+                  <table cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td valign="middle" style="vertical-align: middle;">
+                        <table class="button main-action-cell">
+                          <tr>
+                            {% if yb_one_link %}
+                              <td class="button__cell"><a href="{{ fulfillment.tracking_url }}" class="button__text">Track parcel</a></td>
+                            {% elsif order_status_url %}
+                              <td class="button__cell"><a href="{{ order_status_url }}" class="button__text">View order</a></td>
+                            {% else %}
+                              <td class="button__cell"><a href="{{ shop.url }}" class="button__text">Visit our store</a></td>
+                            {% endif %}
+                          </tr>
+                        </table>
+                      </td>
+                      {% if yb_one_link and order_status_url %}
+                        <td valign="middle" class="yb-actions__link" style="vertical-align: middle;">
+                          <a href="{{ order_status_url }}">View order</a>
+                        </td>
+                      {% endif %}
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>

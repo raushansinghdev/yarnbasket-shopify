@@ -8,6 +8,8 @@
     "check:quick": "node tools/check.mjs --quick",
     "check:money": "node tools/money-check.mjs",
     "check:seo": "node tools/seo-check.mjs",
+    "check:emails": "node tools/email-check.mjs",
+    "build:emails": "node tools/email-build.mjs",
     "build:coming-soon": "node tools/coming-soon-build.mjs",
     "build:agents": "node tools/agents-build.mjs",
     "audit": "node tools/audit.mjs",

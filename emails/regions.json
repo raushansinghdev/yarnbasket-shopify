@@ -1,0 +1,492 @@
+{
+  "order-confirmation": {
+    "patches": [
+      { "from": "discount_allocation.discount_application.title | upcase", "to": "discount_allocation.discount_application.title", "count": 16, "why": "discount names in sentence case, as on the site" },
+      { "from": "discount_title | upcase", "to": "discount_title", "count": 4, "why": "discount names in sentence case, as on the site" },
+      { "from": "{% if discount_allocation.discount_application.target_selection != 'all' %}", "to": "{% if discount_allocation.discount_application.target_selection != 'all' and discount_allocation.amount > 0 %}", "count": 16, "why": "no '(-₹0)' line under pieces a discount didn't reduce" },
+      { "from": "{% if shop_app_tracking_url and shop_app_tracking_button_variant_key %}", "to": "{% if false and shop_app_tracking_url and shop_app_tracking_button_variant_key %}", "count": 1, "why": "no Shop-app button; Shopify's plain 'View your order' branch is used" },
+      { "from": "                {% if billing_address %}", "to": "                {%- assign yb_billing = billing_address | format_address -%}{%- assign yb_delivery = shipping_address | format_address -%}\n                {% if billing_address and yb_billing != yb_delivery %}", "count": 1, "why": "the billing address only when it differs from the delivery address" },
+      { "from": "<h3>Customer information</h3>", "to": "<h3>Delivery &amp; payment</h3>", "count": 1, "why": "the site's words" },
+      { "from": "<h4>Shipping address</h4>", "to": "<h4>Delivering to</h4>", "count": 1, "why": "the site's words (order page)" },
+      { "from": "<h4>Shipping method</h4>", "to": "<h4>Delivery method</h4>", "count": 2, "why": "the site's words" },
+      { "from": "class=\"button__text\">View your order</a>", "to": "class=\"button__text\">View order</a>", "count": 3, "why": "the site's words, as in the shipping email" },
+      { "from": "{% if shop.url %}\n    <table class=\"link secondary-action-cell\"", "to": "{% if false and shop.url %}\n    <table class=\"link secondary-action-cell\"", "count": 3, "why": "no 'or Visit our store' beside the button: one action, the order" },
+      { "from": "<span>Shipping</span>", "to": "<span>Delivery</span>", "count": 3, "why": "the site's words (cart and order page)" },
+      { "from": "<h3>Order summary</h3>", "to": "<h3>In this order</h3>", "count": 1, "why": "the site's words (order page)" },
+      { "from": "<span>Taxes</span>", "to": "<span>{% if taxes_included %}GST, included{% else %}GST{% endif %}</span>", "count": 1, "why": "our prices include GST: the line must not read as an extra charge" }
+    ],
+    "regions": {
+      "status": {
+        "kind": "replace",
+        "from": "<p>{{ email_body }}</p>",
+        "part": "parts/order-confirmation-status.liquid",
+        "keep": ["email_body"]
+      },
+      "title": {
+        "kind": "replace",
+        "from": "{% capture email_title %}",
+        "to": "{% endcapture %}",
+        "part": "parts/order-confirmation-title.liquid",
+        "keep": ["customer.first_name"]
+      },
+      "body": {
+        "kind": "wording",
+        "from": "{% capture email_body %}",
+        "to": "{% endcapture %}",
+        "words": [
+          ["You’ll get a confirmation email after completing your payment.", "Complete your payment to confirm this order. We'll email you as soon as it's done."],
+          ["Your payment is being processed. You'll get an email when your order is confirmed.", "Your payment is being processed. We'll email you as soon as your order is confirmed."],
+          [", we received your order. Your payment method will be charged when your order is ready to be fulfilled. We'll notify you when it's on its way.", ", we've got your order. You'll be charged when it's ready to ship, and we'll email you the tracking link."],
+          ["You’ll receive an email when your order is ready for pickup.", "We'll email you when your order is ready to pick up."],
+          ["We're getting your order ready to be shipped. We will notify you when it has been sent.", "We're getting it ready. It ships within 1–2 days, and we'll email you the tracking link."],
+          ["<b>Delivery information:</b>", "<b>Your delivery note:</b>"]
+        ]
+      },
+      "style": {
+        "kind": "replace",
+        "from": "  <style>",
+        "to": "  </style>",
+        "part": "parts/style.liquid"
+      },
+      "footer": {
+        "kind": "replace",
+        "from": "          <table class=\"row footer\">",
+        "to": "<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />",
+        "part": "parts/footer.liquid",
+        "keep": ["shop.email", "shop.url", "order_name"]
+      }
+    }
+  },
+  "shipping-confirmation": {
+    "patches": [
+      { "from": "{% if discount_allocation.discount_application.target_selection != 'all' %}", "to": "{% if false and discount_allocation.discount_application.target_selection != 'all' %}", "count": 1, "why": "no discount lines under pieces: this email shows no prices" },
+      { "from": "<h3>Items in this shipment</h3>", "to": "<h3>In this parcel</h3>", "count": 1, "why": "the site's words" }
+    ],
+    "regions": {
+      "title-body": {
+        "kind": "wording",
+        "from": "{% if fulfillment.item_count == item_count %}",
+        "to": "  {% endif %}\n{% endif %}",
+        "words": [
+          ["Your order is on the way. Track your shipment to see the delivery status.", "It's with the courier and usually arrives in 3 to 7 days."],
+          ["The last items in your order are on the way. Track your shipment to see the delivery status.", "They're with the courier and usually arrive in 3 to 7 days."],
+          ["Some items in your order are on the way. Track your shipment to see the delivery status.", "These pieces usually arrive in 3 to 7 days. The rest follow in another parcel, and we'll email you when it ships."],
+          ["The last item in your order is on the way. Track your shipment to see the delivery status.", "It's with the courier and usually arrives in 3 to 7 days."],
+          ["One item in your order is on the way. Track your shipment to see the delivery status.", "It usually arrives in 3 to 7 days. The rest follow in another parcel, and we'll email you when it ships."],
+          ["Your order is on the way", "Your order is on its way"],
+          ["The last items in your order are on the way", "The rest of your order is on its way"],
+          ["Some items in your order are on the way", "Part of your order is on its way"],
+          ["The last item in your order is on the way", "The last piece of your order is on its way"],
+          ["One item in your order is on the way", "One piece of your order is on its way"]
+        ]
+      },
+      "emphasis": {
+        "kind": "wording",
+        "from": "{% capture email_emphasis %}",
+        "to": "{% endcapture %}",
+        "words": [
+          ["Estimated delivery date: ", "Expected by "]
+        ]
+      },
+      "style": {
+        "kind": "replace",
+        "from": "  <style>",
+        "to": "  </style>",
+        "part": "parts/style.liquid"
+      },
+      "actions": {
+        "kind": "replace",
+        "from": "{% if order_status_url %}",
+        "to": "  </p>\n{% endif %}",
+        "part": ["parts/parcel-setup.liquid", "parts/steps-shipped.liquid", "parts/parcel-box.liquid", "parts/parcel-buttons.liquid"],
+        "keep": ["order_status_url", "shop.url", "fulfillment.tracking_url", "fulfillment.tracking_company", "fulfillment.tracking_numbers.first", "tracking_number", "fulfillment.tracking_urls[forloop.index0]", "shipping_address.name", "shipping_address.address1", "shipping_address.city", "shipping_address.zip"]
+      },
+      "footer": {
+        "kind": "replace",
+        "from": "          <table class=\"row footer\">",
+        "to": "<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />",
+        "part": "parts/footer.liquid",
+        "keep": ["shop.email", "shop.url", "order_name"]
+      }
+    }
+  },
+  "delivered": {
+    "patches": [
+      { "from": "{% if discount_allocation.discount_application.target_selection != 'all' %}", "to": "{% if false and discount_allocation.discount_application.target_selection != 'all' %}", "count": 1, "why": "no discount lines under pieces: this email shows no prices" },
+      { "from": "<h3>Items in this shipment</h3>", "to": "<h3>In this parcel</h3>", "count": 1, "why": "the site's words" }
+    ],
+    "regions": {
+      "title-body": {
+        "kind": "wording",
+        "from": "{% if fulfillment.item_count == item_count %}",
+        "to": "  {% endif %}\n{% endif %}",
+        "words": [
+          ["Your order has been delivered. Track your shipment to see the delivery status.", "We hope you love it."],
+          ["The last items in your order have been delivered. Track your shipment to see the delivery status.", "That's everything in your order. We hope you love it."],
+          ["Some items in your order have been delivered. Track your shipment to see the delivery status.", "We hope you love these pieces. The rest of your order comes in another parcel."],
+          ["The last item in your order has been delivered. Track your shipment to see the delivery status.", "That's everything in your order. We hope you love it."],
+          ["One item in your order has been delivered. Track your shipment to see the delivery status.", "We hope you love it. The rest of your order comes in another parcel."],
+          ["Your order has been delivered", "Your order has arrived"],
+          ["The last items in your order have been delivered", "The rest of your order has arrived"],
+          ["Some items in your order have been delivered", "Part of your order has arrived"],
+          ["The last item in your order has been delivered", "The last piece of your order has arrived"],
+          ["One item in your order has been delivered", "One piece of your order has arrived"]
+        ]
+      },
+      "style": {
+        "kind": "replace",
+        "from": "  <style>",
+        "to": "  </style>",
+        "part": "parts/style.liquid"
+      },
+      "message": {
+        "kind": "replace",
+        "from": "            <table class=\"text-icon-container\">",
+        "to": "  </p>\n{% endif %}",
+        "part": ["parts/delivered-setup.liquid", "parts/steps-delivered.liquid", "parts/parcel-box.liquid", "parts/delivered-claim.liquid", "parts/delivered-buttons.liquid"],
+        "words": [
+          ["Delivering to", "Delivered to"],
+          ["{% if total_outstanding > 0 %}", "{% if false and total_outstanding > 0 %}"]
+        ],
+        "keep": ["email_body", "order_status_url", "shop.url", "fulfillment.tracking_url", "fulfillment.tracking_company", "fulfillment.tracking_numbers.first", "tracking_number", "fulfillment.tracking_urls[forloop.index0]", "shipping_address.name", "shipping_address.address1", "shipping_address.city", "shipping_address.zip"]
+      },
+      "footer": {
+        "kind": "replace",
+        "from": "          <table class=\"row footer\">",
+        "to": "<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />",
+        "part": "parts/footer.liquid",
+        "keep": ["shop.email", "shop.url", "order_name"]
+      }
+    }
+  },
+  "out-for-delivery": {
+    "patches": [
+      { "from": "{% if discount_allocation.discount_application.target_selection != 'all' %}", "to": "{% if false and discount_allocation.discount_application.target_selection != 'all' %}", "count": 1, "why": "no discount lines under pieces: this email shows no prices" },
+      { "from": "<h3>Items in this shipment</h3>", "to": "<h3>In this parcel</h3>", "count": 1, "why": "the site's words" },
+      { "from": "{% if fulfillment.estimated_delivery_at %}", "to": "{% if false and fulfillment.estimated_delivery_at %}", "count": 1, "why": "the title says it arrives today; an older estimate would contradict it" }
+    ],
+    "regions": {
+      "title-body": {
+        "kind": "wording",
+        "from": "{% if fulfillment.item_count == item_count %}",
+        "to": "  {% endif %}\n{% endif %}",
+        "words": [
+          ["Your order is out for delivery. Track your shipment to see the delivery status.", "It's out with the courier. Keep your phone nearby, as they may call before delivering."],
+          ["The last items in your order are out for delivery. Track your shipment to see the delivery status.", "They're out with the courier. Keep your phone nearby, as they may call before delivering."],
+          ["Some items in your order are out for delivery. Track your shipment to see the delivery status.", "These pieces are out with the courier. Keep your phone nearby, as they may call before delivering. The rest comes in another parcel."],
+          ["The last item in your order is out for delivery. Track your shipment to see the delivery status.", "It's out with the courier. Keep your phone nearby, as they may call before delivering."],
+          ["One item in your order is out for delivery. Track your shipment to see the delivery status.", "It's out with the courier. Keep your phone nearby, as they may call before delivering. The rest comes in another parcel."],
+          ["Your order is out for delivery", "Your order arrives today"],
+          ["The last items in your order are out for delivery", "The rest of your order arrives today"],
+          ["Some items in your order are out for delivery", "Part of your order arrives today"],
+          ["The last item in your order is out for delivery", "The last piece of your order arrives today"],
+          ["One item in your order is out for delivery", "One piece of your order arrives today"]
+        ]
+      },
+      "style": {
+        "kind": "replace",
+        "from": "  <style>",
+        "to": "  </style>",
+        "part": "parts/style.liquid"
+      },
+      "actions": {
+        "kind": "replace",
+        "from": "{% if order_status_url %}",
+        "to": "  </p>\n{% endif %}",
+        "part": ["parts/parcel-setup.liquid", "parts/steps-out.liquid", "parts/parcel-box.liquid", "parts/parcel-buttons.liquid"],
+        "keep": ["order_status_url", "shop.url", "fulfillment.tracking_url", "fulfillment.tracking_company", "fulfillment.tracking_numbers.first", "tracking_number", "fulfillment.tracking_urls[forloop.index0]", "shipping_address.name", "shipping_address.address1", "shipping_address.city", "shipping_address.zip", "total_outstanding | money"]
+      },
+      "footer": {
+        "kind": "replace",
+        "from": "          <table class=\"row footer\">",
+        "to": "<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />",
+        "part": "parts/footer.liquid",
+        "keep": ["shop.email", "shop.url", "order_name"]
+      }
+    }
+  },
+  "shipping-update": {
+    "patches": [
+      { "from": "{% if discount_allocation.discount_application.target_selection != 'all' %}", "to": "{% if false and discount_allocation.discount_application.target_selection != 'all' %}", "count": 1, "why": "no discount lines under pieces: this email shows no prices" },
+      { "from": "<h3>Items in this shipment</h3>", "to": "<h3>In this parcel</h3>", "count": 1, "why": "the site's words" },
+      { "from": "            <p>{{ email_emphasis }}</p>\n", "to": "            {% if email_emphasis != blank %}<p>{{ email_emphasis }}</p>{% endif %}\n", "count": 1, "why": "this email never sets it: no empty paragraph" }
+    ],
+    "regions": {
+      "title": {
+        "kind": "wording",
+        "from": "{% capture email_title %}",
+        "to": "{% endcapture %}",
+        "words": [
+          ["Your shipping status has been updated", "Your tracking details have changed"]
+        ]
+      },
+      "body": {
+        "kind": "wording",
+        "from": "{% capture email_body %}",
+        "to": "{% endcapture %}",
+        "words": [
+          ["The following items have been updated with new shipping information.", "Here are the new details for your parcel."]
+        ]
+      },
+      "style": {
+        "kind": "replace",
+        "from": "  <style>",
+        "to": "  </style>",
+        "part": "parts/style.liquid"
+      },
+      "actions": {
+        "kind": "replace",
+        "from": "{% if order_status_url %}",
+        "to": "  </p>\n{% endif %}",
+        "part": ["parts/parcel-setup.liquid", "parts/steps-shipped.liquid", "parts/parcel-box.liquid", "parts/parcel-buttons.liquid"],
+        "keep": ["order_status_url", "shop.url", "fulfillment.tracking_url", "fulfillment.tracking_company", "fulfillment.tracking_numbers.first", "tracking_number", "fulfillment.tracking_urls[forloop.index0]", "shipping_address.name", "shipping_address.address1", "shipping_address.city", "shipping_address.zip"]
+      },
+      "footer": {
+        "kind": "replace",
+        "from": "          <table class=\"row footer\">",
+        "to": "<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />",
+        "part": "parts/footer.liquid",
+        "keep": ["shop.email", "shop.url", "order_name"]
+      }
+    }
+  },
+  "order-canceled": {
+    "patches": [
+      {"from":"discount_allocation.discount_application.title | upcase","to":"discount_allocation.discount_application.title","count":1,"why":"discount names in sentence case, as on the site"},
+      {"from":"{% if discount_allocation.discount_application.target_selection != 'all' %}","to":"{% if discount_allocation.discount_application.target_selection != 'all' and discount_allocation.amount > 0 %}","count":1,"why":"no '(-₹0)' line under pieces a discount didn't reduce"},
+      {"from":"<span>Shipping</span>","to":"<span>Delivery</span>","count":3,"why":"the site's words"},
+      {"from":"<span>Taxes</span>","to":"<span>{% if taxes_included %}GST, included{% else %}GST{% endif %}</span>","count":1,"why":"prices include GST"},
+      {"from":"<h3>Removed Items</h3>","to":"<h3>Canceled pieces</h3>","count":1,"why":"the site's words"}
+    ],
+    "regions": {
+      "body": {"kind":"replace","from":"{% capture email_body %}","to":"{% endcapture %}","part":"parts/canceled-body.liquid","keep":["name"]},
+      "style": {"kind":"replace","from":"  <style>","to":"  </style>","part":"parts/style.liquid"},
+      "footer": {"kind":"replace","from":"          <table class=\"row footer\">","to":"<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />","part":"parts/footer.liquid","keep":["shop.email","shop.url","order_name"]}
+    }
+  },
+  "order-refund": {
+    "patches": [
+      {"from":"discount_allocation.discount_application.title | upcase","to":"discount_allocation.discount_application.title","count":2,"why":"discount names in sentence case, as on the site"},
+      {"from":"{% if discount_allocation.discount_application.target_selection != 'all' %}","to":"{% if discount_allocation.discount_application.target_selection != 'all' and discount_allocation.amount > 0 %}","count":2,"why":"no '(-₹0)' line under pieces a discount didn't reduce"},
+      {"from":"<h3>Order summary</h3>","to":"<h3>In this order</h3>","count":1,"why":"the site's words"},
+      {"from":"<span>Shipping</span>","to":"<span>Delivery</span>","count":3,"why":"the site's words"},
+      {"from":"<span>Taxes</span>","to":"<span>{% if taxes_included %}GST, included{% else %}GST{% endif %}</span>","count":1,"why":"prices include GST"}
+    ],
+    "regions": {
+      "title": {"kind":"wording","from":"{% if refund_line_items.size == item_count %}","to":"{% endif %}","words":[["You have received a refund","You've received a refund"],["Some items in your order have been refunded","Part of your order has been refunded"]]},
+      "body": {"kind":"replace","from":"{% capture email_body %}","to":"{% endcapture %}","part":"parts/refund-body.liquid","keep":["amount | money_with_currency"]},
+      "style": {"kind":"replace","from":"  <style>","to":"  </style>","part":"parts/style.liquid"},
+      "footer": {"kind":"replace","from":"          <table class=\"row footer\">","to":"<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />","part":"parts/footer.liquid","keep":["shop.email","shop.url","order_name"]}
+    }
+  },
+  "abandoned-checkout": {
+    "patches": [
+      {"from":"discount_allocation.discount_application.title | upcase","to":"discount_allocation.discount_application.title","count":1,"why":"discount names in sentence case, as on the site"},
+      {"from":"{% if discount_allocation.discount_application.target_selection != 'all' %}","to":"{% if discount_allocation.discount_application.target_selection != 'all' and discount_allocation.amount > 0 %}","count":1,"why":"no '(-₹0)' line under pieces a discount didn't reduce"},
+      {"from":"{% if shop.url %}\n    <table class=\"link secondary-action-cell\"","to":"{% if false and shop.url %}\n    <table class=\"link secondary-action-cell\"","count":1,"why":"one button; no 'or Visit our store'"},
+      {"from":"class=\"button__text\">Items in your cart</a>","to":"class=\"button__text\">Complete your order</a>","count":1,"why":"says what the button does"},
+      {"from":"<h3>Complete your purchase</h3>","to":"<h3>In your cart</h3>","count":1,"why":"the site's words"}
+    ],
+    "regions": {
+      "title": {"kind":"wording","from":"{% capture email_title %}","to":"{% endcapture %}","words":[["You left an item in your cart","Your piece is still in your cart"],["You left items in your cart","Your pieces are still in your cart"]]},
+      "body": {"kind":"wording","from":"{% capture email_body %}","to":"{% endcapture %}","words":[[", you added an item to your shopping cart and haven't completed your purchase. You can complete it now while it's still available.",", we've saved your cart. Finish your order whenever you're ready."],[", you added items to your shopping cart and haven't completed your purchase. You can complete it now while they're still available.",", we've saved your cart. Finish your order whenever you're ready."],["Hi, we've saved your cart.","We've saved your cart."]]},
+      "style": {"kind":"replace","from":"  <style>","to":"  </style>","part":"parts/style.liquid"},
+      "footer": {"kind":"replace","from":"          <table class=\"row footer\">","to":"<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />","part":"parts/footer.liquid","words":[["Questions about this order?","Questions before you order?"],["%20I%20need%20help%20with%20my%20order%20%23{{ order_name | default: name | remove: '#' }}",""]],"keep":["shop.email","shop.url"]}
+    }
+  },
+  "order-edited": {
+    "patches": [
+      {"from":"discount_allocation.discount_application.title | upcase","to":"discount_allocation.discount_application.title","count":3,"why":"discount names in sentence case, as on the site"},
+      {"from":"{% if discount_allocation.discount_application.target_selection != 'all' %}","to":"{% if discount_allocation.discount_application.target_selection != 'all' and discount_allocation.amount > 0 %}","count":3,"why":"no '(-₹0)' line under pieces a discount didn't reduce"},
+      {"from":"                {% if billing_address %}","to":"                {%- assign yb_billing = billing_address | format_address -%}{%- assign yb_delivery = shipping_address | format_address -%}\n                {% if billing_address and yb_billing != yb_delivery %}","count":1,"why":"the billing address only when it differs from the delivery address"},
+      {"from":"<h3>Customer information</h3>","to":"<h3>Delivery &amp; payment</h3>","count":1,"why":"the site's words"},
+      {"from":"<h4>Shipping address</h4>","to":"<h4>Delivering to</h4>","count":1,"why":"the site's words"},
+      {"from":"<h4>Shipping method</h4>","to":"<h4>Delivery method</h4>","count":1,"why":"the site's words"},
+      {"from":"class=\"button__text\">View your order</a>","to":"class=\"button__text\">View order</a>","count":1,"why":"the site's words"},
+      {"from":"{% if shop.url %}\n    <table class=\"link secondary-action-cell\"","to":"{% if false and shop.url %}\n    <table class=\"link secondary-action-cell\"","count":1,"why":"one button; no 'or Visit our store'"},
+      {"from":"<span>Shipping</span>","to":"<span>Delivery</span>","count":3,"why":"the site's words"},
+      {"from":"<span>Taxes</span>","to":"<span>{% if taxes_included %}GST, included{% else %}GST{% endif %}</span>","count":1,"why":"prices include GST"},
+      {"from":"            <p>{{ email_body }}</p>\n","to":"            <p>Here's your order as it is now.</p>\n","count":1,"why":"this email never sets a message: no empty paragraph"}
+    ],
+    "regions": {
+      "title": {"kind":"wording","from":"{% capture email_title %}","to":"{% endcapture %}","words":[["Your order was updated ","Your order has been updated"]]},
+      "style": {"kind":"replace","from":"  <style>","to":"  </style>","part":"parts/style.liquid"},
+      "footer": {"kind":"replace","from":"          <table class=\"row footer\">","to":"<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />","part":"parts/footer.liquid","keep":["shop.email","shop.url","order_name"]}
+    }
+  },
+  "order-invoice": {
+    "patches": [
+      {"from":"discount_allocation.discount_application.title | upcase","to":"discount_allocation.discount_application.title","count":17,"why":"discount names in sentence case, as on the site"},
+      {"from":"discount_title | upcase","to":"discount_title","count":4,"why":"discount names in sentence case, as on the site"},
+      {"from":"{% if discount_allocation.discount_application.target_selection != 'all' %}","to":"{% if discount_allocation.discount_application.target_selection != 'all' and discount_allocation.amount > 0 %}","count":17,"why":"no '(-₹0)' line under pieces a discount didn't reduce"},
+      {"from":"            {% if billing_address %}","to":"            {%- assign yb_billing = billing_address | format_address -%}{%- assign yb_delivery = shipping_address | format_address -%}\n            {% if billing_address and yb_billing != yb_delivery %}","count":1,"why":"the billing address only when it differs from the delivery address"},
+      {"from":"<h3>Customer information</h3>","to":"<h3>Delivery &amp; payment</h3>","count":1,"why":"the site's words"},
+      {"from":"<h4>Shipping address</h4>","to":"<h4>Delivering to</h4>","count":1,"why":"the site's words"},
+      {"from":"<h4>Shipping method</h4>","to":"<h4>Delivery method</h4>","count":1,"why":"the site's words"},
+      {"from":"<span>Shipping</span>","to":"<span>Delivery</span>","count":3,"why":"the site's words"},
+      {"from":"<h3>Order summary</h3>","to":"<h3>In this order</h3>","count":1,"why":"the site's words"},
+      {"from":"<span>Estimated taxes</span>","to":"<span>{% if taxes_included %}GST, included{% else %}GST{% endif %}</span>","count":1,"why":"prices include GST"}
+    ],
+    "regions": {
+      "heading": {"kind": "replace", "from": "{% if due_on_fulfilllment_terms == true and payment_terms.automatic_capture_at_fulfillment == false or", "to": "        {% endif %}\n        {% if custom_message != blank %}", "part": "parts/invoice-heading.liquid", "keep": ["order.total_outstanding | money", "due_date | date: format: 'date'", "yb_due_text"]},
+      "style": {"kind":"replace","from":"  <style>","to":"  </style>","part":"parts/style.liquid"},
+      "footer": {"kind":"replace","from":"      <table class=\"row footer\">","to":"<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />","part":"parts/footer.liquid","keep":["shop.email","shop.url","order_name"]}
+    }
+  },
+  "payment-error": {
+    "patches": [
+      {"from":"{% if shop.url %}\n    <table class=\"link secondary-action-cell\"","to":"{% if false and shop.url %}\n    <table class=\"link secondary-action-cell\"","count":1,"why":"one button; no 'or Visit our store'"},
+      {"from":"            <p> You can still return to your cart to complete your purchase. </p>\n","to":"","count":1,"why":"said once, in the message"},
+      {"from":"class=\"button__text\">Return to cart</a>","to":"class=\"button__text\">Back to your cart</a>","count":1,"why":"the site's words"}
+    ],
+    "regions": {
+      "title": {"kind":"wording","from":"{% capture email_title %}","to":"{% endcapture %}","words":[[" Your payment couldn’t be processed ","Your payment didn't go through"]]},
+      "body": {"kind":"wording","from":"{% capture email_body %}","to":"{% endcapture %}","words":[["You added items to your shopping cart but the payment couldn’t be processed. You haven’t been charged.","Nothing was charged. Your cart is saved, so you can try again."]]},
+      "style": {"kind":"replace","from":"  <style>","to":"  </style>","part":"parts/style.liquid"},
+      "footer": {"kind":"replace","from":"          <table class=\"row footer\">","to":"<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />","part":"parts/footer.liquid","words":[["Questions about this order?","Trouble paying?"],["%20I%20need%20help%20with%20my%20order%20%23{{ order_name | default: name | remove: '#' }}",""]],"keep":["shop.email","shop.url"]}
+    }
+  },
+  "pending-payment-error": {
+    "patches": [
+      {"from":"discount_allocation.discount_application.title | upcase","to":"discount_allocation.discount_application.title","count":4,"why":"discount names in sentence case, as on the site"},
+      {"from":"discount_title | upcase","to":"discount_title","count":1,"why":"discount names in sentence case, as on the site"},
+      {"from":"{% if discount_allocation.discount_application.target_selection != 'all' %}","to":"{% if discount_allocation.discount_application.target_selection != 'all' and discount_allocation.amount > 0 %}","count":4,"why":"no '(-₹0)' line under pieces a discount didn't reduce"},
+      {"from":"            {% if billing_address %}","to":"            {%- assign yb_billing = billing_address | format_address -%}{%- assign yb_delivery = shipping_address | format_address -%}\n            {% if billing_address and yb_billing != yb_delivery %}","count":1,"why":"the billing address only when it differs from the delivery address"},
+      {"from":"<h3>Customer information</h3>","to":"<h3>Delivery &amp; payment</h3>","count":1,"why":"the site's words"},
+      {"from":"<h4>Shipping address</h4>","to":"<h4>Delivering to</h4>","count":1,"why":"the site's words"},
+      {"from":"<h4>Shipping method</h4>","to":"<h4>Delivery method</h4>","count":1,"why":"the site's words"},
+      {"from":"<span>Shipping</span>","to":"<span>Delivery</span>","count":3,"why":"the site's words"},
+      {"from":"<h3>Order summary</h3>","to":"<h3>In this order</h3>","count":1,"why":"the site's words"},
+      {"from":"<span>Taxes</span>","to":"<span>{% if taxes_included %}GST, included{% else %}GST{% endif %}</span>","count":1,"why":"prices include GST"}
+    ],
+    "regions": {
+      "title": {"kind":"wording","from":"{% capture email_title %}","to":"{% endcapture %}","words":[["Your payment couldn’t be processed for order ","Your payment for order "],[" {% endcapture %}"," didn't go through{% endcapture %}"],[" Your payment for","Your payment for"]]},
+      "heading": {"kind":"wording","from":"{% capture email_heading %}","to":"{% endcapture %}","words":[["Your payment couldn’t be processed for order ","Your payment for order "],[" {% endcapture %}"," didn't go through{% endcapture %}"],[" Your payment for","Your payment for"]]},
+      "body": {"kind":"wording","from":"{% capture email_body %}","to":"{% endcapture %}","words":[["You have not been charged, please try paying for the order again.","Nothing was charged. Please try paying again."]]},
+      "style": {"kind":"replace","from":"  <style>","to":"  </style>","part":"parts/style.liquid"},
+      "footer": {"kind":"replace","from":"      <table class=\"row footer\">","to":"<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />","part":"parts/footer.liquid","words":[["Questions about this order?","Trouble paying?"]],"keep":["shop.email","shop.url","order_name"]}
+    }
+  },
+  "pending-payment-success": {
+    "patches": [
+      {"from":"discount_allocation.discount_application.title | upcase","to":"discount_allocation.discount_application.title","count":4,"why":"discount names in sentence case, as on the site"},
+      {"from":"discount_title | upcase","to":"discount_title","count":1,"why":"discount names in sentence case, as on the site"},
+      {"from":"{% if discount_allocation.discount_application.target_selection != 'all' %}","to":"{% if discount_allocation.discount_application.target_selection != 'all' and discount_allocation.amount > 0 %}","count":4,"why":"no '(-₹0)' line under pieces a discount didn't reduce"},
+      {"from":"                {% if billing_address %}","to":"                {%- assign yb_billing = billing_address | format_address -%}{%- assign yb_delivery = shipping_address | format_address -%}\n                {% if billing_address and yb_billing != yb_delivery %}","count":1,"why":"the billing address only when it differs from the delivery address"},
+      {"from":"<h3>Customer information</h3>","to":"<h3>Delivery &amp; payment</h3>","count":1,"why":"the site's words"},
+      {"from":"<h4>Shipping address</h4>","to":"<h4>Delivering to</h4>","count":1,"why":"the site's words"},
+      {"from":"<h4>Shipping method</h4>","to":"<h4>Delivery method</h4>","count":1,"why":"the site's words"},
+      {"from":"class=\"button__text\">View your order</a>","to":"class=\"button__text\">View order</a>","count":1,"why":"the site's words"},
+      {"from":"{% if shop.url %}\n    <table class=\"link secondary-action-cell\"","to":"{% if false and shop.url %}\n    <table class=\"link secondary-action-cell\"","count":1,"why":"one button; no 'or Visit our store'"},
+      {"from":"<span>Shipping</span>","to":"<span>Delivery</span>","count":3,"why":"the site's words"},
+      {"from":"<h3>Order summary</h3>","to":"<h3>In this order</h3>","count":1,"why":"the site's words"},
+      {"from":"<span>Taxes</span>","to":"<span>{% if taxes_included %}GST, included{% else %}GST{% endif %}</span>","count":1,"why":"prices include GST"}
+    ],
+    "regions": {
+      "title": {"kind":"wording","from":"{% capture email_title %}","to":"{% endcapture %}","words":[["Your payment for ","We've received your payment for "],[" has been received ",""]]},
+      "heading": {"kind":"wording","from":"{% capture email_heading %}","to":"{% endcapture %}","words":[["Your payment for ","We've received your payment for "],[" has been received ",""]]},
+      "style": {"kind":"replace","from":"  <style>","to":"  </style>","part":"parts/style.liquid"},
+      "footer": {"kind":"replace","from":"          <table class=\"row footer\">","to":"<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />","part":"parts/footer.liquid","keep":["shop.email","shop.url","order_name"]}
+    }
+  },
+  "contact-customer": {
+    "patches": [],
+    "regions": {
+      "style": {"kind":"replace","from":"  <style>","to":"  </style>","part":"parts/style.liquid"},
+      "footer": {"kind":"replace","from":"          <table class=\"row footer\">","to":"<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />","part":"parts/footer.liquid","words":[["Questions about this order?","Questions?"],["%20I%20need%20help%20with%20my%20order%20%23{{ order_name | default: name | remove: '#' }}",""]],"keep":["shop.email","shop.url"]}
+    }
+  },
+  "email-change-confirmation": {
+    "patches": [],
+    "regions": {
+      "title": {"kind":"wording","from":"{% capture email_title %}","to":"{% endcapture %}","words":[["Your email address has been changed","Your email address has changed"]]},
+      "body": {"kind":"wording","from":"{% capture email_body %}","to":"{% endcapture %}","words":[["The email address associated with your account has been changed.","Your Yarn Basket account now uses a new email address."]]},
+      "style": {"kind":"replace","from":"  <style>\n    .button__cell","to":"  </style>","part":"parts/style.liquid"},
+      "shopify-colours": {"kind":"replace","from":"  <style>\n    body {","to":"  </style>","part":"parts/no-style.liquid"},
+      "heading": {"kind":"replace","from":"            <p>{{ email_body }}</p>","part":"parts/account-heading.liquid","keep":["email_title","email_body"]},
+      "check": {"kind":"wording","from":"<p>If you did not make these changes","to":"</p>","words":[["If you did not make these changes, please ","Didn't make this change? "],["contact us</a> immediately.","Tell us</a> right away."]]},
+      "footer": {"kind":"replace","from":"          <table class=\"row footer\">","to":"<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />","part":"parts/footer.liquid","words":[["Questions about this order?","Questions?"],["%20I%20need%20help%20with%20my%20order%20%23{{ order_name | default: name | remove: '#' }}",""]],"keep":["shop.email","shop.url"]}
+    }
+  },
+  "draft-order-invoice": {
+    "patches": [
+      { "from": "discount_allocation.discount_application.title | upcase", "to": "discount_allocation.discount_application.title", "count": 1, "why": "discount names in sentence case, as on the site" },
+      { "from": "{% if discount_allocation.discount_application.target_selection != 'all' %}", "to": "{% if discount_allocation.discount_application.target_selection != 'all' and discount_allocation.amount > 0 %}", "count": 1, "why": "no '(-₹0)' line under pieces a discount didn't reduce" },
+      { "from": "class=\"button__text\">Complete your purchase</a>", "to": "class=\"button__text\">Pay now</a>", "count": 1, "why": "the button says what it does: it opens checkout to pay" },
+      { "from": "{% if shop.url %}\n    <table class=\"link secondary-action-cell\"", "to": "{% if false and shop.url %}\n    <table class=\"link secondary-action-cell\"", "count": 2, "why": "no 'or Visit our store' beside the button: one action, paying" },
+      { "from": "<h3>Order summary</h3>", "to": "<h3>In this order</h3>", "count": 1, "why": "the site's words (order page)" },
+      { "from": "<span>Shipping</span>", "to": "<span>Delivery</span>", "count": 3, "why": "the site's words (cart and order page)" },
+      { "from": "<span>Estimated taxes</span>", "to": "<span>{% if taxes_included %}GST, included{% else %}GST{% endif %}</span>", "count": 1, "why": "our prices include GST: the line must not read as an extra charge" },
+      { "from": "<h3>Customer information</h3>", "to": "<h3>Delivery &amp; payment</h3>", "count": 1, "why": "the site's words, as in Order confirmation" },
+      { "from": "<h4>Shipping address</h4>", "to": "<h4>Delivering to</h4>", "count": 1, "why": "the site's words (order page)" },
+      { "from": "<h4>Shipping method</h4>", "to": "<h4>Delivery method</h4>", "count": 1, "why": "the site's words" },
+      { "from": "                  {% if billing_address %}", "to": "                  {%- assign yb_billing = billing_address | format_address -%}{%- assign yb_delivery = shipping_address | format_address -%}\n                  {% if billing_address and yb_billing != yb_delivery %}", "count": 1, "why": "the billing address only when it differs from the delivery address" }
+    ],
+    "regions": {
+      "title": {
+        "kind": "wording",
+        "from": "{% capture email_title %}",
+        "to": "{% endcapture %}",
+        "words": [
+          ["Review and confirm to complete your order", "Review and confirm your order"],
+          ["Complete your purchase", "Your order is ready to pay"]
+        ]
+      },
+      "body": {
+        "kind": "wording",
+        "from": "{% capture email_body %}",
+        "to": "{% endcapture %}",
+        "words": [
+          ["These items will be reserved for you until ", "We're holding these pieces for you until "],
+          ["This item will be reserved for you until ", "We're holding this piece for you until "]
+        ]
+      },
+      "style": {
+        "kind": "replace",
+        "from": "  <style>",
+        "to": "  </style>",
+        "part": "parts/style.liquid"
+      },
+      "footer": {
+        "kind": "replace",
+        "from": "          <table class=\"row footer\">",
+        "to": "<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />",
+        "part": "parts/footer.liquid",
+        "keep": ["shop.email", "shop.url", "name"]
+      }
+    }
+  },
+  "pickup-receipt": {
+    "patches": [
+      { "from": "discount_allocation.discount_application.title | upcase", "to": "discount_allocation.discount_application.title", "count": 2, "why": "discount names in sentence case, as on the site" },
+      { "from": "{% if discount_allocation.discount_application.target_selection != 'all' %}", "to": "{% if discount_allocation.discount_application.target_selection != 'all' and discount_allocation.amount > 0 %}", "count": 2, "why": "no '(-₹0)' line under pieces a discount didn't reduce" },
+      { "from": "<h3>Order summary</h3>", "to": "<h3>In this order</h3>", "count": 1, "why": "the site's words (order page)" },
+      { "from": "<span>Shipping</span>", "to": "<span>Delivery</span>", "count": 3, "why": "the site's words (cart and order page)" },
+      { "from": "<span>Taxes</span>", "to": "<span>{% if taxes_included %}GST, included{% else %}GST{% endif %}</span>", "count": 1, "why": "our prices include GST: the line must not read as an extra charge" }
+    ],
+    "regions": {
+      "body": {
+        "kind": "wording",
+        "from": "{% capture email_body %}",
+        "to": "{% endcapture %}",
+        "words": [
+          ["Thank you for shopping at ", "We hope you love it. Thank you for shopping at "],
+          ["{% endif %}{% endcapture %}", "{% endif %}.{% endcapture %}"]
+        ]
+      },
+      "style": {
+        "kind": "replace",
+        "from": "  <style>",
+        "to": "  </style>",
+        "part": "parts/style.liquid"
+      },
+      "footer": {
+        "kind": "replace",
+        "from": "          <table class=\"row footer\">",
+        "to": "<img src=\"{{ 'notifications/spacer.png' | shopify_asset_url }}\" class=\"spacer\" height=\"1\" />",
+        "part": "parts/footer.liquid",
+        "keep": ["shop.email", "shop.url", "order_name"]
+      }
+    }
+  }
+}

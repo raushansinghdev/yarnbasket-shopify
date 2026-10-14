@@ -1,0 +1,44 @@
+{% if fulfillment.tracking_numbers.size > 0 or shipping_address %}
+            <table class="row yb-track">
+              <tr>
+                <td class="yb-track__box">
+                  {% if fulfillment.tracking_numbers.size > 0 %}
+                    <p class="yb-track__label">Tracking</p>
+                    {% if fulfillment.tracking_numbers.size == 1 %}
+                      <p class="yb-track__line">
+                        {%- if fulfillment.tracking_company -%}<span dir="auto">{{ fulfillment.tracking_company }}</span> &middot; {% endif -%}
+                        {%- if fulfillment.tracking_url -%}
+                          <a href="{{ fulfillment.tracking_url }}"><span class="yb-track__no" dir="ltr">{{ fulfillment.tracking_numbers.first }}</span></a>
+                        {%- else -%}
+                          <span class="yb-track__no" dir="ltr">{{ fulfillment.tracking_numbers.first }}</span>
+                        {%- endif -%}
+                      </p>
+                    {% else %}
+                      {%- if fulfillment.tracking_company -%}<p class="yb-track__line"><span dir="auto">{{ fulfillment.tracking_company }}</span></p>{%- endif -%}
+                      {% for tracking_number in fulfillment.tracking_numbers %}
+                        <p class="yb-track__line">
+                          {%- if fulfillment.tracking_urls[forloop.index0] -%}
+                            <a href="{{ fulfillment.tracking_urls[forloop.index0] }}"><span class="yb-track__no" dir="ltr">{{ tracking_number }}</span></a>
+                          {%- else -%}
+                            <span class="yb-track__no" dir="ltr">{{ tracking_number }}</span>
+                          {%- endif -%}
+                        </p>
+                      {% endfor %}
+                    {% endif %}
+                  {% endif %}
+                  {% if shipping_address %}
+                    <p class="yb-track__label{% if fulfillment.tracking_numbers.size > 0 %} yb-track__label--next{% endif %}">Delivering to</p>
+                    <p class="yb-track__address">
+                      {{ shipping_address.name }}<br>
+                      {{ shipping_address.address1 }}{% if shipping_address.address2 != blank %}, {{ shipping_address.address2 }}{% endif %}<br>
+                      {{ shipping_address.city }}{% if shipping_address.zip != blank %} {{ shipping_address.zip }}{% endif %}{% if shipping_address.province != blank %}, {{ shipping_address.province }}{% endif %}
+                    </p>
+                  {% endif %}
+                </td>
+              </tr>
+            </table>
+{% endif %}
+{%- comment -%} Partial COD: the balance the courier collects. Blank when nothing is due. {%- endcomment -%}
+{% if total_outstanding > 0 %}
+            <p class="yb-due">Pay <strong>{{ total_outstanding | money }}</strong> on delivery.</p>
+{% endif %}

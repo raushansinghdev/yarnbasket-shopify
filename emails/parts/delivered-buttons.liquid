@@ -1,0 +1,15 @@
+            <table class="row actions">
+              <tr>
+                <td class="actions__cell">
+                  <table class="button main-action-cell">
+                    <tr>
+                      {% if order_status_url %}
+                        <td class="button__cell"><a href="{{ order_status_url }}" class="button__text">View order</a></td>
+                      {% else %}
+                        <td class="button__cell"><a href="{{ shop.url }}" class="button__text">Visit our store</a></td>
+                      {% endif %}
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>

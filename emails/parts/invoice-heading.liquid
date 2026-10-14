@@ -1,0 +1,14 @@
+{%- comment -%}
+  Order invoice (docs/emails.md): the amount due and, only when Shopify has a due date, by when. An invoice for an
+  order without payment terms (the usual case here: the balance of an order) has no date, and Shopify's own heading
+  then ended in "is due" with nothing after it.
+{%- endcomment %}
+        {%- capture yb_due_text -%}{% if due_date != 'now' %}{{ due_date | date: format: 'date' }}{% endif %}{%- endcapture %}
+        {% if due_on_fulfilllment_terms == true and payment_terms.automatic_capture_at_fulfillment == false or payment_terms.automatic_capture_at_fulfillment == true and order_from_draft == true %}
+          <h2>Please pay {{ order.total_outstanding | money }} before we ship your order</h2>
+        {% elsif yb_due_text != blank %}
+          <h2>Please pay {{ order.total_outstanding | money }} by {{ yb_due_text }}</h2>
+        {% else %}
+          <h2>Please pay {{ order.total_outstanding | money }}</h2>
+        {% endif %}
+        {% if custom_message != blank %}

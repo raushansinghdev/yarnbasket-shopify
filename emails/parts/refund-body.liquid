@@ -1,0 +1,12 @@
+{%- comment -%}
+  Order refund (docs/emails.md): the amount, where it goes and when, in the refund policy's words: to the original
+  payment method within 5 to 7 working days (not Shopify's "up to 10 days"). Orders are prepaid or partial COD, so
+  there is always an online payment. The cash line shows only when the order has a cash-on-delivery payment (Shopify's
+  manual "Cash on Delivery (COD)" gateway): by the policy, that part comes to the customer's UPI ID or bank account.
+{%- endcomment -%}
+{%- assign yb_cash = false -%}
+{%- for yb_t in transactions -%}
+  {%- assign yb_gateway = yb_t.gateway_display_name | default: yb_t.gateway | downcase -%}
+  {%- if yb_gateway contains 'cash' or yb_gateway contains 'cod' -%}{%- assign yb_cash = true -%}{%- endif -%}
+{%- endfor -%}
+{% capture email_body %}We've refunded <strong>{{ amount | money_with_currency }}</strong> to your original payment method. It usually reaches you in 5 to 7 working days.{% if yb_cash %} Any part you paid in cash on delivery comes to your UPI ID or bank account instead.{% endif %}{% endcapture %}

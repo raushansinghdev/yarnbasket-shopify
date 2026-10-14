@@ -1,0 +1,24 @@
+{%- comment -%}
+  Order canceled (docs/emails.md): why, in one clause, then what happens to the money, in the refund policy's terms
+  (to the original payment method within 5 to 7 working days). Orders are prepaid or partial COD and are canceled
+  before dispatch, so the only money paid is the online payment. It replaces Shopify's message, which said "staff
+  error" and had no sentence for an order with nothing paid (kept as a safe fallback: "Nothing was charged").
+{%- endcomment -%}
+{% capture email_body %}
+  {%- case cancel_reason -%}
+    {%- when 'customer' -%}We've canceled order {{ name }} at your request.
+    {%- when 'inventory' -%}We've had to cancel order {{ name }} because a piece you ordered is out of stock. We're sorry.
+    {%- when 'declined' -%}Order {{ name }} was canceled because the payment didn't go through.
+    {%- when 'staff' -%}We've canceled order {{ name }} because of a mistake on our side. We're sorry.
+    {%- else -%}We've canceled order {{ name }}.
+  {%- endcase %}
+  {% if financial_status == 'refunded' or financial_status == 'partially_refunded' -%}
+    Your refund is on its way to your original payment method and usually arrives in 5 to 7 working days.
+  {%- elsif financial_status == 'voided' -%}
+    The payment was released, so nothing was charged.
+  {%- elsif financial_status == 'paid' or financial_status == 'partially_paid' -%}
+    We'll refund what you paid to your original payment method within 5 to 7 working days.
+  {%- elsif cancel_reason != 'declined' -%}
+    Nothing was charged.
+  {%- endif %}
+{% endcapture %}

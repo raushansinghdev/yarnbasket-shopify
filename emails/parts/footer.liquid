@@ -1,0 +1,35 @@
+          <table class="row yb-help">
+  <tr>
+    <td class="yb-help__cell">
+      <center>
+        <table class="container"{% if buyer_email_rtl == true %} dir="rtl"{% endif %}>
+          <tr>
+            <td class="yb-help__box">
+              Questions about this order? <a href="https://wa.me/919321979410?text=Hi%20Yarn%20Basket!%20I%20need%20help%20with%20my%20order%20%23{{ order_name | default: name | remove: '#' }}">WhatsApp us</a> or reply to this email.
+            </td>
+          </tr>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>
+
+          <table class="row footer">
+  <tr>
+    <td class="footer__cell">
+      <center>
+        <table class="container"{% if buyer_email_rtl == true %} dir="rtl"{% endif %}>
+          <tr>
+            <td>
+              <p class="yb-foot__made">Handmade with love in India</p>
+              <p class="disclaimer__subtext"><a href="{{ shop.url }}">Shop</a> &nbsp;·&nbsp; <a href="https://www.instagram.com/yarnbasket.in/">Instagram</a> &nbsp;·&nbsp; <a href="mailto:{{ shop.email }}">{{ shop.email }}</a></p>
+              <p class="disclaimer__subtext"><a href="{{ shop.url }}/policies/shipping-policy">Shipping</a> &nbsp;·&nbsp; <a href="{{ shop.url }}/policies/refund-policy">Returns &amp; refunds</a> &nbsp;·&nbsp; <a href="{{ shop.url }}/policies/privacy-policy">Privacy</a></p>
+            </td>
+          </tr>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>
+
+<img src="{{ 'notifications/spacer.png' | shopify_asset_url }}" class="spacer" height="1" />

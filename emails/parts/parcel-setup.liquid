@@ -1,0 +1,8 @@
+{%- comment -%}
+  Shipping confirmation (docs/emails.md): where the order is (the progress bar), then one box with the tracking and
+  the address it's going to, then one button. "Track parcel" opens the courier's page when the parcel has exactly one
+  tracking link; otherwise "View order" (Shopify's order page, which any shopper can open and which lists every
+  parcel). Shopify's three tracking cases are kept: one number with a link, one without, several. No Shop-app button.
+{%- endcomment -%}
+{%- assign yb_one_link = false -%}
+{%- if fulfillment.tracking_numbers.size == 1 and fulfillment.tracking_url -%}{%- assign yb_one_link = true -%}{%- endif -%}
