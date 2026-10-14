@@ -1,0 +1,26 @@
+{%- comment -%}
+  The cards for the cart's Saved for later and Recently viewed rows, all in one answer. Never placed on a page:
+  cart-rows.js asks for it on the search URL with the pieces' handles as the search words
+  (/search?q=<handle>,<handle>&section_id=cart-cards), the one place a section can read what was asked for.
+  Nothing is searched for here: each handle is looked up as it is, so the card shows today's price and stock.
+  One card per piece that can be listed (snippets/saved-card), in the order asked; 16 at most (Shopify looks up
+  20 different handles a page). A handle that is gone gives nothing, and cart-rows.js leaves it out.
+  Should this answer fail, cart-rows.js asks for each card on its own (sections/saved-item), as it did before.
+{%- endcomment -%}
+{%- liquid
+  assign handles = search.terms | split: ','
+  for handle in handles limit: 16
+    assign piece = all_products[handle]
+    # A handle that is gone gives an empty product, not nothing.
+    if piece.handle == handle
+      render 'saved-card', product: piece
+    endif
+  endfor
+-%}
+
+{% schema %}
+{
+  "name": "Cart cards",
+  "settings": []
+}
+{% endschema %}

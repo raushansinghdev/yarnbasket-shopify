@@ -794,6 +794,48 @@ if (want('8d')) {
     await page.request.post(site('/cart/clear.js'));
     await browser.close();
   }
+  // The rows arrive in two answers, however many pieces were saved and viewed (2026-10-13: one request a card made
+  // the rows 2s late with 8 saved and 8 viewed): sections/cart-cards for every Saved and Recently viewed card,
+  // sections/cart-extras for the suggestions. Fetched before the tap and then opened is still two. The one answer
+  // gives the cards sections/saved-item gives, and none for a test product or the free gift. Should it fail, the
+  // rows fill a card at a time, as they did.
+  if (enough) {
+    const rowAsk = /section_id=(cart-cards|saved-item|cart-extras)/;
+    {
+      const { browser, page } = await open(chromium, phone(390, 844), { reducedMotion: 'reduce', init: seeded });
+      await fresh(page);
+      const asked = [];
+      page.on('request', (r) => { const m = r.url().match(rowAsk); if (m) asked.push(m[1]); });
+      await show(page, 'drawer', '[data-cart-recent]:not([hidden])');
+      const up = (await read(page, 'drawer')).rows.filter((r) => !r.hidden).length;
+      record('One cart, drawer: the rows arrive in two answers', up === 3 && asked.length <= 2 && asked.includes('cart-cards'), `rows showing: ${up}; asked for: ${asked.join(', ') || 'nothing'}`);
+      const gift = everything.find((p) => tagged(p, 'free-gift'))?.handle;
+      const off = [test, gift].filter(Boolean);
+      const cards = await page.evaluate(async ([handles]) => {
+        const doc = async (url) => new DOMParser().parseFromString(await fetch(url).then((r) => (r.ok ? r.text() : '')), 'text/html');
+        const says = (li) => (li ? ['.card__title', '.price', '.saved-item__btn'].map((sel) => (li.querySelector(sel)?.textContent || '').replace(/\s+/g, ' ').trim()).join(' | ') : '');
+        const all = await doc(`/search?q=${handles.join(',')}&section_id=cart-cards`);
+        const out = [];
+        for (const handle of handles) out.push([handle, says(all.querySelector(`.saved-item[data-handle="${handle}"]`)), says((await doc(`/products/${handle}?section_id=saved-item`)).querySelector('.saved-item'))]);
+        return out;
+      }, [[...saved, ...viewed, ...off]]);
+      const differ = cards.filter(([, one, single]) => one !== single);
+      const listed = cards.filter(([handle, one]) => off.includes(handle) && one);
+      record('One cart: one answer gives the single cards', differ.length === 0 && listed.length === 0 && cards.filter(([, one]) => one).length >= saved.length, `${cards.filter(([, one]) => one).length} cards for ${cards.length} pieces asked; differ: ${differ.map(([h, one, single]) => `${h}: "${one}" / "${single}"`).join('; ') || 'none'}; test product or gift listed: ${listed.map(([h]) => h).join(', ') || 'none'}`);
+      await browser.close();
+    }
+    {
+      const { browser, page } = await open(chromium, phone(390, 844), { reducedMotion: 'reduce', init: seeded });
+      await page.route((url) => url.search.includes('section_id=cart-cards'), (route) => route.abort());
+      await fresh(page);
+      await show(page, 'drawer', '[data-cart-recent]:not([hidden])');
+      const s = await read(page, 'drawer');
+      const titles = s.rows.filter((r) => !r.hidden).map((r) => r.title);
+      record('One cart, drawer: the rows fill when the one answer fails', titles.join() === 'Saved for later,Little extras,Recently viewed' && s.bare === 0, `rows: ${titles.join(', ') || 'none'}; cards: ${s.handles.length}`);
+      await page.request.post(site('/cart/clear.js'));
+      await browser.close();
+    }
+  }
 }
 
 // 8e. The cart holds still (docs/decisions.md, 2026-10-08): adding a piece from the swipe rows or removing a line

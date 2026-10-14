@@ -5,7 +5,8 @@
   white circle that adds in one tap, or a "Choose" pill that opens the page of a piece with options. The heart
   keeps the top-right corner. The Saved page's card has "Add to cart" and "Choose options" under it; here
   cart-rows.js gives it the face below and moves it onto the photo.
-  Empty shells: assets/cart-rows.js fills them when the cart is opened and hides a row with nothing to show. No
+  Empty shells: assets/cart-rows.js fills them when the cart is opened (two requests: sections/cart-cards for
+  Saved and Recently viewed, sections/cart-extras for the suggestions) and hides a row with nothing to show. No
   piece shows twice, and none that is already in the cart. After that the rows stay as they are until the next
   opening: a piece added from a card keeps its card, with a tick in place of the "+". Without JavaScript nothing shows and the cart ends after the price details.
   The suggestions are based on the first piece in the cart that was chosen (the free gift sits first once it's
@@ -31,7 +32,7 @@
   assign extras_id = 'CartExtrasTitle-' | append: place
   assign recent_id = 'CartRecentTitle-' | append: place
 -%}
-<div class="cart-rows" data-cart-rows data-products="{{ routes.root_url }}products/" data-choose="{{ 'cart.extras_choose' | t | escape }}" data-in-cart="{{ 'cart.extras_in_cart' | t: title: '[title]' | escape }}">
+<div class="cart-rows" data-cart-rows data-products="{{ routes.root_url }}products/" data-search="{{ routes.search_url }}" data-choose="{{ 'cart.extras_choose' | t | escape }}" data-in-cart="{{ 'cart.extras_in_cart' | t: title: '[title]' | escape }}">
   <template data-row-face>{%- render 'icon', icon: 'plus' -%}{%- render 'icon', icon: 'check', class: 'row-add__done' -%}<span class="visually-hidden">{{ 'cart.extras_add' | t }}</span></template>
   <section class="cart-row" aria-labelledby="{{ saved_id }}" tabindex="-1" data-cart-saved hidden>
     {%- render 'product-row', title: saved_title, id: saved_id, shell: true -%}

@@ -1215,3 +1215,12 @@ Raushan accepted every recommendation in search-plan §13.
 - **Photos are not enlarged by software** to reach 2048 px: it invents detail in hand-made stitches. New photos are exported large instead.
 - **Google may show our photos large** (`max-image-preview:large`) and the first photo of a product carries a Yarn Basket credit.
 - **Pinterest is prepared, not switched on:** two Theme settings and `docs/pinterest.md`. No Pinterest script on the pages.
+
+## 2026-10-13: the cart's swipe rows arrive in two requests, fetched before the tap
+- **Why:** Raushan saw Little extras and Recently viewed arrive late in the drawer. Measured (Chromium, 390 wide, dev server): 0.67s after the tap with 2 pieces viewed, 1.34s with 8, 2.02s with 8 viewed and 8 saved. The rows asked for one card per request and waited for all of them, so the wait grew with what the browser had saved and viewed. No code had changed; the lists had.
+- **One request for every Saved and Recently viewed card** (`sections/cart-cards`), one for Little extras. The section is asked for on the search URL with the handles as the search words (`/search?q=a,b&section_id=cart-cards`): the one place a section can read what was asked for. Nothing is searched; each handle is looked up as it is. 16 pieces at most.
+- **Fetched before the tap** (`cart.js` → `warm()` in `cart-rows.js`): when the cart button is touched, hovered or focused, when a piece is added, and once the page is idle with something in the cart (not when the browser asks to save data). The first two photos of each row come with it. An empty cart with no sign of intent makes no extra requests.
+- **Fail soft:** if the one answer fails, each card is asked for on its own (`sections/saved-item`), as before. Both sections draw `snippets/saved-card`, so the card and the rule that hides test products and the free gift are written once.
+- **Checks (8d):** two answers at most on opening; the one answer gives the single cards; the rows still fill when it fails.
+- **Considered and not chosen:** fetching early without cutting the requests (17 requests on page views, and a cold tap stays slow); drawing the rows in the drawer's own HTML (every page of the site would render more, and saved and viewed live in the browser); keeping cards in the browser between pages (could show an old price); showing each row as it lands (rows would shift; not needed with two requests).
+- **Not done:** the Saved page and the product page's Recently viewed row still ask once per card.

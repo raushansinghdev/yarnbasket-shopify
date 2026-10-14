@@ -11,15 +11,20 @@
   The rows are drawn when the cart is opened and then stay as they are (docs/decisions.md, 2026-10-08): no card
   leaves, arrives or changes place while the shopper is looking. A piece added from a card keeps its card, with a
   tick in place of the "+".
-  The drawer fetches this file with its first opening (cart.js calls the default export on every opening); the
-  cart page loads it after cart-page.js and fills the rows when they come near the screen. Without it the cart
-  simply ends after the price details.
+  Two requests fill the rows, however many pieces there are: one for every Saved and Recently viewed card
+  (sections/cart-cards) and one for Little extras. A card that answer leaves out is asked for on its own.
+  The drawer fetches this file before its first opening where it can (cart.js: warm() when the cart button is
+  about to be pressed, when a piece is added, or once the page is idle with something in the cart) and calls the
+  default export on every opening; the cart page loads it after cart-page.js and fills the rows when they come
+  near the screen. Without it the cart simply ends after the price details.
 */
 
 const { enqueue, send, withSections, render, say, counted, box, sectionId, S, fmt, why } = window.ybCart;
 const scope = document.querySelector('[data-cart-page]') || document.getElementById('CartDrawer');
 const inDrawer = !!scope?.matches('dialog');
 const MAX = 6;
+// sections/cart-cards answers for 16 pieces at most.
+const BATCH = 16;
 const parse = (html) => new DOMParser().parseFromString(html, 'text/html');
 const handleIn = (href) => (href || '').match(/\/products\/([^/?#]+)/)?.[1] || '';
 // A card's product, whichever section drew it (saved-item or cart-extras).
@@ -134,25 +139,44 @@ const ready = (li) => {
   }
   return li;
 };
-// One card per product and section, fetched once. null = gone, sold out or the free gift.
-const cards = new Map();
-const card = (handle, section, pick) => {
-  const key = `${section}:${handle}`;
-  if (!cards.has(key)) {
-    const job = fetch(`${rows.dataset.products}${handle}?section_id=${section}`)
-      .then((r) => (r.ok ? r.text() : ''))
-      .then((html) => (html && ready(pick(parse(html)))) || null);
-    job.catch(() => cards.delete(key));
-    cards.set(key, job.catch(() => null));
-  }
-  return cards.get(key);
-};
+// One card per product, fetched once. null = gone, sold out or the free gift.
 // Pieces that can be bought now: Add, or Choose for a piece with options. Saved for later and Recently
 // viewed share the card, so a piece in both lists is fetched once (tidy() then shows it in one row only).
-const buyCard = (handle) => card(handle, 'saved-item', (doc) => {
-  const li = doc.querySelector('.saved-item[data-handle]:not([data-handle=""])');
-  return li?.querySelector('.saved-item__form, .saved-item__btn[href*="/products/"]') ? li : null;
-});
+const cards = new Map();
+const buyable = (li) => (li?.querySelector('.saved-item__form, .saved-item__btn[href*="/products/"]') ? ready(li) : null);
+const text = (url) => fetch(url).then((r) => (r.ok ? r.text() : Promise.reject(new Error(r.status))));
+// On its own (sections/saved-item), should the answer for all of them fail.
+const single = (handle) => text(`${rows.dataset.products}${handle}?section_id=saved-item`)
+  .then((html) => buyable(parse(html).querySelector(`.saved-item[data-handle="${handle}"]`)));
+// All the cards not yet fetched, in one answer (sections/cart-cards reads the handles from the search words).
+const fetchCards = (handles) => {
+  const wanted = [...new Set(handles)].filter((handle) => !cards.has(handle)).slice(0, BATCH);
+  if (wanted.length) {
+    const all = rows.dataset.search
+      ? text(`${rows.dataset.search}?q=${encodeURIComponent(wanted.join(','))}&section_id=cart-cards`).then(parse)
+      : Promise.reject(new Error('no search url'));
+    all.catch(() => {});
+    wanted.forEach((handle) => {
+      const job = all.then((doc) => buyable(doc.querySelector(`.saved-item[data-handle="${handle}"]`)), () => single(handle));
+      job.catch(() => cards.delete(handle));
+      cards.set(handle, job.catch(() => null));
+    });
+  }
+  return Promise.all(handles.map((handle) => cards.get(handle) ?? null));
+};
+// Little extras for the piece the row follows. The last answer is kept until the cart changes, so an opening
+// that was fetched ahead (warm) asks nothing twice.
+let extrasJob = null;
+const fetchExtras = () => {
+  const url = extrasRow?.dataset.url;
+  if (!url) return Promise.resolve(null);
+  if (extrasJob?.url !== url) {
+    const job = text(url).then((html) => parse(html).querySelector('.extras'));
+    extrasJob = { url, job: job.catch(() => null) };
+    job.catch(() => { if (extrasJob?.url === url) extrasJob = null; });
+  }
+  return extrasJob.job;
+};
 
 /* ---------- Filling the rows ---------- */
 // The row's cards become these, unless they already are. Focus stays on the same piece, or moves to its
@@ -191,23 +215,29 @@ const tidy = () => {
   });
 };
 
-let turn = 0;
-const draw = () => {
-  if (!rows) return;
-  const asked = ++turn;
+// What the rows ask for: the shopper's two lists, without what is in the cart.
+const ask = () => {
   const cart = inCart();
   const free = (handle) => !cart.has(handle);
   const saved = savedRow && window.ybSaved ? window.ybSaved.read() : [];
   const viewed = recentRow && window.ybSaved ? window.ybSaved.viewed() : [];
   // A few more than a row holds, for the ones that turn out to be sold out.
-  const jobs = [
-    Promise.all(saved.filter(free).slice(0, MAX + 2).map(buyCard)),
-    // A saved piece stays in its own row: the two rows share one card, and a card can sit in one place only.
-    Promise.all(viewed.filter((handle) => free(handle) && !saved.includes(handle)).slice(0, MAX + 2).map(buyCard)),
-    extrasRow
-      ? fetch(extrasRow.dataset.url).then((r) => (r.ok ? r.text() : '')).then((html) => parse(html).querySelector('.extras')).catch(() => null)
-      : null,
-  ];
+  const forSaved = saved.filter(free).slice(0, MAX + 2);
+  // A saved piece stays in its own row: the two rows share one card, and a card can sit in one place only.
+  const forRecent = viewed.filter((handle) => free(handle) && !saved.includes(handle)).slice(0, MAX + 2);
+  const all = fetchCards([...forSaved, ...forRecent]);
+  return {
+    saved,
+    free,
+    jobs: [all.then((list) => list.slice(0, forSaved.length)), all.then((list) => list.slice(forSaved.length)), fetchExtras()],
+  };
+};
+
+let turn = 0;
+const draw = () => {
+  if (!rows) return;
+  const asked = ++turn;
+  const { saved, free, jobs } = ask();
   // Nothing on screen moves when a row above fills or empties.
   Promise.all(jobs).then(([savedCards, recentCards, extras]) => still(() => {
     // A newer opening has asked again.
@@ -307,11 +337,40 @@ scope?.addEventListener('scroll', (event) => { if (event.target.matches?.('[data
 
 document.addEventListener('cart:rendered', () => {
   const was = rows;
+  // The cart has changed, and with it what can be suggested.
+  extrasJob = null;
   adopt();
   if (inDrawer && was && rows.isConnected && last?.isConnected && !scope.querySelector(':focus')) last.focus({ preventScroll: true });
   marks();
   after();
 });
+
+// The drawer, before it opens: the two answers are fetched and the first photos of each row with them, so an
+// opening has only to place the cards. Nothing on the page is touched.
+const PHOTOS = 2;
+const seenPhotos = new Set();
+const photo = (li) => {
+  const img = li?.querySelector('img');
+  const key = img?.getAttribute('srcset') || img?.getAttribute('src');
+  if (!key || seenPhotos.has(key)) return;
+  seenPhotos.add(key);
+  const ahead = new Image();
+  ahead.sizes = img.getAttribute('sizes') || '';
+  if (img.getAttribute('srcset')) ahead.srcset = img.getAttribute('srcset');
+  ahead.src = img.getAttribute('src') || '';
+};
+export function warm() {
+  adopt();
+  if (!rows || scope.open) return;
+  const mine = turn;
+  const { jobs } = ask();
+  Promise.all(jobs).then(([savedCards, recentCards, extras]) => {
+    // Opened meanwhile: the cards are in the page, and it fetches the photos it needs.
+    if (mine !== turn) return;
+    [savedCards.filter(Boolean), recentCards.filter(Boolean), [...(extras?.querySelectorAll('.extra') || [])]]
+      .forEach((list) => list.slice(0, PHOTOS).forEach(photo));
+  });
+}
 
 // The drawer: called on every opening.
 export default function fill() {

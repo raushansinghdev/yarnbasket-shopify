@@ -8,42 +8,7 @@
   The free gift and test products (tag "test-product") give nothing back, so a piece saved or seen before it was
   taken off sale drops out of every list: the Saved page reads the empty answer as "no longer available".
 {%- endcomment -%}
-{%- liquid
-  assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
-  assign variant = product.selected_or_first_available_variant
-  assign skip = false
-  if product.tags contains 'free-gift' or product.tags contains 'test-product' or product.id == settings.gift_product.id
-    assign skip = true
-  endif
--%}
-{%- unless skip -%}
-<li class="saved-item" data-handle="{{ product.handle }}">
-  {%- render 'product-card', product: product, sizes: '(min-width: 1280px) 15vw, (min-width: 990px) 20vw, (min-width: 768px) 28vw, 45vw', compact: true -%}
-  <div class="saved-item__actions">
-    {%- if product.available and product.has_only_default_variant -%}
-      {%- form 'product', product, class: 'saved-item__form', novalidate: 'novalidate' -%}
-        <input type="hidden" name="id" value="{{ variant.id }}">
-        <button type="submit" class="btn btn--ghost saved-item__btn">
-          <span data-add-label>{{ 'products.add_to_cart' | t }}</span>
-          <span class="visually-hidden">: {{ product.title }}</span>
-        </button>
-      {%- endform -%}
-    {%- elsif product.available -%}
-      <a class="btn btn--ghost saved-item__btn" href="{{ product.url }}">
-        {{- 'saved.choose' | t -}}<span class="visually-hidden">: {{ product.title }}</span>
-      </a>
-    {%- elsif whatsapp != blank -%}
-      <a class="btn btn--ghost saved-item__btn" href="https://wa.me/{{ whatsapp }}?text={{ 'saved.ask_message' | t: title: product.title | replace: '&amp;', '&' | replace: '&#39;', "'" | replace: '&quot;', '"' | url_encode }}" rel="noopener" target="_blank">
-        {{- 'saved.ask_make' | t -}}<span class="visually-hidden">: {{ product.title }} ({{ 'accessibility.new_window' | t }})</span>
-      </a>
-    {%- else -%}
-      <a class="btn btn--ghost saved-item__btn" href="/pages/contact?topic=product&amp;about={{ product.title | url_encode }}#ContactForm">
-        {{- 'saved.ask_make' | t -}}<span class="visually-hidden">: {{ product.title }}</span>
-      </a>
-    {%- endif -%}
-  </div>
-</li>
-{%- endunless -%}
+{%- render 'saved-card', product: product -%}
 
 {% stylesheet %}
   .saved-item { display: grid; grid-template-rows: 1fr auto; gap: var(--space-3); min-width: 0; }

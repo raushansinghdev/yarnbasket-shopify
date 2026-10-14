@@ -410,6 +410,25 @@ document.addEventListener('submit', (event) => {
     });
 });
 
+/* ---------- The drawer's product rows: assets/cart-rows.js ----------
+   Fetched ahead where an opening is likely, so the rows are there when the drawer is: when the cart button is
+   about to be pressed, when a piece is added, and once the page is idle with something in the cart (not for a
+   browser that asks to save data). Otherwise with the first opening. */
+let rowsMod = null;
+const rowsSrc = !page && drawer?.dataset.addons;
+const loadRows = () => (rowsMod ||= rowsSrc ? import(rowsSrc).catch(() => (rowsMod = null)) : null);
+const warmRows = () => drawer.open || loadRows()?.then((m) => m?.warm?.()).catch(() => {});
+if (rowsSrc) {
+  const cartButton = document.querySelector('.site-header__cart');
+  ['pointerenter', 'pointerdown', 'touchstart', 'focusin'].forEach((type) => cartButton?.addEventListener(type, warmRows, { passive: true }));
+  document.addEventListener('cart:rendered', warmRows);
+  if (+box()?.dataset.count > 0 && !navigator.connection?.saveData) {
+    // Safari has no requestIdleCallback.
+    if (window.requestIdleCallback) requestIdleCallback(warmRows, { timeout: 3000 });
+    else setTimeout(warmRows, 1500);
+  }
+}
+
 /* ---------- The drawer ----------
    Opening adds a history entry, so the phone's Back button closes it instead of leaving the page. */
 let opener = null;
@@ -422,8 +441,8 @@ const openDrawer = (from, again) => {
   drawer.showModal();
   drawer.querySelector('#CartDrawerTitle')?.focus();
   if (!again) history.pushState({ cartDrawer: true }, '');
-  // The drawer's product rows (assets/cart-rows.js), fetched with the first opening.
-  if (drawer.dataset.addons) import(drawer.dataset.addons).then((m) => m.default()).catch(() => {});
+  // The drawer's product rows (assets/cart-rows.js): filled on every opening.
+  loadRows()?.then((m) => m?.default());
 };
 const closeDrawer = (fromHistory) => {
   if (!drawer?.open || 'closing' in drawer.dataset) return;
