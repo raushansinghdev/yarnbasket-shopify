@@ -25,9 +25,6 @@
 {%- enddoc -%}
 {%- liquid
   assign label_key = 'account.status_' | append: state
-  if state == 'cod'
-    assign label_key = 'account.status_cod'
-  endif
   assign tone = 'wait'
   case state
     when 'shipped', 'partial'

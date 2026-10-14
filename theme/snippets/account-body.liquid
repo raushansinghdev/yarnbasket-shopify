@@ -16,12 +16,12 @@
   the layout can be judged and tested without a real sign-in. Remove with the other demo files before launch.
 
   @param {boolean} [demo] - Show the signed-in page with demo data when nobody is signed in
-  @param {string} [view] - 'details' for the Your details page, 'order' for one order's page (signed in only; otherwise the account page)
+  @param {string} [view] - 'details' for the Your details page, 'order' for one order's page (signed in only; otherwise the account page);
+    'empty' shows the demo with no orders yet
 {%- enddoc -%}
 {%- liquid
   assign whatsapp = settings.social_whatsapp | remove: '+' | remove: ' ' | remove: '-'
   assign saved_url = pages['saved'].url
-  assign track_url = pages['track-order'].url
   assign signed_in = false
   assign is_demo = false
   if customer
@@ -165,14 +165,10 @@
         <span class="account__avatar account__avatar--out" aria-hidden="true">{%- render 'icon', icon: 'account' -%}</span>
         <h1 class="account__title" tabindex="-1" data-account-title>{{ 'account.title_out' | t }}</h1>
         <p class="account__lead">{{ 'account.lead_out' | t }}</p>
+        <p class="account__guest">{{ 'account.guest_orders' | t }}</p>
         <p class="account__signin">
           <a class="btn" href="{{ routes.storefront_login_url | default: routes.account_login_url }}" data-account-open>{{ 'account.sign_in' | t }}</a>
-          <span class="account__signin-links">
-            {%- if track_url -%}
-              <a class="account__quiet-link" href="{{ track_url }}">{{ 'account.track_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
-            {%- endif -%}
-            <a class="account__quiet-link" href="/pages/contact">{{ 'account.help_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
-          </span>
+          <a class="account__quiet-link" href="/pages/contact">{{ 'account.help_guest' | t }}{%- render 'icon', icon: 'arrow' -%}</a>
         </p>
       </header>
     {%- endif -%}
@@ -184,7 +180,7 @@
             <h2 class="account__h2" id="AccountOrders">{{ 'account.orders_title' | t }}</h2>
           </div>
 
-          {%- if is_demo -%}
+          {%- if is_demo and view != 'empty' -%}
             <div class="account__orders">
               {%- capture demo_help -%}{%- if help_base -%}{{ help_base }}{{ 'account.help_message' | t: name: '#1050' | url_encode }}{%- else -%}/pages/contact{%- endif -%}{%- endcapture -%}
               {%- liquid
@@ -206,11 +202,10 @@
             <details class="account__earlier" data-earlier>
               <summary>{{ 'account.earlier_orders' | t: count: 1 }}{%- render 'icon', icon: 'chevron' -%}</summary>
               <div class="account__orders">
-                {%- capture demo_note -%}{{ 'account.shipped_on' | t: date: '2 Aug' }} · Delhivery{%- endcapture -%}
-                {%- render 'account-order-card', name: '#1012', date: '1 Aug 2026', state: 'shipped', note: demo_note, image: demo_image, items: 'Bunny keychain', buy: 'demo:1', details_url: demo_1012, help_url: demo_help, help_new_tab: help_base -%}
+                {%- render 'account-order-card', name: '#1012', date: '1 Aug 2026', state: 'cancelled', image: demo_image, items: 'Bunny keychain', buy: 'demo:1', details_url: demo_1012, help_url: demo_help, help_new_tab: help_base -%}
               </div>
             </details>
-          {%- elsif customer.orders.size > 0 -%}
+          {%- elsif is_demo == false and customer.orders.size > 0 -%}
             {%- comment -%} The latest 3 show; orders 4 to 20 wait behind "Show earlier orders". {%- endcomment -%}
             {%- liquid
               assign shown = customer.orders.size | at_most: 20
@@ -361,11 +356,11 @@
   @media (hover: hover) { .account__back:hover .icon { transform: translateX(-3px); } }
   .account--details .account__dl > div:first-child { padding-top: 0; }
 
-  .account__hello--out .account__lead, .account__hello--out .account__signin { grid-column: 1 / -1; }
+  .account__hello--out .account__lead, .account__hello--out .account__guest, .account__hello--out .account__signin { grid-column: 1 / -1; }
+  .account__guest { max-width: 34rem; margin-top: var(--space-2); color: var(--color-muted); }
   .account__lead { max-width: 34rem; margin-top: var(--space-3); font-size: var(--fs-lead); line-height: 1.5; }
   .account__signin { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-top: var(--space-4); }
   /* The two quiet links stay together: beside the button when there's room, otherwise under it as a tight pair. */
-  .account__signin-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-5); }
 
   /* Phones: three shortcuts under the greeting. Desktop shows everything at once, so they go. */
   .account__jump { margin-top: calc(var(--space-7) * -1 + var(--space-5)); }
@@ -448,7 +443,8 @@
   .order-card__note { font-size: var(--fs-small); color: var(--color-ink); }
   .order-card__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
   .order-card__form { display: contents; }
-  .order-card__btn { min-height: var(--tap); padding-inline: var(--space-4); font-size: .9375rem; }
+  /* A button's words stay on one line; when two buttons don't fit side by side they stack, each full width. */
+  .order-card__btn { min-height: var(--tap); padding-inline: var(--space-4); font-size: .9375rem; white-space: nowrap; }
   .order-card__btn[aria-busy="true"] { opacity: .7; }
   .order-card__details {
     position: absolute;
@@ -498,7 +494,7 @@
   /* Phones: the buttons share the row equally, so every card lines up the same way. */
   @media (max-width: 599px) {
     .order-card__top { grid-template-columns: 64px minmax(0, 1fr); gap: var(--space-3); }
-    .order-card__actions .order-card__btn { flex: 1 1 0; padding-inline: var(--space-3); }
+    .order-card__actions .order-card__btn { flex: 1 1 auto; padding-inline: var(--space-3); }
   }
 
   .account__empty { display: grid; gap: var(--space-1); margin-bottom: var(--space-5); padding: var(--space-5); border: 1px dashed var(--color-line-strong); border-radius: var(--radius-md); background: var(--white); }

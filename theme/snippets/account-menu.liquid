@@ -29,17 +29,13 @@
   endif
   assign who = first_name | default: email | strip
   assign initial = who | slice: 0 | upcase
-  if last
-    if last.cancelled
-      assign last_state = 'account.status_cancelled' | t
-    elsif last.fulfillment_status == 'fulfilled'
-      assign last_state = 'account.status_shipped' | t
-    elsif last.fulfillment_status == 'partial'
-      assign last_state = 'account.status_partial' | t
-    else
-      assign last_state = 'account.status_confirmed' | t
-    endif
-  endif
+-%}
+{%- comment -%} The latest order's state in the same words as its card and page (snippets/account-order decides it). {%- endcomment -%}
+{%- if last -%}
+  {%- capture last_state -%}{%- render 'account-order', order: last, as: 'label' -%}{%- endcapture -%}
+  {%- assign last_state = last_state | strip -%}
+{%- endif -%}
+{%- liquid
   # Sign out brings people back to the page they were on (Shopify honours return_url; checked 2026-10-03).
   assign back = request.path | default: routes.root_url | url_encode
   assign logout_url = routes.account_logout_url | append: '?return_url=' | append: back

@@ -1,6 +1,6 @@
 # Account, round 4: orders live on our own page
 
-Status: **Round 4 built 2026-10-13; round 5 part A (an order page of its own) built 2026-10-14, part B (our own "Edit your details") waits for the proof in B0. Not committed. Waiting for Raushan's signed-in look.**
+Status: **Rounds 4–5 committed (bc383f6, not pushed). Round 6 (design pass) built 2026-10-14, not committed. Round 5 part B (our own "Edit your details") waits for the proof in B0. Waiting for Raushan's signed-in look.**
 
 ## Why
 
@@ -93,3 +93,26 @@ Then a throwaway script on the dev theme must show: the handshake completes sile
 
 1. "View order" on order #1001: its page shows ₹965, the gift and delivery as "Free", Payment, the address.
 2. Track order → "Your latest order" opens that page.
+
+---
+
+# Round 6 (2026-10-14): a design pass over everything account-related
+
+Raushan: every account page should follow our theme and be easy, clear and good-looking; and nothing account-related we worked on should be missed. Every surface was screenshotted at 360px and 1280px before and after.
+
+| Surface | What changed |
+|---|---|
+| Order page | A 3-step tracker (Ordered → Shipped → Delivery) replaces the pill. Delivery never says "Delivered" (Liquid can't see it): "On its way. Track your parcel for the delivery date.", or "Not with you yet? Tap Need help." once tracking has lapsed. Getting it ready: step 2 in progress. Cancelled or refunded: the pill and "Cancelled on <date>" instead. Down the page on phones, across from 600px. |
+| Order page | Opens at the top (it used to jump 50px to the `#`); the account page's column widths on desktop; "Pink · Qty 2" on one line; Payment, Delivering to and Tracking with icons and dividers; nothing paid yet says "Pay ₹965 on delivery" (the order's own total; part-paid orders say "Part paid, the rest on delivery" with no amount). |
+| Buttons, cards and order page | Words never wrap inside a button at 360px; two that don't fit stack full width. |
+| "We couldn't find that order" | One "See your orders" and a "Contact us" (Contact page, An order); no duplicate back link. |
+| Signed-out account page | "Track an order without signing in" (it led to a page asking to sign in) became "Ordered without an account? Sign in with the same email, and your orders are here." |
+| Track order, signed in | "Track →" became "View order →". |
+| Desktop account menu | The latest order's state comes from `snippets/account-order` (as: 'label'), the same as its card and page. |
+| Shopify's sign-in sheet | Signed out it always shows "Orders" and "Profile", whatever its menu. `saved.js` now points them at a sign-in that returns to our account page (and Your details). It reaches into the component's shadow roots; if Shopify reshapes it, they keep Shopify's links and check 13 fails. |
+| No orders yet | A preview template (`page.account-empty-demo.json`) so it can be judged and checked. |
+| Not changed | Your details (part B replaces it), the phone drawer's account row, the Saved page's sign-in line. |
+
+Raushan's steps for Shopify's own pages are on the launch checklist: the account pages' background, and the order emails' logo and colour.
+
+Checks: check 13 has the tracker states, 360px buttons, opening at the top, the not-found note, the no-orders preview and the sign-in sheet. 26/26 (9 and 13 together 42/42); money 12/12.

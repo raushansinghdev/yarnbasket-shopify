@@ -2,6 +2,22 @@
 
 Newest first. Each entry says what was decided and why, so later work doesn't reopen it by accident.
 
+## 2026-10-14 (order emails in our look, docs/emails.md)
+
+- **Restyle Shopify's email templates, don't rewrite them.** Shopify's Liquid that prints pieces, discounts, taxes and totals stays exactly as it is; we change only the style, header, wording, buttons and footer, between `yb:` markers. `npm run check:emails` proves the rest is untouched and every amount is still printed.
+- **Pilot first:** Order confirmation, judged as a mock before any Liquid is touched; the other customer emails follow one at a time.
+- **The purple "Track order with Shop" button goes,** like "Sign in with Shop" on 2026-10-03: it advertises Shopify's app and leads away from us.
+- **The site's fonts are loaded** (Cormorant Garamond, Jost, with @font-face from Google Fonts), so Apple Mail and Shopify's preview match the site. Gmail ignores web fonts and falls back to Futura and Baskerville. At first the email only named the fonts without loading them, and Raushan saw that it didn't look like the site.
+- **Payment wording assumes prepaid or partial COD only:** refunds and cancels say "to your original payment method", as the refund policy does. A refund adds the policy's UPI-or-bank line only when the order has a cash payment.
+
+## 2026-10-14 (account round 6: design pass, docs/account-orders-plan.md)
+
+- **The order page shows where the order is in three steps** (Ordered → Shipped → Delivery), the pattern shoppers know. The last step never claims "Delivered"; it points to the courier's tracking.
+- **Cash on delivery states the amount** only when nothing is paid yet (the whole total). Part-paid orders don't show an amount: Liquid has no safe "still to pay" figure.
+- **Shopify's sign-in sheet's "Orders" and "Profile" are pointed at our pages by script,** inside the component. Fail soft: if Shopify changes the sheet, they keep Shopify's links and check 13 says so.
+- **"Track an order without signing in" is gone from the signed-out account page:** it led to a page asking to sign in.
+- **One order state for the card, the page and the header menu** (`snippets/account-order`).
+
 ## 2026-10-14 (an order has its own page; "Edit your details" may move to our theme, docs/account-orders-plan.md round 5)
 
 - **An order's details are a page of their own** (`/pages/account?view=account-order#Order-1001`), not a row that opens on the card (Raushan: there is a lot to show: pieces, payment, address, tracking). This replaces "Order details opens on the order card" in the entry below. The card gets "View order".

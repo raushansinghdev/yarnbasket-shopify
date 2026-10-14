@@ -36,7 +36,7 @@
               {{- last.created_at | date: format: 'date' }} · {{ last.fulfillment_status_label -}}
             </span>
           </span>
-          <span class="track-order__go">{{ 'track.track' | t }}{%- render 'icon', icon: 'arrow' -%}</span>
+          <span class="track-order__go">{{ 'track.view_order' | t }}{%- render 'icon', icon: 'arrow' -%}</span>
         </a>
       {%- endif -%}
       <a class="btn track__btn" href="{{ orders_url }}">{{ 'track.see_orders' | t }}</a>

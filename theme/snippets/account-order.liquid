@@ -6,9 +6,9 @@
   Liquid can't see deliveries, so neither ever claims "Delivered".
 
   @param {object} order - The order
-  @param {string} as - 'card' or 'page'
-  @param {number} now - The time now, in seconds
-  @param {string} order_base - The order page's address, without the order ("/pages/account?view=account-order")
+  @param {string} as - 'card', 'page', or 'label' (just the state in words, for the header's account menu)
+  @param {number} [now] - The time now, in seconds (not needed for 'label')
+  @param {string} [order_base] - The order page's address, without the order ("/pages/account?view=account-order")
   @param {string} [back_url] - The account page's orders (the page's way back)
   @param {string} [help_base] - "https://wa.me/<number>?text=", when a WhatsApp number is set
 {%- enddoc -%}
@@ -94,16 +94,32 @@
     assign help_url = order.name | remove: '#' | url_encode | prepend: '/pages/contact?topic=order&order=' | append: '#ContactForm'
   endif
   assign ordered_on = order.created_at | date: '%-d %b %Y'
+  # For the order page's progress: the shipment's date and courier, and when a cancelled order was cancelled.
+  assign shipped_note = blank
+  if shipped_at > 0
+    assign shipped_note = shipped_on
+    if company != blank
+      assign shipped_note = shipped_note | append: ' · ' | append: company
+    endif
+  endif
+  assign cancelled_on = blank
+  if order.cancelled_at
+    assign cancelled_on = order.cancelled_at | date: '%-d %b %Y'
+  endif
   assign order_url = order.name | handleize | prepend: '#Order-' | prepend: order_base
 -%}
-{%- if as == 'page' -%}
+{%- if as == 'label' -%}
+  {%- assign label_key = 'account.status_' | append: state -%}
+  {{- label_key | t -}}
+{%- elsif as == 'page' -%}
   {%- capture main -%}{%- render 'account-order-details', order: order, part: 'main' -%}{%- endcapture -%}
   {%- capture side -%}{%- render 'account-order-details', order: order, part: 'side' -%}{%- endcapture -%}
   {%- render 'account-order-view',
     name: order.name,
     date: ordered_on,
     state: state,
-    note: note,
+    shipped_note: shipped_note,
+    cancelled_on: cancelled_on,
     track_url: track,
     buy: buy,
     skipped: skipped,

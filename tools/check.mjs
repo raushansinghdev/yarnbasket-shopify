@@ -1285,9 +1285,11 @@ if (want('12')) {
 //     viewed on the account page can be cleared. Help isn't repeated on the page (docs/decisions.md, 2026-10-08):
 //     no help panel, the phones' Help shortcut and the signed-out link both go to the Contact page.
 //     Orders stay in our theme (docs/account-orders-plan.md): the earlier orders open in place, "View order" opens
-//     the order's own page (…?view=account-order#Order-1042: that order alone, axe, a way back, the tab named after
-//     it; an unknown order gets a note), and the only link that leaves for Shopify's account pages is "Edit your
-//     details".
+//     the order's own page (…?view=account-order#Order-1042: that order alone, at the top of the page, axe, a way
+//     back, the tab named after it; an unknown order gets a note with "See your orders" and "Contact us"), and the
+//     only link that leaves for Shopify's account pages is "Edit your details". Round 6: the order page's steps
+//     (getting it ready, on its way, cancelled), buttons whose words never wrap at 360px, the no-orders preview, and
+//     Shopify's sign-in sheet sending "Orders" and "Profile" back to our pages.
 if (want('13')) {
   const site = (path) => new globalThis.URL(path, URL).href;
   const acct = (await fetch(site('/pages/account'))).ok ? site('/pages/account') : site('/pages/contact?view=account');
@@ -1310,6 +1312,14 @@ if (want('13')) {
       return { tall: Math.round(a?.getBoundingClientRect().height || 0), panel: !!document.querySelector('.account #help'), side: !!document.querySelector('.account__side'), wide: document.documentElement.scrollWidth > innerWidth };
     });
     record(`Account page, ${label}: signed out, one link to the Contact page, no help panel`, guest.tall >= 44 && !guest.panel && !guest.side && !guest.wide, `link ${guest.tall}px tall, help panel: ${guest.panel}, empty side column: ${guest.side}, scrolls sideways: ${guest.wide}`);
+    if (label === 'desktop') {
+      const opened = await page.click('shopify-account', { timeout: 5000 }).then(() => page.waitForTimeout(1500)).then(() => true, () => false);
+      const sheet = await page.evaluate(() => { const out = []; const walk = (r) => { if (!r) return; r.querySelectorAll('a[href]').forEach((a) => out.push(a.getAttribute('href'))); r.querySelectorAll('*').forEach((e) => walk(e.shadowRoot)); }; walk(document.querySelector('shopify-account')?.shadowRoot); return out; });
+      const shopify = sheet.filter((h) => /^\/account\//.test(h));
+      const back = sheet.filter((h) => h.includes('return_to=%2Fpages%2Faccount'));
+      record('Sign-in sheet: Orders and Profile come back to our pages', opened && shopify.length === 0 && back.length >= 2, `sheet opened: ${opened}; links to Shopify's account pages: ${shopify.join(', ') || 'none'}; links back to our account page: ${back.length}`);
+      await page.keyboard.press('Escape');
+    }
     if (!hasDemo) console.log(`SKIP  Account page, ${label}: signed-in demo            Demo content is off`);
     else {
       await page.goto(demoUrl, { waitUntil: 'load' });
@@ -1361,6 +1371,9 @@ if (want('13')) {
           rows: view?.querySelectorAll('.order-more__item').length || 0,
           total: view?.querySelector('.order-more__total dd')?.textContent.trim() || '',
           blocks: view?.querySelectorAll('.order-more__block').length || 0,
+          steps: [...(view?.querySelectorAll('.order-steps__step') || [])].map((li) => li.className.match(/--(\w+)/)[1]).join(' '),
+          stepWords: view?.querySelector('[aria-current="step"]')?.textContent.replace(/\s+/g, ' ').trim() || '',
+          top: scrollY,
           buttons: view?.querySelectorAll('.order-card__btn').length || 0,
           back: back?.getAttribute('href') || '',
           backTall: Math.round(back?.getBoundingClientRect().height || 0),
@@ -1369,14 +1382,43 @@ if (want('13')) {
           wide: document.documentElement.scrollWidth > innerWidth,
         };
       }, gone.toString());
-      record(`Order page, ${label}: one order, on its own page (axe)`, v5.length === 0 && one.shown === 1 && one.name.includes('#1042') && one.h1 === 1 && one.tab.includes('#1042') && one.rows >= 1 && /\d/.test(one.total) && one.blocks >= 3 && one.buttons === 2 && one.back.endsWith('#orders') && one.backTall >= 44 && !one.none && one.away.length === 0 && !one.wide, `${v5.join(', ') || '0 violations'}; orders shown: ${one.shown} ("${one.name}"), h1: ${one.h1}, tab "${one.tab}", pieces: ${one.rows}, total "${one.total}", payment/address/tracking blocks: ${one.blocks}, buttons: ${one.buttons}, back to ${one.back} (${one.backTall}px tall), "couldn't find" shown: ${one.none}, links to Shopify's pages: ${one.away.join(', ') || 'none'}, scrolls sideways: ${one.wide}`);
+      record(`Order page, ${label}: one order, on its own page (axe)`, v5.length === 0 && one.shown === 1 && one.name.includes('#1042') && one.h1 === 1 && one.tab.includes('#1042') && one.rows >= 1 && /\d/.test(one.total) && one.blocks >= 3 && one.steps === 'done done now' && /in progress/.test(one.stepWords) && /Track/.test(one.stepWords) && one.top === 0 && one.buttons === 2 && one.back.endsWith('#orders') && one.backTall >= 44 && !one.none && one.away.length === 0 && !one.wide, `${v5.join(', ') || '0 violations'}; orders shown: ${one.shown} ("${one.name}"), h1: ${one.h1}, tab "${one.tab}", pieces: ${one.rows}, total "${one.total}", payment/address/tracking blocks: ${one.blocks}, steps: ${one.steps} ("${one.stepWords}"), opened ${one.top}px down, buttons: ${one.buttons}, back to ${one.back} (${one.backTall}px tall), "couldn't find" shown: ${one.none}, links to Shopify's pages: ${one.away.join(', ') || 'none'}, scrolls sideways: ${one.wide}`);
       if (label === 'phone') {
         await page.goto(site(list.to.replace(/#.*/, '#Order-9999')), { waitUntil: 'load' });
         await page.reload({ waitUntil: 'load' });
         await page.waitForTimeout(600);
         const v6 = await axeOn();
-        const lost = await page.evaluate(() => ({ shown: [...document.querySelectorAll('[data-order-view]')].filter((el) => el.offsetParent).length, none: !!document.querySelector('[data-order-none]')?.offsetParent, back: document.querySelector('[data-order-none] .btn')?.getAttribute('href') || '', h1: [...document.querySelectorAll('h1')].filter((el) => el.offsetParent).length }));
-        record('Order page: an order we don\'t have gets a note and a way back (axe)', v6.length === 0 && lost.shown === 0 && lost.none && lost.back.endsWith('#orders') && lost.h1 === 1, `${v6.join(', ') || '0 violations'}; orders shown: ${lost.shown}, note shown: ${lost.none}, back to ${lost.back}, h1: ${lost.h1}`);
+        const lost = await page.evaluate(() => ({ shown: [...document.querySelectorAll('[data-order-view]')].filter((el) => el.offsetParent).length, none: !!document.querySelector('[data-order-none]')?.offsetParent, back: document.querySelector('[data-order-none] .btn')?.getAttribute('href') || '', contact: !!document.querySelector('[data-order-none] a[href^="/pages/contact"]'), twice: document.querySelectorAll('[data-order-none] a[href$="#orders"]').length, h1: [...document.querySelectorAll('h1')].filter((el) => el.offsetParent).length }));
+        record('Order page: an order we don\'t have gets a note and a way back (axe)', v6.length === 0 && lost.shown === 0 && lost.none && lost.back.endsWith('#orders') && lost.twice === 1 && lost.contact && lost.h1 === 1, `${v6.join(', ') || '0 violations'}; orders shown: ${lost.shown}, note shown: ${lost.none}, "See your orders" to ${lost.back} (links back: ${lost.twice}), Contact us: ${lost.contact}, h1: ${lost.h1}`);
+
+        // The other states: getting it ready (step 2 in progress) and cancelled (no steps, the date instead).
+        const state = async (n) => {
+          await page.goto(site(list.to.replace(/#.*/, `#Order-${n}`)), { waitUntil: 'load' });
+          await page.reload({ waitUntil: 'load' });
+          await page.waitForTimeout(500);
+          return page.evaluate((id) => { const v = document.getElementById(id); return { steps: [...v.querySelectorAll('.order-steps__step')].map((li) => li.className.match(/--(\w+)/)[1]).join(' '), text: v.querySelector('.order-view__head').textContent.replace(/\s+/g, ' ') }; }, `Order-${n}`);
+        };
+        const ready = await state('1050');
+        const gone = await state('1012');
+        record('Order page: getting it ready, and cancelled', ready.steps === 'done now next' && gone.steps === '' && /Cancelled on/.test(gone.text), `getting it ready: ${ready.steps}; cancelled: steps "${gone.steps}", says "${gone.text.match(/Cancelled on[^.]*?\d{4}/)?.[0] || 'no date'}"`);
+
+        // Small phones: a button's words never wrap; two that don't fit stack instead.
+        await page.setViewportSize({ width: 360, height: 760 });
+        const wraps = [];
+        for (const u of [demoUrl, site(list.to)]) {
+          await page.goto(u, { waitUntil: 'load' });
+          await page.waitForTimeout(600);
+          wraps.push(...await page.evaluate(() => [...document.querySelectorAll('.order-card__btn')].filter((b) => b.offsetParent && b.getBoundingClientRect().height > 56).map((b) => b.textContent.trim().slice(0, 20))));
+        }
+        record('Account and order page, 360px: button words stay on one line', wraps.length === 0, wraps.join(', ') || 'none wrap');
+        await page.setViewportSize(device.viewport);
+
+        // No orders yet: a calm note and Bestsellers.
+        await page.goto(site('/pages/contact?view=account-empty-demo'), { waitUntil: 'load' });
+        await page.waitForTimeout(800);
+        const v7 = await axeOn();
+        const empty = await page.evaluate(() => ({ note: !!document.querySelector('.account__empty'), cards: document.querySelectorAll('.order-card').length }));
+        record('Account page: no orders yet (axe)', v7.length === 0 && empty.note && empty.cards === 0, `${v7.join(', ') || '0 violations'}; note: ${empty.note}, order cards: ${empty.cards}`);
       }
       await page.goto(demoUrl, { waitUntil: 'load' });
       await page.waitForTimeout(600);

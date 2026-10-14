@@ -11,6 +11,7 @@ let track;
 let opener;
 let onClose;
 let current = 0;
+let busy = false;
 // The photos showing in the page's row (a colour's photos); the others stay hidden here too.
 const live = () => [...track.children].filter((slide) => !slide.hidden);
 
@@ -123,6 +124,7 @@ const build = (gallery) => {
 };
 
 export const open = (gallery, photo, from, done) => {
+  if (busy) return;
   if (!dialog) build(gallery);
   opener = from;
   onClose = done;
@@ -147,12 +149,25 @@ export const open = (gallery, photo, from, done) => {
   const big = live()[n]?.firstElementChild;
   const name = (img, value) => (img.style.viewTransitionName = value);
   if (!calm && document.startViewTransition && small && big) {
-    photos.forEach((img) => name(img, img === small ? 'zoom-photo' : 'none'));
-    document.startViewTransition(() => {
-      name(small, 'none');
-      name(big, 'zoom-photo');
-      show();
-    }).finished.finally(() => [big, ...photos].forEach((img) => name(img, '')));
+    // Only the photo moves (base.css, is-zooming), and it starts as the file the page has.
+    const root = document.documentElement.classList;
+    big.sizes = small.sizes;
+    big.loading = 'eager';
+    busy = true;
+    Promise.race([big.decode(), new Promise((r) => setTimeout(r, 200))]).catch(() => {}).then(() => {
+      photos.forEach((img) => name(img, img === small ? 'zoom-photo' : 'none'));
+      root.add('is-zooming');
+      document.startViewTransition(() => {
+        name(small, 'none');
+        name(big, 'zoom-photo');
+        show();
+      }).finished.finally(() => {
+        busy = false;
+        root.remove('is-zooming');
+        if (!(big.parentElement.dataset.zoom > 1)) big.sizes = '100vw';
+        [big, ...photos].forEach((img) => name(img, ''));
+      });
+    });
   } else show();
   history.pushState({ ...history.state, zoom: true }, '');
 };

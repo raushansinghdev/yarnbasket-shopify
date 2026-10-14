@@ -13,8 +13,10 @@
   case order.financial_status
     when 'paid'
       assign pay_key = 'account.pay_paid'
-    when 'pending', 'authorized', 'partially_paid'
+    when 'pending', 'authorized'
       assign pay_key = 'account.pay_due'
+    when 'partially_paid'
+      assign pay_key = 'account.pay_part'
     when 'refunded'
       assign pay_key = 'account.pay_refunded'
     when 'partially_refunded'
@@ -38,10 +40,10 @@
           {%- else -%}
             {{ li.product.title | default: li.title | escape }}
           {%- endif -%}
-          {%- if li.variant.title != blank and li.variant.title != 'Default Title' -%}
-            <span class="order-more__option">{{ li.variant.title | escape }}</span>
-          {%- endif -%}
-          <span class="order-more__option">{{ 'account.quantity' | t: count: li.quantity }}</span>
+          <span class="order-more__option">
+            {%- if li.variant.title != blank and li.variant.title != 'Default Title' -%}{{ li.variant.title | escape }} · {% endif -%}
+            {{- 'account.quantity' | t: count: li.quantity -}}
+          </span>
         </span>
         <span class="order-more__price">
           {%- if li.final_line_price == 0 -%}
@@ -71,9 +73,12 @@
 {%- else -%}
   {%- if pay_key or order.total_refunded_amount > 0 -%}
     <div class="order-more__block">
-      <h2 class="order-more__label">{{ 'account.payment' | t }}</h2>
+      <h2 class="order-more__label">{%- render 'icon', icon: 'cash' -%}{{ 'account.payment' | t }}</h2>
       <p>
-        {%- if pay_key -%}{{ pay_key | t }}{%- endif -%}
+        {%- comment -%} Nothing paid yet: the whole total is due at the door, so it can be said. {%- endcomment -%}
+        {%- if pay_key == 'account.pay_due' -%}
+          {%- assign due = order.total_price | money -%}{{ 'account.pay_due_amount' | t: amount: due }}
+        {%- elsif pay_key -%}{{ pay_key | t }}{%- endif -%}
         {%- if order.total_refunded_amount > 0 -%}
           {%- if pay_key -%}<br>{%- endif -%}
           {{ 'account.refunded_amount' | t }}: {{ order.total_refunded_amount | money }}
@@ -84,7 +89,7 @@
 
   {%- if address -%}
     <div class="order-more__block">
-      <h2 class="order-more__label">{{ 'account.delivering_to' | t }}</h2>
+      <h2 class="order-more__label">{%- render 'icon', icon: 'package' -%}{{ 'account.delivering_to' | t }}</h2>
       <p>
         {{ address.name | escape }}<br>
         {{ address.address1 | escape }}{% if address.address2 != blank %}, {{ address.address2 | escape }}{% endif %}<br>
@@ -115,7 +120,7 @@
   {%- endcapture -%}
   {%- if listed != '' -%}
     <div class="order-more__block">
-      <h2 class="order-more__label">{{ 'account.tracking' | t }}</h2>
+      <h2 class="order-more__label">{%- render 'icon', icon: 'truck' -%}{{ 'account.tracking' | t }}</h2>
       <ul class="order-more__parcels" role="list">{{ parcels }}</ul>
     </div>
   {%- endif -%}

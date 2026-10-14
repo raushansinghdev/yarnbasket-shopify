@@ -36,7 +36,16 @@
   {%- render 'account-menu', account_url: account_url, saved_url: pages['saved'].url, details_url: details_url, demo: demo_menu -%}
 {%- else -%}
 {%- comment -%} The menu is used once it exists in the admin; until then Shopify shows Orders and Profile (and logs a warning). {%- endcomment -%}
-<shopify-account class="account-btn" {% if linklists['customer-account-main-menu'].links.size > 0 %}menu="customer-account-main-menu"{% endif %} data-account>
+{%- liquid
+  # Signed out, Shopify's sheet always ends with "Orders" and "Profile", which sign in and then open Shopify's own pages.
+  # saved.js points them at a sign-in that comes back to our account page instead (docs/account-orders-plan.md, round 6).
+  assign home = pages['account'].url
+  if home
+    assign orders_back = home | append: '#orders' | url_encode
+    assign details_back = home | append: '?view=account-details' | url_encode
+  endif
+-%}
+<shopify-account class="account-btn" {% if linklists['customer-account-main-menu'].links.size > 0 %}menu="customer-account-main-menu"{% endif %} data-account{% if home %} data-orders-url="/customer_authentication/login?return_to={{ orders_back }}" data-details-url="/customer_authentication/login?return_to={{ details_back }}"{% endif %}>
   <span slot="signed-out-avatar" class="account-btn__glyph">
     {%- render 'icon', icon: 'account' -%}
     <span class="account-btn__word" aria-hidden="true">{{ 'header.account' | t }}</span>

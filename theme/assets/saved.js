@@ -151,6 +151,16 @@ if (account) {
     if (getComputedStyle(account).display === 'none') account.classList.add('is-summoned');
     account.showModal();
   }));
+  // Its "Orders" and "Profile" buttons sign in and then open Shopify's own pages; ours hold the orders and details.
+  // They sit inside the component's shadow roots, so this only changes them when it finds them: if Shopify reshapes
+  // the sheet, they simply keep Shopify's links (check 9 says so).
+  const ours = { '/account/orders': account.dataset.ordersUrl, '/account/addresses': account.dataset.detailsUrl, '/account/profile': account.dataset.detailsUrl };
+  const retarget = (root) => {
+    if (!root) return;
+    root.querySelectorAll('a[href]').forEach((a) => { const to = ours[a.getAttribute('href').split('?')[0]]; if (to) a.href = to; });
+    root.querySelectorAll('*').forEach((el) => retarget(el.shadowRoot));
+  };
+  if (account.dataset.ordersUrl) account.addEventListener('open', () => requestAnimationFrame(() => retarget(account.shadowRoot)));
   account.addEventListener('close', () => {
     if (!account.classList.contains('is-summoned')) return;
     account.classList.remove('is-summoned');
